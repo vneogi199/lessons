@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>0600 · Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost</title>
+  <style>
+    :root{--bg:#080b11;--panel:#101722;--panel2:#0c131d;--text:#dbe7f4;--bright:#f7fbff;--muted:#9babc0;--cyan:#79e8ff;--lime:#b6f36b;--amber:#ffd277;--red:#ff918a;--line:#2f3e53;--font:"IBM Plex Mono Nerd Font","IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;color-scheme:dark}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 var(--font);font-synthesis:none}button,textarea{font:inherit}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}main{max-width:940px;margin:0 auto;padding:42px clamp(20px,6vw,68px) 90px}.eyebrow,.section-label{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.eyebrow{display:flex;justify-content:space-between;gap:20px}.eyebrow span:last-child{color:var(--muted)}h1{max-width:850px;margin:22px 0 18px;color:var(--bright);font-size:clamp(28px,5vw,52px);line-height:1.12;letter-spacing:-.045em}h2{margin:0 0 13px;color:var(--bright);font-size:22px;line-height:1.35}.lede{max-width:790px;color:#c3d0df;font-size:17px;line-height:1.8}.outcome{display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:center;margin:34px 0;padding:20px;border:1px solid #426077;border-radius:10px;background:#0d1721}.outcome b{display:grid;width:46px;height:46px;place-items:center;border-radius:8px;background:#102934;color:var(--cyan)}.outcome p{margin:4px 0 0}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}.card{padding:27px;border:1px solid var(--line);border-radius:11px;background:var(--panel);box-shadow:0 18px 48px #0005}.card p{margin:10px 0;color:#bdcada}.analogy{border-left:3px solid var(--amber);padding:12px 16px;background:#17191d;color:#e7edf5!important}.blackboard{background:#0b1918;border-color:#42736d}.blackboard svg{width:100%;height:auto;margin-top:14px}.blackboard text{font:12px var(--font);fill:#c8f5e8}.blackboard .node{fill:#102925;stroke:#68b8aa;stroke-width:1.4}.blackboard .arrow{stroke:#b6f36b;stroke-width:2;marker-end:url(#arrow)}.mechanism-list{margin:10px 0 0;padding-left:22px}.mechanism-list li{margin:10px 0}.concept-section{margin-top:18px;padding:29px;border:1px solid #3b526c;border-radius:11px;background:#0c131d}.concept-intro{max-width:760px;color:var(--muted)}.concept-grid{display:grid;gap:12px;margin-top:20px}.concept-card{position:relative;padding:22px 22px 22px 62px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}.concept-card>span{position:absolute;left:20px;top:22px;color:var(--lime);font-size:12px}.concept-card h3{margin:0 0 10px;color:var(--bright);font-size:18px}.concept-card p{margin:9px 0;color:#c4d0df}.concept-card strong{color:#f2f7fc}.interview-tip{padding:12px;border-left:3px solid var(--amber);background:#17191d}.lab{margin-top:18px}.steps{counter-reset:step;display:grid;gap:10px;padding:0;list-style:none}.steps li{counter-increment:step;display:grid;grid-template-columns:32px 1fr;gap:10px}.steps li:before{content:counter(step);display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--lime);font-size:12px}pre{overflow:auto;margin:18px 0 0;padding:20px;border:1px solid #33455e;border-radius:8px;background:#070a0f;color:#e2ebf5;font:13px/1.75 var(--font);white-space:pre-wrap}.interview{margin-top:18px;border-color:#5b4e35}.interview .section-label{color:var(--amber)}.interview-questions{margin:16px 0;padding-left:24px}.interview-questions li{margin:11px 0;color:#d7dfeb}.answer-frame{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}.answer-frame span{padding:11px 8px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:12px;text-align:center}.mastery{margin-top:18px;border-color:#40566e}.options{display:grid;gap:9px;margin-top:16px}.option{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);cursor:pointer}.option:hover,.option:has(input:checked){border-color:var(--cyan);color:var(--bright)}.option input{position:absolute;opacity:0}.key{display:grid;width:28px;height:27px;place-items:center;border:1px solid var(--line);border-radius:5px;color:var(--cyan);font-size:12px}.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.button{padding:11px 15px;border:1px solid #66883f;border-radius:6px;background:#162313;color:var(--lime);cursor:pointer;font-weight:700}.button:hover{background:var(--lime);color:#081006}.button.secondary{border-color:var(--line);background:var(--panel2);color:var(--muted)}.feedback{min-height:24px;margin:0;color:var(--muted);font-size:13px}.feedback.success{color:var(--lime)}.feedback.error{color:var(--red)}textarea{width:100%;min-height:110px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:7px;background:#090e15;color:var(--text);resize:vertical}.source{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.source a{color:var(--cyan)}.source small{color:var(--muted);font-size:12px}@media(max-width:760px){main{padding-top:28px}.grid{grid-template-columns:1fr}.eyebrow{display:block}.eyebrow span{display:block;margin-bottom:6px}.concept-card{padding:18px}.concept-card>span{position:static;display:block;margin-bottom:6px}.answer-frame{grid-template-columns:1fr 1fr}.source{align-items:flex-start;flex-direction:column}}@media print{body{background:#fff;color:#111;font:11pt/1.5 var(--font)}main{max-width:none;padding:0}.card,.outcome,.source,.concept-card{break-inside:avoid;background:#fff;border-color:#777;box-shadow:none}h1,h2,h3,.card p,.analogy,.concept-card p{color:#111!important}.actions{display:none}}
+    h1{font-size:clamp(22px,2.8vw,34px)}
+    .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
+    .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow"><span>Search, Embeddings, and RAG · core</span><span>lesson 0600 / 0644</span></div>
+    <h1>Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost</h1>
+  </header>
+
+  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
+    <span class="section-label">01 · Beginner foundation</span>
+    <p>This topic belongs to retrieval and RAG. A retrieval system finds relevant information. A RAG system gives that information to a language model.</p>
+    <dl class="foundation-grid">
+      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
+      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
+      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
+      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
+    </dl>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <span class="section-label">02 · Mental model</span>
+      <p>Derive brute-force search, HNSW layered graph traversal, IVF centroid assignment and probing, and product-quantized distance estimates while tracking construction work, memory, query latency, and lost recall.</p>
+      <p class="analogy"><strong>Analogy:</strong> RAG is an open-book exam: retrieval chooses the pages, context assembly arranges them, generation writes the response, and evaluation checks both selection and answer support.</p>
+    </section>
+
+    <aside class="card blackboard">
+      <span class="section-label">03 · Blackboard system trace</span>
+      <h2>Trace a vector write and query</h2>
+      <ol class="trace-flow" data-flow="vector-index" aria-label="Mechanism trace: Vectors become an index then Query chooses an entry region then A bounded candidate search runs then Candidates are ranked and checked. Experiment: Sweep one search parameter on fixed labeled queries and explain a missed neighbor from the visited graph nodes or centroid lists.">
+        <li class="trace-stage"><span>01 · BUILD</span><strong>Vectors become an index</strong><small>A full scan, graph links, centroids, or compressed codes trade build work and memory for search speed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ENTER</span><strong>Query chooses an entry region</strong><small>HNSW starts high in the graph; IVF selects the nearest centroid lists.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXPLORE</span><strong>A bounded candidate search runs</strong><small>ef_search, probes, and compressed estimates decide which true neighbors are never examined.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Candidates are ranked and checked</strong><small>Exact ground truth reveals recall while timing and memory reveal the price.</small></li>
+      </ol>
+      <div class="trace-proof">
+        <span>↺ TEST THE MODEL</span>
+        <strong>Sweep one search parameter on fixed labeled queries and explain a missed neighbor from the visited graph nodes or centroid lists.</strong>
+        <small><b>Inspect:</b> Index parameters, build time, bytes per vector, visited candidates, exact IDs, approximate IDs, recall@k, and latency percentiles.</small>
+      </div>
+    </aside>
+  </div>
+
+  <section class="concept-section" data-subtopic-count="8">
+    <span class="section-label">04 · Detailed term guide</span>
+    <p class="concept-intro"><strong>How they connect:</strong> Derive brute-force search, HNSW layered graph traversal, IVF centroid assignment and probing, and product-quantized distance estimates while tracking construction work, memory, query latency, and lost recall.</p>
+    <div class="concept-grid">
+      <article class="concept-card" data-subtopic="Vector index internals">
+        <span>01</span>
+        <h3>Vector index internals</h3>
+        <p><strong>What it means:</strong> Vector index internals are the data structures and search procedures that reduce distance calculations while accepting measurable build, memory, update, or recall costs.</p>
+      </article><article class="concept-card" data-subtopic="exact search">
+        <span>02</span>
+        <h3>exact search</h3>
+        <p><strong>What it means:</strong> Exact search calculates the selected distance to every eligible vector and returns the true top-k for that stored data. It provides the ground truth used to measure approximate recall.</p>
+      </article><article class="concept-card" data-subtopic="HNSW graphs">
+        <span>03</span>
+        <h3>HNSW graphs</h3>
+        <p><strong>What it means:</strong> HNSW stores proximity links in multiple graph layers. Search descends from sparse upper layers and explores a bounded candidate set in the dense bottom layer.</p>
+      </article><article class="concept-card" data-subtopic="IVF lists">
+        <span>04</span>
+        <h3>IVF lists</h3>
+        <p><strong>What it means:</strong> IVF trains centroids, assigns each vector to a nearby inverted list, and searches only a selected number of query-nearest lists called probes.</p>
+      </article><article class="concept-card" data-subtopic="product quantization">
+        <span>05</span>
+        <h3>product quantization</h3>
+        <p><strong>What it means:</strong> Product quantization splits vectors into subvectors and stores a short centroid code for each part. Approximate table lookups save memory and compute but add distance error.</p>
+      </article><article class="concept-card" data-subtopic="recall">
+        <span>06</span>
+        <h3>recall</h3>
+        <p><strong>What it means:</strong> Recall@k is the fraction of exact top-k neighbors that an approximate top-k result returns on representative queries.</p>
+      </article><article class="concept-card" data-subtopic="memory">
+        <span>07</span>
+        <h3>memory</h3>
+        <p><strong>What it means:</strong> Vector-index memory includes vector bytes, graph links or list entries, quantization codes, payload indexes, working candidate sets, and process overhead.</p>
+      </article><article class="concept-card" data-subtopic="build cost">
+        <span>08</span>
+        <h3>build cost</h3>
+        <p><strong>What it means:</strong> Build cost is the time, CPU, memory, I/O, training, and temporary storage needed to construct or rebuild an index.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="card mechanism-walkthrough">
+    <span class="section-label">05 · Detailed mechanism</span>
+    <div class="walkthrough-grid">
+      <article>
+        <span>01 · BUILD</span>
+        <h3>Vectors become an index</h3>
+        <p>A full scan, graph links, centroids, or compressed codes trade build work and memory for search speed.</p>
+      </article><article>
+        <span>02 · ENTER</span>
+        <h3>Query chooses an entry region</h3>
+        <p>HNSW starts high in the graph; IVF selects the nearest centroid lists.</p>
+      </article><article>
+        <span>03 · EXPLORE</span>
+        <h3>A bounded candidate search runs</h3>
+        <p>ef_search, probes, and compressed estimates decide which true neighbors are never examined.</p>
+      </article><article>
+        <span>04 · MEASURE</span>
+        <h3>Candidates are ranked and checked</h3>
+        <p>Exact ground truth reveals recall while timing and memory reveal the price.</p>
+      </article>
+    </div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Sweep one search parameter on fixed labeled queries and explain a missed neighbor from the visited graph nodes or centroid lists.</p><p><strong>Then inspect:</strong> Index parameters, build time, bytes per vector, visited candidates, exact IDs, approximate IDs, recall@k, and latency percentiles.</p></div>
+  </section>
+
+  
+
+  <section class="card lab">
+    <span class="section-label">06 · Practical lab</span>
+    <p>Implement exact top-k on a tiny dataset, inspect HNSW and IVF parameters on the same labeled queries, plot recall versus latency, and explain every missed neighbor from the candidate path.</p>
+    <ol class="steps">
+      <li><span>Predict the state changes and one likely failure.</span></li>
+      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Change one condition, then run the same check again.</span></li>
+      <li><span>Compare the evidence and explain the tradeoff.</span></li>
+    </ol>
+    <pre aria-label="Starter code"><code>from math import sqrt
+
+def l2(a, b):
+    return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+
+def exact_top_k(rows, query, k):
+    return sorted(rows, key=lambda row: l2(row[1], query))[:k]
+
+def recall_at_k(expected, actual, k):
+    wanted = {row[0] for row in expected[:k]}
+    found = {row[0] for row in actual[:k]}
+    return len(wanted &amp; found) / k
+
+rows = [(&quot;a&quot;, [0.0, 0.0]), (&quot;b&quot;, [0.1, 0.0]),
+        (&quot;c&quot;, [0.9, 1.0]), (&quot;d&quot;, [1.0, 1.0])]
+queries = [[0.05, 0.0], [0.95, 1.0]]
+
+# Replace this function with HNSW/IVF calls under test. Log visited nodes for
+# HNSW or probed centroid lists for IVF so a missed neighbor is explainable.
+def candidate_search(rows, query, k):
+    return exact_top_k(rows, query, k)
+
+for query in queries:
+    truth = exact_top_k(rows, query, 2)
+    candidate = candidate_search(rows, query, 2)
+    print(query, candidate, &quot;recall@2=&quot;, recall_at_k(truth, candidate, 2))
+
+# HNSW: sweep m, ef_construction, and ef_search.
+# IVF: train representative centroids; sweep lists and probes.
+# PQ: sweep subvector count and code width, then rerank compressed candidates.
+# Record build time, bytes/vector, p50/p95 latency, update cost, and recall.
+assert recall_at_k(exact_top_k(rows, queries[0], 2), candidate_search(rows, queries[0], 2), 2) == 1.0
+
+# Lesson focus: Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost
+# Prediction: ______________________________________________
+# Observation: _____________________________________________
+# Revised model: ___________________________________________</code></pre>
+  </section>
+
+  <section class="card code-guide">
+    <span class="section-label">07 · Code reading guide</span>
+    <ol class="steps">
+      <li><span>Find the setup and the input that starts the example.</span></li>
+      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
+      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
+    </ol>
+    <p><strong>Expected flow:</strong> Vectors become an index → Query chooses an entry region → A bounded candidate search runs → Candidates are ranked and checked.</p>
+  </section>
+
+  <section class="card common-mistakes">
+    <span class="section-label">08 · Common mistakes</span>
+    <div class="mistake-grid">
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a vector write and query from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Sweep one search parameter on fixed labeled queries and explain a missed neighbor from the visited graph nodes or centroid lists.</p></article>
+      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Index parameters, build time, bytes per vector, visited candidates, exact IDs, approximate IDs, recall@k, and latency percentiles.</p></article>
+    </div>
+  </section>
+
+  <section class="card interview">
+    <span class="section-label">09 · Interview rehearsal</span>
+    <ol class="interview-questions">
+      <li>Compare exact, HNSW, IVF, and product quantization and choose index and tuning parameters from scale, update rate, memory, latency, and recall requirements.</li>
+      <li>Trace a vector write and query for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>How would you implement exact top-k on a tiny dataset, inspect HNSW and IVF parameters on the same labeled queries, plot recall versus latency, and explain every missed neighbor from the candidate path, and which evidence would prove the result?</li>
+      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+    </ol>
+    <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
+    <label for="teachback"><strong>Your 90-second teach-back</strong></label>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a vector write and query. Name a failure mode. Explain the evidence you would inspect."></textarea>
+  </section>
+
+  <section class="card mastery">
+    <span class="section-label">10 · Retrieval practice</span>
+    <h2>Which approach best demonstrates mastery of Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost?</h2>
+    <form id="mastery-form">
+      <div class="options">
+        <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
+      </div>
+      <div class="actions"><button class="button" type="submit">run_mastery_check()</button><p class="feedback" id="feedback" aria-live="polite">Choose one answer, then verify it.</p></div>
+    </form>
+  </section>
+
+  <footer class="source">
+    <div><span class="section-label">Primary source</span><br/><a href="https://github.com/pgvector/pgvector#hnsw" target="_blank" rel="noreferrer">pgvector HNSW and IVFFlat documentation ↗</a></div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
+    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+  </footer>
+</main>
+<script>
+(() => {
+  const lesson = {"id":"retrieval-rag--vector-index-internals-exact-search-hnsw-graphs-ivf-lists-product-quanti","title":"Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost","correctIndex":2,"evidenceSummary":"Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const feedback = document.querySelector("#feedback");
+  const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+
+  function messageParent(type, extra = {}) {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type, version: 1, lessonId: lesson.id, ...extra }, targetOrigin);
+  }
+
+  function reportHeight() {
+    messageParent("teach:resize", { height: document.documentElement.scrollHeight });
+  }
+
+  document.querySelector("#mastery-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const selected = new FormData(event.currentTarget).get("answer");
+    if (selected === null) {
+      feedback.textContent = "Select an answer before checking.";
+      feedback.className = "feedback error";
+      return;
+    }
+    if (Number(selected) !== lesson.correctIndex) {
+      feedback.textContent = "Not yet. Return to the mechanism map, then retry.";
+      feedback.className = "feedback error";
+      reportHeight();
+      return;
+    }
+    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.className = "feedback success";
+    messageParent("teach:mastery", {
+      passed: true,
+      score: 100,
+      completedAt: new Date().toISOString(),
+      evidenceSummary: lesson.evidenceSummary
+    });
+    reportHeight();
+  });
+
+  document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
+    const teachback = document.querySelector("#teachback").value.trim();
+    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    try {
+      await navigator.clipboard.writeText(prompt);
+      event.currentTarget.textContent = "copied ✓";
+    } catch {
+      window.prompt("Copy this prompt for Codex:", prompt);
+    }
+  });
+
+  window.addEventListener("load", reportHeight);
+  new ResizeObserver(reportHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>

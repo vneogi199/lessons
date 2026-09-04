@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>0029 · Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization</title>
+  <style>
+    :root{--bg:#080b11;--panel:#101722;--panel2:#0c131d;--text:#dbe7f4;--bright:#f7fbff;--muted:#9babc0;--cyan:#79e8ff;--lime:#b6f36b;--amber:#ffd277;--red:#ff918a;--line:#2f3e53;--font:"IBM Plex Mono Nerd Font","IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;color-scheme:dark}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 var(--font);font-synthesis:none}button,textarea{font:inherit}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}main{max-width:940px;margin:0 auto;padding:42px clamp(20px,6vw,68px) 90px}.eyebrow,.section-label{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.eyebrow{display:flex;justify-content:space-between;gap:20px}.eyebrow span:last-child{color:var(--muted)}h1{max-width:850px;margin:22px 0 18px;color:var(--bright);font-size:clamp(28px,5vw,52px);line-height:1.12;letter-spacing:-.045em}h2{margin:0 0 13px;color:var(--bright);font-size:22px;line-height:1.35}.lede{max-width:790px;color:#c3d0df;font-size:17px;line-height:1.8}.outcome{display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:center;margin:34px 0;padding:20px;border:1px solid #426077;border-radius:10px;background:#0d1721}.outcome b{display:grid;width:46px;height:46px;place-items:center;border-radius:8px;background:#102934;color:var(--cyan)}.outcome p{margin:4px 0 0}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}.card{padding:27px;border:1px solid var(--line);border-radius:11px;background:var(--panel);box-shadow:0 18px 48px #0005}.card p{margin:10px 0;color:#bdcada}.analogy{border-left:3px solid var(--amber);padding:12px 16px;background:#17191d;color:#e7edf5!important}.blackboard{background:#0b1918;border-color:#42736d}.blackboard svg{width:100%;height:auto;margin-top:14px}.blackboard text{font:12px var(--font);fill:#c8f5e8}.blackboard .node{fill:#102925;stroke:#68b8aa;stroke-width:1.4}.blackboard .arrow{stroke:#b6f36b;stroke-width:2;marker-end:url(#arrow)}.mechanism-list{margin:10px 0 0;padding-left:22px}.mechanism-list li{margin:10px 0}.concept-section{margin-top:18px;padding:29px;border:1px solid #3b526c;border-radius:11px;background:#0c131d}.concept-intro{max-width:760px;color:var(--muted)}.concept-grid{display:grid;gap:12px;margin-top:20px}.concept-card{position:relative;padding:22px 22px 22px 62px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}.concept-card>span{position:absolute;left:20px;top:22px;color:var(--lime);font-size:12px}.concept-card h3{margin:0 0 10px;color:var(--bright);font-size:18px}.concept-card p{margin:9px 0;color:#c4d0df}.concept-card strong{color:#f2f7fc}.interview-tip{padding:12px;border-left:3px solid var(--amber);background:#17191d}.lab{margin-top:18px}.steps{counter-reset:step;display:grid;gap:10px;padding:0;list-style:none}.steps li{counter-increment:step;display:grid;grid-template-columns:32px 1fr;gap:10px}.steps li:before{content:counter(step);display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--lime);font-size:12px}pre{overflow:auto;margin:18px 0 0;padding:20px;border:1px solid #33455e;border-radius:8px;background:#070a0f;color:#e2ebf5;font:13px/1.75 var(--font);white-space:pre-wrap}.interview{margin-top:18px;border-color:#5b4e35}.interview .section-label{color:var(--amber)}.interview-questions{margin:16px 0;padding-left:24px}.interview-questions li{margin:11px 0;color:#d7dfeb}.answer-frame{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}.answer-frame span{padding:11px 8px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:12px;text-align:center}.mastery{margin-top:18px;border-color:#40566e}.options{display:grid;gap:9px;margin-top:16px}.option{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);cursor:pointer}.option:hover,.option:has(input:checked){border-color:var(--cyan);color:var(--bright)}.option input{position:absolute;opacity:0}.key{display:grid;width:28px;height:27px;place-items:center;border:1px solid var(--line);border-radius:5px;color:var(--cyan);font-size:12px}.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.button{padding:11px 15px;border:1px solid #66883f;border-radius:6px;background:#162313;color:var(--lime);cursor:pointer;font-weight:700}.button:hover{background:var(--lime);color:#081006}.button.secondary{border-color:var(--line);background:var(--panel2);color:var(--muted)}.feedback{min-height:24px;margin:0;color:var(--muted);font-size:13px}.feedback.success{color:var(--lime)}.feedback.error{color:var(--red)}textarea{width:100%;min-height:110px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:7px;background:#090e15;color:var(--text);resize:vertical}.source{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.source a{color:var(--cyan)}.source small{color:var(--muted);font-size:12px}@media(max-width:760px){main{padding-top:28px}.grid{grid-template-columns:1fr}.eyebrow{display:block}.eyebrow span{display:block;margin-bottom:6px}.concept-card{padding:18px}.concept-card>span{position:static;display:block;margin-bottom:6px}.answer-frame{grid-template-columns:1fr 1fr}.source{align-items:flex-start;flex-direction:column}}@media print{body{background:#fff;color:#111;font:11pt/1.5 var(--font)}main{max-width:none;padding:0}.card,.outcome,.source,.concept-card{break-inside:avoid;background:#fff;border-color:#777;box-shadow:none}h1,h2,h3,.card p,.analogy,.concept-card p{color:#111!important}.actions{display:none}}
+    h1{font-size:clamp(22px,2.8vw,34px)}
+    .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
+    .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow"><span>Computer Science and Coding Interviews · core</span><span>lesson 0029 / 0644</span></div>
+    <h1>Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization</h1>
+  </header>
+
+  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
+    <span class="section-label">01 · Beginner foundation</span>
+    <p>This topic belongs to computer science. Computer science explains how data structures and algorithms use time, memory, and rules to solve problems.</p>
+    <dl class="foundation-grid">
+      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
+      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
+      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
+      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
+    </dl>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <span class="section-label">02 · Mental model</span>
+      <p>Convert repeated subproblems into a directed acyclic dependency graph, define exactly what each state means, order evaluation after prerequisites, and retain information needed to reconstruct a solution.</p>
+      <p class="analogy"><strong>Analogy:</strong> An algorithm is a route plan: correctness gets you to the destination, while the cost model tells you how the route behaves when the city grows.</p>
+    </section>
+
+    <aside class="card blackboard">
+      <span class="section-label">03 · Blackboard system trace</span>
+      <h2>Trace an algorithm execution</h2>
+      <ol class="trace-flow" data-flow="algorithm-execution" aria-label="Mechanism trace: Problem instance and constraints then Representation enables operations then Steps transform state then Result and cost are checked. Experiment: Double input size and predict both the result and resource growth.">
+        <li class="trace-stage"><span>01 · INPUT</span><strong>Problem instance and constraints</strong><small>Size, ordering, duplicates, and limits shape the choice.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STRUCTURE</span><strong>Representation enables operations</strong><small>Invariants determine which transitions are legal.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ALGORITHM</span><strong>Steps transform state</strong><small>Time and space accumulate across the execution.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTPUT</span><strong>Result and cost are checked</strong><small>Examples and growth measurements test correctness and complexity.</small></li>
+      </ol>
+      <div class="trace-proof">
+        <span>↺ TEST THE MODEL</span>
+        <strong>Double input size and predict both the result and resource growth.</strong>
+        <small><b>Inspect:</b> Invariant checks, operation count, output, runtime samples, and peak memory.</small>
+      </div>
+    </aside>
+  </div>
+
+  <section class="concept-section" data-subtopic-count="8">
+    <span class="section-label">04 · Detailed term guide</span>
+    <p class="concept-intro"><strong>How they connect:</strong> Convert repeated subproblems into a directed acyclic dependency graph, define exactly what each state means, order evaluation after prerequisites, and retain information needed to reconstruct a solution.</p>
+    <div class="concept-grid">
+      <article class="concept-card" data-subtopic="Dynamic programming">
+        <span>01</span>
+        <h3>Dynamic programming</h3>
+        <p><strong>What it means:</strong> Dynamic programming stores results for overlapping subproblems and combines them to solve a larger problem.</p>
+      </article><article class="concept-card" data-subtopic="state">
+        <span>02</span>
+        <h3>state</h3>
+        <p><strong>What it means:</strong> A dynamic-programming state is the smallest information that uniquely identifies one reusable subproblem.</p>
+      </article><article class="concept-card" data-subtopic="transitions">
+        <span>03</span>
+        <h3>transitions</h3>
+        <p><strong>What it means:</strong> A transition expresses a state&#039;s result from already solved neighboring or smaller states.</p>
+      </article><article class="concept-card" data-subtopic="base cases">
+        <span>04</span>
+        <h3>base cases</h3>
+        <p><strong>What it means:</strong> Base cases provide direct results for the smallest states and stop recursive expansion.</p>
+      </article><article class="concept-card" data-subtopic="memoization">
+        <span>05</span>
+        <h3>memoization</h3>
+        <p><strong>What it means:</strong> Memoization caches results when recursive states are first requested.</p>
+      </article><article class="concept-card" data-subtopic="tabulation">
+        <span>06</span>
+        <h3>tabulation</h3>
+        <p><strong>What it means:</strong> Tabulation evaluates states iteratively in an order where every dependency is already available.</p>
+      </article><article class="concept-card" data-subtopic="reconstruction">
+        <span>07</span>
+        <h3>reconstruction</h3>
+        <p><strong>What it means:</strong> Reconstruction follows stored choices or predecessor state to recover the actual solution, not only its score.</p>
+      </article><article class="concept-card" data-subtopic="space optimization">
+        <span>08</span>
+        <h3>space optimization</h3>
+        <p><strong>What it means:</strong> Space optimization discards older dynamic-programming states after proving that future transitions cannot need them.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="card mechanism-walkthrough">
+    <span class="section-label">05 · Detailed mechanism</span>
+    <div class="walkthrough-grid">
+      <article>
+        <span>01 · INPUT</span>
+        <h3>Problem instance and constraints</h3>
+        <p>Size, ordering, duplicates, and limits shape the choice.</p>
+      </article><article>
+        <span>02 · STRUCTURE</span>
+        <h3>Representation enables operations</h3>
+        <p>Invariants determine which transitions are legal.</p>
+      </article><article>
+        <span>03 · ALGORITHM</span>
+        <h3>Steps transform state</h3>
+        <p>Time and space accumulate across the execution.</p>
+      </article><article>
+        <span>04 · OUTPUT</span>
+        <h3>Result and cost are checked</h3>
+        <p>Examples and growth measurements test correctness and complexity.</p>
+      </article>
+    </div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Double input size and predict both the result and resource growth.</p><p><strong>Then inspect:</strong> Invariant checks, operation count, output, runtime samples, and peak memory.</p></div>
+  </section>
+
+  <section class="card mechanism-walkthrough" data-dsa-approach="true">
+    <span class="section-label">05B · Approach ladder</span>
+    <div class="walkthrough-grid">
+      <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Stair counts → minimum coins → common subsequence</p></article>
+      <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Repeat subproblems: exponential</p></article>
+      <article><span>OPTIMIZED</span><h3>Name the invariant that removes work</h3><p>Store each state once: polynomial time and space</p></article>
+      <article><span>STATE TRACE</span><h3>Move one step at a time</h3><p><code>dp amount 0..6: 0,1,2,1,1,2,2</code></p></article>
+    </div>
+  </section>
+
+  <section class="card lab">
+    <span class="section-label">06 · Practical lab</span>
+    <p>Derive and implement one sequence and one grid problem recursively, memoized, tabulated, and space-optimized, then recover the chosen path.</p>
+    <ol class="steps">
+      <li><span>Predict the state changes and one likely failure.</span></li>
+      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Change one condition, then run the same check again.</span></li>
+      <li><span>Compare the evidence and explain the tradeoff.</span></li>
+    </ol>
+    <pre aria-label="Starter code"><code>function minimumCoins(coins, amount) {
+  const best = Array(amount + 1).fill(Infinity), previous = Array(amount + 1).fill(-1);
+  best[0] = 0;
+  for (let value = 1; value &lt;= amount; value++) {
+    for (const coin of coins) {
+      if (coin &lt;= value &amp;&amp; best[value - coin] + 1 &lt; best[value]) {
+        best[value] = best[value - coin] + 1;
+        previous[value] = coin;
+      }
+    }
+  }
+  if (!Number.isFinite(best[amount])) return undefined;
+  const chosen = [];
+  for (let value = amount; value &gt; 0; value -= previous[value]) chosen.push(previous[value]);
+  return { count: best[amount], chosen };
+}
+
+const answer = minimumCoins([1, 3, 4], 6);
+console.assert(answer.count === 2 &amp;&amp; answer.chosen.reduce((a, b) =&gt; a + b, 0) === 6);
+
+// Lesson focus: Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization
+// Prediction: ______________________________________________
+// Observation: _____________________________________________
+// Revised model: ___________________________________________</code></pre>
+  </section>
+
+  <section class="card code-guide">
+    <span class="section-label">07 · Code reading guide</span>
+    <ol class="steps">
+      <li><span>Find the setup and the input that starts the example.</span></li>
+      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
+      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
+    </ol>
+    <p><strong>Expected flow:</strong> Problem instance and constraints → Representation enables operations → Steps transform state → Result and cost are checked.</p>
+  </section>
+
+  <section class="card common-mistakes">
+    <span class="section-label">08 · Common mistakes</span>
+    <div class="mistake-grid">
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an algorithm execution from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Double input size and predict both the result and resource growth.</p></article>
+      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Invariant checks, operation count, output, runtime samples, and peak memory.</p></article>
+    </div>
+  </section>
+
+  <section class="card interview">
+    <span class="section-label">09 · Interview rehearsal</span>
+    <ol class="interview-questions">
+      <li>Derive state and recurrence from the decision process instead of naming a memorized problem family.</li>
+      <li>Trace an algorithm execution for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>How would you derive and implement one sequence and one grid problem recursively, memoized, tabulated, and space-optimized, then recover the chosen path, and which evidence would prove the result?</li>
+      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+    </ol>
+    <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
+    <label for="teachback"><strong>Your 90-second teach-back</strong></label>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an algorithm execution. Name a failure mode. Explain the evidence you would inspect."></textarea>
+  </section>
+
+  <section class="card mastery">
+    <span class="section-label">10 · Retrieval practice</span>
+    <h2>Which approach best demonstrates mastery of Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization?</h2>
+    <form id="mastery-form">
+      <div class="options">
+        <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Memorize terminology and skip verification</span></label>
+      </div>
+      <div class="actions"><button class="button" type="submit">run_mastery_check()</button><p class="feedback" id="feedback" aria-live="polite">Choose one answer, then verify it.</p></div>
+    </form>
+  </section>
+
+  <footer class="source">
+    <div><span class="section-label">Primary source</span><br/><a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/" target="_blank" rel="noreferrer">MIT 6.006 Introduction to Algorithms ↗</a></div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
+    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+  </footer>
+</main>
+<script>
+(() => {
+  const lesson = {"id":"computer-science--dynamic-programming-state-transitions-base-cases-memoization-tabulation-","title":"Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization","correctIndex":1,"evidenceSummary":"Dynamic programming, state, transitions, base cases, memoization, tabulation, reconstruction, and space optimization: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const feedback = document.querySelector("#feedback");
+  const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+
+  function messageParent(type, extra = {}) {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type, version: 1, lessonId: lesson.id, ...extra }, targetOrigin);
+  }
+
+  function reportHeight() {
+    messageParent("teach:resize", { height: document.documentElement.scrollHeight });
+  }
+
+  document.querySelector("#mastery-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const selected = new FormData(event.currentTarget).get("answer");
+    if (selected === null) {
+      feedback.textContent = "Select an answer before checking.";
+      feedback.className = "feedback error";
+      return;
+    }
+    if (Number(selected) !== lesson.correctIndex) {
+      feedback.textContent = "Not yet. Return to the mechanism map, then retry.";
+      feedback.className = "feedback error";
+      reportHeight();
+      return;
+    }
+    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.className = "feedback success";
+    messageParent("teach:mastery", {
+      passed: true,
+      score: 100,
+      completedAt: new Date().toISOString(),
+      evidenceSummary: lesson.evidenceSummary
+    });
+    reportHeight();
+  });
+
+  document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
+    const teachback = document.querySelector("#teachback").value.trim();
+    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    try {
+      await navigator.clipboard.writeText(prompt);
+      event.currentTarget.textContent = "copied ✓";
+    } catch {
+      window.prompt("Copy this prompt for Codex:", prompt);
+    }
+  });
+
+  window.addEventListener("load", reportHeight);
+  new ResizeObserver(reportHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>

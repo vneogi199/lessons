@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>0084 · Strings, Unicode, code units, code points, graphemes, and normalization</title>
+  <style>
+    :root{--bg:#080b11;--panel:#101722;--panel2:#0c131d;--text:#dbe7f4;--bright:#f7fbff;--muted:#9babc0;--cyan:#79e8ff;--lime:#b6f36b;--amber:#ffd277;--red:#ff918a;--line:#2f3e53;--font:"IBM Plex Mono Nerd Font","IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;color-scheme:dark}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 var(--font);font-synthesis:none}button,textarea{font:inherit}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}main{max-width:940px;margin:0 auto;padding:42px clamp(20px,6vw,68px) 90px}.eyebrow,.section-label{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.eyebrow{display:flex;justify-content:space-between;gap:20px}.eyebrow span:last-child{color:var(--muted)}h1{max-width:850px;margin:22px 0 18px;color:var(--bright);font-size:clamp(28px,5vw,52px);line-height:1.12;letter-spacing:-.045em}h2{margin:0 0 13px;color:var(--bright);font-size:22px;line-height:1.35}.lede{max-width:790px;color:#c3d0df;font-size:17px;line-height:1.8}.outcome{display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:center;margin:34px 0;padding:20px;border:1px solid #426077;border-radius:10px;background:#0d1721}.outcome b{display:grid;width:46px;height:46px;place-items:center;border-radius:8px;background:#102934;color:var(--cyan)}.outcome p{margin:4px 0 0}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}.card{padding:27px;border:1px solid var(--line);border-radius:11px;background:var(--panel);box-shadow:0 18px 48px #0005}.card p{margin:10px 0;color:#bdcada}.analogy{border-left:3px solid var(--amber);padding:12px 16px;background:#17191d;color:#e7edf5!important}.blackboard{background:#0b1918;border-color:#42736d}.blackboard svg{width:100%;height:auto;margin-top:14px}.blackboard text{font:12px var(--font);fill:#c8f5e8}.blackboard .node{fill:#102925;stroke:#68b8aa;stroke-width:1.4}.blackboard .arrow{stroke:#b6f36b;stroke-width:2;marker-end:url(#arrow)}.mechanism-list{margin:10px 0 0;padding-left:22px}.mechanism-list li{margin:10px 0}.concept-section{margin-top:18px;padding:29px;border:1px solid #3b526c;border-radius:11px;background:#0c131d}.concept-intro{max-width:760px;color:var(--muted)}.concept-grid{display:grid;gap:12px;margin-top:20px}.concept-card{position:relative;padding:22px 22px 22px 62px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}.concept-card>span{position:absolute;left:20px;top:22px;color:var(--lime);font-size:12px}.concept-card h3{margin:0 0 10px;color:var(--bright);font-size:18px}.concept-card p{margin:9px 0;color:#c4d0df}.concept-card strong{color:#f2f7fc}.interview-tip{padding:12px;border-left:3px solid var(--amber);background:#17191d}.lab{margin-top:18px}.steps{counter-reset:step;display:grid;gap:10px;padding:0;list-style:none}.steps li{counter-increment:step;display:grid;grid-template-columns:32px 1fr;gap:10px}.steps li:before{content:counter(step);display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--lime);font-size:12px}pre{overflow:auto;margin:18px 0 0;padding:20px;border:1px solid #33455e;border-radius:8px;background:#070a0f;color:#e2ebf5;font:13px/1.75 var(--font);white-space:pre-wrap}.interview{margin-top:18px;border-color:#5b4e35}.interview .section-label{color:var(--amber)}.interview-questions{margin:16px 0;padding-left:24px}.interview-questions li{margin:11px 0;color:#d7dfeb}.answer-frame{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}.answer-frame span{padding:11px 8px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:12px;text-align:center}.mastery{margin-top:18px;border-color:#40566e}.options{display:grid;gap:9px;margin-top:16px}.option{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);cursor:pointer}.option:hover,.option:has(input:checked){border-color:var(--cyan);color:var(--bright)}.option input{position:absolute;opacity:0}.key{display:grid;width:28px;height:27px;place-items:center;border:1px solid var(--line);border-radius:5px;color:var(--cyan);font-size:12px}.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.button{padding:11px 15px;border:1px solid #66883f;border-radius:6px;background:#162313;color:var(--lime);cursor:pointer;font-weight:700}.button:hover{background:var(--lime);color:#081006}.button.secondary{border-color:var(--line);background:var(--panel2);color:var(--muted)}.feedback{min-height:24px;margin:0;color:var(--muted);font-size:13px}.feedback.success{color:var(--lime)}.feedback.error{color:var(--red)}textarea{width:100%;min-height:110px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:7px;background:#090e15;color:var(--text);resize:vertical}.source{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.source a{color:var(--cyan)}.source small{color:var(--muted);font-size:12px}@media(max-width:760px){main{padding-top:28px}.grid{grid-template-columns:1fr}.eyebrow{display:block}.eyebrow span{display:block;margin-bottom:6px}.concept-card{padding:18px}.concept-card>span{position:static;display:block;margin-bottom:6px}.answer-frame{grid-template-columns:1fr 1fr}.source{align-items:flex-start;flex-direction:column}}@media print{body{background:#fff;color:#111;font:11pt/1.5 var(--font)}main{max-width:none;padding:0}.card,.outcome,.source,.concept-card{break-inside:avoid;background:#fff;border-color:#777;box-shadow:none}h1,h2,h3,.card p,.analogy,.concept-card p{color:#111!important}.actions{display:none}}
+    h1{font-size:clamp(22px,2.8vw,34px)}
+    .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
+    .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow"><span>JavaScript Complete Deep Dive · core</span><span>lesson 0084 / 0644</span></div>
+    <h1>Strings, Unicode, code units, code points, graphemes, and normalization</h1>
+  </header>
+
+  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
+    <span class="section-label">01 · Beginner foundation</span>
+    <p>This topic belongs to JavaScript. JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
+    <dl class="foundation-grid">
+      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
+      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
+      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
+      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
+    </dl>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <span class="section-label">02 · Mental model</span>
+      <p>Understand UTF-16 storage, surrogate pairs, iteration by code point, user-perceived grapheme clusters, and canonical normalization.</p>
+      <p class="analogy"><strong>Analogy:</strong> JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+    </section>
+
+    <aside class="card blackboard">
+      <span class="section-label">03 · Blackboard system trace</span>
+      <h2>Trace a JavaScript evaluation</h2>
+      <ol class="trace-flow" data-flow="javascript-evaluation" aria-label="Mechanism trace: Source code requests an operation then Language rules select conversions then The operation changes control or state then A value or exception appears. Experiment: Change one operand type or binding and predict the exact value and type.">
+        <li class="trace-stage"><span>01 · EXPRESSION</span><strong>Source code requests an operation</strong><small>Values and references enter the evaluation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><strong>Language rules select conversions</strong><small>Type, equality, property, or call semantics apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>The operation changes control or state</strong><small>Scopes, prototypes, and closures affect behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>A value or exception appears</strong><small>A focused example reveals the specification path.</small></li>
+      </ol>
+      <div class="trace-proof">
+        <span>↺ TEST THE MODEL</span>
+        <strong>Change one operand type or binding and predict the exact value and type.</strong>
+        <small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small>
+      </div>
+    </aside>
+  </div>
+
+  <section class="concept-section" data-subtopic-count="6">
+    <span class="section-label">04 · Detailed term guide</span>
+    <p class="concept-intro"><strong>How they connect:</strong> Understand UTF-16 storage, surrogate pairs, iteration by code point, user-perceived grapheme clusters, and canonical normalization.</p>
+    <div class="concept-grid">
+      <article class="concept-card" data-subtopic="Strings">
+        <span>01</span>
+        <h3>Strings</h3>
+        <p><strong>What it means:</strong> Strings is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+      </article><article class="concept-card" data-subtopic="Unicode">
+        <span>02</span>
+        <h3>Unicode</h3>
+        <p><strong>What it means:</strong> Unicode assigns code points to text symbols, while JavaScript strings store UTF-16 code units. Encoding units, code points, and visible grapheme clusters are different counting boundaries.</p>
+      </article><article class="concept-card" data-subtopic="code units">
+        <span>03</span>
+        <h3>code units</h3>
+        <p><strong>What it means:</strong> code units is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+      </article><article class="concept-card" data-subtopic="code points">
+        <span>04</span>
+        <h3>code points</h3>
+        <p><strong>What it means:</strong> code points is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+      </article><article class="concept-card" data-subtopic="graphemes">
+        <span>05</span>
+        <h3>graphemes</h3>
+        <p><strong>What it means:</strong> A grapheme cluster is a user-perceived character that may contain several Unicode code points, such as an emoji sequence or base letter plus combining mark.</p>
+      </article><article class="concept-card" data-subtopic="normalization">
+        <span>06</span>
+        <h3>normalization</h3>
+        <p><strong>What it means:</strong> Unicode normalization converts canonically equivalent code-point sequences into a chosen standard form so comparison and indexing can treat them consistently.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="card mechanism-walkthrough">
+    <span class="section-label">05 · Detailed mechanism</span>
+    <div class="walkthrough-grid">
+      <article>
+        <span>01 · EXPRESSION</span>
+        <h3>Source code requests an operation</h3>
+        <p>Values and references enter the evaluation.</p>
+      </article><article>
+        <span>02 · COERCE</span>
+        <h3>Language rules select conversions</h3>
+        <p>Type, equality, property, or call semantics apply.</p>
+      </article><article>
+        <span>03 · EXECUTE</span>
+        <h3>The operation changes control or state</h3>
+        <p>Scopes, prototypes, and closures affect behavior.</p>
+      </article><article>
+        <span>04 · OBSERVE</span>
+        <h3>A value or exception appears</h3>
+        <p>A focused example reveals the specification path.</p>
+      </article>
+    </div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one operand type or binding and predict the exact value and type.</p><p><strong>Then inspect:</strong> Console value, typeof, identity checks, property descriptors, and exception.</p></div>
+  </section>
+
+  
+
+  <section class="card lab">
+    <span class="section-label">06 · Practical lab</span>
+    <p>Build Unicode-safe length, truncation, comparison, and normalization experiments with emoji and accented text.</p>
+    <ol class="steps">
+      <li><span>Predict the state changes and one likely failure.</span></li>
+      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Change one condition, then run the same check again.</span></li>
+      <li><span>Compare the evidence and explain the tradeoff.</span></li>
+    </ol>
+    <pre aria-label="Starter code"><code>const text = &quot;👩🏽‍💻 café&quot;;
+const graphemes = [...new Intl.Segmenter(&quot;en&quot;, { granularity: &quot;grapheme&quot; }).segment(text)]
+  .map(part =&gt; part.segment);
+
+console.table({
+  utf16CodeUnits: text.length,
+  codePoints: [...text].length,
+  graphemes: graphemes.length,
+  firstCodeUnit: text[0],
+  firstCodePoint: [...text][0],
+  firstGrapheme: graphemes[0]
+});
+
+const composed = &quot;é&quot;;
+const decomposed = &quot;é&quot;;
+console.assert(composed !== decomposed);
+console.assert(composed.normalize(&quot;NFC&quot;) === decomposed.normalize(&quot;NFC&quot;));
+
+// Lesson focus: Strings, Unicode, code units, code points, graphemes, and normalization
+// Prediction: ______________________________________________
+// Observation: _____________________________________________
+// Revised model: ___________________________________________</code></pre>
+  </section>
+
+  <section class="card code-guide">
+    <span class="section-label">07 · Code reading guide</span>
+    <ol class="steps">
+      <li><span>Find the setup and the input that starts the example.</span></li>
+      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
+      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
+    </ol>
+    <p><strong>Expected flow:</strong> Source code requests an operation → Language rules select conversions → The operation changes control or state → A value or exception appears.</p>
+  </section>
+
+  <section class="card common-mistakes">
+    <span class="section-label">08 · Common mistakes</span>
+    <div class="mistake-grid">
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a JavaScript evaluation from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one operand type or binding and predict the exact value and type.</p></article>
+      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Console value, typeof, identity checks, property descriptors, and exception.</p></article>
+    </div>
+  </section>
+
+  <section class="card interview">
+    <span class="section-label">09 · Interview rehearsal</span>
+    <ol class="interview-questions">
+      <li>Explain why string length and indexing do not necessarily correspond to visible characters.</li>
+      <li>Trace a JavaScript evaluation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>How would you build Unicode-safe length, truncation, comparison, and normalization experiments with emoji and accented text, and which evidence would prove the result?</li>
+      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+    </ol>
+    <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
+    <label for="teachback"><strong>Your 90-second teach-back</strong></label>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+  </section>
+
+  <section class="card mastery">
+    <span class="section-label">10 · Retrieval practice</span>
+    <h2>Which approach best demonstrates mastery of Strings, Unicode, code units, code points, graphemes, and normalization?</h2>
+    <form id="mastery-form">
+      <div class="options">
+        <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
+      </div>
+      <div class="actions"><button class="button" type="submit">run_mastery_check()</button><p class="feedback" id="feedback" aria-live="polite">Choose one answer, then verify it.</p></div>
+    </form>
+  </section>
+
+  <footer class="source">
+    <div><span class="section-label">Primary source</span><br/><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noreferrer">MDN JavaScript Guide ↗</a></div>
+    
+    
+    
+    
+    <a href="../reference/javascript-deep-dive-map.html" target="_blank">JavaScript coverage map ↗</a>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
+    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+  </footer>
+</main>
+<script>
+(() => {
+  const lesson = {"id":"javascript--strings-unicode-code-units-code-points-graphemes-and-normalization","title":"Strings, Unicode, code units, code points, graphemes, and normalization","correctIndex":2,"evidenceSummary":"Strings, Unicode, code units, code points, graphemes, and normalization: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const feedback = document.querySelector("#feedback");
+  const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+
+  function messageParent(type, extra = {}) {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type, version: 1, lessonId: lesson.id, ...extra }, targetOrigin);
+  }
+
+  function reportHeight() {
+    messageParent("teach:resize", { height: document.documentElement.scrollHeight });
+  }
+
+  document.querySelector("#mastery-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const selected = new FormData(event.currentTarget).get("answer");
+    if (selected === null) {
+      feedback.textContent = "Select an answer before checking.";
+      feedback.className = "feedback error";
+      return;
+    }
+    if (Number(selected) !== lesson.correctIndex) {
+      feedback.textContent = "Not yet. Return to the mechanism map, then retry.";
+      feedback.className = "feedback error";
+      reportHeight();
+      return;
+    }
+    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.className = "feedback success";
+    messageParent("teach:mastery", {
+      passed: true,
+      score: 100,
+      completedAt: new Date().toISOString(),
+      evidenceSummary: lesson.evidenceSummary
+    });
+    reportHeight();
+  });
+
+  document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
+    const teachback = document.querySelector("#teachback").value.trim();
+    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    try {
+      await navigator.clipboard.writeText(prompt);
+      event.currentTarget.textContent = "copied ✓";
+    } catch {
+      window.prompt("Copy this prompt for Codex:", prompt);
+    }
+  });
+
+  window.addEventListener("load", reportHeight);
+  new ResizeObserver(reportHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>
