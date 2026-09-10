@@ -4,7 +4,9 @@
 
 Build a local-first tutorial site using plain HTML, CSS, and JavaScript. It will provide a 24-week international-interview core plus self-paced deep extensions, 644 pre-generated self-contained interactive lessons authored by Codex through the `teach` workflow, mastery-based progress tracking, and topic/overall completion percentages.
 
-The curriculum assumes basic JavaScript and Python knowledge, 6–8 study hours per week, and targets production full-stack AI engineering, international interview performance, relocation-friendly hiring evidence, and three progressively more capable portfolio applications.
+The curriculum targets senior interviews for a learner with around ten years of experience and 6–8 study hours per week. It retains accessible entry explanations for unfamiliar topics and targets production full-stack AI engineering, international interview performance, relocation-friendly hiring evidence, and three progressively more capable portfolio applications.
+
+The content review, updated 2026-09-07, is recorded in `CONTENT-REVIEW.md`, including an entry for every lesson. All 644 lessons now have concrete title-term definitions with zero generic fallbacks. Remaining lab and explanation checks mean this is not a fully verified senior interview course. `scripts/senior-content.mjs` contains exact glossary corrections and 28 authored track cases; generation builds `reference/senior-interview-practice.html` and links it from every lesson. Each case includes worked reasoning, a changed constraint, feedback criteria, and a primary source. Lessons include written senior rehearsal and a reasoning checkpoint. The current auto-check is explicitly an orientation/progress interaction; changing its completion semantics awaits the learner's preference.
 
 ## Implementation
 
@@ -36,6 +38,8 @@ The curriculum assumes basic JavaScript and Python knowledge, 6–8 study hours 
 - The focus-mode MVP loads the complete catalog from `lessons/manifest.json` and embeds the corresponding pre-generated lesson HTML. The original six demonstration lessons remain available only in the archived comparison prototypes.
 
 ## Teaching Content
+
+TypeScript content-review pass completed across all 45 lessons (0126–0170). See `TYPESCRIPT-CONTENT-REVIEW.md` for lesson-specific reasoning, practice, and verification limits. Run `node scripts/check-typescript-lessons.mjs` for 26 compiled/runtime-checked snippets; the other 19 are explicitly scoped integration, tooling, configuration, counterexample, or project exercises. Continue other tracks using `CONTENT-REVIEW.md`. Do not infer learner mastery or change assessment behavior from this authoring work.
 
 Create the required teaching workspace:
 
@@ -72,7 +76,7 @@ Every lesson will:
 - Name the concrete mechanism being traced in each blackboard, interview prompt, and teach-back field—such as a render cycle, HTTP request, import, iterator step, concurrent task, transaction, retrieval query, or evaluation case—instead of using “unit of work” for every lesson.
 - Begin each lesson with its title and a compact beginner foundation; omit agenda, outcome, track-goal, and interview-readiness introductions.
 - Give every blackboard a mechanism-specific input-to-outcome sequence, a falsifiable experiment, and named evidence to inspect. Do not derive diagram boxes from comma-separated title fragments.
-- Define every title-level term once, then explain how the terms connect through the lesson mechanism. Do not repeat the same example, verification, mistake, or interview template inside every term card.
+- Aim to define every title-level term once, then connect the terms through the lesson mechanism. Track unresolved definitions in `CONTENT-REVIEW.md`; section presence does not establish explanatory depth. Do not repeat the same example, verification, mistake, or interview template inside every term card.
 - Expand the blackboard into a concise four-stage walkthrough with one failure experiment and the evidence to inspect.
 - Include a four-step practical lab, a three-step code-reading guide, four short diagnostic mistakes, and a compact interview-answer frame.
 - Include one auto-graded mastery check with immediate feedback and unlimited retries.
@@ -82,7 +86,7 @@ Every lesson will:
 - Work independently for printing while appearing inside the site’s shared navigation shell.
 - Provide a “Continue with Codex” button that copies the mastery evidence and follow-up prompt. Codex can then answer questions and create a qualifying learning record.
 
-The focused beginner format applies to all 644 lessons across all 28 tracks. Every lesson defines each title-level term, connects the terms through one mechanism explanation, and retains the foundation, analogy, blackboard, concise walkthrough, practical code, mistakes, interview questions, and mastery check. Generic headings, repeated agenda, and template prose are excluded. Estimated lesson time scales from 15 to 35 minutes according to the number of title-level concepts.
+The focused entry format applies to all 644 lessons across all 28 tracks. Lessons retain a foundation, term guide, analogy, blackboard, walkthrough, practical code, mistakes, interview questions, and progress check. No generic definition gaps remain; 83 lessons retain intentional shared mechanisms with explicit lesson-specific exercises; zero unexplained reuse remains. External integration execution and exhaustive factual certification are not claimed. All 33 computer-science examples execute assertions; five previously unused test helpers were replaced with topic-specific exercises. Estimated reading time scales from 15 to 35 minutes; it excludes implementation and interview rehearsal. The four repeated generic foundation cards have been removed.
 
 Lessons communicate completion to the shell through a versioned event:
 

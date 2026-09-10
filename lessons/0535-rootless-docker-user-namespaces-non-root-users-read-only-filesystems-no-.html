@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to Docker. Docker packages a program and its files in an image. A container runtime starts an isolated process from that image.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#docker">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a container lifecycle</h2>
-      <ol class="trace-flow" data-flow="docker-storage" aria-label="Mechanism trace: Read-only layers provide files then Container creates runtime changes then External storage replaces a path then Data survives or disappears. Experiment: Write the same file to layer, volume, bind mount, and tmpfs, then remove the container.">
-        <li class="trace-stage"><span>01 · IMAGE</span><strong>Read-only layers provide files</strong><small>Overlay storage exposes the packaged filesystem.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · WRITABLE</span><strong>Container creates runtime changes</strong><small>Copy-on-write state belongs to this container.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · MOUNT</span><strong>External storage replaces a path</strong><small>Volume, bind, or tmpfs ownership and lifetime apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>Data survives or disappears</strong><small>Removal and restore tests prove the chosen lifecycle.</small></li>
+      <ol class="trace-flow" data-flow="docker-container-run" aria-label="Mechanism trace: Docker resolves runtime intent then Docker creates runtime objects then Runtime starts container PID 1 then State and evidence remain. Experiment: Run once with one incorrect user, signal, or resource limit and diagnose it.">
+        <li class="trace-stage"><span>01 · IMAGE + CONFIG</span><strong>Docker resolves runtime intent</strong><small>Digest, command, user, mounts, network, and limits enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DAEMON</span><strong>Docker creates runtime objects</strong><small>Filesystem snapshot, namespaces, cgroups, and interfaces form.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Runtime starts container PID 1</strong><small>Kernel isolation and application lifecycle govern execution.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXIT</span><strong>State and evidence remain</strong><small>Logs, health, metrics, exit code, events, and persistent mounts explain outcome.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Write the same file to layer, volume, bind mount, and tmpfs, then remove the container.</strong>
-        <small><b>Inspect:</b> Mount metadata, host path, layer diff, volume content, permissions, and restored data.</small>
+        <strong>Run once with one incorrect user, signal, or resource limit and diagnose it.</strong>
+        <small><b>Inspect:</b> Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</small>
       </div>
     </aside>
   </div>
@@ -67,19 +63,19 @@
       </article><article class="concept-card" data-subtopic="non-root users">
         <span>03</span>
         <h3>non-root users</h3>
-        <p><strong>What it means:</strong> non-root users is one part of the image, daemon, runtime, or Linux isolation model. Ask which immutable content and runtime configuration enter, which kernel or Docker boundary acts, and which inspectable container state results.</p>
+        <p><strong>What it means:</strong> Running as a non-root user reduces default process privilege but does not replace capabilities, filesystem, or host-boundary controls.</p>
       </article><article class="concept-card" data-subtopic="read-only filesystems">
         <span>04</span>
         <h3>read-only filesystems</h3>
-        <p><strong>What it means:</strong> read-only filesystems is one part of the image, daemon, runtime, or Linux isolation model. Ask which immutable content and runtime configuration enter, which kernel or Docker boundary acts, and which inspectable container state results.</p>
+        <p><strong>What it means:</strong> A read-only filesystem prevents writes at that mount boundary. Provide explicitly writable locations when needed and remember that other mounts may still be writable.</p>
       </article><article class="concept-card" data-subtopic="no-new-privileges">
         <span>05</span>
         <h3>no-new-privileges</h3>
-        <p><strong>What it means:</strong> no-new-privileges is one part of the image, daemon, runtime, or Linux isolation model. Ask which immutable content and runtime configuration enter, which kernel or Docker boundary acts, and which inspectable container state results.</p>
+        <p><strong>What it means:</strong> No-new-privileges restricts gaining additional privilege through execution mechanisms covered by the kernel setting.</p>
       </article><article class="concept-card" data-subtopic="hardening">
         <span>06</span>
         <h3>hardening</h3>
-        <p><strong>What it means:</strong> hardening is one part of the image, daemon, runtime, or Linux isolation model. Ask which immutable content and runtime configuration enter, which kernel or Docker boundary acts, and which inspectable container state results.</p>
+        <p><strong>What it means:</strong> Container hardening minimizes privileges, writable paths, attack surface, exposed interfaces, and untrusted dependencies.</p>
       </article>
     </div>
   </section>
@@ -88,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · IMAGE</span>
-        <h3>Read-only layers provide files</h3>
-        <p>Overlay storage exposes the packaged filesystem.</p>
+        <span>01 · IMAGE + CONFIG</span>
+        <h3>Docker resolves runtime intent</h3>
+        <p>Digest, command, user, mounts, network, and limits enter.</p>
       </article><article>
-        <span>02 · WRITABLE</span>
-        <h3>Container creates runtime changes</h3>
-        <p>Copy-on-write state belongs to this container.</p>
+        <span>02 · DAEMON</span>
+        <h3>Docker creates runtime objects</h3>
+        <p>Filesystem snapshot, namespaces, cgroups, and interfaces form.</p>
       </article><article>
-        <span>03 · MOUNT</span>
-        <h3>External storage replaces a path</h3>
-        <p>Volume, bind, or tmpfs ownership and lifetime apply.</p>
+        <span>03 · PROCESS</span>
+        <h3>Runtime starts container PID 1</h3>
+        <p>Kernel isolation and application lifecycle govern execution.</p>
       </article><article>
-        <span>04 · RECOVER</span>
-        <h3>Data survives or disappears</h3>
-        <p>Removal and restore tests prove the chosen lifecycle.</p>
+        <span>04 · EXIT</span>
+        <h3>State and evidence remain</h3>
+        <p>Logs, health, metrics, exit code, events, and persistent mounts explain outcome.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Write the same file to layer, volume, bind mount, and tmpfs, then remove the container.</p><p><strong>Then inspect:</strong> Mount metadata, host path, layer diff, volume content, permissions, and restored data.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run once with one incorrect user, signal, or resource limit and diagnose it.</p><p><strong>Then inspect:</strong> Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</p></div>
   </section>
 
   
@@ -113,21 +109,30 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run a rootless or hardened non-root container with minimal capabilities and writable tmpfs only where required.</p>
+
+
+
+<p><strong>Lab scope:</strong> Infrastructure snippets are recipes or fragments, not a supplied deployment. Resolve placeholders, required files, tool versions, identity, region or cluster context, and application configuration first. Use an isolated learning environment with a cost limit and cleanup plan. Inspect commands before running: some create resources, publish images, change permissions, or alter data. Never paste them into a production session. Local content checks do not establish that the integration works.</p>
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>docker run --rm   --user 10001:10001   --read-only   --tmpfs /tmp:rw,noexec,nosuid,size=64m   --cap-drop ALL   --security-opt no-new-privileges=true   --pids-limit 100 --memory 512m --cpus 1   app@sha256:DIGEST
+    <pre aria-label="Starter code"><code># Non-root container hardening is NOT proof of a rootless daemon.
+# Inspect the selected daemon&#039;s SecurityOptions for rootless first.
+docker info --format &#039;{{json .SecurityOptions}}&#039;
+# Requires an existing configured daemon and verified local image. This command
+# is an integration exercise, not an instruction to install or pull anything.
+docker run --rm   --user 10001:10001   --read-only   --tmpfs /tmp:rw,noexec,nosuid,size=64m   --cap-drop ALL   --security-opt no-new-privileges=true   --pids-limit 100 --memory 512m --cpus 1   app@sha256:DIGEST
 
-docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
-
-# Lesson focus: Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening
-# Prediction: ______________________________________________
-# Observation: _____________________________________________
-# Revised model: ___________________________________________</code></pre>
+# In another terminal, inspect the running container before --rm removes it:
+# docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
+# Verify actual limit enforcement; rootless resource flags need host support.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -136,16 +141,16 @@ docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Read-only layers provide files → Container creates runtime changes → External storage replaces a path → Data survives or disappears.</p>
+    <p><strong>Conceptual mechanism:</strong> Docker resolves runtime intent → Docker creates runtime objects → Runtime starts container PID 1 → State and evidence remain. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a container lifecycle from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Write the same file to layer, volume, bind mount, and tmpfs, then remove the container.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Run once with one incorrect user, signal, or resource limit and diagnose it.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Mount metadata, host path, layer diff, volume content, permissions, and restored data.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</p></article>
     </div>
   </section>
 
@@ -160,11 +165,23 @@ docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a container lifecycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="docker">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Trace container and host identities, privilege mapping, filesystem writes, daemon authority, and escalation paths.</p>
+        <p><strong>Evidence to explain:</strong> Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#docker">Worked track case: The container ignores graceful shutdown ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trust abstractions and ignore failures</span></label>
@@ -193,12 +210,12 @@ docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"docker--rootless-docker-user-namespaces-non-root-users-read-only-filesystems-no-","title":"Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening","correctIndex":0,"evidenceSummary":"Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"docker--rootless-docker-user-namespaces-non-root-users-read-only-filesystems-no-","title":"Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening","correctIndex":0,"evidenceSummary":"Rootless Docker, user namespaces, non-root users, read-only filesystems, no-new-privileges, and hardening: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -225,7 +242,7 @@ docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -238,7 +255,7 @@ docker inspect --format &#039;{{json .HostConfig}}&#039; CONTAINER_ID
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

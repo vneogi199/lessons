@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to APIs and distributed systems. An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -63,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="percentiles">
         <span>02</span>
         <h3>percentiles</h3>
-        <p><strong>What it means:</strong> percentiles is one part of the public contract, message path, failure-control mechanism, replicated state, or operational guarantee. Ask which caller intent and state enter, which assumptions allow progress, which failure or concurrent history can break the claim, and which trace, state-machine test, load result, or recovery experiment proves it.</p>
+        <p><strong>What it means:</strong> Percentiles describe a latency distribution; averages can hide slow-tail behavior important to user requests.</p>
       </article><article class="concept-card" data-subtopic="tail amplification">
         <span>03</span>
         <h3>tail amplification</h3>
@@ -71,11 +67,11 @@
       </article><article class="concept-card" data-subtopic="fan-out">
         <span>04</span>
         <h3>fan-out</h3>
-        <p><strong>What it means:</strong> fan-out is one part of the public contract, message path, failure-control mechanism, replicated state, or operational guarantee. Ask which caller intent and state enter, which assumptions allow progress, which failure or concurrent history can break the claim, and which trace, state-machine test, load result, or recovery experiment proves it.</p>
+        <p><strong>What it means:</strong> Fan-out sends one operation to multiple dependencies, multiplying work and exposing the caller to slow or failed branches.</p>
       </article><article class="concept-card" data-subtopic="coordinated omission">
         <span>05</span>
         <h3>coordinated omission</h3>
-        <p><strong>What it means:</strong> coordinated omission is one part of the public contract, message path, failure-control mechanism, replicated state, or operational guarantee. Ask which caller intent and state enter, which assumptions allow progress, which failure or concurrent history can break the claim, and which trace, state-machine test, load result, or recovery experiment proves it.</p>
+        <p><strong>What it means:</strong> Coordinated omission occurs when a load generator stops issuing expected work during slow periods and understates latency impact.</p>
       </article>
     </div>
   </section>
@@ -109,32 +105,70 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Generate latency distributions, fan out to dependencies, compare p50 through p99.9, and measure open-loop versus closed-loop load.</p>
+
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>const percentile = (sorted, p) =&gt; sorted[Math.ceil((p / 100) * sorted.length) - 1];
-const samples = await openLoopLoad({ requestsPerSecond: 200, seconds: 60 });
-const durations = samples.map(x =&gt; x.completedAt - x.scheduledAt).sort((a, b) =&gt; a - b);
+    <pre aria-label="Starter code"><code>import assert from &quot;node:assert/strict&quot;;
+// Nearest-rank percentile convention, not an interpolated percentile.
+function percentile(values, p) {
+  if (!Number.isFinite(p) || p &lt;= 0 || p &gt; 100 ||
+      !values.every(value =&gt; Number.isFinite(value) &amp;&amp; value &gt;= 0)) {
+    throw new RangeError(&quot;finite nonnegative durations and 0 &lt; p &lt;= 100 required&quot;);
+  }
+  if (values.length === 0) return null; // No observations, not zero latency.
+  const sorted = [...values].sort((a, b) =&gt; a - b);
+  return sorted[Math.ceil((p / 100) * sorted.length) - 1];
+}
 
-console.table({
-  p50: percentile(durations, 50),
-  p95: percentile(durations, 95),
-  p99: percentile(durations, 99),
-  p999: percentile(durations, 99.9),
-  max: durations.at(-1),
-  omitted: samples.filter(x =&gt; x.wasNeverSent).length
+// Synthetic scheduled requests, all timestamps from one local monotonic clock.
+// Never subtract a missing completion time: timeout/unsent outcomes need counts.
+const samples = [
+  { status: &quot;ok&quot;, scheduledAt: 0, startedAt: 90, completedAt: 100 },
+  { status: &quot;ok&quot;, scheduledAt: 10, startedAt: 10, completedAt: 20 },
+  { status: &quot;timeout&quot;, scheduledAt: 20, startedAt: 20, completedAt: null },
+  { status: &quot;unsent&quot;, scheduledAt: 30, startedAt: null, completedAt: null }
+];
+const successful = samples.filter(sample =&gt; sample.status === &quot;ok&quot;);
+const durations = successful.map(sample =&gt; sample.completedAt - sample.scheduledAt);
+const serviceTimes = successful.map(sample =&gt; sample.completedAt - sample.startedAt);
+const report = {
+  scheduled: samples.length,
+  successes: successful.length,
+  timeouts: samples.filter(sample =&gt; sample.status === &quot;timeout&quot;).length,
+  unsent: samples.filter(sample =&gt; sample.status === &quot;unsent&quot;).length,
+  successP99: percentile(durations, 99),
+  successServiceP99: percentile(serviceTimes, 99)
+};
+assert.deepEqual(report, {
+  scheduled: 4, successes: 2, timeouts: 1, unsent: 1,
+  successP99: 100, successServiceP99: 10
 });
+assert.equal(percentile([], 99), null);
+assert.equal(percentile([30, 10, 20], 50), 20);
+assert.throws(() =&gt; percentile([NaN], 99), RangeError);
+assert.throws(() =&gt; percentile([1], 0), RangeError);
+console.table(report);
 
-// Compare a single dependency with fan-out to 20 parallel dependencies.
-
-// Lesson focus: Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+// A 100 ms success p99 does NOT establish an all-request SLO: half the scheduled
+// work did not succeed. Timeouts are censored observations, not zero-duration
+// successes. Report their deadlines/failure latency separately in real telemetry.
+// Measuring only from actual send hides 90 ms of scheduling delay in this trace.
+// Open-loop scheduling helps expose omission, but the generator can saturate too.
+// Two successes cannot estimate a population p99 reliably. Keep sample counts,
+// error classes and histograms; never average percentiles from different hosts.
+// Practice: add fan-out samples and compare end-to-end latency with branch tails.
+// https://sre.google/sre-book/monitoring-distributed-systems/</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -143,7 +177,7 @@ console.table({
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource.</p>
+    <p><strong>Conceptual mechanism:</strong> Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -167,11 +201,23 @@ console.table({
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="api-distributed-systems">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Model response time as a distribution whose tail compounds across parallel dependencies and whose measurement can hide stalls when the load generator waits before sending.</p>
+        <p><strong>Evidence to explain:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trust abstractions and ignore failures</span></label>
@@ -200,12 +246,12 @@ console.table({
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"api-distributed-systems--latency-distributions-percentiles-tail-amplification-fan-out-and-coordin","title":"Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission","correctIndex":0,"evidenceSummary":"Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"api-distributed-systems--latency-distributions-percentiles-tail-amplification-fan-out-and-coordin","title":"Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission","correctIndex":0,"evidenceSummary":"Latency distributions, percentiles, tail amplification, fan-out, and coordinated omission: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -232,7 +278,7 @@ console.table({
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -245,7 +291,7 @@ console.table({
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

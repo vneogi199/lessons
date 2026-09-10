@@ -2,6 +2,8 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SENIOR_CASES, TERM_CORRECTIONS, COMMON_TERMS, REUSE_PURPOSE } from "./senior-content.mjs";
+import { typescriptReviewFor, typescriptSourceFor } from "./typescript-review.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const roadmapPath = join(root, "roadmap.yaml");
@@ -265,7 +267,7 @@ function shouldExtract(candidate: BoundaryEvidence): boolean {
   return benefit >= 2 && distributedCost <= 1;
 }
 
-const billing = {
+const billing: BoundaryEvidence = {
   capability: "billing", changesIndependently: true, ownsData: true,
   needsIndependentScale: false, crossBoundaryTransactions: 0, synchronousCallsPerRequest: 1,
 };
@@ -301,12 +303,12 @@ console.assert(contexts[0].language.Order !== contexts[1].language.Order);
 
 class Order {
   #status = "draft";
-  #events = [];
+  #events: { type: "OrderPlaced"; orderId: string; totalCents: number; currency: string }[] = [];
   constructor(readonly id: string, readonly total: Money) {}
   place() {
     if (this.#status !== "draft") throw new Error("only a draft order can be placed");
     this.#status = "placed";
-    this.#events.push({ type: "OrderPlaced", orderId: this.id, totalCents: this.total.cents });
+    this.#events.push({ type: "OrderPlaced", orderId: this.id, totalCents: this.total.cents, currency: this.total.currency });
   }
   pullEvents() { const events = [...this.#events]; this.#events.length = 0; return events; }
   get status() { return this.#status; }
@@ -319,7 +321,9 @@ console.assert(order.status === "placed" && order.pullEvents()[0].type === "Orde
 
   if (title.startsWith("Commands,")) return `async function placeOrder(command, database) {
   return database.transaction(async tx => {
-    if (await tx.commands.exists(command.id)) return; // idempotent command receipt
+    // Adapter is scoped to authenticated tenant + operation; atomically claim
+    // command ID with canonical intent, reject mismatches and serialize duplicates.
+    if (!(await tx.commands.claim(command.id, { orderId: command.orderId }))) return;
     const order = await tx.orders.require(command.orderId);
     order.place();
     await tx.orders.save(order);
@@ -339,7 +343,11 @@ async function consumeOnce(event, database) {
 }
 
 // Domain state and outbox commit together. Relay delivery may repeat. Inbox
-// identity and local effect commit together. A process manager persists later steps.`;
+// identity and local effect commit together. A process manager persists later steps.
+// Orders require optimistic version checking or locking even for different command
+// IDs. Scope inbox IDs by tenant + consumer, compare intent on replay, and ensure
+// the effect target exists before committing a claim. These are adapter contracts,
+// not implementations of SQL isolation or authorization.`;
 
   if (title.startsWith("Event-driven architecture")) return `type Event = { id: string; type: string; orderId: string };
 type Handler = (event: Event) => Promise<void>;
@@ -358,8 +366,8 @@ class InMemoryBroker {
 }
 
 const broker = new InMemoryBroker();
-const observed = [];
-broker.subscribe("OrderPlaced", async event => observed.push(event.orderId));
+const observed: string[] = [];
+broker.subscribe("OrderPlaced", async event => { observed.push(event.orderId); });
 await broker.publish({ id: "e-1", type: "OrderPlaced", orderId: "A-42" });
 console.assert(observed[0] === "A-42");
 // Production subscriptions need durable position, retries, idempotency, and traces.`;
@@ -409,13 +417,19 @@ kafka-topics.sh --bootstrap-server localhost:9092 \\
 };
 
 async function handleBatch(consumer, database, records) {
+  if (records.length === 0) return;
+  // Adapter supplies a single assigned topic/partition, ordered decimal offsets.
+  // Disable auto-commit; reject mixed partitions before performing effects.
+  if (records.some(record => record.topic !== records[0].topic || record.partition !== records[0].partition)) {
+    throw new Error("one partition per batch required");
+  }
   for (const record of records) {
     await database.transaction(async tx => {
       if (!(await tx.inbox.insertIfAbsent(record.topic, record.partition, record.offset))) return;
       await applyBusinessEffect(tx, record.value);
     });
   }
-  await consumer.commitOffset(records.at(-1).offset + 1); // next record to read
+  await consumer.commitOffset((BigInt(records.at(-1).offset) + 1n).toString());
 }
 
 // Crash before commit: records repeat, so the inbox protects business effects.
@@ -491,6 +505,146 @@ function dsaApproachMarkup(lesson) {
 }
 
 function computerScienceCodeFor(title, fallback) {
+  if (title.startsWith("Complexity analysis")) return `// Count comparisons, not elapsed time. Assume constant-cost numeric comparisons.
+function comparisonsForMissing(n) {
+  const values = Array.from({ length: n }, (_, i) => i);
+  let linear = 0, binary = 0;
+  for (const value of values) {
+    linear++;
+    if (value === n) break; // n is deliberately absent.
+  }
+  let lo = 0, hi = values.length;
+  while (lo < hi) {
+    binary++;
+    const mid = lo + Math.floor((hi - lo) / 2);
+    if (values[mid] < n) lo = mid + 1;
+    else hi = mid;
+  }
+  return { linear, binary };
+}
+console.assert(comparisonsForMissing(8).linear === 8);
+console.assert(comparisonsForMissing(8).binary === 3);
+console.assert(comparisonsForMissing(16).linear === 16);
+console.assert(comparisonsForMissing(16).binary === 4);
+console.assert(comparisonsForMissing(0).binary === 0);
+// Scope: search work only; constructing this array is O(n) time and space.
+// Predict counts for 32 before running. Then change the target to the first item.
+// Senior checkpoint: binary search needs sorted random access. Include sorting
+// and update costs before recommending it for a workload with frequent writes.`;
+
+  if (title.startsWith("Arrays, strings, hash tables")) return `// One workload: count labels, retain arrival order, undo the latest arrival.
+const arrivals = ["api", "web", "api"];
+const counts = new Map();
+for (const label of arrivals) counts.set(label, (counts.get(label) ?? 0) + 1);
+console.assert(counts.get("api") === 2);
+const stack = [...arrivals];
+console.assert(stack.pop() === "api"); // LIFO: undo the last arrival.
+let head = 0;
+const takeNext = () => head < arrivals.length ? arrivals[head++] : undefined;
+console.assert(takeNext() === "api"); // FIFO: process the first arrival.
+console.assert(takeNext() === "web");
+console.assert(takeNext() === "api");
+console.assert(takeNext() === undefined);
+const first = { value: "api", next: { value: "web", next: null } };
+first.next = first.next.next; // O(1) removal only because predecessor is known.
+console.assert(first.next === null);
+console.assert([..."A😀"].length === 2); // Code points, not user-perceived graphemes.
+// ponytail: head-index queue retains consumed entries; compact or use a ring
+// buffer for a long-lived queue. A linked list needs O(n) to find a predecessor.
+// Senior checkpoint: compare locality, allocation, ordering and lookup needs;
+// do not choose a structure solely from an average-time complexity table.`;
+
+  if (title.startsWith("Trees, heaps, tries")) return `// Focus: connectivity. A disjoint set answers whether an undirected path exists;
+// unlike an adjacency graph, it does not retain the path itself.
+const parent = new Map(["api", "db", "cache"].map(x => [x, x]));
+function find(x) {
+  if (!parent.has(x)) throw new Error("unknown vertex");
+  while (parent.get(x) !== x) x = parent.get(x);
+  return x;
+}
+function union(a, b) { parent.set(find(a), find(b)); }
+console.assert(find("api") !== find("db"));
+union("api", "db");
+console.assert(find("api") === find("db"));
+console.assert(find("api") !== find("cache"));
+union("db", "cache");
+console.assert(find("api") === find("cache"));
+let rejected = false;
+try { find("missing"); } catch { rejected = true; }
+console.assert(rejected);
+// ponytail: no balancing or path compression, so find can be O(n). Add both
+// for large workloads; do not claim near-constant amortized cost for this code.
+// Choose a heap for repeated minimum extraction, a trie for prefix lookup,
+// a search tree for ordered keys, or an adjacency graph for actual paths.
+// Follow-up: deleting an edge cannot generally be implemented by undoing union.
+// Implement the other structures in their focused lessons, not this overview.`;
+
+  if (title.startsWith("Recursion, backtracking, greedy")) return `// Contract: small nonnegative integer amount; positive integer denominations.
+// Greedy makes a local choice. DP compares all possible final coins.
+function greedy(coins, amount) {
+  let count = 0;
+  for (const coin of [...coins].sort((a, b) => b - a)) {
+    count += Math.floor(amount / coin);
+    amount %= coin;
+  }
+  return amount === 0 ? count : Infinity;
+}
+function minimumCoins(coins, amount) {
+  const best = Array(amount + 1).fill(Infinity);
+  best[0] = 0;
+  for (let total = 1; total <= amount; total++) {
+    for (const coin of coins) {
+      if (coin <= total) best[total] = Math.min(best[total], 1 + best[total - coin]);
+    }
+  }
+  return best[amount];
+}
+console.assert(greedy([1, 3, 4], 6) === 3); // 4 + 1 + 1.
+console.assert(minimumCoins([1, 3, 4], 6) === 2); // 3 + 3.
+console.assert(minimumCoins([2], 3) === Infinity);
+console.assert(minimumCoins([], 0) === 0);
+// Explain the recurrence before coding: every solution ends with some coin.
+// DP uses O(amount * coins.length) time and O(amount) space; this is
+// pseudopolynomial in the amount, not polynomial in its binary input length.
+// Follow-up: draw the recursive decision tree for 6. Backtracking explores
+// choices and restores state; memoization merges repeated remaining amounts.
+// A passing example is not a greedy proof: supply an exchange argument or reject it.`;
+
+  if (title.startsWith("Interview execution")) return `// Clarify first: return DISTINCT indices, or undefined; duplicates are allowed.
+// Inputs here are small safe integers whose sums remain exactly representable.
+function pair(values, target) {
+  const seen = new Map();
+  for (let i = 0; i < values.length; i++) {
+    const previous = seen.get(target - values[i]);
+    if (previous !== undefined) return [previous, i];
+    seen.set(values[i], i); // Lookup before insert prevents reusing this index.
+  }
+}
+function oracle(values, target) {
+  for (let i = 0; i < values.length; i++) {
+    for (let j = i + 1; j < values.length; j++) {
+      if (values[i] + values[j] === target) return true;
+    }
+  }
+  return false;
+}
+for (const values of [[], [3], [3, 3], [-2, 0, 2], [1, 4, 6]]) {
+  for (let target = -4; target <= 12; target++) {
+    const result = pair(values, target);
+    console.assert((result !== undefined) === oracle(values, target));
+    if (result) {
+      const [i, j] = result;
+      console.assert(i >= 0 && i < j && j < values.length);
+      console.assert(values[i] + values[j] === target);
+    }
+  }
+}
+// Rehearse: contract -> quadratic baseline -> seen-prefix invariant -> tests.
+// Hash-table model: expected O(n) time, O(n) space. Tests are finite evidence,
+// not a proof. Explain why every returned pair uses two distinct indices.
+// Tomorrow, recreate the invariant without this code; then handle a sorted input
+// under an O(1) auxiliary-memory constraint and explain changed index semantics.`;
+
   if (title.startsWith("Arrays and hashing")) return `function groupBySignature(labels) {
   const groups = new Map();
   for (const label of labels) {
@@ -529,7 +683,7 @@ console.assert(groupBySignature(["arc", "car", "tap"]).length === 2);
 
 const answer = sortedPair([2, 5, 8, 11, 15, 19], 19);
 console.assert(JSON.stringify(answer.indices) === "[2,3]");
-console.assert(answer.trace.length === 4);
+console.assert(answer.trace.length === 5);
 // Sorted order proves every skipped pair is impossible: O(n) after sorting,
 // versus checking O(n²) pairs. If input is unsorted, sort or use a hash map.`;
 
@@ -737,14 +891,25 @@ function quickselect(values, k) {
   const data = [...values];
   for (let lo = 0, hi = data.length - 1;;) {
     const pivot = data[hi]; let write = lo;
-    for (let read = lo; read < hi; read++) if (data[read] < pivot) [data[write], data[read]] = [data[read], data[write++]];
+    for (let read = lo; read < hi; read++) {
+      if (data[read] < pivot) {
+        [data[write], data[read]] = [data[read], data[write]];
+        write++;
+      }
+    }
     [data[write], data[hi]] = [data[hi], data[write]];
     if (write === k) return data[write];
     if (write < k) lo = write + 1; else hi = write - 1;
   }
 }
 console.assert(JSON.stringify(mergeSort([3, 1, 2, 1])) === "[1,1,2,3]");
-console.assert(quickselect([7, 2, 5, 1], 2) === 5);`;
+console.assert(quickselect([7, 2, 5, 1], 2) === 5);
+for (const values of [[1], [2, 1], [1, 2, 3], [3, 2, 1], [2, 2, 1, 2], [-1, 0, -3]]) {
+  const sorted = [...values].sort((a, b) => a - b);
+  for (let k = 0; k < values.length; k++) console.assert(quickselect(values, k) === sorted[k]);
+}
+// Keep index mutation separate from destructuring: RHS evaluation precedes assignments.
+// Fixed-pivot quickselect has quadratic worst cases; randomization improves expected behavior.`;
 
   if (title.startsWith("Binary search")) return `function lowerBound(values, target) {
   let lo = 0, hi = values.length; // answer is always inside [lo, hi]
@@ -1014,6 +1179,8 @@ def encode_datagram(source: int, destination: int, payload: bytes) -> bytes:
     return pack("!HHHH", source, destination, length, 0) + payload
 
 def decode_datagram(data: bytes) -> tuple[int, int, bytes]:
+    if len(data) < 8:
+        raise ValueError("truncated UDP header")
     source, destination, length, _checksum = unpack("!HHHH", data[:8])
     if length != len(data):
         raise ValueError("invalid UDP length")
@@ -1021,14 +1188,22 @@ def decode_datagram(data: bytes) -> tuple[int, int, bytes]:
 
 packet = encode_datagram(53000, 53, b"query")
 assert decode_datagram(packet) == (53000, 53, b"query")
+for invalid in (b"short", packet[:-1]):
+    try: decode_datagram(invalid)
+    except ValueError: pass
+    else: raise AssertionError("invalid datagram accepted")
+# Offline UDP header layout only: checksum is zero (not generally valid for
+# IPv6), and the field maximum is not a usable path-MTU payload budget.
+# IPv4's IP header further reduces the maximum UDP payload; avoid fragmentation.
 
 tcp_states = ["CLOSED", "SYN-SENT", "ESTABLISHED", "FIN-WAIT", "CLOSED"]
 assert tcp_states[2] == "ESTABLISHED"
 # TCP exposes an ordered byte stream; applications still need their own framing.`;
 
-  if (title.startsWith("TCP flow control")) return `def congestion_trace(acks: int, loss_at: int) -> list[int]:
+  if (title.startsWith("TCP flow control")) return `# Toy round/RTT-level trace, NOT an update for every ACK or a real TCP stack.
+def congestion_trace(rounds: int, loss_at: int) -> list[int]:
     window, threshold, trace = 1, 8, []
-    for step in range(acks):
+    for step in range(rounds):
         trace.append(window)
         if step == loss_at:
             threshold = max(2, window // 2)
@@ -1047,6 +1222,9 @@ receiver_window = 6
 sendable = min(trace[4], receiver_window)
 assert sendable == 6
 # Flow control protects the receiver; congestion control protects the path.
+# This reset models a timeout, not fast recovery after duplicate ACKs. Real
+# slow start grows with acknowledgments (roughly doubling per RTT), and modern
+# implementations differ in initial window, recovery and congestion algorithm.
 # Application backpressure must still bound work before bytes reach the socket.`;
 
   if (title.startsWith("DNS resolution")) return `from urllib.parse import urlsplit
@@ -1090,6 +1268,10 @@ finally:
   if (title.startsWith("Processes, threads")) return `from collections import deque
 
 def round_robin(bursts: dict[str, int], quantum: int) -> list[tuple[str, int]]:
+    if type(quantum) is not int or quantum <= 0:
+        raise ValueError("positive integer quantum required")
+    if any(type(burst) is not int or burst <= 0 for burst in bursts.values()):
+        raise ValueError("positive integer bursts required")
     ready, trace = deque(bursts), []
     remaining = bursts.copy()
     while ready:
@@ -1103,6 +1285,11 @@ def round_robin(bursts: dict[str, int], quantum: int) -> list[tuple[str, int]]:
 
 trace = round_robin({"api": 5, "worker": 3}, quantum=2)
 assert trace == [("api", 2), ("worker", 2), ("api", 2), ("worker", 1), ("api", 1)]
+assert round_robin({}, 1) == []
+for bursts, quantum in [({"a": 1}, 0), ({"a": -1}, 2), ({"a": 0}, 2)]:
+    try: round_robin(bursts, quantum)
+    except ValueError: pass
+    else: raise AssertionError("non-progressing schedule accepted")
 # A real context switch also saves/restores registers and changes address-space,
 # cache, and scheduler state depending on whether tasks share a process.`;
 
@@ -1116,7 +1303,11 @@ class Account:
     lock: Lock = field(default_factory=Lock)
 
 def transfer(source: Account, target: Account, amount: int) -> None:
-    first, second = sorted((source, target), key=lambda account: account.number)
+    if type(amount) is not int or amount <= 0:
+        raise ValueError("positive integer amount required")
+    if source is target:
+        raise ValueError("distinct accounts required")
+    first, second = sorted((source, target), key=id)
     with first.lock, second.lock:  # one global lock order prevents circular wait
         if source.balance < amount:
             raise ValueError("insufficient funds")
@@ -1128,11 +1319,21 @@ threads = [Thread(target=transfer, args=(a, b, 10)), Thread(target=transfer, arg
 for thread in threads: thread.start()
 for thread in threads: thread.join()
 assert a.balance + b.balance == 200
+assert (a.balance, b.balance) == (110, 90)
+for source, target, amount in [(a, a, 1), (a, b, -1), (a, b, True), (a, b, 1000)]:
+    try: transfer(source, target, amount)
+    except ValueError: pass
+    else: raise AssertionError("invalid transfer accepted")
+# Object identity orders live locks within this process even if account numbers
+# collide. Require one shared Account object per account; this is not a database
+# or cross-process locking protocol, and all balance readers/writers must cooperate.
 # The lock protects the total-balance invariant; ordering protects progress.`;
 
   if (title.startsWith("Address spaces")) return `from collections import OrderedDict
 
 def translate(virtual_address: int, page_size: int, page_table: dict[int, int]) -> int:
+    if type(virtual_address) is not int or virtual_address < 0 or type(page_size) is not int or page_size <= 0:
+        raise ValueError("nonnegative address and positive page size required")
     virtual_page, offset = divmod(virtual_address, page_size)
     if virtual_page not in page_table:
         raise LookupError("page fault")
@@ -1141,6 +1342,10 @@ def translate(virtual_address: int, page_size: int, page_table: dict[int, int]) 
 assert translate(0x1234, 4096, {1: 9}) == 0x9234
 
 def lru_faults(pages: list[int], capacity: int) -> int:
+    if type(capacity) is not int or capacity < 0:
+        raise ValueError("nonnegative capacity required")
+    if capacity == 0:
+        return len(pages)
     resident, faults = OrderedDict(), 0
     for page in pages:
         if page not in resident:
@@ -1151,30 +1356,46 @@ def lru_faults(pages: list[int], capacity: int) -> int:
     return faults
 
 assert lru_faults([1, 2, 1, 3, 1], 2) == 3
+assert lru_faults([1, 1], 0) == 2
+assert lru_faults([], 0) == 0
 # Virtual memory provides translation, protection, sharing, and sparse allocation;
 # swap is only one possible backing mechanism.`;
 
   if (title.startsWith("I/O, disks")) return `import os
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 def durable_replace(directory: Path, name: str, data: bytes) -> None:
-    temporary = directory / (name + ".tmp")
-    with temporary.open("wb") as stream:
-        stream.write(data)
-        stream.flush()
-        os.fsync(stream.fileno())
-    os.replace(temporary, directory / name)
-    directory_fd = os.open(directory, os.O_RDONLY)
-    try: os.fsync(directory_fd)
-    finally: os.close(directory_fd)
+    if not name or Path(name).name != name or name in {".", ".."}:
+        raise ValueError("single file name required")
+    temporary = None
+    try:
+        with NamedTemporaryFile(dir=directory, delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, directory / name)
+        directory_fd = os.open(directory, os.O_RDONLY)
+        try: os.fsync(directory_fd)
+        finally: os.close(directory_fd)
+    finally:
+        if temporary is not None: temporary.unlink(missing_ok=True)
 
 with TemporaryDirectory() as location:
     directory = Path(location)
     durable_replace(directory, "state.bin", b"committed")
     assert (directory / "state.bin").read_bytes() == b"committed"
+    try: durable_replace(directory, "state.bin", object())
+    except TypeError: pass
+    else: raise AssertionError("invalid data accepted")
+    assert (directory / "state.bin").read_bytes() == b"committed"
+    assert sorted(path.name for path in directory.iterdir()) == ["state.bin"]
 # Flush makes Python hand bytes to the OS; fsync asks the storage path to make
-# them durable. Atomic rename avoids exposing a partially replaced file.`;
+# them durable. Atomic rename avoids exposing a partially replaced file.
+# POSIX-oriented, trusted-directory example; concurrent replacements are last
+# writer wins. Directory-fsync failure can occur AFTER replacement: do not infer
+# rollback from an exception. Hardware/filesystem guarantees require crash tests.`;
 
   if (title.startsWith("Namespaces")) return `import os
 import platform
@@ -1229,7 +1450,7 @@ class Money:
     currency: str = "INR"
 
     def __post_init__(self) -> None:
-        if self.amount < 0: raise ValueError("negative money")
+        if not self.amount.is_finite() or self.amount < 0: raise ValueError("invalid money")
 
 @dataclass(frozen=True)
 class VehicleId:
@@ -1239,6 +1460,10 @@ class VehicleId:
         if not self.value.strip(): raise ValueError("empty vehicle id")
 
 assert Money(Decimal("10.00")) == Money(Decimal("10.00"))
+for invalid in ("NaN", "Infinity", "-1"):
+    try: Money(Decimal(invalid))
+    except ValueError: pass
+    else: raise AssertionError("invalid money accepted")
 assert VehicleId("KA-01-AB-1234") != VehicleId("KA-01-AB-1235")`;
 
   if (title.startsWith("Object relationships")) return `from dataclasses import dataclass, field
@@ -1357,11 +1582,13 @@ class BookingRepository:
 def create_booking(booking_id: str, repository: BookingRepository, events: list[dict]) -> None:
     booking = Booking(booking_id)
     repository.add(booking)                 # authoritative change
-    events.append({"type": "booked", "id": booking_id})  # after commit boundary
+    events.append({"type": "booked", "id": booking_id})  # separate in-memory effect, NOT an atomic commit
 
 repository, events = BookingRepository(), []
 create_booking("b-1", repository, events)
-assert list(repository.items) == ["b-1"] and events == [{"type": "booked", "id": "b-1"}]`;
+assert list(repository.items) == ["b-1"] and events == [{"type": "booked", "id": "b-1"}]
+# A crash between add and append loses publication. A real implementation can
+# commit booking plus outbox intent in one database transaction, then relay it.`;
 
   if (title.startsWith("Testable design")) return `class MemoryStore:
     def __init__(self) -> None: self.data: dict[str, str] = {}
@@ -1410,7 +1637,7 @@ assert all(spot.vehicle is None for spot in lot.spots)`;
   if (title.startsWith("Splitwise")) return `from decimal import Decimal
 
 def post_expense(payer: str, shares: dict[str, Decimal]) -> dict[str, Decimal]:
-    if payer not in shares or any(value < 0 for value in shares.values()):
+    if payer not in shares or any(not value.is_finite() or value < 0 for value in shares.values()):
         raise ValueError("participants and shares")
     total = sum(shares.values(), Decimal("0"))
     balances = {person: -share for person, share in shares.items()}
@@ -1421,7 +1648,13 @@ def post_expense(payer: str, shares: dict[str, Decimal]) -> dict[str, Decimal]:
 
 balances = post_expense("A", {"A": Decimal("30.00"), "B": Decimal("30.00"), "C": Decimal("30.00")})
 assert balances == {"A": Decimal("60.00"), "B": Decimal("-30.00"), "C": Decimal("-30.00")}
-assert sum(balances.values(), Decimal("0")) == 0`;
+assert sum(balances.values(), Decimal("0")) == 0
+for invalid in (Decimal("NaN"), Decimal("Infinity"), Decimal("-1")):
+    try: post_expense("A", {"A": invalid})
+    except ValueError: pass
+    else: raise AssertionError("invalid share accepted")
+# Decimal precision and rounding are context-dependent; define currency scale,
+# input magnitude, and rounding before claiming arbitrary financial exactness.`;
 
   if (title.startsWith("Timed machine-coding")) return `from collections import OrderedDict, deque
 
@@ -1445,7 +1678,10 @@ def allow(history: deque[float], now: float, limit: int, window: float) -> bool:
 cache = LRUCache(2); cache.put("a", 1); cache.put("b", 2); cache.get("a"); cache.put("c", 3)
 assert cache.get("b") is None and cache.get("a") == 1
 history = deque()
-assert [allow(history, time, 2, 10) for time in (0, 1, 2, 10)] == [True, True, False, True]`;
+assert [allow(history, time, 2, 10) for time in (0, 1, 2, 10)] == [True, True, False, True]
+# Contract: positive limit/window, nondecreasing monotonic time, one serialized
+# caller per history. Add validation and synchronization before sharing it.
+# Cache misses use None here, so storing None would need a distinct sentinel.`;
 
   return fallback;
 }
@@ -1454,7 +1690,9 @@ function softwareDesignCodeFor(title, fallback) {
   if (title.startsWith("Clean code")) return `type Line = { unitPrice: number; quantity: number };
 
 function lineTotal(line: Line): number {
-  if (line.quantity < 0) throw new RangeError("quantity must be non-negative");
+  if (!Number.isSafeInteger(line.quantity) || line.quantity < 0 || !Number.isFinite(line.unitPrice) || line.unitPrice < 0) {
+    throw new RangeError("nonnegative integer quantity and finite price required");
+  }
   return line.unitPrice * line.quantity;
 }
 
@@ -1470,13 +1708,15 @@ export function orderTotal(lines: readonly Line[], isMember: boolean): number {
 
 // Names expose the business steps. Small functions isolate rules. The comment
 // is unnecessary because the code states what; add comments only for why.
+// Floating prices demonstrate decomposition only. Real money needs an explicit
+// currency, minor-unit/decimal representation, rounding and overflow policy.
 console.assert(orderTotal([{ unitPrice: 50, quantity: 2 }], true) === 90);`;
 
   if (title.startsWith("DRY,")) return `type Region = "domestic" | "international";
 
 // One business rule has one owner because every caller must change together.
 export function shippingCents(region: Region, weightGrams: number): number {
-  if (weightGrams <= 0) throw new RangeError("weightGrams");
+  if (!Number.isSafeInteger(weightGrams) || weightGrams <= 0) throw new RangeError("weightGrams");
   const base = region === "domestic" ? 500 : 1500;
   return base + Math.ceil(weightGrams / 1000) * 200;
 }
@@ -1494,8 +1734,7 @@ console.assert(normalizeSearchQuery("  React  ") === "react");`;
   if (title.startsWith("Cohesion,")) return `type Product = { id: string; available: number };
 
 interface Inventory {
-  find(productId: string): Promise<Product | undefined>;
-  reserve(productId: string, quantity: number): Promise<void>;
+  reserveIfAvailable(productId: string, quantity: number): Promise<boolean>;
 }
 
 export async function reserveAvailable(
@@ -1504,12 +1743,12 @@ export async function reserveAvailable(
   quantity: number,
 ): Promise<void> {
   if (!Number.isInteger(quantity) || quantity <= 0) throw new RangeError("quantity");
-  const product = await inventory.find(productId);
-  if (!product || product.available < quantity) throw new Error("insufficient stock");
-  await inventory.reserve(productId, quantity);
+  if (!(await inventory.reserveIfAvailable(productId, quantity))) throw new Error("insufficient stock");
 }
 
 // Domain policy depends on a narrow capability, not SQL or an HTTP SDK.
+// The adapter must atomically check available >= quantity AND decrement, returning
+// false for missing/insufficient stock. A read followed by a separate reserve races.
 // The adapter hides volatile storage details behind the stable Inventory boundary.`;
 
   if (title.startsWith("Single Responsibility")) return `type Quote = { subtotal: number; customer: "standard" | "member" };
@@ -1528,7 +1767,7 @@ const standardPrice: PricingRule = {
 };
 
 export function price(quote: Quote, rules = [memberDiscount, standardPrice]): number {
-  if (quote.subtotal < 0) throw new RangeError("subtotal");
+  if (!Number.isFinite(quote.subtotal) || quote.subtotal < 0) throw new RangeError("subtotal");
   const rule = rules.find(candidate => candidate.applies(quote));
   if (!rule) throw new Error("no pricing rule");
   return rule.price(quote);
@@ -1565,7 +1804,7 @@ await readerContract(() => new MemoryOrders());`;
 type Guard = (subtotal: number) => void;
 
 const nonNegative: Guard = subtotal => {
-  if (subtotal < 0) throw new RangeError("subtotal");
+  if (!Number.isFinite(subtotal) || subtotal < 0) throw new RangeError("subtotal");
 };
 const memberDiscount: Price = subtotal => subtotal * 0.9;
 const capAt = (limit: number): Price => subtotal => Math.min(subtotal, limit);
@@ -1610,22 +1849,26 @@ console.assert(isJustified(decision));
 // Pattern names improve communication only after problem, forces, alternatives,
 // and consequences are clear. Otherwise the pattern is decorative complexity.`;
 
-  if (title.startsWith("Creational patterns")) return `type RequestOptions = Readonly<{ url: URL; timeoutMs: number; headers: Readonly<Record<string, string>> }>;
+  if (title.startsWith("Creational patterns")) return `type RequestOptions = Readonly<{ url: string; timeoutMs: number; headers: Readonly<Record<string, string>> }>;
 
 class RequestBuilder {
   #url?: URL;
   #timeoutMs = 5000;
   #headers: Record<string, string> = {};
   url(value: string) { this.#url = new URL(value); return this; }
-  timeout(ms: number) { if (ms <= 0) throw new RangeError("timeout"); this.#timeoutMs = ms; return this; }
+  timeout(ms: number) { if (!Number.isSafeInteger(ms) || ms <= 0) throw new RangeError("timeout"); this.#timeoutMs = ms; return this; }
   header(name: string, value: string) { this.#headers[name] = value; return this; }
   build(): RequestOptions {
     if (!this.#url || this.#url.protocol !== "https:") throw new Error("secure URL required");
-    return Object.freeze({ url: this.#url, timeoutMs: this.#timeoutMs, headers: { ...this.#headers } });
+    return Object.freeze({ url: this.#url.href, timeoutMs: this.#timeoutMs, headers: Object.freeze({ ...this.#headers }) });
   }
 }
 
 interface Mailer { send(to: string, body: string): Promise<void> }
+// Integration-only declarations: these providers/configuration must be supplied.
+declare class MemoryMailer implements Mailer { send(to: string, body: string): Promise<void> }
+declare class SmtpMailer implements Mailer { constructor(config: object); send(to: string, body: string): Promise<void> }
+declare function requiredConfig(): object;
 function createMailer(environment: "test" | "production"): Mailer {
   return environment === "test" ? new MemoryMailer() : new SmtpMailer(requiredConfig());
 }
@@ -1783,19 +2026,22 @@ const avatarElement = jsx("img", {
 
 console.log(Object.freeze(avatarElement));`;
 
-  if (title.startsWith("Components,")) return `function Dialog({ title, actions, children }) {
+  if (title.startsWith("Components,")) return `function Card({ title, actions, children }) {
+  const headingId = useId();
   return (
-    <section role="dialog" aria-labelledby="dialog-title">
-      <h2 id="dialog-title">{title}</h2>
+    <section aria-labelledby={headingId}>
+      <h2 id={headingId}>{title}</h2>
       <div>{children}</div>
       <footer>{actions}</footer>
     </section>
   );
 }
 
-<Dialog title="Delete project" actions={<DeleteActions />}>
+<Card title="Delete project" actions={<DeleteActions />}>
   <p>This cannot be undone.</p>
-</Dialog>`;
+</Card>
+// This demonstrates composition, not a modal. The portals lesson uses native
+// dialog behavior; adding role="dialog" alone would not supply focus management.`;
 
   if (title.startsWith("Purity,")) return `function StoryTray({ stories }) {
   // Never mutate props: const items = stories; items.push(...)
@@ -1830,9 +2076,9 @@ function Panel({ enabled }) {
   const [draft, setDraft] = useState({ note: "", tags: [] });
 
   function addThree() {
-    setQuantity(value => value + 1);
-    setQuantity(value => value + 1);
-    setQuantity(value => value + 1);
+    setQuantity(value => Math.min(99, value + 1));
+    setQuantity(value => Math.min(99, value + 1));
+    setQuantity(value => Math.min(99, value + 1));
   }
 
   function addTag(tag) {
@@ -1858,7 +2104,12 @@ function reducer(state, action) {
   }
 }
 
-const [state, dispatch] = useReducer(reducer, initialState);`;
+function Wizard() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  return <WizardView state={state} dispatch={dispatch} />;
+}
+// Hooks run inside components/custom hooks. This tiny undo history records only
+// answered actions, not every navigation step, and is unbounded: cap it in a product.`;
 
   if (title.startsWith("State modeling,")) return `function Selection({ items }) {
   // Store identity; derive the selected object from current props.
@@ -1878,7 +2129,7 @@ const [state, dispatch] = useReducer(reducer, initialState);`;
   return columns.map(column => (
     <Column key={column.id} title={column.title}>
       {column.cards.map(card => (
-        // Stable identity preserves Card draft state during reordering.
+        // Stable keys preserve draft state when reordering WITHIN this column.
         <Card key={card.id} card={card} />
       ))}
     </Column>
@@ -1886,7 +2137,9 @@ const [state, dispatch] = useReducer(reducer, initialState);`;
 }
 
 // Intentional reset when the selected account changes:
-<AccountForm key={account.id} account={account} />`;
+<AccountForm key={account.id} account={account} />
+// Moving a card to a different parent column resets local state even with the
+// same key. Lift drafts above both columns if cross-column moves must preserve them.`;
 
   if (title.startsWith("createContext")) return `const TasksContext = createContext(null);
 const TasksDispatchContext = createContext(null);
@@ -1918,26 +2171,40 @@ function useTasks() {
   return <input {...props} ref={inputRef} type="search" />;
 });
 
-const searchRef = useRef(null);
-<SearchBox ref={searchRef} aria-label="Search lessons" />;`;
+function SearchPanel() {
+  const searchRef = useRef(null);
+  return <SearchBox ref={searchRef} aria-label="Search lessons" />;
+}
+// React 19 also supports ref as a prop; forwardRef remains useful for older consumers.`;
 
   if (title.startsWith("useEffect,")) return `function ChatRoom({ roomId }) {
+  return <RoomMessages key={roomId} roomId={roomId} />;
+}
+
+function RoomMessages({ roomId }) {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    let active = true;
     const controller = new AbortController();
     const connection = createConnection(roomId);
-    connection.onMessage(message => setMessages(items => [...items, message]));
+    connection.onMessage(message => {
+      if (active) setMessages(items => [...items.slice(-99), message]);
+    });
     connection.connect({ signal: controller.signal });
 
     return () => {
+      active = false;
       controller.abort();
       connection.disconnect();
     };
   }, [roomId]);
 
   return <MessageList messages={messages} />;
-}`;
+}
+// The key prevents showing the previous room's messages in the new room. The
+// active guard rejects late callbacks after cleanup. Fixture retains 100 messages;
+// connection adapter still needs bounded transport buffers and explicit errors.`;
 
   if (title.startsWith("useLayoutEffect")) return `function Tooltip({ anchorRect, children }) {
   const ref = useRef(null);
@@ -2011,7 +2278,7 @@ function Search({ items, query }) {
     startTransition(() => setFilter(next));
   }
 
-  return <><input value={query} onChange={change} />
+  return <><label>Search <input value={query} onChange={change} /></label>
     <div aria-busy={isPending}><SlowResults query={deferredQuery} items={allItems} /></div></>;
 }`;
 
@@ -2050,7 +2317,7 @@ function Page() {
   </Suspense>;
 }
 
-// Client Component may read the streamed promise.
+// Comments.tsx — SEPARATE client module; directive must be its first statement.
 "use client";
 function Comments({ promise }) {
   const comments = use(promise);
@@ -2076,16 +2343,16 @@ function CommentForm({ comments, saveComment }) {
   }
 
   return <><CommentList comments={optimistic} />
-    <form action={submit}><textarea name="body" required />
+    <form action={submit}><label>Comment <textarea name="body" required /></label>
       <SubmitButton />{state.error && <p role="alert">{state.error}</p>}</form></>;
 }`;
 
   if (title.startsWith("Controlled and uncontrolled")) return `function ProfileForm() {
   const [name, setName] = useState(""); // controlled
 
-  function submit(formData) {
+  async function submit(formData) {
     const avatar = formData.get("avatar"); // file input remains uncontrolled
-    saveProfile({ name, avatar });
+    await saveProfile({ name, avatar });
   }
 
   return <form action={submit}>
@@ -2111,19 +2378,25 @@ button.addEventListener("pointerenter", () => import("./AnalyticsPanel.js"), { o
 
   if (title.startsWith("Portals,")) return `function Modal({ title, onClose, children }) {
   const headingId = useId();
+  const dialogRef = useRef(null);
   useEffect(() => {
-    const before = document.activeElement;
-    function keydown(event) { if (event.key === "Escape") onClose(); }
-    document.addEventListener("keydown", keydown);
-    return () => { document.removeEventListener("keydown", keydown); before?.focus(); };
-  }, [onClose]);
+    const dialog = dialogRef.current;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
 
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-labelledby={headingId}>
+    <dialog ref={dialogRef} aria-labelledby={headingId}
+      onCancel={event => { event.preventDefault(); onClose(); }}>
       <h2 id={headingId}>{title}</h2>{children}
-    </div>, document.body
+      <button type="button" autoFocus onClick={onClose}>Close</button>
+    </dialog>, document.body
   );
-}`;
+}
+// Parent mounts Modal while open and unmounts it onClose. Native showModal gives
+// top-layer modality/inert background; the portal changes DOM placement while
+// React context/event propagation still follow the React tree. Test keyboard
+// focus, Escape, restoration and Strict Mode in a browser; portal alone is not a modal.`;
 
   if (title.startsWith("Server Components,")) return `// Server Component: data access and markdown library stay off the client.
 async function ArticlePage({ id }) {
@@ -2135,7 +2408,8 @@ async function ArticlePage({ id }) {
   </article>;
 }
 
-// LikeButton.js
+// LikeButton.js — SEPARATE client module, directive first. This local counter
+// demonstrates interactivity only; it does not persist a like or authorize writes.
 "use client";
 function LikeButton({ articleId, initialLikes }) {
   const [likes, setLikes] = useState(initialLikes);
@@ -2202,10 +2476,13 @@ async def health() -> dict[str, str]:
 # Production:  fastapi run app/main.py --port 8000
 # Inspect:     curl -s http://127.0.0.1:8000/openapi.json`;
 
-  if (title.startsWith("ASGI scope")) return `# A complete minimal ASGI HTTP application.
+  if (title.startsWith("ASGI scope")) return `# HTTP-only response experiment; run Uvicorn with --lifespan off.
+# No WebSocket/lifespan implementation and no request-body parsing are supplied.
 async def app(scope, receive, send):
     assert scope["type"] == "http"
     event = await receive()
+    if event["type"] == "http.disconnect":
+        return
     assert event["type"] == "http.request"
 
     body = b'{"status":"ok"}'
@@ -2328,14 +2605,19 @@ async def upload_avatar(
     owner_id: Annotated[UUID, Form()],
     image: Annotated[UploadFile, File(description="JPEG or PNG")],
 ):
-    if image.content_type not in {"image/jpeg", "image/png"}:
-        raise HTTPException(415, "unsupported media type")
-    content = await image.read(MAX_BYTES + 1)
-    if len(content) > MAX_BYTES:
-        raise HTTPException(413, "file too large")
-    await image.close()
+    try:
+        if image.content_type not in {"image/jpeg", "image/png"}:
+            raise HTTPException(415, "unsupported media type")
+        content = await image.read(MAX_BYTES + 1)
+        if len(content) > MAX_BYTES:
+            raise HTTPException(413, "file too large")
+    finally:
+        await image.close()
     verified = verify_image_signature(content)
-    return await storage.save(owner_id, verified)`;
+    return await storage.save(owner_id, verified)
+# Integration requirements: authorize owner_id before storage; MIME metadata is
+# untrusted. Bound multipart parsing/spooling before this endpoint, and validate
+# decoded image dimensions/content, not only a magic-byte prefix.`;
 
   if (title.startsWith("Response models")) return `from pydantic import BaseModel, ConfigDict
 
@@ -2356,13 +2638,20 @@ async def read_user(user_id: UUID) -> UserRecord:
     return await repository.get_required(user_id)`;
 
   if (title.startsWith("Response classes")) return `from collections.abc import AsyncIterator
+import csv
+import io
 from fastapi import Response
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 
 async def csv_rows() -> AsyncIterator[bytes]:
     yield b"id,name\\n"
     async for project in repository.iter_projects(batch_size=100):
-        yield (str(project.id) + "," + project.name + "\\n").encode()
+        row = io.StringIO(newline="")
+        csv.writer(row).writerow([str(project.id), project.name])
+        yield row.getvalue().encode("utf-8")
+# csv.writer quotes separators/newlines correctly. Spreadsheet formula injection
+# is a different risk: apply a documented spreadsheet-safe export policy when
+# opening user-controlled values in spreadsheets; CSV quoting alone does not fix it.
 
 @app.get("/exports/projects")
 async def export_projects() -> StreamingResponse:
@@ -2385,8 +2674,8 @@ async def validation_error(request: Request, exc: RequestValidationError):
         "title": "Request validation failed",
         "status": 422,
         "instance": str(request.url.path),
-        "request_id": request.state.request_id,
-        "errors": exc.errors(),
+        "request_id": getattr(request.state, "request_id", None),
+        "errors": [{"loc": error["loc"], "type": error["type"]} for error in exc.errors()],
     })
 
 @app.exception_handler(ProjectNotFound)
@@ -2410,7 +2699,11 @@ async def diagnostics(request: Request, response: Response):
   if (title.startsWith("Depends,")) return `from typing import Annotated
 from fastapi import Depends, Header
 
-async def current_tenant(x_tenant_id: Annotated[UUID, Header()]) -> Tenant:
+async def current_tenant(x_tenant_id: Annotated[UUID, Header()], principal: PrincipalDep) -> Tenant:
+    # Header selects a tenant; it does not prove membership. PrincipalDep must
+    # authenticate and supply authoritative membership before this lookup.
+    if x_tenant_id not in principal.tenant_ids:
+        raise HTTPException(403, "tenant access denied")
     return await tenants.get_required(x_tenant_id)
 
 async def project_service(
@@ -2485,28 +2778,28 @@ def get_settings() -> Settings:
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]`;
 
-  if (title.startsWith("Lifespan,")) return `from contextlib import asynccontextmanager
+  if (title.startsWith("Lifespan,")) return `from contextlib import AsyncExitStack, asynccontextmanager
 from fastapi import FastAPI
 from httpx import AsyncClient
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    engine = create_async_engine(settings.database_url)
-    http = AsyncClient(timeout=5.0)
-    try:
+    async with AsyncExitStack() as stack:
+        engine = create_async_engine(settings.database_url.get_secret_value())
+        stack.push_async_callback(engine.dispose)
+        http = await stack.enter_async_context(AsyncClient(timeout=5.0))
         await verify_database(engine)
         app.state.engine = engine
         app.state.http = http
         yield
-    finally:
-        await http.aclose()
-        await engine.dispose()
 
 app = FastAPI(lifespan=lifespan)`;
 
   if (title.startsWith("async def,")) return `@app.get("/async-io")
 async def async_io():
-    return await async_http_client.get("https://upstream.test/data")
+    response = await async_http_client.get("https://upstream.test/data")
+    response.raise_for_status()
+    return response.json()  # Return content, not an httpx Response object.
 
 @app.get("/sync-library")
 def sync_library():
@@ -2542,7 +2835,7 @@ async def load_dashboard(project_id: UUID) -> Dashboard:
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 engine = create_async_engine(
-    settings.database_url,
+    settings.database_url.get_secret_value(),
     pool_size=10,
     max_overflow=5,
     pool_timeout=3,
@@ -2555,8 +2848,8 @@ async def db_session() -> AsyncIterator[AsyncSession]:
         yield session
 
 @app.get("/projects/{project_id}")
-async def project(project_id: UUID, db: Annotated[AsyncSession, Depends(db_session)]):
-    value = await db.scalar(select(Project).where(Project.id == project_id))
+async def project(project_id: UUID, principal: ReadPrincipalDep, db: Annotated[AsyncSession, Depends(db_session)]):
+    value = await db.scalar(select(Project).where(Project.id == project_id, Project.tenant_id == principal.tenant_id))
     if value is None: raise HTTPException(404)
     return value`;
 
@@ -2568,11 +2861,14 @@ async def project(project_id: UUID, db: Annotated[AsyncSession, Depends(db_sessi
         async with self.session.begin():
             project = Project.from_command(command)
             self.session.add(project)
+            await self.session.flush()  # Obtain generated ID before creating its event.
             self.session.add(OutboxMessage.for_event(project.created_event()))
             await self.session.flush()  # obtains IDs; transaction is not committed yet
         return project
 
 async def execute_with_retry(operation, attempts: int = 3):
+    if type(attempts) is not int or attempts < 1:
+        raise ValueError("positive attempt count required")
     for attempt in range(attempts):
         try: return await operation()
         except SerializationError:
@@ -2586,18 +2882,33 @@ async def accept_command(
     command: Command,
     idempotency_key: Annotated[str, Header(alias="Idempotency-Key")],
     db: DbDep,
+    principal: WritePrincipalDep,
 ):
     async with db.begin():
-        existing = await commands.by_key(idempotency_key, db)
-        if existing: return existing.receipt
-        job = Job.from_command(command, idempotency_key)
-        db.add_all([job, OutboxMessage.for_job(job)])
-    return {"job_id": job.id, "status": "accepted"}
+        prior = await commands.claim(principal.tenant_id, "accept-command-v1",
+                                     idempotency_key, command.model_dump(mode="json"), db)
+        if prior is not None: return prior
+        job = Job.from_command(command, idempotency_key, principal.tenant_id)
+        db.add(job)
+        await db.flush()
+        db.add(OutboxMessage.for_job(job))
+        receipt = {"job_id": str(job.id), "status": "accepted"}
+        await commands.save_receipt(principal.tenant_id, "accept-command-v1", idempotency_key, receipt, db)
+    return receipt
 
+# Integration adapter, not supplied: claim uses a unique tenant/operation/key,
+# atomically stores canonical intent, rejects changed intent and returns the
+# committed receipt on replay. Claim, job, outbox and receipt share this transaction.
 # BackgroundTasks is appropriate only for small, non-durable post-response work.
 # Durable workers claim and acknowledge the outbox message separately.`;
 
-  if (title.startsWith("OAuth2,")) return `from datetime import datetime, timedelta, timezone
+  if (title.startsWith("OAuth2,")) return `# Legacy password-grant reading exercise, NOT a new OAuth architecture.
+# RFC 9700 disallows the resource-owner password credentials grant; use an
+# authorization server's Authorization Code + PKCE flow for new user-facing apps.
+# JWT calls below assume PyJWT with EdDSA support and securely provisioned keys.
+from datetime import datetime, timedelta, timezone
+from fastapi.concurrency import run_in_threadpool
+import jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 oauth2 = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -2605,7 +2916,11 @@ oauth2 = OAuth2PasswordBearer(tokenUrl="/auth/token")
 @app.post("/auth/token", response_model=Token)
 async def issue_token(form: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await users.by_username(form.username)
-    if user is None or not password_hasher.verify(form.password, user.password_hash):
+    # A precomputed dummy hash avoids skipping expensive verification for unknown
+    # usernames. Bound auth concurrency/rate; hashing is not event-loop work.
+    stored_hash = user.password_hash if user is not None else settings.dummy_password_hash
+    verified = await run_in_threadpool(password_hasher.verify, form.password, stored_hash)
+    if user is None or not verified:
         raise HTTPException(401, "invalid credentials", headers={"WWW-Authenticate": "Bearer"})
     now = datetime.now(timezone.utc)
     claims = {"sub": str(user.id), "iss": settings.issuer, "iat": now,
@@ -2613,8 +2928,18 @@ async def issue_token(form: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return Token(access_token=jwt.encode(claims, signing_key, algorithm="EdDSA"))
 
 async def principal(token: Annotated[str, Depends(oauth2)]) -> Principal:
-    claims = jwt.decode(token, verify_key, audience="projects-api", issuer=settings.issuer)
-    return await users.principal(UUID(claims["sub"]))`;
+    try:
+        claims = jwt.decode(token, verify_key, algorithms=["EdDSA"],
+            audience="projects-api", issuer=settings.issuer,
+            options={"require": ["exp", "iat", "iss", "aud", "sub"]})
+        subject = UUID(claims["sub"])
+    except (jwt.InvalidTokenError, ValueError, TypeError):
+        raise HTTPException(401, "invalid token", headers={"WWW-Authenticate": "Bearer"})
+    return await users.principal(subject)
+# Never choose algorithms from untrusted token headers. Resolve current account
+# status/permissions separately and define rotation/revocation and clock leeway.
+# https://www.rfc-editor.org/rfc/rfc9700.html
+# https://pyjwt.readthedocs.io/en/stable/api.html`;
 
   if (title.startsWith("Cookie sessions")) return `from secrets import compare_digest
 from fastapi import Cookie, Form, Response
@@ -2630,10 +2955,15 @@ async def login(credentials: Login, response: Response):
     return {"user_id": user.id}
 
 async def require_csrf(
+    session: CurrentSessionDep,
     csrf_cookie: Annotated[str, Cookie(alias="csrf")],
     csrf_form: Annotated[str, Form(alias="csrf")],
 ):
-    if not compare_digest(csrf_cookie, csrf_form):
+    # Synchronizer token bound to the authenticated server-side session, not
+    # merely equality between two attacker-supplied values. ASCII token contract.
+    if not csrf_cookie.isascii() or not csrf_form.isascii() or not (
+        compare_digest(session.csrf_token, csrf_form) and compare_digest(csrf_cookie, csrf_form)
+    ):
         raise HTTPException(403, "invalid CSRF token")`;
 
   if (title.startsWith("Security scopes")) return `from fastapi import Security
@@ -2695,26 +3025,51 @@ app.add_middleware(HTTPSRedirectMiddleware)
 
 app.add_middleware(RequestContextMiddleware)`;
 
-  if (title.startsWith("API security hardening")) return `@app.middleware("http")
-async def enforce_request_budget(request: Request, call_next):
-    content_length = int(request.headers.get("content-length", "0"))
-    if content_length > settings.max_body_bytes:
-        return JSONResponse({"title": "Payload too large"}, status_code=413)
+  if (title.startsWith("API security hardening")) return `# Pure ASGI: bound actual bytes before endpoint execution, not Content-Length.
+# Small JSON endpoints only; do not buffer large uploads with this middleware.
+class BodyLimit:
+    def __init__(self, app, max_body_bytes=16_384):
+        if type(max_body_bytes) is not int or max_body_bytes < 1:
+            raise ValueError("positive byte limit required")
+        self.app, self.limit = app, max_body_bytes
 
-    principal_key = request.client.host if request.client else "unknown"
-    allowed, retry_after = await limiter.consume(principal_key, request.url.path)
-    if not allowed:
-        return JSONResponse({"title": "Rate limit exceeded"}, status_code=429,
-            headers={"Retry-After": str(retry_after)})
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        encoded = any(k.lower() == b"content-encoding" and v.lower() != b"identity"
+                      for k, v in scope.get("headers", []))
+        body = bytearray()
+        status = 415 if encoded else None
+        while status is None:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                return
+            chunk = message.get("body", b"")
+            if len(body) + len(chunk) > self.limit:
+                status = 413
+                break
+            body.extend(chunk)
+            if not message.get("more_body", False):
+                break
+        if status is not None:
+            await send({"type": "http.response.start", "status": status, "headers": []})
+            await send({"type": "http.response.body", "body": b""})
+            return
+        pending = True
+        async def bounded_receive():
+            nonlocal pending
+            if pending:
+                pending = False
+                return {"type": "http.request", "body": bytes(body), "more_body": False}
+            return await receive()
+        await self.app(scope, bounded_receive, send)
 
-    response = await call_next(request)
-    response.headers.update({
-        "X-Content-Type-Options": "nosniff",
-        "Cache-Control": "no-store" if request.url.path.startswith("/auth") else "private",
-    })
-    return response
-
-# Enforce global byte/time/concurrency limits at the trusted proxy too.`;
+# app.add_middleware(BodyLimit). Reject compression here; a decompression layer
+# requires its own decoded-size bound. Trusted ingress must also bound read time,
+# header bytes and concurrency: ASGI may already receive a large server chunk.
+# Separate authenticated, bounded-cardinality rate policy returns 429 with
+# Retry-After and "Rate limit exceeded". IPs require trusted-proxy configuration.
+# Authentication, per-object authorization, CSRF and SSRF remain separate controls.`;
 
   if (title.startsWith("OpenAPI schemas")) return `from fastapi.openapi.utils import get_openapi
 
@@ -2728,13 +3083,15 @@ def custom_openapi():
         summary="Stable public project contract",
     )
     schema["info"]["x-logo"] = {"url": "https://example.com/logo.svg"}
-    schema["components"]["securitySchemes"]["BearerAuth"] = {
+    schema.setdefault("components", {}).setdefault("securitySchemes", {})["BearerAuth"] = {
         "type": "http", "scheme": "bearer", "bearerFormat": "JWT"
     }
     app.openapi_schema = schema
     return schema
 
 app.openapi = custom_openapi
+# This documents a scheme; it does not enforce authentication or attach security
+# requirements to operations. Use actual security dependencies on protected routes.
 
 # CI: generate openapi.json, diff it, and fail on unapproved breaking changes.`;
 
@@ -2751,13 +3108,17 @@ async def project_created(body: Event):
 async def deliver(subscription: Subscription, event: Event):
     body = event.model_dump_json().encode()
     signature = hmac.new(subscription.secret, body, sha256).hexdigest()
-    await client.post(subscription.url, content=body, headers={
+    response = await client.post(subscription.url, content=body, headers={
         "Content-Type": "application/json",
         "X-Event-ID": str(event.id),
         "X-Signature-SHA256": signature,
     })
+    response.raise_for_status()
 
-# The receiver stores Event.id before applying effects to tolerate duplicates.`;
+# Destination registration requires authorization and SSRF-safe connection policy;
+# bound timeout/response bytes and disable or revalidate redirects. This signature
+# binds the body but has no timestamp replay window; use the agreed receiver scheme.
+# Receiver inbox identity and effect must commit atomically, not as two writes.`;
 
   if (title.startsWith("APIRouter,")) return `# app/projects/router.py
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -2787,13 +3148,22 @@ async def room_socket(websocket: WebSocket, room_id: UUID, principal: WsPrincipa
     try:
         async with anyio.create_task_group() as group:
             group.start_soon(send_messages, websocket, outbound[1])
-            while True:
-                message = ClientMessage.model_validate(await websocket.receive_json())
-                await manager.publish(room_id, principal, message)
-    except WebSocketDisconnect:
-        pass
+            try:
+                while True:
+                    message = ClientMessage.model_validate(await websocket.receive_json())
+                    await manager.publish(room_id, principal, message)
+            except WebSocketDisconnect:
+                group.cancel_scope.cancel()
     finally:
-        await manager.leave(room_id, principal)`;
+        with anyio.CancelScope(shield=True):
+            with anyio.move_on_after(2):
+                await manager.leave(room_id, principal)
+            await outbound[0].aclose()
+            await outbound[1].aclose()
+
+# send_messages must also handle peer disconnect and notify/cancel the receive
+# owner; otherwise a sender failure propagates as an ExceptionGroup. Authorize
+# room membership before accept, and define overflow/slow-consumer policy.`;
 
   if (title.startsWith("Server-sent events")) return `from fastapi.responses import StreamingResponse
 
@@ -2802,12 +3172,19 @@ async def event_stream(request: Request, project_id: UUID):
         while not await request.is_disconnected():
             with anyio.move_on_after(15) as heartbeat:
                 event = await subscription.receive()
-                yield "id: " + str(event.id) + "\\nevent: " + event.type + "\\ndata: " + event.json + "\\n\\n"
             if heartbeat.cancel_called:
                 yield ": heartbeat\\n\\n"
+                continue
+            # Never suspend a generator at yield inside a cancellation scope.
+            event_id, event_type = str(event.id), event.type
+            if any(c in event_id + event_type for c in "\\r\\n\\0"):
+                raise ValueError("invalid SSE metadata")
+            data = "\\n".join("data: " + line for line in event.json.splitlines())
+            yield "id: " + event_id + "\\nevent: " + event_type + "\\n" + data + "\\n\\n"
 
 @app.get("/projects/{project_id}/events")
 async def stream_events(request: Request, project_id: UUID):
+    # Integration prerequisite: authorize this principal for project_id before streaming.
     return StreamingResponse(event_stream(request, project_id), media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})`;
 
@@ -2836,14 +3213,16 @@ def test_project_requires_permission(app):
     async def fake_principal():
         return Principal(id=TEST_USER, scopes=set(), tenant_id=TEST_TENANT)
 
+    previous = app.dependency_overrides.copy()
     app.dependency_overrides[current_principal] = fake_principal
     try:
         with TestClient(app, raise_server_exceptions=True) as client:
             response = client.get("/projects/" + str(TEST_PROJECT))
         assert response.status_code == 403
-        assert response.json()["title"] == "Forbidden"
+        assert "detail" in response.json()  # Default FastAPI HTTPException shape.
     finally:
         app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous)
 
 # The context manager runs application lifespan around the test.`;
 
@@ -2870,17 +3249,18 @@ async def observe_request(request: Request, call_next):
     started = time.perf_counter()
     with tracer.start_as_current_span("http.request") as span:
         span.set_attribute("http.request.method", request.method)
-        span.set_attribute("http.route", request.scope.get("route").path)
         try:
             response = await call_next(request)
             return response
         except Exception:
-            request_errors.add(1, {"route": request.scope.get("route").path})
+            request_errors.add(1, {"route": getattr(request.scope.get("route"), "path", "unmatched")})
             raise
         finally:
+            route = getattr(request.scope.get("route"), "path", "unmatched")
+            span.set_attribute("http.route", route)
             request_duration.record(time.perf_counter() - started,
-                {"route": request.scope.get("route").path, "method": request.method})
-            logger.info("request.completed", request_id=request.state.request_id)
+                {"route": route, "method": request.method})
+            logger.info("request.completed", extra={"request_id": getattr(request.state, "request_id", None)})
 
 @app.get("/health/live", include_in_schema=False)
 async def live(): return {"status": "alive"}
@@ -2900,10 +3280,19 @@ async def benchmark(client: AsyncClient, requests: int, concurrency: int):
             response.raise_for_status()
             latencies.append(time.perf_counter() - started)
 
+    if type(requests) is not int or requests < 1 or type(concurrency) is not int or concurrency < 1:
+        raise ValueError("positive request and concurrency counts required")
+    remaining = iter(range(requests))
+    async def worker():
+        for _ in remaining:
+            await one_request()
     async with anyio.create_task_group() as group:
-        for _ in range(requests): group.start_soon(one_request)
+        for _ in range(min(requests, concurrency)): group.start_soon(worker)
     return percentile(latencies, 50), percentile(latencies, 95), percentile(latencies, 99)
 
+# Closed-loop successful-request timing only; any error aborts this experiment.
+# This excludes pre-admission wait and hides coordinated omission. Measure errors
+# and offered-load/queue latency separately before making capacity claims.
 # Correlate latency with event-loop delay, CPU profile, pool waits, query traces,
 # response size, validation cost, worker queueing, memory, and error rate.`;
 
@@ -2933,8 +3322,8 @@ CMD ["fastapi", "run", "app/main.py", "--port", "8000", "--proxy-headers"]
         "Sunset": {"schema": {"type": "string"}},
     }}})
 async def project_v1(project_id: UUID, response: Response):
-    response.headers["Deprecation"] = "true"
-    response.headers["Sunset"] = "Wed, 01 Jul 2027 00:00:00 GMT"
+    response.headers["Deprecation"] = "@1790812800"
+    response.headers["Sunset"] = "Thu, 01 Jul 2027 00:00:00 GMT"
     return ProjectV1.from_domain(await projects.get(project_id))
 
 @app.get("/v2/projects/{project_id}", response_model=ProjectV2)
@@ -2976,13 +3365,22 @@ async def create_project(
 class ProjectService:
     async def create(self, principal, command, key):
         async with self.uow_factory() as uow:
-            await uow.idempotency.claim(principal.tenant_id, key)
+            prior = await uow.idempotency.claim(principal.tenant_id, "create-project-v1",
+                                               key, command.model_dump(mode="json"))
+            if prior is not None:
+                return prior
             project = Project.create(principal.tenant_id, command)
             await uow.projects.add(project)
             await uow.outbox.add(ProjectCreated.from_project(project))
+            result = ProjectRead.model_validate(project).model_dump(mode="json")
+            await uow.idempotency.save_result(principal.tenant_id, "create-project-v1", key, result)
             await uow.commit()
-        return project
+        return result
 
+# Adapter contract: generated IDs available after add; claim serializes concurrent
+# keys, compares canonical intent, and returns a saved response only on replay.
+# All writes commit together; exception/uncommitted exit rolls back. The sketch
+# does not implement database isolation or authorization policy for the adapter.
 # Evidence: OpenAPI compatibility gate, authorization matrix, transaction tests,
 # queue replay, traces, load profile, container SBOM, deployment and incident runbook.`;
 
@@ -3018,13 +3416,17 @@ def multiplier(factor: int):
         nonlocal calls
         calls += 1
         frame = inspect.currentframe()
-        print({"locals": frame.f_locals, "globals_rate": frame.f_globals["rate"]})
+        try:
+            print({"locals": frame.f_locals, "globals_rate": frame.f_globals["rate"]})
+        finally:
+            del frame  # Avoid retaining a frame -> locals -> frame cycle.
         return value * factor
     return apply
 
 double = multiplier(2)
 assert double(4) == 8
-assert double.__closure__[0].cell_contents in (1, 2)
+cells = dict(zip(double.__code__.co_freevars, (cell.cell_contents for cell in double.__closure__)))
+assert cells == {"calls": 1, "factor": 2}  # Inspect by name, not cell position.
 
 # Assignment makes a name local for the whole code block:
 def broken():
@@ -3084,7 +3486,14 @@ def decode_payload(payload: bytes) -> str:
     return unicodedata.normalize("NFC", payload.decode("utf-8", errors="strict"))
 
 buffer = bytearray(wire)
-buffer[-1:] = b"!"  # mutable binary data`;
+buffer[-1:] = b"!"  # Byte replacement can break a multi-byte character.
+try:
+    buffer.decode("utf-8")
+except UnicodeDecodeError:
+    pass
+else:
+    raise AssertionError("partial replacement of the coffee symbol must fail")
+assert (text[:-1] + "!").encode("utf-8").decode("utf-8") == "café !"`;
 
   if (title.startsWith("Lists, tuples")) return `from collections import deque
 from copy import deepcopy
@@ -3102,7 +3511,7 @@ queue = deque()
 queue.append("job")
 assert queue.popleft() == "job"
 
-print("append:", timeit("x.append(1)", setup="x=[]", number=100_000))
+print("append:", timeit("x.append(1)", setup="x=[]", number=10_000))
 print("front insert:", timeit("x.insert(0, 1)", setup="x=[]", number=10_000))`;
 
   if (title.startsWith("Dictionaries, sets")) return `from dataclasses import dataclass
@@ -3200,7 +3609,7 @@ assert validators[1](42) == 42`;
 class ProjectUnavailable(Exception):
     def __init__(self, project_id: str):
         super().__init__(f"project {project_id} is unavailable")
-        self.add_note("safe_to_retry=true")
+        self.add_note("retry requires an operation-specific policy")
 
 def load_project(project_id: str):
     try:
@@ -3306,12 +3715,17 @@ class ScoreBoard:
     def __lt__(self, other):
         if not isinstance(other, ScoreBoard):
             return NotImplemented
-        return sum(self) < sum(other)
+        return (sum(self), self.scores) < (sum(other), other.scores)
     def __repr__(self):
         return f"ScoreBoard(scores={self.scores!r})"
 
 board = ScoreBoard((8, 13, 21))
-assert len(board) == 3 and 13 in board and list(board) == [8, 13, 21]`;
+assert len(board) == 3 and 13 in board and list(board) == [8, 13, 21]
+a, b = ScoreBoard((1, 2)), ScoreBoard((3,))
+assert a != b and a < b and not b < a
+# Tuple tie-break keeps ordering consistent with dataclass structural equality.
+# Comparing only sums while equality compares tuples would violate total ordering.
+# https://docs.python.org/3/library/functools.html#functools.total_ordering`;
 
   if (title.startsWith("Attribute lookup")) return `class Positive:
     def __set_name__(self, owner, name):
@@ -3321,8 +3735,8 @@ assert len(board) == 3 and 13 in board and list(board) == [8, 13, 21]`;
             return self
         return instance.__dict__[self.name]
     def __set__(self, instance, value):
-        if value <= 0:
-            raise ValueError(f"{self.name} must be positive")
+        if type(value) is not int or value <= 0:
+            raise ValueError(f"{self.name} must be a positive integer")
         instance.__dict__[self.name] = value
 
 class Batch:
@@ -3335,7 +3749,14 @@ class Batch:
             return f"{self.label}:{self.size}"
         raise AttributeError(name)
 
-assert Batch("jobs", 3).summary == "jobs:3"`;
+assert Batch("jobs", 3).summary == "jobs:3"
+for bad in (0, -1, True, float("nan")):
+    try:
+        Batch("jobs", bad)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid batch size accepted")`;
 
   if (title.startsWith("Dataclasses, named")) return `from dataclasses import dataclass, field
 from decimal import Decimal
@@ -3352,20 +3773,35 @@ class Money:
     tags: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self):
-        if self.amount.is_nan():
-            raise ValueError("amount must be a number")
+        if not isinstance(self.amount, Decimal) or not self.amount.is_finite():
+            raise ValueError("amount must be a finite Decimal")
+        if not isinstance(self.currency, Currency):
+            raise ValueError("currency must be a Currency member")
 
     def __add__(self, other: "Money") -> "Money":
+        if not isinstance(other, Money):
+            return NotImplemented
         if self.currency is not other.currency:
             raise ValueError("currency mismatch")
         return Money(self.amount + other.amount, self.currency)
 
-assert Money(Decimal("2"), Currency.USD) + Money(Decimal("3"), Currency.USD) == Money(Decimal("5"), Currency.USD)`;
+assert Money(Decimal("2"), Currency.USD) + Money(Decimal("3"), Currency.USD) == Money(Decimal("5"), Currency.USD)
+for bad in (Decimal("NaN"), Decimal("Infinity"), Decimal("-Infinity")):
+    try:
+        Money(bad, Currency.USD)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("non-finite money accepted")
+# Arithmetic here deliberately drops tags; production needs an explicit metadata
+# and rounding policy. A frozen dataclass does not validate annotations by itself.`;
 
   if (title.startsWith("Iterables, iterators")) return `from collections.abc import Iterable, Iterator
 
 class Countdown(Iterable[int]):
     def __init__(self, start: int):
+        if type(start) is not int or start < 0:
+            raise ValueError("start must be a nonnegative integer")
         self.start = start
     def __iter__(self) -> Iterator[int]:
         current = self.start
@@ -3378,6 +3814,13 @@ assert iterator is iter(iterator)
 assert next(iterator) == 3
 assert list(iterator) == [2, 1]
 assert list(Countdown(3)) == [3, 2, 1]  # fresh iterator
+assert list(Countdown(0)) == []
+try:
+    Countdown(-1)
+except ValueError:
+    pass
+else:
+    raise AssertionError("negative countdown would not terminate")
 
 values = iter(lambda: input("value (blank ends): "), "")
 # iter(callable, sentinel) stops when the callable returns the sentinel.`;
@@ -3407,17 +3850,27 @@ generator.close()  # injects GeneratorExit at suspension`;
 from tracemalloc import get_traced_memory, start
 
 def normalized_events(lines):
-    parsed = (line.strip().split(",", 1) for line in lines)
-    valid = ((kind, value) for kind, value in parsed if kind and value)
+    parsed = (line.strip().partition(",") for line in lines)
+    valid = ((kind, value) for kind, separator, value in parsed if separator and kind and value)
     yield from ({"kind": kind, "value": value} for kind, value in valid)
 
+def source():
+    yield from ("created,p1", "missing separator", "", "updated,p2", ",bad")
+
+assert list(normalized_events(source())) == [
+    {"kind": "created", "value": "p1"}, {"kind": "updated", "value": "p2"}
+]
+# Deliberate policy: skip malformed/empty rows. Count/quarantine them when loss
+# is unacceptable. This separator example is not a quoted-CSV parser; use csv.
 start()
 first_hundred = list(islice(normalized_events(source()), 100))
 current, peak = get_traced_memory()
 print({"items": len(first_hundred), "peak_bytes": peak})
 
 for batch in batched(normalized_events(source()), 50):
-    persist(batch)  # bounded batch, not an unbounded list`;
+    assert len(batch) <= 50  # Replace with a supplied bounded sink in integration.
+# itertools.batched requires Python 3.12+. Memory here is a tiny fixture result,
+# not proof of a production pipeline's peak memory.`;
 
   if (title.startsWith("Decorators, wrappers")) return `from functools import wraps
 from time import perf_counter
@@ -3535,29 +3988,48 @@ import tempfile
 
 def atomic_json_write(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8",
-                                     dir=path.parent, delete=False) as handle:
-        json.dump(value, handle, ensure_ascii=False)
-        handle.flush()
-        os.fsync(handle.fileno())
-        temporary = Path(handle.name)
-    temporary.replace(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8",
+                                         dir=path.parent, delete=False) as handle:
+            temporary = Path(handle.name)
+            json.dump(value, handle, ensure_ascii=False, allow_nan=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 payload = {"observed_at": datetime.now(UTC).isoformat(), "name": "café"}
-atomic_json_write(Path("state/project.json"), payload)`;
+with tempfile.TemporaryDirectory(prefix="lesson-json-") as directory:
+    target = Path(directory) / "project.json"
+    atomic_json_write(target, payload)
+    assert json.loads(target.read_text(encoding="utf-8")) == payload
+    try:
+        atomic_json_write(target, {"not_serializable": object()})
+    except TypeError:
+        pass
+    else:
+        raise AssertionError("serialization failure expected")
+    assert json.loads(target.read_text(encoding="utf-8")) == payload
+    assert list(Path(directory).iterdir()) == [target]
+# Rename replaces a name atomically on a supported same-filesystem path; directory
+# fsync and storage semantics matter for crash durability. This is not a database
+# transaction or a secure path-opening protocol for untrusted directories.`;
 
   if (title.startsWith("Regular expressions")) return `import os
 import re
 import signal
 import subprocess
 
-SAFE_ID = re.compile(r"\\A[a-z0-9_-]{1,40}\\Z")
+SAFE_ID = re.compile(r"\\A[a-z0-9][a-z0-9_-]{0,39}\\Z")
 
 def inspect_revision(revision: str) -> str:
     if not SAFE_ID.fullmatch(revision):
         raise ValueError("invalid revision")
     completed = subprocess.run(
-        ["git", "show", "--stat", "--oneline", revision],
+        ["git", "show", "--stat", "--oneline", "--end-of-options", revision, "--"],
         text=True,
         capture_output=True,
         timeout=3,
@@ -3566,7 +4038,13 @@ def inspect_revision(revision: str) -> str:
     )
     return completed.stdout
 
-# Argument arrays avoid shell parsing; timeout and check make failure explicit.`;
+assert SAFE_ID.fullmatch("abc123")
+assert not SAFE_ID.fullmatch("--help")
+assert not SAFE_ID.fullmatch("main;echo injected")
+# Argument arrays avoid shell parsing, but do not themselves prevent option
+# injection. The conservative token policy and option delimiter address that.
+# This exercise only defines the Git call; run it in a trusted disposable repo.
+# https://git-scm.com/docs/git-rev-parse`;
 
   if (title.startsWith("Asyncio event loop")) return `import asyncio
 from time import perf_counter
@@ -3588,12 +4066,22 @@ asyncio.run(main())
   if (title.startsWith("TaskGroup")) return `import asyncio
 
 async def worker(name: str, queue: asyncio.Queue[int | None]) -> None:
-    while (item := await queue.get()) is not None:
+    while True:
+        item = await queue.get()
         try:
+            if item is None:
+                return
             async with asyncio.timeout(1):
                 await process(item)
         finally:
-            queue.task_done()
+            queue.task_done()  # Includes every sentinel put into the queue.
+
+processed = []
+async def process(item: int) -> None:
+    await asyncio.sleep(0)
+    if item < 0:
+        raise ValueError("synthetic failure")
+    processed.append(item)
 
 async def main(items: list[int]) -> None:
     queue = asyncio.Queue(maxsize=20)
@@ -3606,7 +4094,23 @@ async def main(items: list[int]) -> None:
             await queue.put(None)
         await queue.join()
 
-asyncio.run(main(list(range(100))))`;
+async def check():
+    async with asyncio.timeout(2):
+        await main(list(range(100)))
+    assert sorted(processed) == list(range(100))
+    failed = False
+    try:
+        async with asyncio.timeout(2):
+            await main([-1, 2, 3])
+    except* ValueError:
+        failed = True
+    assert failed
+
+asyncio.run(check())
+# TaskGroup cancels siblings and propagates failure; this in-memory queue is
+# not durable. task_done is queue accounting, not proof of a committed effect.
+# The timeout check catches the old sentinel-accounting deadlock.
+# https://docs.python.org/3/library/asyncio-queue.html`;
 
   if (title.startsWith("Threads, the GIL")) return `from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
@@ -3647,7 +4151,11 @@ if __name__ == "__main__":
                 future.cancel()
             raise
 
-# Top-level callables and arguments cross the process boundary via serialization.`;
+# Save this as a real .py file; spawn workers must import the main module.
+# Top-level callables and arguments cross the process boundary via serialization.
+# Future timeout/cancel does not terminate running work, and context-manager exit
+# waits for running jobs. Use cooperative stop or an explicit process supervisor
+# when shutdown has a hard deadline.`;
 
   if (title.startsWith("Concurrency selection")) return `from dataclasses import dataclass
 from enum import StrEnum
@@ -3711,12 +4219,29 @@ def encode_project(project: dict) -> bytes:
     return json.dumps(envelope, separators=(",", ":")).encode("utf-8")
 
 def decode_project(payload: bytes) -> dict:
+    if not isinstance(payload, bytes) or len(payload) > 65_536:
+        raise ValueError("bounded bytes required")
     envelope = json.loads(payload)
-    if envelope.get("schema_version") != 1:
+    if not isinstance(envelope, dict) or set(envelope) != {"schema_version", "project"}:
+        raise ValueError("invalid envelope")
+    if type(envelope["schema_version"]) is not int or envelope["schema_version"] != 1:
         raise ValueError("unsupported schema")
+    if not isinstance(envelope["project"], dict):
+        raise ValueError("project must be an object")
     return envelope["project"]
 
-# Never call pickle.loads() on untrusted data: the format can execute code.`;
+assert decode_project(encode_project({"name": "demo"})) == {"name": "demo"}
+for invalid in ([], {"schema_version": True, "project": {}}, {"schema_version": 1, "project": []}):
+    try:
+        decode_project(json.dumps(invalid).encode())
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid envelope accepted")
+# This validates the envelope only; project fields still need a domain schema.
+# Enforce a streaming byte limit before allocating the payload. Decide duplicate
+# JSON names and non-finite numeric policy rather than assuming json.loads rejects
+# all unwanted values. Never pickle.loads untrusted data: it can execute code.`;
 
   if (title.startsWith("Performance, complexity")) return `import cProfile
 import pstats
@@ -3760,17 +4285,21 @@ def test_create_project():
     assert service.create(" Demo ") == {"name": "Demo"}
     gateway.save.assert_called_once_with({"name": "Demo"})
 
+test_create_project()  # Direct execution runs the check without installing pytest.
 # Add property tests: normalization is idempotent and blank names always fail.`;
 
   if (title.startsWith("Debugging, tracebacks")) return `import logging
 import sys
 import warnings
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s %(message)s",
-)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter(
+    "%(asctime)s %(levelname)s %(name)s request_id=%(request_id)s %(message)s",
+    defaults={"request_id": "-"},
+))
+logging.basicConfig(level=logging.INFO, handlers=[handler])
 logger = logging.getLogger("projects.worker")
+logger.info("worker_started")  # A record without request context still formats.
 
 def execute(job, request_id: str):
     adapter = logging.LoggerAdapter(logger, {"request_id": request_id})
@@ -3876,9 +4405,14 @@ UPLOAD_ROOT = Path("/srv/uploads").resolve()
 
 def safe_target(filename: str) -> Path:
     candidate = (UPLOAD_ROOT / filename).resolve()
-    if not candidate.is_relative_to(UPLOAD_ROOT):
+    if candidate == UPLOAD_ROOT or not candidate.is_relative_to(UPLOAD_ROOT):
         raise ValueError("path traversal")
     return candidate
+
+# Path.resolve is a lexical/filesystem check, not race-free authorization:
+# an attacker who can replace directories or symlinks can race the later open.
+# Use a trusted, non-writable directory tree or descriptor-relative/no-follow
+# access, plus sandboxed decoding, when processing hostile uploads.
 
 token = secrets.token_urlsafe(32)
 assert hmac.compare_digest(token, token)
@@ -3901,21 +4435,34 @@ class CreateProject:
 class UnitOfWork(Protocol):
     async def __aenter__(self): ...
     async def __aexit__(self, exc_type, exc, tb): ...
-    async def claim(self, key: str): ...
-    async def add_project(self, project: dict): ...
+    async def claim(self, key: str, intent: tuple[str, str]) -> dict | None: ...
+    async def add_project(self, project: dict) -> dict: ...
+    async def save_result(self, key: str, project: dict): ...
     async def commit(self): ...
 
 class ProjectService:
     def __init__(self, uow_factory):
         self.uow_factory = uow_factory
     async def create(self, command: CreateProject) -> dict:
+        if not isinstance(command.name, str) or not command.name.strip():
+            raise ValueError("name required")
+        if not isinstance(command.idempotency_key, str) or not command.idempotency_key:
+            raise ValueError("idempotency key required")
+        name = command.name.strip()
         async with self.uow_factory() as uow:
-            await uow.claim(command.idempotency_key)
-            project = {"name": command.name.strip()}
-            await uow.add_project(project)
+            prior = await uow.claim(command.idempotency_key, ("create-project-v1", name))
+            if prior is not None:
+                return prior
+            project = await uow.add_project({"name": name})
+            await uow.save_result(command.idempotency_key, project)
             await uow.commit()
             return project
 
+# Adapter contract: factory is scoped to authenticated tenant + operation.
+# claim atomically inserts identity/intent or returns the original stored result;
+# changed intent raises. Receipt, project and saved result commit together.
+# __aexit__ rolls back on exceptions or uncommitted exit. A typing Protocol does
+# not implement this transaction. Test concurrency/rollback on the real adapter.
 # Evidence: strict types, contract tests, bounded concurrency, profiles,
 # wheel inspection, dependency provenance, graceful shutdown, and runbook.`;
 
@@ -4035,8 +4582,16 @@ console.assert(+domainValue === 42);
 console.assert(String(domainValue) === "project:42");
 
 // At external boundaries, parse deliberately instead of relying on truthiness.
-const count = Number.parseInt("42", 10);
-if (!Number.isSafeInteger(count)) throw new TypeError("invalid count");`;
+function parseCount(text) {
+  if (typeof text !== "string" || !/^(0|[1-9][0-9]*)$/.test(text)) throw new TypeError("invalid count");
+  const count = Number(text);
+  if (!Number.isSafeInteger(count)) throw new TypeError("invalid count");
+  return count;
+}
+console.assert(parseCount("42") === 42);
+console.assert(Number.parseInt("42junk", 10) === 42); // Prefix parsing is not validation.
+try { parseCount("42junk"); throw new Error("accepted junk"); }
+catch (error) { console.assert(error instanceof TypeError); }`;
 
   if (title.startsWith("Equality,")) return `const values = [NaN, -0, 0, "0", {}, {}];
 const rows = [];
@@ -4164,6 +4719,7 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
   }
   add(amount) {
     if (!Number.isSafeInteger(amount)) throw new TypeError("integer cents required");
+    if (!Number.isSafeInteger(this.balance + amount)) throw new RangeError("balance overflow");
     this.#entries.push(amount);
   }
   get balance() { return this.#entries.reduce((sum, value) => sum + value, 0); }
@@ -4357,6 +4913,9 @@ console.table(trace.map((event, order) => ({ order, event })));
 // loop, task sources, rendering opportunities, and other queue priorities.`;
 
   if (title.startsWith("Promise combinators")) return `async function mapBounded(inputs, limit, operation) {
+  if (!Array.isArray(inputs) || !Number.isSafeInteger(limit) || limit < 1 || typeof operation !== "function") {
+    throw new TypeError("array, positive integer limit and operation required");
+  }
   const results = new Array(inputs.length);
   let cursor = 0;
 
@@ -4379,7 +4938,17 @@ const results = await mapBounded([1, 2, 3, 4], 2, async value => {
   if (value === 3) throw new Error("expected test failure");
   return value * 2;
 });
-console.table(results);`;
+console.table(results);
+console.assert(results.map(result => result.status).join() === "fulfilled,fulfilled,rejected,fulfilled");
+console.assert(results[3].value === 8);
+console.assert((await mapBounded([], 1, async value => value)).length === 0);
+for (const limit of [0, -1, 1.5, NaN]) {
+  let rejected = false;
+  try { await mapBounded([1], limit, async value => value); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Results occupy O(n) memory; a concurrency limit does not bound input/output
+// size or the duration of one operation. Add cancellation/deadlines at adapters.`;
 
   if (title.startsWith("AbortController")) return `async function fetchJson(url, { timeoutMs, parentSignal } = {}) {
   const timeout = AbortSignal.timeout(timeoutMs ?? 3000);
@@ -4464,13 +5033,13 @@ console.log(["item10", "item2", "Item1"].toSorted(collator.compare));
 // Store instants in an unambiguous format. Apply named-zone calendar rules and
 // locale formatting only where the product explicitly needs them.`;
 
-  if (title.startsWith("Regular expressions")) return `const safeIdentifier = /^(?<prefix>[a-z]+)-(?<id>\d{1,10})$/u;
+  if (title.startsWith("Regular expressions")) return `const safeIdentifier = /^(?<prefix>[a-z]+)-(?<id>\\d{1,10})$/u;
 const match = safeIdentifier.exec("project-42");
 console.assert(match?.groups?.prefix === "project");
 console.assert(match?.groups?.id === "42");
 
 function validateIdentifier(value) {
-  if (value.length > 64) return false; // bound work before matching
+  if (typeof value !== "string" || value.length > 64) return false; // bound work before matching
   return safeIdentifier.test(value);
 }
 
@@ -4547,6 +5116,7 @@ function total(points) {
 }
 
 const stable = Array.from({ length: 100_000 }, (_, index) => ({ x: index, y: 1 }));
+console.assert(total(stable) === 5_000_050_000); // Verify work before timing it.
 for (let warmup = 0; warmup < 20; warmup += 1) total(stable);
 
 const samples = [];
@@ -4600,42 +5170,41 @@ for (const [input, expected] of [[" Ada ", "ada"], ["E\u0301", "é"]]) {
 
 test("abort is observable", async () => {
   const controller = new AbortController();
-  controller.abort("test");
+  const reason = new Error("test cancellation");
+  controller.abort(reason);
   await assert.rejects(
     () => fetch("https://example.invalid", { signal: controller.signal }),
-    error => error.name === "TypeError" || error.name === "AbortError"
+    error => error === reason
   );
 });
 
 // Debug evidence: breakpoint condition, async stack, heap retaining path,
 // CPU profile, event-loop timeline, source-map location, and minimal reproduction.`;
 
-  if (/^(JavaScript architecture|JavaScript production architecture capstone)/.test(title)) return `export function createProcessor({ repository, publish, clock, telemetry, concurrency = 4 }) {
+  if (/^(JavaScript architecture|JavaScript production architecture capstone)/.test(title)) return `// Integration core: the repository contract below must be implemented and tested.
+export function createProcessor({ repository, validateCommand }) {
   return async function process(commands, signal) {
-    const seen = new Set();
-    return mapBounded(commands, concurrency, async command => {
+    const results = [];
+    // ponytail: serial admission here; add bounded concurrency only after measuring
+    // the transaction pool and establishing ordering and overload requirements.
+    for (const command of commands) {
       signal.throwIfAborted();
       validateCommand(command);
-      if (seen.has(command.idempotencyKey)) return { status: "duplicate" };
-      seen.add(command.idempotencyKey);
-
-      const started = clock.now();
-      try {
-        const event = await repository.commit(command, { signal });
-        await publish(event, { signal });
-        telemetry.observe("command.duration", clock.now() - started, { status: "ok" });
-        return { status: "accepted", eventId: event.id };
-      } catch (cause) {
-        telemetry.increment("command.failure", { kind: cause.name });
-        throw new Error("command processing failed", { cause });
-      }
-    });
+      results.push(await repository.commitOnceWithOutbox(command, { signal }));
+    }
+    return results;
   };
 }
 
-// Composition root injects real adapters. Tests inject deterministic clock,
-// repository, publisher, and telemetry. Production evidence includes queue
-// depth, latency percentiles, abort count, duplicate rate, heap, and profiles.`;
+// Repository requirement: atomically store the business effect, stable result,
+// idempotency key + intent fingerprint, and outbox event in one transaction.
+// Replay the same result for matching intent; reject reuse with different intent.
+// A separate relay publishes committed outbox events and can publish duplicates.
+// Consumers need their own idempotent effect boundary. Never replace this with
+// a per-request Set or a database commit followed by an unrecorded publish call.
+// Acceptance tests in the integration project: concurrent same-key requests,
+// changed-intent conflict, crash after commit, relay replay and cancellation.
+// An aborted caller does not prove an already committed transaction was undone.`;
 
   return fallback;
 }
@@ -4717,7 +5286,9 @@ type _Widened = Expect<Equal<typeof widened.status, string>>;
 type _Literal = Expect<Equal<typeof preserved.status, "ready">>;
 type _Method = Expect<Equal<typeof catalog.create.method, "POST">>;`;
 
-  if (title.startsWith("any,")) return `function parseProject(input: unknown): { id: string; name: string } {
+  if (title.startsWith("any,")) return `// Save as boundary.ts. Check with: tsc --strict --noEmit --target ES2022 boundary.ts
+// Run with a TypeScript-capable runtime, or compile with tsc and run the JavaScript.
+function parseProject(input: unknown): { id: string; name: string } {
   if (typeof input !== "object" || input === null) throw new TypeError("object required");
   const value = input as Record<PropertyKey, unknown>;
   if (typeof value.id !== "string" || typeof value.name !== "string") {
@@ -4726,35 +5297,220 @@ type _Method = Expect<Equal<typeof catalog.create.method, "POST">>;`;
   return { id: value.id, name: value.name };
 }
 
-function fail(message: string): never { throw new Error(message); }
-function log(message: string): void { console.log(message); }
-
-const trusted = parseProject(JSON.parse('{"id":"p1","name":"Demo"}'));
-log(trusted.name || fail("name required"));
-
-// any disables checking and spreads. unknown requires evidence before use.
-// never represents an impossible value; void describes an ignored return.`;
-
-  if (/^(Assignability|Optional properties)/.test(title)) return `interface ProjectPatch {
-  name?: string; // with exactOptionalPropertyTypes: absent, or present string
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
 }
 
-function applyPatch(current: { name: string }, patch: ProjectPatch) {
+// Checked by tsc; deliberately not called, because these accesses are unsafe.
+function staticExamples(raw: unknown, unchecked: any): void {
+  // @ts-expect-error unknown cannot be used as a project before narrowing
+  const project: { name: string } = raw;
+  const unverified: { name: string } = unchecked; // accepted, not validated
+  // @ts-expect-error null is not a string under strictNullChecks
+  const name: string = null;
+  // @ts-expect-error a normal value cannot inhabit never
+  const impossible: never = 1;
+}
+
+const trusted = parseProject(JSON.parse('{"id":"p1","name":"Demo"}'));
+check(trusted.name === "Demo");
+for (const invalid of [null, undefined, {}, { id: "p1", name: 7 }]) {
+  let rejected = false;
+  try { parseProject(invalid); } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    rejected = true;
+  }
+  check(rejected);
+}
+
+// A void callback's caller ignores the return value; JavaScript can still return it.
+const values: number[] = [];
+const notify: () => void = () => values.push(7);
+const ignored = notify();
+check(values.length === 1);
+check(Object.is(ignored, 1));
+
+function fail(message: string): never { throw new Error(message); }
+// fail never returns normally. null and undefined ARE ordinary runtime values.
+console.log("Boundary checks passed");
+
+// Senior follow-up: this parser checks field types, not nonempty IDs or permission.
+// Decide which additional business rules belong here and which require a service.`;
+
+  if (title.startsWith("Assignability,")) return `// Save as assignability.ts, then run:
+// tsc --strict --target ES2022 --outDir out assignability.ts
+// node out/assignability.js
+type PublicProfile = { name: string };
+
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+
+function greeting(profile: PublicProfile): string {
+  return "Hello " + profile.name;
+}
+
+// tsc checks this function even though the runtime never calls it.
+function compilerExamples(): void {
+  // @ts-expect-error a fresh literal gets an excess-property check
+  greeting({ name: "Ada", admin: true });
+  // @ts-expect-error the required property still has to be a string
+  greeting({ name: 7 });
+}
+
+const internal = { name: "Ada", admin: true };
+const publicView: PublicProfile = internal; // structurally compatible
+const checked = internal satisfies PublicProfile; // no runtime projection
+check(greeting(internal) === "Hello Ada");
+check(publicView === internal);
+check(checked === internal);
+check(JSON.stringify(publicView) === '{"name":"Ada","admin":true}');
+
+// Select response fields explicitly; annotating the return type is not redaction.
+function toPublicProfile(profile: PublicProfile): PublicProfile {
+  return { name: profile.name };
+}
+check(JSON.stringify(toPublicProfile(internal)) === '{"name":"Ada"}');
+
+// This write contract deliberately rejects unknown JSON fields.
+function parseProfile(input: unknown): PublicProfile {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    throw new TypeError("profile object required");
+  }
+  if (Object.keys(input).some(key => key !== "name")) {
+    throw new TypeError("unknown profile field");
+  }
+  const value = input as Record<string, unknown>;
+  if (!Object.hasOwn(value, "name") || typeof value.name !== "string") {
+    throw new TypeError("own string name required");
+  }
+  return { name: value.name };
+}
+
+check(parseProfile(JSON.parse('{"name":"Ada"}')).name === "Ada");
+for (const invalid of [null, [], {}, { name: 7 }, internal]) {
+  let rejected = false;
+  try { parseProfile(invalid); } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    rejected = true;
+  }
+  check(rejected);
+}
+console.log("Assignability checks passed");
+// Removing the unknown-key check must fail the internal-object rejection case.`;
+
+  if (title.startsWith("Optional properties,")) return `// Save as optional.ts, then run (the two extra flags are not enabled by strict):
+// tsc --strict --exactOptionalPropertyTypes --noUncheckedIndexedAccess --target ES2022 --outDir out optional.ts
+// node out/optional.js
+type Profile = { name: string | null };
+type NamePatch = { name?: string | null }; // omitted: keep; string: set; null: clear
+
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+
+// This parser accepts decoded JSON, with an explicit unknown-field policy.
+function parsePatch(input: unknown): NamePatch {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    throw new TypeError("patch object required");
+  }
+  if (Object.keys(input).some(key => key !== "name")) {
+    throw new TypeError("unknown patch field");
+  }
+  if (!Object.hasOwn(input, "name")) return {};
+  const value = input as Record<string, unknown>;
+  const name = value.name;
+  if (name !== null && typeof name !== "string") {
+    throw new TypeError("name must be a string or null");
+  }
+  return { name };
+}
+
+// Call with the normalized output of parsePatch, not an unchecked assertion.
+function applyPatch(current: Profile, patch: NamePatch): Profile {
   if ("name" in patch) return { ...current, name: patch.name };
   return current;
 }
 
-const counts: Record<string, number> = { ready: 2 };
-const key = "missing";
-const count = counts[key]; // number | undefined with noUncheckedIndexedAccess
-console.log(count ?? 0);
+const current: Profile = { name: "Ada" };
+for (const [json, expected] of [
+  ['{}', "Ada"],
+  ['{"name":"Grace"}', "Grace"],
+  ['{"name":""}', ""], // empty is a supplied string, not absence
+  ['{"name":null}', null]
+] as const) {
+  check(applyPatch(current, parsePatch(JSON.parse(json))).name === expected);
+}
+check(current.name === "Ada"); // updates did not mutate the original
+for (const invalid of [null, [], { name: undefined }, { name: 7 }, { admin: true }]) {
+  let rejected = false;
+  try { parsePatch(invalid); } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    rejected = true;
+  }
+  check(rejected);
+}
 
-function acceptName(value: { name: string }) {}
-const variable = { name: "Ada", admin: true };
-acceptName(variable); // open structural type accepts extra member
-// acceptName({ name: "Ada", admin: true }); // fresh literal gets excess check`;
+const counts: Record<string, number> = { empty: 0 };
+function countOrDefault(key: string): number { return counts[key] ?? 10; }
+check(countOrDefault("empty") === 0);
+check(countOrDefault("missing") === 10);
+check(JSON.stringify({ name: undefined }) === "{}"); // undefined is not a JSON value
+check(JSON.stringify({ name: null }) === '{"name":null}');
 
-  if (/^(Union types|Discriminated unions)/.test(title)) return `type RequestState<T> =
+function compilerExamples(key: string): void {
+  // @ts-expect-error a present undefined is outside NamePatch's declared contract
+  const invalidPatch: NamePatch = { name: undefined };
+  // @ts-expect-error an arbitrary key can be missing
+  const count: number = counts[key];
+}
+console.log("Optional-property checks passed");
+// Try replacing the presence check with if (patch.name): empty and null cases fail.
+// An HTTP handler must still authorize the update and apply domain-specific rules.`;
+
+  if (title.startsWith("Union types,")) return `// Save as composition.ts; tsc --strict --target ES2022 composition.ts
+// Then run: node composition.js
+type Card = { kind: "card"; amount: number; token: string };
+type Bank = { kind: "bank"; amount: number; account: string };
+type Payment = Card | Bank; // either alternative, not all fields at once
+type AuditedPayment = Payment & { traceId: string }; // either alternative AND a trace
+type Conflict = { id: string } & { id: number }; // id would have to be never
+
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+function destination(payment: Payment): string {
+  // amount is common; token and account need narrowing.
+  return payment.kind === "card" ? payment.token : payment.account;
+}
+function compilerExamples(payment: Payment): void {
+  // @ts-expect-error bank payments have no guaranteed token
+  const token: string = payment.token;
+  // @ts-expect-error intersection does not overwrite string with number
+  const conflict: Conflict = { id: 1 };
+  // @ts-expect-error adding a requirement does not construct its runtime value
+  const unaudited: AuditedPayment = { kind: "card", amount: 10, token: "t" };
+}
+const card: AuditedPayment = { kind: "card", amount: 10, token: "t", traceId: "r1" };
+const bank: AuditedPayment = { kind: "bank", amount: 20, account: "a", traceId: "r2" };
+check(destination(card) === "t");
+check(destination(bank) === "a");
+check(card.amount + bank.amount === 30);
+
+// Recall lesson 0131: a union is not automatically exclusive or an exact-key check.
+type Contact = { email: string } | { phone: string };
+const both = { email: "a@example.test", phone: "123" };
+const contact: Contact = both; // satisfies both alternatives, so also their union
+check(contact === both);
+// Runtime spread overwrites; a type intersection instead requires both contracts.
+const merged = { ...{ id: "old" }, ...{ id: 1 } };
+check(merged.id === 1);
+console.log("Composition checks passed");
+// These are internal typed examples, not validation of external payment requests.`;
+
+  if (title.startsWith("Discriminated unions,")) return `// Save as states.ts; tsc --strict --target ES2022 states.ts
+// Then run: node states.js
+type RequestState<T> =
   | { status: "idle" }
   | { status: "loading"; requestId: string }
   | { status: "success"; data: T }
@@ -4774,14 +5530,104 @@ function message<T>(state: RequestState<T>): string {
   }
 }
 
-// Add a variant: the never check turns every forgotten consumer into evidence.`;
+type RequestEvent<T> =
+  | { kind: "start"; requestId: string }
+  | { kind: "resolve"; requestId: string; data: T }
+  | { kind: "reject"; requestId: string; error: Error; retryable: boolean };
 
-  if (/^(Control-flow analysis|User-defined type guards)/.test(title)) return `type Command =
+// Policy: latest start wins; only its matching completion can change state.
+function reduce<T>(state: RequestState<T>, event: RequestEvent<T>): RequestState<T> {
+  switch (event.kind) {
+    case "start": return { status: "loading", requestId: event.requestId };
+    case "resolve":
+      if (state.status !== "loading" || state.requestId !== event.requestId) return state;
+      return { status: "success", data: event.data };
+    case "reject":
+      if (state.status !== "loading" || state.requestId !== event.requestId) return state;
+      return { status: "failure", error: event.error, retryable: event.retryable };
+    default: return assertNever(event);
+  }
+}
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+function compilerExamples(): void {
+  // @ts-expect-error success must carry data
+  const invalid: RequestState<string> = { status: "success" };
+  // @ts-expect-error loading must carry a request identifier
+  const loading: RequestState<string> = { status: "loading" };
+}
+const idle: RequestState<string> = { status: "idle" };
+const first = reduce(idle, { kind: "start", requestId: "r1" });
+const latest = reduce(first, { kind: "start", requestId: "r2" });
+const stale: RequestEvent<string> = { kind: "resolve", requestId: "r1", data: "old" };
+check(reduce(idle, stale) === idle);
+check(reduce(latest, stale) === latest);
+check(reduce(latest, { kind: "reject", requestId: "r1", error: new Error("old"), retryable: true }) === latest);
+const done = reduce(latest, { kind: "resolve", requestId: "r2", data: "new" });
+check(done.status === "success" && done.data === "new");
+check(reduce(done, stale) === done);
+const failed = reduce(latest, { kind: "reject", requestId: "r2", error: new Error("offline"), retryable: true });
+check(message(idle) === "Not started");
+check(message(latest) === "Loading r2");
+check(message(done) === "Loaded");
+check(message(failed) === "Retry");
+check(message({ status: "failure", error: new Error("denied"), retryable: false }) === "Failed");
+console.log("State-machine checks passed");
+// Add {status: "cancelled"} to RequestState: message's never check must fail.
+// Use unique IDs per attempt. Ignoring stale results does not cancel network work.
+// External events still require runtime validation; types alone do not enforce transitions.`;
+
+  if (title.startsWith("Control-flow analysis,")) return `// Save as narrowing.ts; tsc --strict --target ES2022 narrowing.ts
+// Then run: node narrowing.js
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+function describe(input: string | number | Date | null): string {
+  if (input === null) return "missing"; // return removes null from later paths
+  if (typeof input === "string") return "text:" + input.toUpperCase();
+  if (typeof input === "number") return "number:" + input.toFixed(0);
+  if (input instanceof Date) return "date:" + input.getUTCFullYear();
+  const unreachable: never = input;
+  return unreachable;
+}
+function label(input: unknown): string {
+  if (typeof input !== "object" || input === null) return "missing";
+  if (!("name" in input)) return "missing";
+  // Presence alone does not prove the property's value type.
+  return typeof input.name === "string" ? input.name : "invalid";
+}
+function compilerExamples(input: string | null): void {
+  if (input !== null) input.toUpperCase();
+  // @ts-expect-error the branch did not permanently remove null
+  input.toUpperCase();
+  let value: string | number = "ready";
+  value.toUpperCase();
+  value = 42; // declared union still allows assignment of a number
+  // @ts-expect-error current flow type is number
+  value.toUpperCase();
+}
+check(describe(null) === "missing");
+check(describe("") === "text:"); // truthiness would lose this valid string
+check(describe(0) === "number:0");
+check(describe(new Date("2026-01-01T00:00:00Z")) === "date:2026");
+check(label(null) === "missing");
+check(label({}) === "missing");
+check(label({ name: 7 }) === "invalid");
+check(label({ name: "" }) === "");
+check(label(Object.create({ name: "inherited" })) === "inherited");
+console.log("Narrowing checks passed");
+// in includes the prototype chain; use own-property validation for a JSON contract.
+// instanceof is not a JSON shape validator; deserialized dates are usually strings.`;
+
+  if (title.startsWith("User-defined type guards,")) return `// Save as guards.ts; tsc --strict --target ES2022 guards.ts
+// Then run: node guards.js
+type Command =
   | { kind: "create"; name: string }
   | { kind: "archive"; id: string };
 
 function isCommand(input: unknown): input is Command {
-  if (typeof input !== "object" || input === null) return false;
+  if (typeof input !== "object" || input === null || Array.isArray(input)) return false;
   const value = input as Record<string, unknown>;
   return value.kind === "create" && typeof value.name === "string"
     || value.kind === "archive" && typeof value.id === "string";
@@ -4791,34 +5637,149 @@ function assertCommand(input: unknown): asserts input is Command {
   if (!isCommand(input)) throw new TypeError("invalid command");
 }
 
-function execute(input: unknown) {
+function parseCommand(input: unknown): Command {
   assertCommand(input);
-  if (input.kind === "create") return input.name.trim();
-  return input.id; // control flow eliminated create
+  // Projection returns a fresh value and drops extra fields; no normalization here.
+  return input.kind === "create"
+    ? { kind: "create", name: input.name }
+    : { kind: "archive", id: input.id };
 }
 
-// A false predicate implementation lies to the checker. Test guard logic at runtime.`;
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+for (const valid of [{ kind: "create", name: "" }, { kind: "archive", id: "p1" }]) {
+  check(isCommand(valid));
+  check(JSON.stringify(parseCommand(valid)) === JSON.stringify(valid));
+}
+for (const invalid of [null, [], {}, { kind: "create", name: 7 },
+  { kind: "archive" }, { kind: "delete", id: "p1" }]) {
+  check(!isCommand(invalid));
+  let rejected = false;
+  try { parseCommand(invalid); } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    rejected = true;
+  }
+  check(rejected);
+}
+const original = { kind: "create", name: "Ada", admin: true };
+const parsed = parseCommand(original);
+original.name = "changed";
+check(parsed.kind === "create" && parsed.name === "Ada");
+check(!("admin" in parsed));
 
-  if (title.startsWith("Function types")) return `interface Formatter {
-  (value: Date, locale?: string): string;
+// Deliberately unsound: the compiler trusts this promise, not its correctness.
+function lies(input: unknown): input is Command { return true; }
+check(lies(null) && !isCommand(null));
+console.log("Guard checks passed");
+// Policy: structural shape check, extra fields accepted then stripped by parsing.
+// Empty strings are shape-valid; business rules and authorization are separate.
+// Intended for decoded JSON: hostile getters/proxies and deep cloning are out of scope.
+// A boolean guard does not freeze its input; mutation can invalidate earlier evidence.`;
+
+  if (title.startsWith("Function types")) return `// Save as functions.ts; tsc --strict --target ES2022 functions.ts
+// Then run: node functions.js
+interface Formatter {
+  (value: string, prefix?: string): string;
   description: string;
 }
+const format: Formatter = Object.assign(
+  (value: string, prefix = "") => prefix + value.toUpperCase(),
+  { description: "uppercase" }
+);
+class Project { constructor(public id: string) {} }
+type ProjectConstructor = new (id: string) => Project;
+function construct(ctor: ProjectConstructor): Project { return new ctor("p1"); }
 
-interface Constructor<T> { new (...args: never[]): T }
-
-function get(id: string): Promise<string>;
-function get(ids: readonly string[]): Promise<string[]>;
-function get(input: string | readonly string[]): Promise<string | string[]> {
-  return Promise.resolve(Array.isArray(input) ? [...input] : input as string);
+// Overloads preserve a different output type for each input shape.
+function get(id: string): string;
+function get(ids: readonly string[]): string[];
+function get(input: string | readonly string[]): string | string[] {
+  return typeof input === "string" ? input : [...input];
 }
+// Same result type for every alternative? A union is simpler.
+function count(input: string | readonly string[]): number { return input.length; }
+function visit(values: readonly string[], callback: (value: string, index: number) => void): void {
+  values.forEach(callback); // index is always supplied, so it is not optional
+}
+function compilerExamples(input: string | readonly string[]): void {
+  // @ts-expect-error neither visible overload accepts this unresolved union
+  get(input);
+  // @ts-expect-error optional means the caller may omit the argument
+  const callback: (index?: number) => void = (index: number) => { index.toFixed(); };
+  // @ts-expect-error a callable arrow is not a constructor
+  construct((id: string) => new Project(id));
+}
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+const one: string = get("p1");
+const source = ["p1", "p2"] as const;
+const many: string[] = get(source);
+check(one === "p1");
+check(many.join(",") === "p1,p2");
+many.push("p3");
+check(source.length === 2);
+check(format("ada") === "ADA");
+check(format("ada", "Hi ") === "Hi ADA");
+check(format.description === "uppercase");
+check(construct(Project).id === "p1");
+check(count("abc") === 3 && count(source) === 2);
+const seen: string[] = [];
+visit(source, value => { seen.push(value); }); // callbacks may ignore supplied parameters
+check(seen.join(",") === "p1,p2");
+console.log("Function-contract checks passed");
+// Overloads are erased: one body must implement every advertised case honestly.
+// Recall 0130: void lets callers ignore a callback return value; it does not await it.`;
 
-const one = await get("p1");       // string
-const many = await get(["p1"]);   // string[]
+  if (title.startsWith("Object types,")) return `// Save as objects.ts. Compile, then run node objects.js:
+// tsc --strict --noUncheckedIndexedAccess --target ES2022 objects.ts
+interface PluginSpec { name: string }
+interface PluginSpec { run: () => string } // declarations merge; no runtime object created
+type PluginName = "search" | "export"; // aliases can also name unions
+type PluginTable = Record<PluginName, PluginSpec>;
+const search: PluginSpec = { name: "search", run: () => "found" };
+const builtins: PluginTable = {
+  search,
+  export: { name: "export", run: () => "saved" }
+};
+interface Counts { [key: string]: number }
+function compilerExamples(counts: Counts, key: string): void {
+  // @ts-expect-error both merged declarations contribute required members
+  const missing: PluginSpec = { name: "search" };
+  // @ts-expect-error finite Record requires every listed key
+  const incomplete: PluginTable = { search };
+  // @ts-expect-error string-indexed values must be numbers
+  const wrong: Counts = { label: "total" };
+  // @ts-expect-error arbitrary indexed reads may be absent with the flag enabled
+  const count: number = counts[key];
+}
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+check(builtins.search.run() === "found");
+check(builtins.export.run() === "saved");
+const counts: Counts = { 1: 7 };
+check(counts[1] === counts["1"]); // object numeric access uses string keys
+check(counts["missing"] === undefined);
+const metadata = Symbol("metadata");
+const tagged = { visible: true, [metadata]: "internal" };
+check(Object.keys(tagged).join(",") === "visible");
+check(Reflect.ownKeys(tagged).includes(metadata)); // symbol keys are discoverable
+check(JSON.stringify(tagged) === '{"visible":true}');
 
-// The implementation signature is checked but unavailable to callers.
-// Prefer a union or generic when it states the relationship more honestly.`;
+// Dynamic registry: Map has explicit absence and no inherited entry names.
+const registry = new Map<string, PluginSpec>();
+registry.set("__proto__", search);
+check(registry.get("__proto__") === search);
+check(registry.get("missing") === undefined);
+const keys = new Map<string | number, string>([[1, "number"], ["1", "string"]]);
+check(keys.size === 2); // unlike object property access, these keys stay distinct
+console.log("Object-contract checks passed");
+// Interfaces and aliases are erased, not validators or exact-key enforcement.
+// Plugin execution here is trusted local code; a registry is not a sandbox.`;
 
-  if (/^(Object types|Readonly)/.test(title)) return `interface Project { readonly id: string; name: string }
+  if (title.startsWith("Readonly")) return `interface Project { readonly id: string; name: string }
 type ProjectKey = keyof Project;
 type Coordinate = readonly [x: number, y: number];
 
@@ -4846,8 +5807,8 @@ function indexById<T extends Identified>(items: readonly T[]): Map<string, T> {
   return new Map(items.map(item => [item.id, item]));
 }
 
-function choose<const T extends readonly string[]>(values: T): T[number] {
-  return values[0]!;
+function choose<const T extends readonly [string, ...string[]]>(values: T): T[number] {
+  return values[0];
 }
 
 function createStore<T, Key extends keyof T>(key: Key) {
@@ -4862,7 +5823,7 @@ const direction = choose(["north", "south"] as const); // "north" | "south"
 // often adds ceremony without information.`;
 
   if (/^(keyof|Mapped types)/.test(title)) return `type Events<T extends object> = {
-  [K in keyof T as K extends string ? "on" & Capitalize<K> : never]:
+  [K in keyof T as K extends string ? \`on\${Capitalize<K>}\` : never]:
     (value: T[K]) => void
 };
 
@@ -4956,7 +5917,8 @@ class ProjectService {
   }
 }
 
-// Current standard decorators differ from experimentalDecorators and do not
+// This logs synchronous invocation, not settlement of a returned Promise.
+// Standard decorators differ from experimentalDecorators and do not
 // imply a universal runtime metadata system.`;
 
   if (title.startsWith("Enums,")) return `const ProjectStatus = {
@@ -4995,7 +5957,7 @@ export async function load(input: unknown): Promise<Project> {
 // paths helps the checker locate declarations; it does not rewrite emitted
 // specifiers. Runtime, tests, and bundler must resolve the same graph.`;
 
-  if (/^(Declaration files|Typed library authoring)/.test(title)) return `// src/index.ts
+  if (/^(Declaration files|Typed library authoring)/.test(title)) return `// src/index.d.ts — declaration only, not a runtime implementation
 export interface Project { readonly id: string; name: string }
 export declare function parseProject(input: unknown): Project;
 
@@ -5013,6 +5975,7 @@ export declare function parseProject(input: unknown): Project;
 }
 
 // tsconfig: declaration=true, declarationMap=true, composite=true
+// Multi-file packaging sketch: implement parseProject in src/index.ts first.
 // Verify from a packed, clean consumer—not from source paths:
 // npm pack --dry-run
 // npx tsc -b
@@ -5044,7 +6007,7 @@ export function parseProject(input) {
 type CreateProject = { name: string; ownerId: string };
 
 function parseCreateProject(input: unknown): Result<CreateProject, string> {
-  if (typeof input !== "object" || input === null) {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
     return { ok: false, errors: ["body must be an object"] };
   }
   const value = input as Record<string, unknown>;
@@ -5055,9 +6018,18 @@ function parseCreateProject(input: unknown): Result<CreateProject, string> {
   return { ok: true, value: { name: (value.name as string).trim(), ownerId: value.ownerId as string } };
 }
 
-const command = parseCreateProject(await response.json());
-if (!command.ok) return new Response(JSON.stringify(command.errors), { status: 422 });
-await repository.create(command.value);`;
+function check(condition: boolean): void {
+  if (!condition) throw new Error("check failed");
+}
+const command = parseCreateProject({ name: " Demo ", ownerId: "u1" });
+check(command.ok && command.value.name === "Demo");
+for (const invalid of [null, [], {}, { name: " ", ownerId: "u1" }, { name: "ok", ownerId: 7 }]) {
+  check(!parseCreateProject(invalid).ok);
+}
+console.log("Validation checks passed");
+// Handler: decode JSON with error handling, map invalid shape to 422,
+// authorize ownerId against the authenticated principal, then persist.
+// Prefer deriving ownership from authentication when clients must not choose it.`;
 
   if (title.startsWith("Async typing")) return `type Page<T> = { items: T[]; nextCursor?: string };
 
@@ -5071,9 +6043,15 @@ async function* pages<T>(
   while (url) {
     signal.throwIfAborted();
     const response = await fetch(url, { signal });
+    if (!response.ok) throw new Error("page request failed: " + response.status);
     const page = parse(await response.json());
-    for (const item of page.items) { count += 1; yield item; }
-    url = page.nextCursor ? new URL(page.nextCursor, url) : undefined;
+    for (const item of page.items) {
+      signal.throwIfAborted();
+      count += 1; yield item;
+    }
+    const next: URL | undefined = page.nextCursor ? new URL(page.nextCursor, url) : undefined;
+    if (next && next.origin !== firstUrl.origin) throw new Error("cross-origin page URL");
+    url = next;
   }
   return count;
 }
@@ -5095,11 +6073,11 @@ type TableProps<Row extends { id: React.Key }> = {
 
 function DataTable<Row extends { id: React.Key }>({ rows, columns, onSelect }: TableProps<Row>) {
   return <table><thead><tr>{columns.map(column =>
-    <th key={String(column.key)} scope="col">{column.heading}</th>)}</tr></thead>
-    <tbody>{rows.map(row => <tr key={row.id} onClick={() => onSelect(row)}>
+    <th key={String(column.key)} scope="col">{column.heading}</th>)}<th scope="col">Actions</th></tr></thead>
+    <tbody>{rows.map(row => <tr key={row.id}>
       {columns.map(column => <td key={String(column.key)}>
         {column.render?.(row[column.key], row) ?? String(row[column.key])}
-      </td>)}</tr>)}</tbody></table>;
+      </td>)}<td><button type="button" onClick={() => onSelect(row)}>Select {String(row.id)}</button></td></tr>)}</tbody></table>;
 }`;
 
   if (title.startsWith("Node.js with TypeScript")) return `import process from "node:process";
@@ -5128,13 +6106,17 @@ catch (error: unknown) {
   (<T>() => T extends B ? 1 : 2) ? true : false;
 type Expect<T extends true> = T;
 
-declare function first<T>(items: readonly [T, ...T[]]): T;
+function first<T>(items: readonly [T, ...T[]]): T { return items[0]; }
 const value = first([1, 2] as const);
 type _Result = Expect<Equal<typeof value, 1 | 2>>;
 
 // Negative contract: empty arrays must remain rejected.
-// @ts-expect-error empty tuple violates the non-empty input contract
-first([]);
+function compilerExamples(): void {
+  // @ts-expect-error empty tuple violates the non-empty input contract
+  first([]);
+}
+if (value !== 1) throw new Error("first must return the first item");
+console.log("Type-test checks passed");
 
 // If a future change makes the line valid, ts-expect-error itself fails.
 // Add runtime tests separately for JavaScript behavior and boundary parsing.`;
@@ -5434,20 +6416,31 @@ const controller = new AbortController();
 const deadline = setTimeout(250, undefined, { signal: controller.signal });
 
 async function periodic(signal) {
-  for await (const startedAt of setInterval(100, Date.now(), { signal, ref: false })) {
-    await runOnce(startedAt, signal); // no overlap: next iteration waits
+  for await (const _ of setInterval(100, undefined, { signal, ref: false })) {
+    await runOnce(Date.now(), signal); // Sample per iteration, not once at setup.
   }
 }
 
+async function runOnce(startedAt, signal) {
+  signal.throwIfAborted();
+  console.assert(Number.isFinite(startedAt)); // Replace with bounded application work.
+}
+
 const task = periodic(controller.signal).catch(error => {
-  if (error.name !== "AbortError") throw error;
+  if (error?.name !== "AbortError") throw error;
 });
 
-await deadline;
-controller.abort("shutdown");
-await task;
+try {
+  // Observe both promises immediately, including an early periodic-work failure.
+  await Promise.all([task, deadline.then(() => controller.abort("shutdown"))]);
+} finally {
+  controller.abort();
+  await Promise.allSettled([task, deadline]);
+}
 
-// Delay is a threshold; loop work and OS scheduling add drift.`;
+// Delay is a threshold; loop work and OS scheduling add drift. Slow async work
+// does not overlap here, but interval ticks can accumulate. For fixed delay after
+// completion, use a loop that awaits work and then an abortable timeout.`;
 
   if (/^(Buffer|ArrayBuffer)/.test(title)) return `import { Buffer } from "node:buffer";
 
@@ -5473,12 +6466,15 @@ const exactArrayBuffer = frame.buffer.slice(frame.byteOffset, frame.byteOffset +
 
   if (title.startsWith("Stream architecture")) return `import { Readable, Transform, Writable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { StringDecoder } from "node:string_decoder";
 
+const decoder = new StringDecoder("utf8");
 const upper = new Transform({
   transform(chunk, encoding, callback) {
-    try { callback(null, chunk.toString("utf8").toUpperCase()); }
+    try { callback(null, decoder.write(chunk).toUpperCase()); }
     catch (error) { callback(error); }
-  }
+  },
+  flush(callback) { callback(null, decoder.end().toUpperCase()); }
 });
 
 let output = "";
@@ -5486,9 +6482,13 @@ const sink = new Writable({
   write(chunk, encoding, callback) { output += chunk; callback(); }
 });
 
-await pipeline(Readable.from(["node", " ", "streams"]), upper, sink);
-console.assert(output === "NODE STREAMS");
-console.log({ readable: upper.readable, writable: upper.writable, destroyed: upper.destroyed });`;
+const bytes = Buffer.from("node streams café");
+await pipeline(Readable.from(Array.from(bytes, byte => Buffer.from([byte]))), upper, sink);
+console.assert(output === "NODE STREAMS CAFÉ");
+console.log({ readable: upper.readable, writable: upper.writable, destroyed: upper.destroyed });
+// Never decode arbitrary chunks independently: a UTF-8 character may span them.
+// This fixture collects a tiny output; production sinks must not accumulate an
+// unbounded string. StringDecoder substitutes malformed UTF-8, not strict validation.`;
 
   if (title.startsWith("Readable streams")) return `import { Readable } from "node:stream";
 
@@ -5496,7 +6496,7 @@ async function* source(signal) {
   try {
     for (let index = 0; index < 1_000_000; index += 1) {
       signal.throwIfAborted();
-      yield Buffer.from(String(index) + "\n");
+      yield Buffer.from(String(index) + "\\n");
     }
   } finally {
     console.log("source cleanup");
@@ -5504,7 +6504,7 @@ async function* source(signal) {
 }
 
 const controller = new AbortController();
-const readable = Readable.from(source(controller.signal), { highWaterMark: 16 * 1024 });
+const readable = Readable.from(source(controller.signal), { objectMode: false, highWaterMark: 16 * 1024 });
 for await (const chunk of readable) {
   console.log(chunk.toString());
   controller.abort("enough");
@@ -5533,24 +6533,27 @@ console.log({ writableLength: sink.writableLength, destroyed: sink.destroyed });
   if (/^(Transform streams|Node streams)/.test(title)) return `import { createReadStream, createWriteStream, promises as fs } from "node:fs";
 import { createGzip } from "node:zlib";
 import { pipeline } from "node:stream/promises";
+import { dirname, join } from "node:path";
 
-const controller = new AbortController();
-const source = new URL("./input.ndjson", import.meta.url);
-const temporary = new URL("./input.ndjson.gz.tmp", import.meta.url);
-const target = new URL("./input.ndjson.gz", import.meta.url);
-
-try {
-  await pipeline(
-    createReadStream(source),
-    createGzip(),
-    createWriteStream(temporary, { mode: 0o600 }),
-    { signal: controller.signal }
-  );
-  await fs.rename(temporary, target);
-} catch (error) {
-  await fs.rm(temporary, { force: true });
-  throw error;
-}`;
+async function gzipFile(source, target, signal) {
+  // Trusted paths; stage on the target filesystem in a directory owned by this call.
+  const directory = await fs.mkdtemp(join(dirname(target), ".gzip-"));
+  const temporary = join(directory, "output.gz");
+  try {
+    await pipeline(
+      createReadStream(source), createGzip(),
+      createWriteStream(temporary, { flags: "wx", mode: 0o600 }), { signal }
+    );
+    await fs.rename(temporary, target);
+  } finally {
+    await fs.rm(directory, { recursive: true, force: true });
+  }
+}
+// await gzipFile("input.ndjson", "input.ndjson.gz", AbortSignal.timeout(5000));
+// A shared .tmp name can overwrite or delete another call's work. Unique staging
+// prevents that, but successful concurrent replacements still have last-writer wins.
+// ponytail: replacement is not crash-durability proof; add file/directory fsync
+// and platform-specific failure tests when persistence across power loss matters.`;
 
   if (title.startsWith("File system")) return `import { open, rename, rm } from "node:fs/promises";
 import { dirname } from "node:path";
@@ -5559,17 +6562,26 @@ async function atomicWrite(path, content) {
   const temporary = path + ".tmp-" + process.pid;
   const handle = await open(temporary, "wx", 0o600);
   try {
-    await handle.writeFile(content, "utf8");
-    await handle.sync();
-  } finally {
-    await handle.close();
+    try {
+      await handle.writeFile(content, "utf8");
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    await rename(temporary, path);
+  } catch (error) {
+    await rm(temporary, { force: true });
+    throw error;
   }
-  try { await rename(temporary, path); }
-  catch (error) { await rm(temporary, { force: true }); throw error; }
 }
 
 await atomicWrite("./state.json", JSON.stringify({ version: 1 }));
-// Open directly with the required flags. A prior exists/access check creates a TOCTOU race.`;
+// Open directly with the required flags. A prior exists/access check creates a TOCTOU race.
+// Run in a disposable directory: this intentionally replaces state.json.
+// Rename gives an atomic name change on the supported filesystem, not a universal
+// crash-durability guarantee. Directory synchronization and storage semantics matter.
+// Concurrent calls sharing the same temporary name can fail with EEXIST; this
+// serial fixture does not implement multi-writer coordination.`;
 
   if (title.startsWith("Paths,")) return `import { resolve, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -5587,27 +6599,41 @@ function safePath(filename) {
 }
 
 console.assert(safePath("tenant/file.txt") === resolve(uploadRoot, "tenant/file.txt"));
-console.assert(fileURLToPath(import.meta.url).endsWith(".mjs"));`;
+console.assert(fileURLToPath(import.meta.url).endsWith(".mjs"));
+// Lexical containment only: symlinks or concurrent directory changes can still
+// escape this path. Use controlled directory ownership and a filesystem-aware
+// open policy; never call this a complete traversal defense on attacker-owned trees.`;
 
-  if (title.startsWith("TCP sockets")) return `import { createServer, connect } from "node:net";
+  if (title.startsWith("TCP sockets")) return `import { createServer } from "node:net";
 
 const server = createServer(socket => {
   socket.setTimeout(5_000, () => socket.destroy(new Error("idle timeout")));
   let pending = Buffer.alloc(0);
-  socket.on("data", chunk => {
-    pending = Buffer.concat([pending, chunk]);
-    if (pending.length > 4096) return socket.destroy(new Error("frame too large"));
+  const pump = () => {
     for (let newline; (newline = pending.indexOf(10)) >= 0;) {
       const message = pending.subarray(0, newline).toString("utf8");
       pending = pending.subarray(newline + 1);
-      if (!socket.write(JSON.stringify({ echo: message }) + "\n")) socket.pause();
+      if (!socket.write(JSON.stringify({ echo: message }) + "\\n")) {
+        socket.pause();
+        return; // Do not keep writing frames already buffered in this data event.
+      }
     }
+    socket.resume();
+  };
+  socket.on("data", chunk => {
+    if (pending.length + chunk.length > 4096) return socket.destroy(new Error("input buffer exceeded"));
+    pending = Buffer.concat([pending, chunk]);
+    pump();
   });
-  socket.on("drain", () => socket.resume());
+  socket.on("drain", pump);
   socket.on("error", () => {});
 });
 
-server.listen(0, "127.0.0.1");`;
+// server.listen(0, "127.0.0.1"); // Local fixture only; caller owns server shutdown.
+// This policy bounds the whole pending input buffer, not just individual frames:
+// a large batch of individually valid lines can be rejected. UTF-8 decoding here
+// substitutes malformed bytes. Define strict decoding and admission for a real protocol.
+// High-water marks are thresholds; account for one write's size and all connections.`;
 
   if (title.startsWith("DNS,")) return `import dns from "node:dns/promises";
 
@@ -5658,34 +6684,59 @@ async function readJson(request, limit = 64 * 1024) {
     if (size > limit) throw Object.assign(new Error("body too large"), { statusCode: 413 });
     chunks.push(chunk);
   }
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  try {
+    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+  } catch {
+    throw Object.assign(new Error("invalid JSON body"), { statusCode: 400 });
+  }
 }
 
 const server = http.createServer(async (request, response) => {
   try {
     if (request.method !== "POST" || request.url !== "/projects") throw Object.assign(new Error("not found"), { statusCode: 404 });
     const body = await readJson(request);
-    if (typeof body.name !== "string" || !body.name.trim()) throw Object.assign(new Error("name required"), { statusCode: 422 });
-    response.writeHead(201, { "content-type": "application/json" }).end(JSON.stringify({ name: body.name.trim() }));
+    if (!body || typeof body !== "object" || Array.isArray(body) || Object.keys(body).some(key => key !== "name") || typeof body.name !== "string" || !body.name.trim()) {
+      throw Object.assign(new Error("name object required"), { statusCode: 422 });
+    }
+    response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ name: body.name.trim() }));
   } catch (error) {
-    response.writeHead(error.statusCode ?? 500, { "content-type": "application/json" }).end(JSON.stringify({ error: error.message }));
+    const status = error.statusCode ?? 500;
+    response.writeHead(status, { "content-type": "application/json" }).end(JSON.stringify({ error: status < 500 ? error.message : "internal error" }));
   }
 });
 server.headersTimeout = 10_000;
 server.requestTimeout = 15_000;
-server.keepAliveTimeout = 5_000;`;
+server.keepAliveTimeout = 5_000;
+// Validation/echo fixture only: 200 does not claim a durable resource was created.
+// Real creation needs authentication, object authorization and persistence. Node
+// may destroy an IncomingMessage when its async iterator exits on an oversized
+// body, so a client can observe a reset rather than the intended 413. Enforce
+// ingress limits and test actual socket behavior; fake requests do not prove it.`;
 
-  if (title.startsWith("Fetch,")) return `async function fetchJson(url, { signal, timeoutMs = 3_000 } = {}) {
+  if (title.startsWith("Fetch,")) return `async function fetchJson(url, { signal, timeoutMs = 3_000, maxBytes = 64 * 1024 } = {}) {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new TypeError("positive byte limit required");
   const deadline = AbortSignal.timeout(timeoutMs);
   const combined = signal ? AbortSignal.any([signal, deadline]) : deadline;
+  combined.throwIfAborted();
   const response = await fetch(url, {
-    signal: combined,
+    signal: combined, redirect: "error",
     headers: { accept: "application/json" }
   });
   try {
     if (!response.ok) throw new Error("HTTP " + response.status, { cause: response });
-    const value = await response.json();
-    if (!value || typeof value !== "object") throw new TypeError("object response required");
+    if (!response.body) throw new TypeError("body required");
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of response.body) {
+      combined.throwIfAborted();
+      size += chunk.byteLength;
+      if (size > maxBytes) throw new RangeError("response too large");
+      chunks.push(chunk);
+    }
+    combined.throwIfAborted();
+    const text = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks, size));
+    const value = JSON.parse(text);
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new TypeError("object response required");
     return value;
   } catch (error) {
     await response.body?.cancel(error).catch(() => {});
@@ -5693,7 +6744,11 @@ server.keepAliveTimeout = 5_000;`;
   }
 }
 
-console.log(await fetchJson("https://example.com/data", { timeoutMs: 1_000 }));`;
+// Supply a trusted destination; this helper is not an SSRF policy or domain schema.
+// The limit counts body bytes exposed by fetch, including decoded compressed data,
+// not Content-Length. One received chunk may already exceed the limit before rejection.
+// Cancellation is cooperative; a deadline cannot interrupt synchronous JSON parsing.
+// ponytail: buffers a small bounded response; use streaming parsing for large data.`;
 
   if (title.startsWith("HTTP/2")) return `import http2 from "node:http2";
 import { readFileSync } from "node:fs";
@@ -5701,18 +6756,44 @@ import { readFileSync } from "node:fs";
 const server = http2.createSecureServer({
   key: readFileSync("server-key.pem"),
   cert: readFileSync("server-cert.pem"),
-  allowHTTP1: true
+  allowHTTP1: false // H2-only fixture; HTTP/1 needs the compatibility request API.
 });
 
+const activeSessions = new Set();
+let draining = false;
+server.on("session", session => {
+  session.on("error", error => console.error({ event: "session.error", code: error.code }));
+  if (draining) { session.destroy(); return; }
+  activeSessions.add(session);
+  session.once("close", () => activeSessions.delete(session));
+});
 server.on("stream", (stream, headers) => {
+  stream.on("error", error => console.error({ event: "stream.error", code: error.code }));
   stream.respond({ ":status": 200, "content-type": "application/json" });
   stream.end(JSON.stringify({ path: headers[":path"] }));
 });
 
-async function shutdown() {
-  for (const session of activeSessions) session.goaway(http2.constants.NGHTTP2_NO_ERROR);
-  await new Promise(resolve => server.close(resolve));
-}`;
+let shutdownPromise;
+function shutdown() {
+  return shutdownPromise ??= new Promise((resolve, reject) => {
+    draining = true;
+    const timer = setTimeout(() => {
+      reject(new Error("HTTP/2 drain deadline exceeded"));
+      for (const session of activeSessions) session.destroy();
+    }, 5000);
+    server.close(error => {
+      clearTimeout(timer);
+      if (error) reject(error); else resolve();
+    });
+    for (const session of activeSessions) session.close();
+  });
+}
+// Bind/listen using your TLS fixture, then invoke shutdown on termination.
+// GOAWAY alone does not close a session; close() drains existing streams and
+// prevents new ones. A stalled stream needs a deadline and forced termination.
+// ponytail: session-level fixture, not complete ingress lifecycle management.
+// Test TLS handshakes, readiness propagation, flow control and stream errors with
+// real clients; a supervisor must bound sockets still negotiating TLS.`;
 
   if (/^(ECMAScript modules|CommonJS|ESM and CommonJS)/.test(title)) return `// package.json
 {
@@ -5797,85 +6878,117 @@ try {
 }
 
 process.on("warning", warning => console.error({ event: "process.warning", warning }));
-process.on("unhandledRejection", reason => {
-  console.error({ event: "unhandledRejection", reason });
-  process.exitCode = 1;
-});
+// Run the isolated example with --unhandled-rejections=strict.
+// Do not install a handler that merely sets exitCode while live servers keep running.
 process.on("uncaughtExceptionMonitor", error => {
   console.error({ event: "uncaughtException", error }); // observe only
 });
 
+const dependency = { async call() { throw new Error("controlled fixture failure"); } };
 try { await dependency.call(); }
 catch (cause) { throw new DependencyError("payments", { cause }); }
 
-// Let the supervisor restart after an uncaught exception; process state may be invalid.`;
+// Expected: this isolated example fails with a nonzero exit, preserving the cause.
+// Observe fatal failures without swallowing them; a supervisor owns restart policy.`;
 
-  if (title.startsWith("Process lifecycle")) return `import http from "node:http";
+  if (title.startsWith("Process lifecycle")) return `import assert from "node:assert/strict";
 
-const controller = new AbortController();
-let ready = false;
-const server = http.createServer((request, response) => {
-  if (request.url === "/ready") return response.writeHead(ready ? 200 : 503).end();
-  handle(request, response, controller.signal).catch(error => {
-    if (!response.headersSent) response.writeHead(500);
-    response.end();
-  });
-});
-
-server.listen(3000, () => { ready = true; });
-
-async function shutdown(signal) {
-  ready = false;
-  controller.abort(new Error(signal));
-  server.close();
-  await Promise.race([
-    new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve())),
-    new Promise((_, reject) => setTimeout(() => reject(new Error("drain deadline")), 10_000))
-  ]);
+// Node HTTP shutdown coordinator. Tests below use fakes, not listening sockets.
+function createShutdown(server, controller, setReady, deadlineMs = 10000) {
+  let pending;
+  return function shutdown() {
+    if (pending) return pending; // Repeated signals share one drain operation.
+    setReady(false);
+    pending = new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        const error = new Error("drain deadline");
+        controller.abort(error);
+        server.closeAllConnections();
+        reject(error);
+      }, deadlineMs);
+      server.close(error => {
+        clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+    return pending;
+  };
 }
 
-for (const signal of ["SIGTERM", "SIGINT"]) process.once(signal, () => shutdown(signal).catch(() => { process.exitCode = 1; }));`;
+let closes = 0, ready = true;
+const server = {
+  close(done) { closes++; queueMicrotask(() => done()); },
+  closeAllConnections() { throw new Error("successful drain must not force close"); }
+};
+const controller = new AbortController();
+const shutdown = createShutdown(server, controller, value => { ready = value; });
+const first = shutdown();
+assert.equal(shutdown(), first);
+await first;
+assert.equal(closes, 1);
+assert.equal(ready, false);
+assert.equal(controller.signal.aborted, false);
 
-  if (title.startsWith("child_process")) return `import { spawn } from "node:child_process";
+let forced = false;
+const stuckController = new AbortController();
+const stuck = createShutdown({
+  close() {},
+  closeAllConnections() { forced = true; }
+}, stuckController, () => {}, 1);
+await assert.rejects(stuck(), /drain deadline/);
+assert.equal(forced, true);
+assert.equal(stuckController.signal.aborted, true);
+// Wire SIGTERM/SIGINT to this coordinator in the actual service. On rejection,
+// record a failed shutdown and let the supervisor enforce the final process deadline.
+// Upgraded/WebSocket connections and non-HTTP resources need explicit owners;
+// closeAllConnections does not close every resource in the process.
+// Verify load-balancer readiness propagation and in-flight writes in integration.`;
 
+  if (title.startsWith("child_process")) return `import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const executeFile = promisify(execFile);
 async function inspectRevision(revision, signal) {
-  if (!/^[a-f0-9]{7,40}$/.test(revision)) throw new TypeError("invalid revision");
-  const child = spawn("git", ["show", "--stat", "--oneline", revision], {
-    shell: false,
-    signal,
-    stdio: ["ignore", "pipe", "pipe"],
-    env: { PATH: process.env.PATH, LANG: "C.UTF-8" }
+  if (typeof revision !== "string" || !/^[a-f0-9]{7,40}$/.test(revision)) throw new TypeError("invalid SHA-1 revision");
+  const { stdout } = await executeFile("git", ["--no-pager", "show", "--no-ext-diff", "--no-textconv", "--stat", "--oneline", revision, "--"], {
+    shell: false, signal, timeout: 5000, maxBuffer: 1_000_000,
+    encoding: "utf8", env: { PATH: process.env.PATH, LANG: "C.UTF-8" }
   });
-  const chunks = [];
-  let size = 0;
-  for await (const chunk of child.stdout) {
-    size += chunk.length;
-    if (size > 1_000_000) { child.kill("SIGTERM"); throw new Error("output limit"); }
-    chunks.push(chunk);
-  }
-  const [code] = await once(child, "close");
-  if (code !== 0) throw new Error("git exited " + code);
-  return Buffer.concat(chunks).toString("utf8");
-}`;
+  return stdout;
+}
+// execFile drains BOTH stdout and stderr, bounds buffered output and rejects on
+// launch/nonzero/abort errors. Waiting for close only after draining one pipe can
+// miss the event or deadlock on a full stderr pipe. Use trusted Git/PATH/repository.
+// Cancellation sends a signal, not proof of process-tree termination or rollback;
+// enforce hard containment/deadlines with a supervisor for hostile child programs.`;
 
   if (title.startsWith("worker_threads")) return `import { Worker } from "node:worker_threads";
 
 function runWorker(value, signal) {
   return new Promise((resolve, reject) => {
+    signal.throwIfAborted(); // Do not start work after an already-cancelled request.
     const worker = new Worker(new URL("./worker.mjs", import.meta.url), { workerData: value });
-    const abort = () => worker.terminate().then(() => reject(signal.reason));
+    let settled = false;
+    const finish = (error, result) => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener("abort", abort);
+      worker.terminate().then(() => error !== null ? reject(error) : resolve(result), reject);
+    };
+    const abort = () => finish(signal.reason ?? new Error("aborted"));
     signal.addEventListener("abort", abort, { once: true });
-    worker.once("message", resolve);
-    worker.once("error", reject);
-    worker.once("exit", code => { if (code !== 0 && !signal.aborted) reject(new Error("worker exit " + code)); });
-    worker.once("exit", () => signal.removeEventListener("abort", abort));
+    worker.once("message", result => finish(null, result));
+    worker.once("error", error => finish(error));
+    worker.once("exit", code => finish(new Error("worker exited before result: " + code)));
   });
 }
 
-const controller = new AbortController();
-console.log(await runWorker(100_000, controller.signal));
-
-// Reuse a bounded worker pool for repeated tasks; worker startup is not free.`;
+// Supply worker.mjs with one-result protocol: compute workerData, postMessage once.
+// Call runWorker(input, AbortSignal.timeout(2000)); caller owns the total deadline.
+// This one-shot wrapper terminates after a result/error; do not use it for workers
+// intended to stream many messages. Termination does not roll back external effects.
+// Reuse a bounded pool for repeated tasks after measuring startup/admission cost.`;
 
   if (title.startsWith("Cluster,")) return `import cluster from "node:cluster";
 import { availableParallelism } from "node:os";
@@ -5894,7 +7007,11 @@ if (cluster.isPrimary) {
 // Prefer independent replicas when the deployment platform already owns load
 // balancing, health checks, rolling replacement, limits, and failure isolation.`;
 
-  if (title.startsWith("Background jobs")) return `class LocalQueue {
+  if (title.startsWith("Background jobs")) return `import assert from "node:assert/strict";
+
+// Deliberately unsafe counterexample: local deduplication is not durable idempotency.
+// Predict the two failures below before running. Do not deploy this queue.
+class LocalQueue {
   #items = [];
   #seen = new Set();
 
@@ -5909,24 +7026,48 @@ if (cluster.isPrimary) {
       try { await processJob(job, signal); this.#seen.add(job.idempotencyKey); }
       catch (error) {
         if (++job.attempt < 3) this.#items.push(job);
-        else console.error({ event: "job.dead", job, error });
+        else console.error({ event: "job.dead", code: "attempts_exhausted" });
       }
     }
   }
 }
 
-// ponytail: in-memory model loses jobs on crash; replace with a durable broker
-// when work must survive restart or cross processes.`;
+let effects = 0;
+async function processJob(job) {
+  effects += job.amount;
+  if (job.failAfterEffect) throw new Error("ack lost after effect");
+}
+const queue = new LocalQueue();
+queue.enqueue({ idempotencyKey: "same", amount: 1 });
+queue.enqueue({ idempotencyKey: "same", amount: 100 });
+await queue.run(new AbortController().signal);
+assert.equal(effects, 1); // Changed intent was silently discarded, not rejected.
+queue.enqueue({ idempotencyKey: "ambiguous", amount: 1, failAfterEffect: true });
+await queue.run(new AbortController().signal);
+assert.equal(effects, 4); // One intended effect happened three times.
+// Repair exercise: define scoped key + immutable intent, atomic effect/receipt,
+// durable claim/ack, lease recovery and bounded admission before choosing a broker.
+// A broker alone cannot make an external effect exactly once. Also test concurrent
+// runners, restart, poison work, cancellation, retry backoff and retention bounds.
+// ponytail: intentionally broken single-process model; compare with lesson 0472's
+// durable-worker contract rather than adding persistence to this toy queue.`;
 
   if (title.startsWith("Node test runner")) return `import assert from "node:assert/strict";
 import { afterEach, mock, test } from "node:test";
 
 afterEach(() => mock.restoreAll());
 
+async function loadProjects({ signal }) {
+  const response = await fetch("https://api.example.com/projects", { signal });
+  if (!response.ok) throw new Error("project request failed");
+  return response.json();
+}
+
 test("client propagates cancellation", async t => {
   const controller = new AbortController();
   const fetchMock = t.mock.method(globalThis, "fetch", async (url, options) => {
     assert.equal(options.signal, controller.signal);
+    options.signal.throwIfAborted();
     await new Promise((resolve, reject) => options.signal.addEventListener("abort", () => reject(options.signal.reason), { once: true }));
   });
 
@@ -5934,30 +7075,32 @@ test("client propagates cancellation", async t => {
   controller.abort(new Error("test abort"));
   await assert.rejects(pending, /test abort/);
   assert.equal(fetchMock.mock.callCount(), 1);
+  await assert.rejects(loadProjects({ signal: controller.signal }), /test abort/);
+  assert.equal(fetchMock.mock.callCount(), 2);
 });
 
 // node --test --experimental-test-coverage`;
 
-  if (title.startsWith("Node security")) return `import { isIP } from "node:net";
-import { resolve4 } from "node:dns/promises";
+  if (title.startsWith("Node security")) return `import assert from "node:assert/strict";
 
-function privateIPv4(address) {
-  const [a, b] = address.split(".").map(Number);
-  return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
-}
-
-async function safeHttpUrl(input) {
+// Server-owned product allowlist, not a universal SSRF-safe network client.
+const allowedOrigins = new Set(["https://api.example.com"]);
+function safeHttpUrl(input) {
   const url = new URL(input);
-  if (url.protocol !== "https:" || url.username || url.password) throw new TypeError("unsafe URL");
-  const addresses = await resolve4(url.hostname);
-  if (!addresses.length || addresses.some(privateIPv4)) throw new TypeError("private destination");
+  if (!allowedOrigins.has(url.origin) || url.username || url.password) {
+    throw new TypeError("destination not allowed");
+  }
   return url;
 }
-
-await safeHttpUrl(userInput);
-
-// Defense in depth example:
-// node --permission --allow-fs-read=/srv/config --allow-net=api.example.com app.mjs`;
+assert.equal(safeHttpUrl("https://api.example.com/items").hostname, "api.example.com");
+for (const input of ["http://api.example.com", "https://api.example.com.evil.test",
+  "https://user:secret@api.example.com", "https://127.0.0.1", "https://[::1]",
+  "https://api.example.com:444"]) assert.throws(() => safeHttpUrl(input));
+// Disallow automatic redirects or validate every hop in the HTTP adapter.
+// Enforce IP/destination restrictions at connection time or controlled egress,
+// including IPv6 and DNS rebinding. resolve4 followed by an independent fetch
+// is racy and misses address classes. Bound response size and total time too.
+// Do not accept the allowlist from the client or log URL credentials.`;
 
   if (title.startsWith("diagnostics_channel")) return `import diagnostics from "node:diagnostics_channel";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -5981,18 +7124,20 @@ export async function observeRequest(requestId, operation) {
 
 // Bound label values and redact credentials before publishing telemetry.`;
 
-  if (title.startsWith("perf_hooks")) return `import { eventLoopUtilization, monitorEventLoopDelay, performance } from "node:perf_hooks";
+  if (title.startsWith("perf_hooks")) return `import { monitorEventLoopDelay, performance } from "node:perf_hooks";
 
 const histogram = monitorEventLoopDelay({ resolution: 20 });
-const baseline = eventLoopUtilization();
+const baseline = performance.eventLoopUtilization();
 histogram.enable();
 
 performance.mark("work:start");
-await representativeLoad();
+// Runnable idle-wait fixture, not a production capacity benchmark.
+await new Promise(resolve => setTimeout(resolve, 60));
 performance.mark("work:end");
 performance.measure("work", "work:start", "work:end");
 
-const utilization = eventLoopUtilization(baseline);
+const utilization = performance.eventLoopUtilization(baseline);
+console.assert(utilization.utilization >= 0 && utilization.utilization <= 1);
 console.table({
   durationMs: performance.getEntriesByName("work").at(-1).duration,
   utilization: utilization.utilization,
@@ -6066,9 +7211,9 @@ export function createService({ repository, workers, telemetry, now }) {
     const started = now();
     try {
       if (request.headers["content-type"] !== "application/x-ndjson") throw Object.assign(new Error("unsupported media type"), { statusCode: 415 });
-      const validated = request.pipe(createValidationTransform({ maxLineBytes: 64 * 1024 }));
+      const validated = createValidationTransform({ maxLineBytes: 64 * 1024 });
       const persisted = createPersistenceSink(repository, { concurrency: 8, signal });
-      await pipeline(validated, persisted, { signal });
+      await pipeline(request, validated, persisted, { signal });
       response.writeHead(202).end();
     } catch (error) {
       if (!response.headersSent) response.writeHead(error.statusCode ?? 500);
@@ -6079,6 +7224,14 @@ export function createService({ repository, workers, telemetry, now }) {
   };
 }
 
+// Integration sketch: supply validation/persistence adapters and authenticate before
+// ingest. Bound total bytes as well as line bytes. The complete pipeline owns source
+// errors and cancellation; request.pipe(transform) outside pipeline would not.
+// Define whether a failed import permits committed rows: pipeline cannot undo prior
+// database writes. Use staging plus atomic promotion for all-or-nothing imports, or
+// document resumable partial success with per-record identities and saved outcomes.
+// 202 requires durable acceptance of any remaining work; in-memory enqueue is not
+// enough. Oversized request iteration may reset the socket before an error response.
 // Evidence: body limit, queue depth, write backpressure, worker utilization,
 // loop delay, latency, heap, stable errors, shutdown drain, and recovery runbook.`;
 
@@ -6086,11 +7239,12 @@ export function createService({ repository, workers, telemetry, now }) {
 }
 
 function dataSystemsCodeFor(title, fallback) {
-  if (title.startsWith("PostgreSQL setup")) return `# psql variables make identity and resolution observable.
-psql -X --set ON_ERROR_STOP=1 postgres
+  if (title.startsWith("PostgreSQL setup")) return `-- psql script for an authorized disposable instance, not a shell script.
+-- Start separately: psql -X --set ON_ERROR_STOP=1 postgres
 
 CREATE ROLE app_owner NOLOGIN;
-CREATE ROLE app_runtime LOGIN PASSWORD 'replace-through-secret-manager';
+CREATE ROLE app_runtime LOGIN;
+-- Provision credentials through the approved secret channel; no shared password.
 CREATE DATABASE lessons OWNER app_owner;
 \\connect lessons
 CREATE SCHEMA app AUTHORIZATION app_owner;
@@ -6111,8 +7265,8 @@ FROM pg_settings
 WHERE name IN ('shared_buffers', 'wal_buffers', 'max_connections',
                'autovacuum', 'checkpoint_timeout');
 
-# Correlate database PIDs with the host; do not expose credentials.
-ps -o pid,ppid,rss,etime,command -p POSTMASTER_PID,BACKEND_PID`;
+-- Separate shell check: ps -o pid,ppid,rss,etime,command -p POSTMASTER_PID,BACKEND_PID
+-- Query text and process arguments can contain secrets; redact captured evidence.`;
 
   if (title.startsWith("Relations,")) return `CREATE TABLE storage_probe (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -6138,8 +7292,11 @@ CREATE TABLE jobs (
   active_during tstzrange NOT NULL,
   tags text[] NOT NULL DEFAULT '{}',
   metadata jsonb NOT NULL DEFAULT '{}' CHECK (jsonb_typeof(metadata) = 'object'),
-  search_text text GENERATED ALWAYS AS (owner_email || ' ' || array_to_string(tags, ' ')) STORED
+  search_text text GENERATED ALWAYS AS (lower(owner_email::text)) STORED
 );
+-- Generated expressions require immutable functions. array_to_string is STABLE,
+-- so compute a tag-inclusive display string in a SELECT or maintained write path.
+-- This minimal email domain checks a shape, not mailbox validity or ownership.
 
 SELECT NULL = NULL AS unknown, NULL IS NOT DISTINCT FROM NULL AS null_safe;`;
 
@@ -6162,7 +7319,7 @@ CREATE TABLE orders (
   PRIMARY KEY (tenant_id, order_id),
   FOREIGN KEY (tenant_id) REFERENCES tenants
 );
-# Store order-line price snapshots separately: product price changes must not rewrite history.`;
+-- Store order-line price snapshots separately: product price changes must not rewrite history.`;
 
   if (title.startsWith("Constraints,")) return `CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE TABLE bookings (
@@ -6180,7 +7337,7 @@ CREATE TABLE bookings (
 
 BEGIN;
 SET CONSTRAINTS ALL DEFERRED;
-# Conflicting concurrent inserts cannot both commit.
+-- Conflicting concurrent inserts cannot both commit.
 COMMIT;`;
 
   if (title.startsWith("Schema migrations")) return `-- 1. Expand: brief metadata lock; nullable avoids a full validation dependency.
@@ -6247,17 +7404,24 @@ EXPLAIN (ANALYZE, BUFFERS, VERBOSE) WITH candidates AS NOT MATERIALIZED (
   SELECT * FROM jobs WHERE state = 'ready'
 ) SELECT * FROM candidates WHERE tenant_id = $2;`;
 
-  if (title.startsWith("Aggregates,")) return `SELECT tenant_id, created_at::date AS day, duration_ms,
+  if (title.startsWith("Aggregates,")) return `-- Ordered-set aggregates are grouped first, not used with OVER here.
+WITH per_tenant AS (
+  SELECT tenant_id,
+         percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms) AS p95_ms
+  FROM jobs GROUP BY tenant_id
+)
+SELECT j.tenant_id, created_at::date AS day, duration_ms,
        row_number() OVER (
-         PARTITION BY tenant_id ORDER BY duration_ms DESC, id
+         PARTITION BY j.tenant_id ORDER BY duration_ms DESC, id
        ) AS slowest_rank,
        sum(duration_ms) OVER (
-         PARTITION BY tenant_id ORDER BY created_at, id
+         PARTITION BY j.tenant_id ORDER BY created_at, id
          ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
        ) AS running_ms,
-       percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms)
-         OVER (PARTITION BY tenant_id) AS p95_ms
-FROM jobs;
+       per_tenant.p95_ms
+FROM jobs AS j JOIN per_tenant ON per_tenant.tenant_id = j.tenant_id;
+-- This fixture assumes tenant_id is NOT NULL. Ordered-set percentiles ignore
+-- null input values; define their meaning before comparing metrics.
 
 SELECT tenant_id, state, count(*)
 FROM jobs GROUP BY GROUPING SETS ((tenant_id, state), (tenant_id), ());`;
@@ -6273,26 +7437,36 @@ INSERT INTO transfers(request_id, from_id, to_id, amount_cents)
 VALUES ('req-42', 10, 20, 500);
 COMMIT;
 
--- A UNIQUE(request_id) constraint makes a retried command observable and safe.`;
+-- A UNIQUE(request_id) conflict rolls back this transaction; it does not by
+-- itself return a successful replay. Persist intent and result with the transfer,
+-- compare repeated intent, and check account existence and sufficient funds.
+-- This SQL fragment assumes those domain checks and is not a complete money API.`;
 
   if (title.startsWith("MVCC,")) return `-- Run in session A.
 BEGIN ISOLATION LEVEL REPEATABLE READ;
 SELECT txid_current(), txid_current_snapshot();
 SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
 
--- In session B, update and commit the same logical row.
-UPDATE accounts SET balance_cents = balance_cents + 1 WHERE id = 10
-RETURNING xmin, xmax, ctid, balance_cents;
+-- PAUSE A. Run these lines in a DIFFERENT psql connection B:
+-- BEGIN;
+-- UPDATE accounts SET balance_cents = balance_cents + 1 WHERE id = 10
+-- RETURNING xmin, xmax, ctid, balance_cents;
+-- COMMIT;
 
--- Session A still applies its older snapshot; a new transaction sees the new tuple.
+-- RESUME A only after B commits. Running B's UPDATE in A would show A's own write
+-- and would not demonstrate snapshot isolation. xmin/xmax are internals, not a
+-- durable application version or a simple universal live/dead-row flag.
 SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
 COMMIT;
+SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
 VACUUM (VERBOSE, ANALYZE) accounts;`;
 
   if (title.startsWith("Isolation levels")) return `-- Both sessions read two doctors on call, then each disables a different row.
 BEGIN ISOLATION LEVEL SERIALIZABLE;
 SELECT count(*) FROM duty WHERE shift_id = 7 AND on_call;
-UPDATE duty SET on_call = false WHERE shift_id = 7 AND doctor_id = $1;
+UPDATE duty SET on_call = false
+WHERE shift_id = 7 AND doctor_id = $1 AND on_call
+  AND (SELECT count(*) FROM duty WHERE shift_id = 7 AND on_call) > 1;
 COMMIT; -- one transaction can fail with SQLSTATE 40001
 
 -- Retry the complete transaction with fresh reads and bounded backoff.
@@ -6316,18 +7490,27 @@ SELECT locktype, mode, granted, relation::regclass, transactionid
 FROM pg_locks WHERE pid = $1 ORDER BY granted, locktype, mode;
 COMMIT;`;
 
-  if (title.startsWith("Deadlocks,")) return `# Retry the complete database unit, never just the failed statement.
-for attempt in 0 1 2 3; do
-  if psql -X --set ON_ERROR_STOP=1 --file transfer.sql; then exit 0; fi
-  status=$?
-  # Production code checks SQLSTATE 40001 and 40P01 specifically and preserves
-  # one idempotency key. Other errors escape immediately.
-  sleep "0.$((RANDOM % (2 ** attempt + 1)))"
-done
-exit "$status"
+  if (title.startsWith("Deadlocks,")) return `import random
+import time
 
-# Prevent common deadlocks by locking accounts in stable account_id order.
-# Also set lock_timeout and statement_timeout below the caller deadline.`;
+def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
+    if type(attempts) is not int or not 1 <= attempts <= 10:
+        raise ValueError("attempts must be an integer from 1 to 10")
+    for attempt in range(attempts):
+        try:
+            return run_transaction()
+        except Exception as error:
+            if getattr(error, "sqlstate", None) not in {"40001", "40P01"} or attempt + 1 == attempts:
+                raise
+            pause(random.uniform(0, min(0.05 * 2 ** attempt, 0.5)))
+
+# Adapter contract: each call begins a fresh transaction, reruns reads and domain
+# decisions, commits on success and rolls back before raising. Keep one durable
+# operation identity across retries. Do not repeat external effects blindly.
+# The driver must expose sqlstate; other errors escape unchanged. In production,
+# add a caller deadline/cancellation and bound statements/locks within that budget.
+# Avoid deadlocks by locking accounts in stable ID order. Isolation alone cannot
+# repair missing business rules: a retry must recheck sufficient funds/invariants.`;
 
   if (/^(B-tree internals|Hash, GiST|Composite, covering)/.test(title)) return `CREATE INDEX CONCURRENTLY jobs_ready_lookup
 ON jobs (tenant_id, created_at, id)
@@ -6357,8 +7540,8 @@ FROM pg_stats
 WHERE schemaname = 'app' AND tablename = 'jobs';
 
 SELECT statistics_name, kinds, attnames
-FROM pg_statistic_ext JOIN pg_statistic_ext_data
-  ON oid = stxoid WHERE stxrelid = 'jobs'::regclass;`;
+FROM pg_stats_ext
+WHERE schemaname = current_schema() AND tablename = 'jobs';`;
 
   if (/^(EXPLAIN,|Sequential scans)/.test(title)) return `EXPLAIN (ANALYZE, BUFFERS, WAL, SETTINGS, VERBOSE, SUMMARY)
 SELECT p.id, count(*)
@@ -6367,10 +7550,13 @@ JOIN jobs AS j ON j.project_id = p.id
 WHERE p.tenant_id = 42 AND j.created_at >= now() - interval '7 days'
 GROUP BY p.id ORDER BY count(*) DESC LIMIT 20;
 
--- Read bottom-up. Compare estimated rows with actual rows * loops first.
+-- Compare estimated and actual rows on the same per-loop basis first;
+-- multiply actual rows by loops when assessing repeated total work.
 -- Then inspect access paths, join inputs, sort/hash methods, buffer reads,
 -- temporary blocks, WAL, and end-to-end timing under representative data.
--- EXPLAIN ANALYZE executes writes unless wrapped in BEGIN ... ROLLBACK.`;
+-- EXPLAIN ANALYZE executes the statement even inside BEGIN ... ROLLBACK.
+-- Rollback undoes transactional data changes, not all external effects or sequence
+-- increments. Use a disposable database; plain EXPLAIN does not execute the plan.`;
 
   if (/^(Heap pages|VACUUM,)/.test(title)) return `SELECT relname, n_live_tup, n_dead_tup, last_autovacuum,
        autovacuum_count, last_autoanalyze, autoanalyze_count
@@ -6386,22 +7572,22 @@ ALTER TABLE events SET (
   autovacuum_analyze_scale_factor = 0.01
 );
 
-# Check for old transactions and replication slots before blaming autovacuum.`;
+-- Check for old transactions and replication slots before blaming autovacuum.`;
 
-  if (title.startsWith("WAL,")) return `SELECT pg_current_wal_lsn() AS before_lsn;
+  if (title.startsWith("WAL,")) return `-- PostgreSQL 17+, run in psql; gset stores the named result for later interpolation.
+SELECT pg_current_wal_lsn() AS before_lsn \\gset
 BEGIN;
 INSERT INTO audit_events(kind, payload) VALUES ('probe', '{"ok":true}');
 COMMIT;
 SELECT pg_current_wal_lsn() AS after_lsn,
        pg_wal_lsn_diff(pg_current_wal_lsn(), :'before_lsn') AS wal_bytes;
 
-SELECT checkpoints_timed, checkpoints_req, checkpoint_write_time,
-       checkpoint_sync_time, buffers_checkpoint
-FROM pg_stat_bgwriter;
+SELECT num_timed, num_requested, write_time, sync_time, buffers_written
+FROM pg_stat_checkpointer;
 
 CHECKPOINT;
-# In an isolated environment only: terminate the server uncleanly, restart,
-# inspect recovery logs, and verify the committed row and uncommitted absence.`;
+-- In an isolated environment only: terminate the server uncleanly, restart,
+-- inspect recovery logs, and verify the committed row and uncommitted absence.`;
 
   if (title.startsWith("Connections,")) return `# PgBouncer transaction-pooling sketch.
 [databases]
@@ -6415,8 +7601,9 @@ max_client_conn = 500
 query_wait_timeout = 5
 server_idle_timeout = 60
 
-SELECT datname, state, count(*)
-FROM pg_stat_activity GROUP BY datname, state ORDER BY datname, state;
+# Separate SQL diagnostic, not part of this INI configuration:
+# SELECT datname, state, count(*)
+# FROM pg_stat_activity GROUP BY datname, state ORDER BY datname, state;
 # Measure client queue time, database active sessions, throughput, p95 latency,
 # CPU, I/O, and lock waits while increasing concurrency.`;
 
@@ -6434,7 +7621,9 @@ SELECT * FROM events
 WHERE tenant_id = 42
   AND occurred_at >= '2026-09-10' AND occurred_at < '2026-09-11';
 
-ALTER TABLE events DETACH PARTITION events_2026_08 CONCURRENTLY;`;
+-- Separate retention exercise, only after creating an August fixture and checking
+-- retention/rollback requirements: ALTER TABLE events DETACH PARTITION events_2026_08 CONCURRENTLY;
+-- Use explicit UTC offsets in timestamp boundaries if sessions use different zones.`;
 
   if (title.startsWith("Physical streaming replication")) return `SELECT application_name, client_addr, state, sync_state,
        sent_lsn, write_lsn, flush_lsn, replay_lsn,
@@ -6445,15 +7634,18 @@ SELECT slot_name, slot_type, active, restart_lsn, confirmed_flush_lsn,
        pg_size_pretty(pg_wal_lsn_diff(pg_current_wal_lsn(), restart_lsn)) AS retained
 FROM pg_replication_slots;
 
-# On a standby:
+-- On a standby (separate connection):
 SELECT pg_is_in_recovery(), pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn(),
        now() - pg_last_xact_replay_timestamp() AS replay_delay;
-# Test promotion and client rerouting in an isolated topology.`;
+-- An idle primary can make time since last replay grow without replication lag.
+-- Compare positions and workload activity, not this interval alone.
+-- Test promotion and client rerouting in an isolated topology.`;
 
   if (title.startsWith("Logical replication")) return `-- Publisher
 ALTER TABLE events REPLICA IDENTITY FULL;
 CREATE PUBLICATION app_changes FOR TABLE projects, events;
-SELECT * FROM pg_create_logical_replication_slot('cdc_probe', 'pgoutput');
+-- CREATE SUBSCRIPTION below normally creates its own publisher slot. Do not
+-- create an unused extra slot: it can retain WAL until storage is exhausted.
 
 -- Subscriber
 CREATE SUBSCRIPTION app_copy
@@ -6463,7 +7655,10 @@ PUBLICATION app_changes;
 SELECT subname, received_lsn, latest_end_lsn, latest_end_time
 FROM pg_stat_subscription;
 SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
-# Consumers persist event identity plus business effect in one local transaction.`;
+-- Native logical replication is not a business-event consumer implementation.
+-- Provision compatible subscriber tables first; DDL and sequence state are not
+-- automatically replicated. Inspect slot retention, conflicts and resync needs.
+-- If building a separate event consumer, commit its receipt and effect together.`;
 
   if (title.startsWith("Backups,")) return `# Logical, selective, portable restore path.
 pg_dump --format=custom --file=app.dump --dbname=app
@@ -6478,8 +7673,10 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream \
 # archived WAL, then verify constraints, row counts, critical checksums, RPO,
 # RTO, application smoke tests, and the ability to promote.`;
 
-  if (title.startsWith("Authentication,")) return `# pg_hba.conf: TLS plus SCRAM; use a narrow CIDR and certificate verification.
-hostssl app app_runtime 10.40.16.0/20 scram-sha-256
+  if (title.startsWith("Authentication,")) return `-- SQL fixture. Separate pg_hba.conf entry (not SQL):
+-- hostssl app app_runtime 10.40.16.0/20 scram-sha-256
+-- Client sslmode=verify-full verifies server identity; hostssl requires TLS but
+-- does not itself force clients to verify the server certificate/hostname.
 
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON DATABASE app FROM PUBLIC;
@@ -6491,7 +7688,17 @@ ALTER TABLE app.projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation ON app.projects
 USING (tenant_id = current_setting('app.tenant_id')::bigint)
 WITH CHECK (tenant_id = current_setting('app.tenant_id')::bigint);
-SET LOCAL app.tenant_id = '42';`;
+-- Connect separately as app_runtime: not the owner, superuser or BYPASSRLS.
+BEGIN;
+SET LOCAL app.tenant_id = '42';
+SELECT * FROM app.projects; -- Fixture: only tenant 42 rows should be visible.
+ROLLBACK;
+-- The authenticated application sets this value, never an untrusted request.
+-- A caller allowed arbitrary SQL can change this custom setting: it is not
+-- an identity boundary against SQL injection or untrusted database clients.
+-- Repeat with another tenant and test rejected cross-tenant INSERT/UPDATE.
+-- https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+-- https://www.postgresql.org/docs/current/sql-set.html`;
 
   if (/^(PostgreSQL observability|PostgreSQL performance tuning)/.test(title)) return `SELECT queryid, calls, total_exec_time, mean_exec_time, rows,
        shared_blks_hit, shared_blks_read, temp_blks_written, wal_bytes,
@@ -6503,10 +7710,10 @@ SELECT wait_event_type, wait_event, state, count(*)
 FROM pg_stat_activity WHERE backend_type = 'client backend'
 GROUP BY wait_event_type, wait_event, state ORDER BY count(*) DESC;
 
-SELECT checkpoints_timed, checkpoints_req, buffers_checkpoint,
-       buffers_clean, maxwritten_clean, buffers_backend
-FROM pg_stat_bgwriter;
-# Correlate database evidence with host CPU, memory, storage latency, and queueing.`;
+-- PostgreSQL 17+ split checkpointer statistics from background-writer statistics.
+SELECT num_timed, num_requested, buffers_written FROM pg_stat_checkpointer;
+SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
+-- Correlate database evidence with host CPU, memory, storage latency, and queueing.`;
 
   if (title.startsWith("JSONB indexing")) return `CREATE EXTENSION IF NOT EXISTS vector;
 ALTER TABLE candidates
@@ -6522,81 +7729,175 @@ CREATE INDEX candidates_embedding_hnsw ON candidates
 SELECT id, ts_rank(search_document, websearch_to_tsquery('english', $1)) AS text_score,
        1 - (embedding <=> $2::vector) AS vector_score
 FROM candidates WHERE tenant_id = $3 ORDER BY embedding <=> $2::vector LIMIT 40;
-# Measure recall@k and latency against an exact-search baseline.`;
+-- Requires an ALREADY installed compatible pgvector extension and fixture schema.
+-- This ranks by vector distance; displaying text_score does not make it hybrid
+-- retrieval. Implement explicit candidate fusion/reranking for that exercise.
+-- Measure filtered recall@k and latency against an exact-search baseline.`;
 
-  if (title.startsWith("Application data patterns")) return `BEGIN;
-INSERT INTO command_receipts(request_id, status)
-VALUES ($1, 'started') ON CONFLICT (request_id) DO NOTHING;
--- Stop if the receipt already contains the authoritative prior result.
-UPDATE projects SET name = $2, version = version + 1
-WHERE tenant_id = $3 AND id = $4 AND version = $5
-RETURNING id, version;
-INSERT INTO outbox(event_id, aggregate_id, kind, payload)
-VALUES ($1, $4, 'project.renamed', jsonb_build_object('name', $2));
-UPDATE command_receipts SET status = 'done' WHERE request_id = $1;
-COMMIT;
+  if (title.startsWith("Application data patterns")) return `// Integration core: db.transaction must use ONE connection, BEGIN/COMMIT,
+// roll back on every thrown error, and use READ COMMITTED isolation.
+// tx.query returns { rows }; no driver, schema or authorization is supplied.
+// Before calling: authenticate tenant, authorize project, validate all inputs.
+// command_receipts needs UNIQUE(tenant_id, request_id), intent text, result jsonb.
+// projects needs UNIQUE(tenant_id, id); outbox needs UNIQUE(tenant_id, event_id).
+async function renameProject(db, { tenant, requestId, projectId, name, version }) {
+  // Fixed tuple of validated primitives; includes operation + schema version.
+  const intent = JSON.stringify(["rename-v1", projectId, name, version]);
+  return db.transaction(async tx => {
+    const claim = await tx.query(
+      "INSERT INTO command_receipts(tenant_id, request_id, intent) VALUES ($1,$2,$3) ON CONFLICT (tenant_id, request_id) DO NOTHING RETURNING request_id",
+      [tenant, requestId, intent]
+    );
+    if (claim.rows.length === 0) {
+      // A separate statement gets a fresh READ COMMITTED snapshot after a
+      // competing insert commits. Never fall through to business writes.
+      const prior = await tx.query(
+        "SELECT intent, result FROM command_receipts WHERE tenant_id=$1 AND request_id=$2",
+        [tenant, requestId]
+      );
+      const receipt = prior.rows[0];
+      if (!receipt || receipt.result == null) throw new Error("receipt unavailable");
+      if (receipt.intent !== intent) throw new Error("idempotency key reused");
+      return receipt.result;
+    }
+    const updated = await tx.query(
+      "UPDATE projects SET name=$1, version=version+1 WHERE tenant_id=$2 AND id=$3 AND version=$4 RETURNING id, version",
+      [name, tenant, projectId, version]
+    );
+    if (updated.rows.length !== 1) throw new Error("version conflict or missing project");
+    const result = updated.rows[0];
+    await tx.query(
+      "INSERT INTO outbox(tenant_id, event_id, aggregate_id, kind, payload) VALUES ($1,$2,$3,'project.renamed',$4::jsonb)",
+      [tenant, requestId, projectId, JSON.stringify({ name, version: result.version })]
+    );
+    await tx.query(
+      "UPDATE command_receipts SET result=$3::jsonb WHERE tenant_id=$1 AND request_id=$2",
+      [tenant, requestId, JSON.stringify(result)]
+    );
+    return result;
+  });
+}
+// A stale update rolls back the claim: this example does not cache failures.
+// Keep receipts for the promised retry window; deletion permits re-execution.
+// Relay may publish twice after a crash; consumer inbox + effect commit together.
+// Practice: replay same intent, reject changed intent, race two clients, then
+// force UPDATE to return zero rows: no event or successful receipt may commit.
+// https://www.postgresql.org/docs/current/sql-insert.html
+// https://www.postgresql.org/docs/current/transaction-iso.html`;
 
--- Publisher claims with FOR UPDATE SKIP LOCKED; consumer stores event_id in an
--- inbox table in the same transaction as its local side effect.`;
-
-  if (title.startsWith("Redis architecture")) return `redis-cli INFO server
+  if (title.startsWith("Redis architecture")) return `# Shell commands against an isolated instance; COMMAND DOCS requires Redis 7+.
+redis-cli INFO server
 redis-cli INFO stats
 redis-cli INFO commandstats
 redis-cli LATENCY DOCTOR
 redis-cli SLOWLOG GET 20
 
-# Safe isolated demonstration of event-loop occupancy:
+# Controlled demonstration of command occupancy (not safe on a shared server):
 redis-cli SET counter 0
 redis-cli --latency-history
-# In another terminal, compare bounded commands with a deliberately large
-# O(N) operation against test data. Record p50/p99 latency and ops/sec.
+# This probe runs continuously: stop it with Ctrl+C after the timed experiment.
+# In another terminal, use a preloaded, bounded list (for example 10,000 small
+# entries). Compare LLEN with LRANGE over the full fixture during the probe.
+# Fix fixture size and duration before running; do not use unbounded KEYS *.
+# SLOWLOG measures command execution, not client network or queueing latency.
+# No LATENCY DOCTOR events can mean monitoring is disabled, not zero latency.
+# Record client p50/p99 separately; INFO and probe summaries do not prove them.
 redis-cli COMMAND DOCS ZRANGE
 redis-cli OBJECT ENCODING counter`;
 
-  if (title.startsWith("RESP,")) return `# RESP arrays contain bulk strings. This frame encodes: SET lesson 42
-printf '*3\r\n$3\r\nSET\r\n$6\r\nlesson\r\n$2\r\n42\r\n' | nc 127.0.0.1 6379
+  if (title.startsWith("RESP,")) return `# Python 3, standard library only; offline wire-format experiment.
+def command_frame(*parts):
+    if not parts or not all(isinstance(part, bytes) for part in parts):
+        raise TypeError("supply a command and arguments as bytes")
+    return b"*" + str(len(parts)).encode("ascii") + b"\\r\\n" + b"".join(
+        b"$" + str(len(part)).encode("ascii") + b"\\r\\n" + part + b"\\r\\n"
+        for part in parts
+    )
 
-# Bounded pipeline: replies remain in request order.
-for n in $(seq 1 100); do
-  printf 'INCR counter\r\n'
-done | redis-cli --pipe
+assert command_frame(b"SET", b"lesson", b"42") == (
+    b"*3\\r\\n$3\\r\\nSET\\r\\n$6\\r\\nlesson\\r\\n$2\\r\\n42\\r\\n"
+)
+value = "é".encode("utf-8")
+assert len(value) == 2  # Character count is not the encoded byte count.
+assert command_frame(b"ECHO", value).endswith(b"$2\\r\\n" + value + b"\\r\\n")
+binary = bytes([0, 13, 10, 255])
+assert command_frame(b"ECHO", binary).endswith(b"$4\\r\\n" + binary + b"\\r\\n")
+assert command_frame(b"ECHO", b"").endswith(b"$0\\r\\n\\r\\n")
+try:
+    command_frame("ECHO", "not bytes")
+except TypeError:
+    pass
+else:
+    raise AssertionError("text must be encoded explicitly")
 
-redis-cli CLIENT LIST
-redis-cli INFO clients
-# Inspect connected_clients, blocked_clients, client_recent_max_output_buffer,
-# rejected_connections, and application-side pending-command bounds.`;
+# Bulk lengths allow CRLF and zero bytes INSIDE a value without ending it.
+# TCP may split one frame or combine many frames: reads are not message boundaries.
+# A reply parser must retain incomplete bytes and use declared lengths, not split
+# every CRLF. This exercise supplies an encoder, not a parser or a Redis client.
+# Optional integration: send bounded batches through redis-cli --pipe to an
+# isolated Redis instance; check every reply/error, not just bytes written.
+# Ordinary replies on one connection are ordered; RESP3 pushes need separate
+# handling. Pipelining saves waits but supplies neither isolation nor rollback.
+# https://redis.io/docs/latest/develop/reference/protocol-spec/`;
 
-  if (/^Redis strings/.test(title)) return `MULTI
+  if (/^Redis strings/.test(title)) return `# One interactive connection; isolated standalone instance, all named keys
+# initially absent. These commands mutate the fixture; do not reuse user data.
+MULTI
 HSET user:42 name "Ada" plan "pro" logins 0
 HINCRBY user:42 logins 1
 INCR page:home:views
 SET session:abc '{"user_id":42,"scope":["read"]}' EX 1800 NX
 EXEC
+HGET user:42 logins
+GET page:home:views
+# First run: both reads return 1; inspect each EXEC reply, including SET NX.
+# Repeat unchanged: HSET resets logins before HINCRBY (still 1), page views
+# becomes 2, and SET NX does not replace an existing unexpired session.
+# This is a state/command exercise, not a login or session-creation workflow.
 
 MEMORY USAGE user:42
 OBJECT ENCODING user:42
 STRLEN session:abc
 TTL session:abc
 # Hash fields are not independent keys: decide serialization, TTL, and update
-# granularity from the real access pattern.`;
+# granularity from the real access pattern. Hash-field expiry is version-specific;
+# these commands do not set field TTLs. A whole-key TTL is a different boundary.
+# https://redis.io/docs/latest/develop/using-commands/transactions/`;
 
-  if (title.startsWith("Redis lists")) return `LPUSH feed:42 event-3 event-2 event-1
+  if (title.startsWith("Redis lists")) return `# Interactive Redis commands; isolated fixture with these keys initially absent.
+LPUSH feed:42 event-3 event-2 event-1
+LRANGE feed:42 0 -1
+# Expected head-to-tail: event-1, event-2, event-3. Each argument is prepended.
 LTRIM feed:42 0 99
 SADD project:42:members user:1 user:2
 SISMEMBER project:42:members user:2
 ZADD leaderboard 1840 user:1 2190 user:2 2190 user:3
-ZREVRANGE leaderboard 0 9 WITHSCORES
+ZRANGE leaderboard 0 9 REV WITHSCORES
 ZREVRANK leaderboard user:1
+# Expected descending members: user:3, user:2, user:1; user:1 rank is 2.
+# Equal scores use reverse lexicographic member order here, not insertion order.
 
 # Blocking list operations hold the client, not the whole server.
+LPUSH queue:ready job-1 job-2
 BLMOVE queue:ready queue:processing RIGHT LEFT 5
+# Expected moved value: job-1. Moving is not processing or acknowledgment.
+# A crash leaves it in processing; this transcript supplies no recovery worker.
 # For durable consumer state, retries, and acknowledgements, prefer Streams or
-# a dedicated broker over inventing a multi-list protocol casually.`;
+# a dedicated broker over inventing a multi-list protocol casually.
+# https://redis.io/docs/latest/commands/lpush/
+# https://redis.io/docs/latest/commands/zrange/`;
 
-  if (title.startsWith("Redis bitmaps")) return `SETBIT attendance:2026-09-01 42 1
+  if (title.startsWith("Redis bitmaps")) return `# Isolated instance, named keys initially absent; GEOSEARCH requires Redis 6.2+.
+SETBIT attendance:2026-09-01 42 1
 GETBIT attendance:2026-09-01 42
 BITCOUNT attendance:2026-09-01
+SETBIT attendance:2026-09-02 99 1
 BITOP OR attendance:week attendance:2026-09-01 attendance:2026-09-02
+BITCOUNT attendance:week
+# Expected daily count 1 and weekly union count 2. Re-setting bit 42 to 1
+# changes neither count. BITOP returns destination byte length, not set-bit count.
+# Offsets determine allocation: sparse huge IDs can allocate a huge string.
+# Validate/map IDs into a bounded dense range before using them as bit offsets.
 
 PFADD dau:2026-09-01 user:42 user:99 user:42
 PFCOUNT dau:2026-09-01
@@ -6605,47 +7906,86 @@ GEOADD offices 72.8777 19.0760 mumbai 77.5946 12.9716 bengaluru
 GEOSEARCH offices FROMLONLAT 73 19 BYRADIUS 1000 km WITHDIST
 
 MEMORY USAGE attendance:2026-09-01
-# Compare HyperLogLog estimates against a SET on representative cardinalities.`;
+# HyperLogLog estimates unique counts: it cannot list members or test membership.
+# Compare PFCOUNT with exact SCARD on representative cardinalities, not only two
+# IDs. GEOADD takes longitude then latitude; distances are not road travel times.
+# https://redis.io/docs/latest/commands/setbit/`;
 
-  if (title.startsWith("Redis TTL")) return `CONFIG SET maxmemory 32mb
+  if (title.startsWith("Redis TTL")) return `# Disposable Redis instance only: CONFIG SET changes the whole server,
+# not just this client's keys or logical database. Record original settings.
+CONFIG GET maxmemory
+CONFIG GET maxmemory-policy
+CONFIG SET maxmemory 32mb
 CONFIG SET maxmemory-policy allkeys-lfu
 SET cache:project:42 '{"name":"probe"}' EX 60
 TTL cache:project:42
 OBJECT FREQ cache:project:42
 
-# SET without KEEPTTL replaces the old TTL; prove the behavior explicitly.
+# KEEPTTL preserves the remaining lifetime; it does not restart 60 seconds.
 SET cache:project:42 '{"name":"updated"}' KEEPTTL
+TTL cache:project:42
+SET cache:project:42 '{"name":"no expiry"}'
+TTL cache:project:42
+# If the original key still existed, KEEPTTL keeps its remaining TTL (possibly
+# 0 near expiry). If it expired BEFORE SET KEEPTTL, SET recreates it without
+# expiry: TTL is -1. -2 means absent at the instant of TTL. Ordinary SET gives -1.
 INFO memory
 INFO stats
 
 # Track keyspace_hits, keyspace_misses, expired_keys, evicted_keys,
 # used_memory, maxmemory, mem_fragmentation_ratio, errors, and source-of-truth
-# fallback correctness under pressure.`;
+# fallback correctness under pressure. Restore the recorded server settings.
+# https://redis.io/docs/latest/commands/ttl/`;
 
-  if (title.startsWith("Redis atomic commands")) return `WATCH balance:42
-GET balance:42
+  if (title.startsWith("Redis atomic commands")) return `# Deliberately failing experiment, NOT a money-transfer implementation.
+# One interactive connection to an isolated standalone Redis instance.
+SET balance:42 1000
+SET balance:99 not-an-integer
+WATCH balance:42 balance:99
 MULTI
 DECRBY balance:42 500
 INCRBY balance:99 500
 EXEC
+GET balance:42
+GET balance:99
+# Expected EXEC replies: 500, then an integer-type error. Final values are
+# 500 and not-an-integer: a runtime error does NOT roll back the first write.
+# Next experiment: change a watched key from a second connection before EXEC.
+# Expected: null EXEC result and neither queued operation runs. Retry requires
+# fresh reads, validation and a bounded retry budget on a dedicated connection.
 
-# Atomic fixed-window limiter; use Redis server TIME in stricter designs.
+# Counter window starts at the first request, not a calendar-aligned boundary.
+# Trusted positive TTL input and an isolated integer key are prerequisites.
+# This counts attempts; the caller still compares n against an allowed limit.
 EVAL "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('PEXPIRE',KEYS[1],ARGV[1]) end; return {n,redis.call('PTTL',KEYS[1])}" \
   1 limit:user:42:window 60000
 
 # MULTI queues commands and EXEC runs them without interleaving, but runtime
-# command errors do not roll back earlier successful commands.`;
+# command errors do not roll back earlier successful commands. Lua scripts
+# also do not undo earlier writes after a runtime error. Validate before writes.
+# https://redis.io/docs/latest/develop/using-commands/transactions/`;
 
-  if (title.startsWith("Redis pipelining")) return `# Generate one million commands without retaining them client-side.
-seq 1 1000000 | awk '{print "SET bench:"$1" "$1}' | redis-cli --pipe
+  if (title.startsWith("Redis pipelining")) return `# Isolated Redis instance only; these commands write data and generate load.
+# Start with 10,000 tiny fixture commands, not a million-key default.
+# Producer streaming limits producer memory, not all client/server buffers.
+seq 1 10000 | awk '{print "SET lesson:bench:"$1" "$1}' | redis-cli --pipe
+# Require 10,000 replies and zero errors. This raw pipe is not a transaction.
 
-redis-benchmark -t set,get -n 100000 -c 50 -P 1 -q
-redis-benchmark -t set,get -n 100000 -c 50 -P 16 -q
-redis-benchmark -t set,get -n 100000 -c 50 -P 64 -q
+redis-benchmark -t set,get -n 10000 -c 10 -P 1
+redis-benchmark -t set,get -n 10000 -c 10 -P 16
+redis-benchmark -t set,get -n 10000 -c 10 -P 64
+# Keep full output for latency distributions; quiet throughput summaries are
+# insufficient. Repeat with fixed payload/keyspace, version and persistence.
+# More pipelining can raise throughput while delaying a request behind a batch.
+# Benchmark defaults can exercise a tiny hot keyspace; configure and preload a
+# representative dataset before making application capacity claims.
 
 # Preserve p50/p95/p99 client latency, throughput, batch size, response bytes,
 # server CPU, network, memory, and output-buffer growth. Use realistic values;
-# redis-benchmark is a mechanism experiment, not an application capacity proof.`;
+# redis-benchmark is a mechanism experiment, not an application capacity proof.
+# Stop at a predefined latency/memory limit. Cleanup only the exact fixture
+# keys on the disposable instance; never FLUSHALL against an existing server.
+# https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/`;
 
   if (title.startsWith("Redis RDB")) return `CONFIG GET save
 CONFIG GET appendonly
@@ -6654,17 +7994,27 @@ BGSAVE
 BGREWRITEAOF
 INFO persistence
 
-redis-check-rdb /var/lib/redis/dump.rdb
-redis-check-aof --fix /var/lib/redis/appendonlydir/appendonly.aof.manifest
+# Shell commands, not Redis commands. Inspect OFFLINE COPIES, never live files.
+redis-check-rdb /validated/offline-copy/dump.rdb
+redis-check-aof /validated/offline-copy/appendonlydir/appendonly.aof.manifest
+# Repair with --fix can discard data. Preserve an untouched full backup first;
+# inspect the proposed loss and authorize repair only on another offline copy.
+# Redis 7+ multipart AOF requires the manifest and its referenced files together.
 
 # In an isolated instance: record an acknowledged write, terminate the process
 # at controlled moments, restart, verify the data-loss window and load time,
 # then restore from an offline copy. Track fork time and copy-on-write memory.`;
 
-  if (title.startsWith("Redis replication")) return `INFO replication
+  if (title.startsWith("Redis replication")) return `# Isolated primary + replica and separate Sentinel fixture required.
+# Run these on ONE connection to the primary, outside MULTI:
+INFO replication
 ROLE
+SET lesson:replication:probe acknowledged
 WAIT 1 1000
+# Inspect the returned replica count; timeout may return 0 without undoing SET.
+# WAIT covers preceding writes on this connection, not arbitrary other clients.
 
+# Switch to a Sentinel endpoint (often port 26379), not the data endpoint:
 SENTINEL MASTERS
 SENTINEL REPLICAS primary
 SENTINEL CKQUORUM primary
@@ -6674,18 +8024,30 @@ SENTINEL FAILOVER primary
 # slave_repl_offset, repl_backlog_histlen, sync_full, sync_partial_ok,
 # link state, acknowledged writes, promoted node, client reroute, and data state.
 # WAIT improves observation of replication; it does not turn Redis into a
-# consensus-backed linearizable database.`;
+# consensus-backed linearizable database. Failover is disruptive: lab only.
+# https://redis.io/docs/latest/commands/wait/`;
 
-  if (title.startsWith("Redis Cluster")) return `redis-cli --cluster check 127.0.0.1:7000
+  if (title.startsWith("Redis Cluster")) return `# Isolated preconfigured cluster only; CLUSTER SHARDS requires Redis 7+.
+redis-cli --cluster check 127.0.0.1:7000
 redis-cli -c -p 7000 CLUSTER SHARDS
 redis-cli -c -p 7000 CLUSTER KEYSLOT 'cart:{user42}'
 redis-cli -c -p 7000 CLUSTER KEYSLOT 'lock:{user42}'
 
+# Open ONE interactive connection to the primary owning this slot. Separate
+# redis-cli invocations cannot share MULTI state. A redirect inside a queued
+# transaction is not a request to replay individual writes on another node.
+# Deliberate counterexample: SET NX does not condition the earlier HSET.
+SET 'lock:{user42}' existing-owner
 MULTI
 HSET 'cart:{user42}' sku-1 2
 SET 'lock:{user42}' owner NX PX 5000
 EXEC
+HGET 'cart:{user42}' sku-1
+# Expected: HSET still writes 2, but SET NX returns null. Sharing a hash slot
+# permits the transaction; it does not turn a lease check into a guarded write.
+# Use a validated server-side conditional operation when that is the invariant.
 
+# Shell again. Resharding mutates topology; run only in the disposable fixture.
 redis-cli --cluster reshard 127.0.0.1:7000
 # Observe MOVED and ASK handling, migrating/importing slots, cluster_state,
 # fail reports, replica offsets, promotion, unavailable slots, and write loss.`;
@@ -6700,27 +8062,61 @@ XACK jobs workers MESSAGE_ID
 
 # Recover abandoned pending work.
 XAUTOCLAIM jobs workers worker-b 60000 0-0 COUNT 10
-XTRIM jobs MAXLEN ~ 100000
+# Continue from the returned cursor until it is 0-0; inspect deleted IDs too.
+# A slow live consumer can overlap a claim: idle time is not proof of death.
+# Retention counterexample, disposable fixture ONLY:
+# XTRIM jobs MAXLEN ~ 100000
+# Length-based trimming can remove unprocessed message bodies, even when a
+# pending-entry reference remains. Approximate trimming is not a strict cap.
+# Choose retention from maximum outage/replay time and all consumers' needs;
+# test a stalled group before enabling trimming. Newer ACKED options require
+# their documented Redis version and have different retention semantics.
+# https://redis.io/docs/latest/commands/xtrim/
 # Track entries-added, lag, pending count and age, deliveries, claims, failures,
 # acknowledgements, trimming, duplicates, and downstream business state.`;
 
-  if (title.startsWith("Cache-aside")) return `async function loadProject(id, version, redis, database) {
-  const key = \`project:\${id}:v\${version}\`;
-  const cached = await redis.get(key);
-  if (cached !== null) return JSON.parse(cached);
+  if (title.startsWith("Cache-aside")) return `// Adapter core: authorize tenant/project BEFORE cache access; validate inputs.
+// Redis commands need client-enforced deadlines; DB fallback needs bounded
+// admission. Catching a rejection alone cannot stop a hung operation.
+async function loadProject(tenant, id, version, redis, database) {
+  const key = "project:" + JSON.stringify([tenant, id, version]);
+  try {
+    const cached = await redis.get(key);
+    if (cached !== null) {
+      const value = JSON.parse(cached);
+      if (value === null || (value.tenantId === tenant && value.id === id && value.version === version)) return value;
+    }
+  } catch {
+    // Cache read/parse failure is a miss; production records failure metrics.
+  }
 
   // Production: use bounded single-flight per key to collapse concurrent fills.
-  const project = await database.findProject(id);
-  const ttlSeconds = project ? 300 + Math.floor(Math.random() * 60) : 15;
-  await redis.set(key, JSON.stringify(project), { EX: ttlSeconds });
+  const project = await database.findProjectVersion(tenant, id, version);
+  // Adapter must return this exact version or null, never the latest row under
+  // an older version's key. A historical read needs historical storage.
+  if (project !== null && (!project || project.tenantId !== tenant || project.id !== id || project.version !== version)) {
+    throw new Error("database returned the wrong project version");
+  }
+  const ttlSeconds = project !== null ? 300 + Math.floor(Math.random() * 60) : 15;
+  try {
+    await redis.set(key, JSON.stringify(project), { EX: ttlSeconds });
+  } catch {
+    // Cache fill is optional; production records failure metrics.
+  }
   return project;
 }
 
-// PostgreSQL remains authoritative. On Redis timeout, use a bounded DB fallback;
-// on writes, advance the version in the same DB transaction as the source data.`;
+// PostgreSQL remains authoritative; DB errors propagate, not cached as null.
+// The caller still needs an authoritative version for "latest" reads; versioned
+// keys alone do not provide freshness. A negative hit can hide a newly created
+// version for 15 seconds. Read the primary for read-after-write guarantees.
+// ponytail: single-flight and admission control are exercise requirements,
+// not implemented by this small adapter; add them before outage/load testing.`;
 
-  if (title.startsWith("Distributed locks")) return `# Lease acquisition with an opaque owner token.
+  if (title.startsWith("Distributed locks")) return `# Lease acquisition with a fresh cryptographically random owner token EACH
+# attempt. 8bb9 below is only a readable placeholder: never reuse it in a client.
 SET resource:42:lease 8bb9 NX PX 5000
+# Proceed only on OK, not a null result. A timeout has an uncertain outcome.
 
 # Safe release only if this client still owns the lease.
 EVAL "if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]) else return 0 end" \
@@ -6730,15 +8126,30 @@ EVAL "if redis.call('GET',KEYS[1])==ARGV[1] then return redis.call('DEL',KEYS[1]
 # database therefore also rejects stale monotonically increasing fencing tokens:
 UPDATE resources SET value = $1, fence = $2
 WHERE id = $3 AND fence < $2;
+# Check that exactly one row changed; fence is NOT NULL with an initial value.
+# The owner token above is not a fencing token. This example does not supply
+# the authoritative monotonic fence allocator; choose one that survives the
+# required failover model. A Redis counter that rolls back can reuse numbers.
+# This predicate allows one write per fence, not multiple writes per lease.
+# Test: worker B writes fence 11, then resumed worker A's fence 10 changes 0 rows.
 
 # Prefer a database constraint, transaction, broker, or rate-limit algorithm
-# when that primitive expresses the real invariant directly.`;
+# when that primitive expresses the real invariant directly.
+# https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/`;
 
-  if (title.startsWith("Redis security")) return `ACL SETUSER app reset on '>replace-through-secret-manager' \
-  '~cache:project:*' '+get' '+set' '+del' '+pttl' '-@dangerous'
-ACL GETUSER app
-ACL DRYRUN app GET cache:project:42
-ACL DRYRUN app CONFIG GET '*'
+  if (title.startsWith("Redis security")) return `# Interactive redis-cli commands as a lab administrator; Redis 7+ for DRYRUN.
+# Isolated fixture only. Use a NEW lesson_cache_probe user: reset replaces its
+# permissions/passwords. The visible password below is synthetic, not a secret
+# provision mechanism. Production credentials must not enter command history.
+ACL SETUSER lesson_cache_probe reset on >synthetic-lab-password ~cache:tenant42:project:* +get +set +del +pttl -@dangerous
+ACL GETUSER lesson_cache_probe
+ACL DRYRUN lesson_cache_probe GET cache:tenant42:project:7
+ACL DRYRUN lesson_cache_probe GET cache:tenant99:project:7
+ACL DRYRUN lesson_cache_probe CONFIG GET '*'
+# Expected: allowed, denied by key scope, denied by command permission.
+# DRYRUN does not execute the command or test authentication/TLS. Next connect
+# separately as the lab user and repeat allowed/denied operations against test
+# keys. Monitor/admin commands below are for the ADMIN connection, not this user.
 
 CONFIG GET protected-mode
 CONFIG GET tls-port
@@ -6750,25 +8161,40 @@ SLOWLOG GET 20
 LATENCY LATEST
 MEMORY DOCTOR
 # Keep Redis private, authenticate every client, use TLS across untrusted links,
-# rotate credentials, restrict admin commands, and alert on persistence failure.`;
+# rotate credentials, restrict admin commands, and alert on persistence failure.
+# Cleanup: disable/remove only this lab user and the exact keys created by the
+# exercise. ACL persistence across restart is a separate configuration decision.
+# https://redis.io/docs/latest/commands/acl-setuser/`;
 
-  if (title.startsWith("Data systems production architecture capstone")) return `BEGIN;
-SET LOCAL app.tenant_id = '42';
-INSERT INTO commands(request_id, tenant_id, status)
-VALUES ($1, 42, 'accepted') ON CONFLICT (request_id) DO NOTHING;
-INSERT INTO jobs(tenant_id, request_id, state, payload)
-VALUES (42, $1, 'queued', $2) RETURNING id, version;
-INSERT INTO outbox(event_id, tenant_id, kind, payload)
-VALUES ($1, 42, 'job.queued', jsonb_build_object('request_id', $1));
-COMMIT;
-
-# Publisher: claim outbox rows with FOR UPDATE SKIP LOCKED, XADD to a Redis
-# Stream, then record publication. Consumer: deduplicate event_id in PostgreSQL.
-# Cache reads are optional acceleration and fall back through bounded admission.
-
-make load-test failure-test restore-drill security-check
-# Preserve plans, waits, lag, cache hit rate, stream PEL, RPO/RTO, SLOs, alerts,
-# architecture decisions, and the incident runbook as interview evidence.`;
+  if (title.startsWith("Data systems production architecture capstone")) return `# Integration exercise: job acceptance, replay and recovery.
+# Supply a PostgreSQL/Redis project first; this is not runnable SQL or a Makefile.
+# Use lesson 0380's claim/replay branch with a job creation operation instead
+# of its version-checked rename. Never run INSERT jobs after a failed claim.
+#
+# Transaction contract:
+# 1. Authenticate and authorize tenant; validate payload and request key.
+# 2. Claim UNIQUE(tenant_id, request_id), saving canonical intent.
+# 3. Existing claim: read its saved result in a separate READ COMMITTED statement,
+#    reject changed intent, and return the original job ID without another write.
+# 4. New claim: INSERT job, INSERT outbox event, and save the returned job ID
+#    in the receipt, all on the same connection and in one transaction.
+# 5. Commit before responding. An exception rolls back all three records.
+#
+# Failure checks and expected evidence:
+# - Concurrent identical submissions: one job, one event, same returned job ID.
+# - Same key + changed payload: conflict, no new job; another tenant is isolated.
+# - Crash before commit: no partial records. Crash after commit before response:
+#   retry returns the existing result rather than accepting another job.
+# - Relay publishes then crashes before marking sent: duplicate delivery is
+#   allowed, but the consumer inbox and local business effect commit together.
+# - Redis unavailable: PostgreSQL acceptance remains durable subject to the
+#   documented backlog limit; reject excess work explicitly, not silently.
+# - Restore drill: measure missing accepted jobs against the declared RPO.
+#
+# Implement your own make load-test failure-test restore-drill security-check
+# targets; none is supplied here. Retain counts, transaction traces, lag,
+# stream pending entries, RPO/RTO measurements and an incident runbook.
+# A passing adapter mock does not prove database concurrency or broker recovery.`;
 
   return fallback;
 }
@@ -6796,7 +8222,7 @@ console.table(boundary);`;
 curl --http2 -i https://api.example.test/projects/42 \
   -H 'Accept: application/json' \
   -H 'If-None-Match: "project-42-v7"' \
-  -H 'Traceparent: 00-TRACE-SPAN-01'
+  -H 'Traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01'
 
 curl -i -X PUT https://api.example.test/projects/42 \
   -H 'Content-Type: application/json' \
@@ -6817,6 +8243,7 @@ curl -i -X PUT https://api.example.test/projects/42 \
 };
 
 // The resource identity is stable; JSON and text/event-stream are representations.
+// Header illustration only: advertise br only when sending actual Brotli bytes.
 const responseHeaders = {
   "Content-Type": "application/json; charset=utf-8",
   "Content-Language": "en",
@@ -6841,55 +8268,111 @@ Cache-Control: no-store
 
 # Clients branch on status, type, and stable code—not title or detail prose.`;
 
-  if (title.startsWith("Boundary validation")) return `const allowed = new Set(["project_id", "input_uri", "priority"]);
-
-function parseJob(raw) {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw problem("INVALID_BODY");
-  const unknown = Object.keys(raw).filter(key => !allowed.has(key));
-  const errors = [];
-  if (unknown.length) errors.push({ path: [], code: "UNKNOWN_FIELDS", fields: unknown });
-  if (typeof raw.project_id !== "string") errors.push({ path: ["project_id"], code: "TYPE" });
-  if (!Number.isInteger(raw.priority) || raw.priority < 0 || raw.priority > 9) {
-    errors.push({ path: ["priority"], code: "RANGE" });
+  if (title.startsWith("Boundary validation")) return `import assert from "node:assert/strict";
+// Input is a bounded Buffer, BEFORE JSON parsing. The HTTP adapter must also
+// enforce a streaming limit and a decoded-body limit if compression is allowed.
+function parseJob(body) {
+  if (!Buffer.isBuffer(body)) throw new TypeError("raw Buffer required");
+  if (body.length > 16_384) throw new RangeError("body too large");
+  let raw;
+  try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body)); }
+  catch { throw new TypeError("invalid UTF-8 JSON"); }
+  const allowed = new Set(["project_id", "input_uri", "priority"]);
+  if (!raw || typeof raw !== "object" || Array.isArray(raw) ||
+      Object.keys(raw).some(key => !allowed.has(key))) throw new TypeError("invalid fields");
+  if (typeof raw.project_id !== "string" || !/^prj_[a-z0-9]{1,64}$/.test(raw.project_id)) {
+    throw new TypeError("invalid project_id");
   }
-  if (Buffer.byteLength(JSON.stringify(raw)) > 16_384) errors.push({ path: [], code: "TOO_LARGE" });
-  if (errors.length) throw problem("VALIDATION_FAILED", { errors });
-  return Object.freeze({ projectId: raw.project_id, inputUri: new URL(raw.input_uri), priority: raw.priority });
-}`;
+  if (!Number.isInteger(raw.priority) || raw.priority < 0 || raw.priority > 9) {
+    throw new RangeError("invalid priority");
+  }
+  if (typeof raw.input_uri !== "string") throw new TypeError("input_uri must be text");
+  let inputUri;
+  try { inputUri = new URL(raw.input_uri); }
+  catch { throw new TypeError("invalid input_uri"); }
+  if (inputUri.origin !== "https://objects.example.test" ||
+      inputUri.username || inputUri.password || inputUri.hash) throw new TypeError("input origin denied");
+  return Object.freeze({ projectId: raw.project_id, inputUri: inputUri.href, priority: raw.priority });
+}
+const valid = { project_id: "prj_42", input_uri: "https://objects.example.test/input", priority: 2 };
+const encode = value => Buffer.from(JSON.stringify(value));
+assert.equal(parseJob(encode(valid)).priority, 2);
+for (const value of [null, [], { ...valid, extra: true }, { ...valid, priority: -1 },
+  { ...valid, input_uri: 42 }, { ...valid, input_uri: "file:///etc/passwd" },
+  { ...valid, input_uri: "https://objects.example.test.evil.test/input" }]) {
+  assert.throws(() => parseJob(encode(value)));
+}
+assert.throws(() => parseJob(Buffer.alloc(16_385)), /too large/);
+assert.throws(() => parseJob(Buffer.from([255])), /UTF-8 JSON/);
+// This is a sample schema, not universal product policy. JSON duplicate names
+// follow JSON.parse's last-value behavior; require a duplicate-aware parser if
+// the contract forbids them. Schema checks do not authorize the project/object.
+// Origin checks are not a complete SSRF defense: redirects, DNS/connect-time
+// policy, response-size bounds and object ownership remain adapter requirements.`;
 
-  if (title.startsWith("Idempotency keys")) return `BEGIN;
-INSERT INTO idempotency_records(scope, key, request_hash, state)
-VALUES ($1, $2, digest($3, 'sha256'), 'processing')
-ON CONFLICT (scope, key) DO NOTHING
-RETURNING scope, key;
+  if (title.startsWith("Idempotency keys")) return `# Integration exercise: durable idempotency-key claim, not a runnable SQL script.
+# Reuse lesson 0380's tested claim/replay branch for a create-job operation.
+# Required idempotency_records table: UNIQUE(scope, key), canonical intent fingerprint, stored status
+# and response. Scope includes authenticated tenant and operation, not just a URL.
+#
+# In one READ COMMITTED transaction on one connection:
+# INSERT ... ON CONFLICT (scope, key) DO NOTHING RETURNING scope, key.
+# If a new row returns: create the job, save its authoritative response and any
+# outbox intent, then commit. Any error rolls back all of these records.
+# If no row returns: a SEPARATE statement reads the committed receipt; compare
+# canonical intent. Changed intent => conflict. Matching intent => return saved
+# status/body without creating another job. Missing/incomplete receipt => explicit
+# bounded reconciliation, never fall through to the new-write branch.
+#
+# A digest of arbitrary JSON bytes is not semantic canonicalization. Define field
+# defaults, ordering and included operation identity before computing a digest.
+# Keep receipts through the documented retry window and authorize every replay.
+# Tests: same key/same input twice; same key/changed input; simultaneous requests;
+# disconnect after commit before response; error before commit; expired receipt.
+# Expected: one accepted job within the retention contract, original result replay,
+# mismatched-input rejection and no partial accepted state after rollback.
+# This is not a completed deployment; supply schema, adapter and concurrency tests.
+# https://www.postgresql.org/docs/current/sql-insert.html`;
 
--- If no row returned: lock the existing record. Different hash => 409.
-SELECT request_hash, state, status_code, response_body
-FROM idempotency_records WHERE scope = $1 AND key = $2 FOR UPDATE;
-
-INSERT INTO jobs(tenant_id, input_uri) VALUES ($1, $4) RETURNING id;
-UPDATE idempotency_records
-SET state = 'completed', status_code = 201, response_body = $5
-WHERE scope = $1 AND key = $2;
-COMMIT;
-
--- Concurrent requests share one durable claim; retries replay the stored result.`;
-
-  if (title.startsWith("ETags,")) return `import { createHash } from "node:crypto";
-
+  if (title.startsWith("ETags,")) return `import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 const strongEtag = bytes => '"' + createHash("sha256").update(bytes).digest("base64url") + '"';
 
-function conditionalUpdate(request, current) {
-  const supplied = request.headers["if-match"];
-  if (!supplied) return { status: 428, code: "PRECONDITION_REQUIRED" };
-  if (supplied !== current.etag) return { status: 412, code: "PRECONDITION_FAILED" };
-  return repository.updateIfVersion(current.id, current.version, request.body);
+// Parse bounded If-Match, including lists, weak tags and commas INSIDE a tag.
+// A real server must combine field lines according to HTTP rules before this.
+function ifMatch(header, currentEtag) {
+  if (typeof header !== "string" || header.length > 8192) throw new TypeError("invalid If-Match");
+  const value = header.trim();
+  if (value === "*") return currentEtag !== null;
+  const tags = [...value.matchAll(/(?:W\\/)?"[\\x21\\x23-\\x7e\\x80-\\xff]*"/g)];
+  let end = 0;
+  for (const [index, match] of tags.entries()) {
+    const separator = value.slice(end, match.index);
+    if (!/^[ \\t,]*$/.test(separator) || (index > 0 && !separator.includes(","))) {
+      throw new TypeError("malformed If-Match list");
+    }
+    end = match.index + match[0].length;
+  }
+  if (!tags.length || !/^[ \\t,]*$/.test(value.slice(end))) throw new TypeError("malformed If-Match list");
+  return tags.some(match => !match[0].startsWith("W/") && match[0] === currentEtag);
 }
 
-// SQL authority:
-// UPDATE projects SET name=$1, version=version+1
-// WHERE id=$2 AND version=$3 RETURNING *;
-// Zero rows means another writer won after the read.`;
+assert.equal(ifMatch('"a", "b"', '"b"'), true);
+assert.equal(ifMatch('"a,b"', '"a,b"'), true);
+assert.equal(ifMatch('W/"b"', '"b"'), false);
+assert.equal(ifMatch("*", null), false);
+assert.equal(ifMatch("*", '"b"'), true);
+assert.equal(ifMatch(', "b",', '"b"'), true); // Empty list elements ignored.
+assert.throws(() => ifMatch('"a" "b"', '"b"'));
+assert.throws(() => ifMatch('"a", junk', '"a"'));
+assert.notEqual(strongEtag(Buffer.from("A")), strongEtag(Buffer.from("B")));
+// Endpoint policy may require If-Match (428 if absent). Malformed syntax => 400;
+// a valid but false condition => 412. Do not compare the whole header literally.
+// The authority still needs updateIfVersion / UPDATE ... WHERE version=expected.
+// Zero rows after the read means a race: return 412, not a successful stale write.
+// Wildcard means existence, not a version lock; use an atomic existence condition.
+// Strong tags identify representation bytes; content-coding variants need care.
+// https://www.rfc-editor.org/rfc/rfc9110.html#name-if-match`;
 
   if (title.startsWith("Pagination")) return `SELECT id, created_at, status
 FROM jobs
@@ -6906,7 +8389,13 @@ const cursor = sign({
   expiresAt
 });
 
-// Fetch limit + 1 to determine hasNextPage; never infer it from page length alone.`;
+// Two adapter fragments, not one executable file. First page omits the cursor
+// predicate. Require non-null, immutable created_at plus unique id; validate and
+// cap limit. Return only limit rows and build next cursor from the LAST RETURNED
+// row, not the extra probe row. Bind tenant, filters and sort to the cursor.
+// Fetch limit + 1 to determine hasNextPage; never infer it from page length alone.
+// A stable total order is not a cross-page snapshot: deletes/updates still affect
+// traversal unless you define snapshot/version semantics.`;
 
   if (title.startsWith("Filtering,")) return `const fields = {
   status: { sql: "j.status", operators: new Set(["eq", "in"]) },
@@ -6915,6 +8404,7 @@ const cursor = sign({
 };
 
 function compile(filter) {
+  if (!filter || !Object.hasOwn(fields, filter.field)) throw problem("UNSUPPORTED_FILTER");
   const definition = fields[filter.field];
   if (!definition || !definition.operators.has(filter.operator)) throw problem("UNSUPPORTED_FILTER");
   const parameter = validateValue(filter.field, filter.value);
@@ -6934,7 +8424,8 @@ for (const test of compatibilityCases) {
   console.assert(test.accepts(response), test.client + " contract broke");
 }
 
-// Deprecation: true
+// Deprecation: @1790812800
+// Structured Field date: 2026-10-01T00:00:00Z, not a boolean.
 // Sunset: Sat, 31 Oct 2026 23:59:59 GMT
 // Link: <https://docs.example.test/migrations/projects-v2>; rel="deprecation"`;
 
@@ -6988,6 +8479,35 @@ paths:
               schema: {$ref: '#/components/schemas/Job'}
         '422': {$ref: '#/components/responses/Problem'}
 
+components:
+  schemas:
+    CreateJob:
+      type: object
+      additionalProperties: false
+      required: [project_id]
+      properties:
+        project_id: {type: string, minLength: 1}
+    Job:
+      type: object
+      required: [id, state]
+      properties:
+        id: {type: string}
+        state: {type: string, enum: [queued, running, completed, failed]}
+  responses:
+    Problem:
+      description: Request validation failed
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required: [type, title, status]
+            properties:
+              type: {type: string, format: uri}
+              title: {type: string}
+              status: {type: integer, const: 422}
+
+# Minimal contract; authentication/authorization and domain constraints still need
+# explicit design. Schema validation alone does not authorize a project.
 # CI: validate schema + examples, lint conventions, diff the released contract,
 # generate a clean consumer, then run conformance tests against the real server.`;
 
@@ -6999,10 +8519,13 @@ service Jobs {
   rpc WatchJob(WatchJobRequest) returns (stream JobEvent);
 }
 message GetJobRequest { string id = 1; }
+message WatchJobRequest { string id = 1; }
+message JobEvent { string job_id = 1; string state = 2; }
 message Job {
   string id = 1;
   string state = 2;
-  reserved 3; // removed fields and names are never reused
+  reserved 3;
+  reserved "legacy_result"; // Reserve both the removed tag and its old name.
   optional string result_uri = 4;
 }
 
@@ -7011,7 +8534,12 @@ message Job {
 
   if (title.startsWith("GraphQL")) return `type Query { project(id: ID!): Project }
 type Project { id: ID!, name: String!, jobs(first: Int!, after: String): JobConnection! }
+type Job { id: ID!, state: String! }
+type JobEdge { cursor: String!, node: Job! }
+type PageInfo { endCursor: String, hasNextPage: Boolean! }
+type JobConnection { edges: [JobEdge!]!, pageInfo: PageInfo! }
 
+// JavaScript resolver fragment below is separate from the GraphQL SDL above.
 const resolvers = {
   Query: { project: (_, { id }, context) => context.projects.loadAuthorized(id) },
   Project: { jobs: (project, args, context) => context.jobsByProject.load({ project, args }) }
@@ -7025,21 +8553,45 @@ const policy = {
 };
 
 // Batch per request, authorize the object and field, trace resolver fan-out,
-// and bound list multiplication before execution.`;
+// and bound list multiplication before execution. A policy object alone enforces
+// nothing: wire validation, cost calculation and persisted-operation lookup into
+// the actual execution path; test rejection before resolver side effects.`;
 
-  if (title.startsWith("Webhooks,")) return `import { createHmac, timingSafeEqual } from "node:crypto";
+  if (title.startsWith("Webhooks,")) return `import assert from "node:assert/strict";
+import { createHmac, timingSafeEqual } from "node:crypto";
 
+// Example signing scheme; providers have different canonicalization and headers.
+// Verify original bounded bytes BEFORE parsing. Configure streaming limits too.
 function verifyWebhook(rawBody, headers, secret, nowSeconds) {
-  const timestamp = Number(headers["x-hook-timestamp"]);
+  if (!Buffer.isBuffer(rawBody) || rawBody.length > 16_384) throw new Error("body limit/type");
+  if (!Number.isSafeInteger(nowSeconds) || nowSeconds < 0) throw new Error("invalid clock");
+  const stamp = headers["x-hook-timestamp"];
+  if (typeof stamp !== "string" || !/^(0|[1-9][0-9]*)$/.test(stamp)) throw new Error("invalid timestamp");
+  const timestamp = Number(stamp);
   if (!Number.isSafeInteger(timestamp) || Math.abs(nowSeconds - timestamp) > 300) throw new Error("stale");
-  const expected = createHmac("sha256", secret).update(timestamp + ".").update(rawBody).digest();
-  const supplied = Buffer.from(headers["x-hook-signature"], "hex");
-  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw new Error("bad signature");
-  return JSON.parse(rawBody);
+  const signature = headers["x-hook-signature"];
+  if (typeof signature !== "string" || !/^[0-9a-f]{64}$/.test(signature)) throw new Error("bad signature format");
+  const expected = createHmac("sha256", secret).update(stamp + ".").update(rawBody).digest();
+  const supplied = Buffer.from(signature, "hex");
+  if (!timingSafeEqual(supplied, expected)) throw new Error("bad signature");
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(rawBody));
 }
-
-// Atomically insert event_id into an inbox, enqueue local work, return 2xx,
-// and replay the stored outcome for duplicate delivery.`;
+const secret = Buffer.alloc(32, 7); // Synthetic fixture ONLY; never a production secret.
+const body = Buffer.from('{"event_id":"evt_1"}');
+const stamp = "1800000000";
+const signature = createHmac("sha256", secret).update(stamp + ".").update(body).digest("hex");
+const headers = { "x-hook-timestamp": stamp, "x-hook-signature": signature };
+assert.equal(verifyWebhook(body, headers, secret, Number(stamp)).event_id, "evt_1");
+assert.throws(() => verifyWebhook(body, headers, secret, Number(stamp) + 301), /stale/);
+assert.throws(() => verifyWebhook(body, headers, secret, NaN), /clock/);
+assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-signature": signature + "zz" }, secret, Number(stamp)), /format/);
+assert.throws(() => verifyWebhook(Buffer.from("{}"), headers, secret, Number(stamp)), /signature/);
+assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-timestamp": "" }, secret, Number(stamp)), /timestamp/);
+// A valid signature authenticates bytes, not the event schema or tenant authority.
+// Validate both after verification. Timestamp tolerance does not stop replay
+// within the window: durable scoped inbox + work acceptance must precede 2xx.
+// Provision/rotate secrets outside code; this fixture does not implement rotation.
+// https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b`;
 
   if (title.startsWith("SSE,")) return `// Resumable SSE frame
 id: 8472
@@ -7133,7 +8685,9 @@ test("released consumer accepts candidate provider", async () => {
 // Add schema-generated invalid inputs, authorization matrix, concurrency,
 // retry/idempotency, unknown fields, and deployed conformance smoke tests.`;
 
-  if (title.startsWith("Developer experience")) return `# A new consumer runs one supported path from a clean directory.
+  if (title.startsWith("Developer experience")) return `# Integration specification, NOT installed tools or a published starter package.
+# Replace these illustrative CLI names with your team's actual release tooling.
+# A new consumer runs one supported path from a clean disposable directory.
 npm create @example/job-api-quickstart consumer-probe
 cd consumer-probe
 npm test
@@ -7192,7 +8746,10 @@ console.table({
 // logical clock, bounded clock uncertainty, or an explicit merge conflict.
 simulateClockStep({ node: "B", milliseconds: -30_000 });`;
 
-  if (title.startsWith("Logical clocks")) return `function receive(local, remote) {
+  if (title.startsWith("Logical clocks")) return `import assert from "node:assert/strict";
+// Trusted small nonnegative counters and fixed node IDs A/B for this fixture.
+// Production needs validated counters, overflow handling and node-incarnation IDs.
+function receive(local, remote) {
   return Math.max(local, remote) + 1; // Lamport clock
 }
 
@@ -7208,86 +8765,234 @@ function mergeVector(local, remote, self) {
 const dominates = (a, b) => Object.keys({ ...a, ...b }).every(k => (a[k] ?? 0) >= (b[k] ?? 0))
   && Object.keys({ ...a, ...b }).some(k => (a[k] ?? 0) > (b[k] ?? 0));
 
-console.assert(!dominates({ A: 2 }, { B: 2 })); // concurrent`;
+const a = { A: 2 }, b = { B: 2 };
+assert.equal(dominates(a, b), false);
+assert.equal(dominates(b, a), false); // Both directions matter for concurrency.
+assert.equal(dominates(a, { A: 2 }), false); // Equality is not strict dominance.
+const received = mergeVector(a, b, "A");
+assert.deepEqual(received, { A: 3, B: 2 });
+assert.equal(dominates(received, a), true);
+assert.equal(dominates(received, b), true);
+assert.deepEqual(a, { A: 2 }); // The merge did not mutate the sender's snapshot.
+assert.equal(receive(2, 5), 6);
+// Increment on each local/send event as well; merge + increment on receive.
+// Lamport: causality implies increasing time, but increasing time does NOT
+// prove causality. Tie-breaking by node ID gives an order, not causal evidence.
+// Vector incomparability detects concurrency in the modeled event history.
+// This lab does not implement hybrid logical clocks or vector compaction.
+// https://lamport.azurewebsites.net/pubs/time-clocks.pdf`;
 
-  if (title.startsWith("Latency distributions")) return `const percentile = (sorted, p) => sorted[Math.ceil((p / 100) * sorted.length) - 1];
-const samples = await openLoopLoad({ requestsPerSecond: 200, seconds: 60 });
-const durations = samples.map(x => x.completedAt - x.scheduledAt).sort((a, b) => a - b);
+  if (title.startsWith("Latency distributions")) return `import assert from "node:assert/strict";
+// Nearest-rank percentile convention, not an interpolated percentile.
+function percentile(values, p) {
+  if (!Number.isFinite(p) || p <= 0 || p > 100 ||
+      !values.every(value => Number.isFinite(value) && value >= 0)) {
+    throw new RangeError("finite nonnegative durations and 0 < p <= 100 required");
+  }
+  if (values.length === 0) return null; // No observations, not zero latency.
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted[Math.ceil((p / 100) * sorted.length) - 1];
+}
 
-console.table({
-  p50: percentile(durations, 50),
-  p95: percentile(durations, 95),
-  p99: percentile(durations, 99),
-  p999: percentile(durations, 99.9),
-  max: durations.at(-1),
-  omitted: samples.filter(x => x.wasNeverSent).length
+// Synthetic scheduled requests, all timestamps from one local monotonic clock.
+// Never subtract a missing completion time: timeout/unsent outcomes need counts.
+const samples = [
+  { status: "ok", scheduledAt: 0, startedAt: 90, completedAt: 100 },
+  { status: "ok", scheduledAt: 10, startedAt: 10, completedAt: 20 },
+  { status: "timeout", scheduledAt: 20, startedAt: 20, completedAt: null },
+  { status: "unsent", scheduledAt: 30, startedAt: null, completedAt: null }
+];
+const successful = samples.filter(sample => sample.status === "ok");
+const durations = successful.map(sample => sample.completedAt - sample.scheduledAt);
+const serviceTimes = successful.map(sample => sample.completedAt - sample.startedAt);
+const report = {
+  scheduled: samples.length,
+  successes: successful.length,
+  timeouts: samples.filter(sample => sample.status === "timeout").length,
+  unsent: samples.filter(sample => sample.status === "unsent").length,
+  successP99: percentile(durations, 99),
+  successServiceP99: percentile(serviceTimes, 99)
+};
+assert.deepEqual(report, {
+  scheduled: 4, successes: 2, timeouts: 1, unsent: 1,
+  successP99: 100, successServiceP99: 10
 });
+assert.equal(percentile([], 99), null);
+assert.equal(percentile([30, 10, 20], 50), 20);
+assert.throws(() => percentile([NaN], 99), RangeError);
+assert.throws(() => percentile([1], 0), RangeError);
+console.table(report);
 
-// Compare a single dependency with fan-out to 20 parallel dependencies.`;
+// A 100 ms success p99 does NOT establish an all-request SLO: half the scheduled
+// work did not succeed. Timeouts are censored observations, not zero-duration
+// successes. Report their deadlines/failure latency separately in real telemetry.
+// Measuring only from actual send hides 90 ms of scheduling delay in this trace.
+// Open-loop scheduling helps expose omission, but the generator can saturate too.
+// Two successes cannot estimate a population p99 reliably. Keep sample counts,
+// error classes and histograms; never average percentiles from different hosts.
+// Practice: add fan-out samples and compare end-to-end latency with branch tails.
+// https://sre.google/sre-book/monitoring-distributed-systems/`;
 
-  if (title.startsWith("Timeouts,")) return `async function withDeadline(operation, { deadline, parentSignal }) {
-  const remaining = deadline - performance.timeOrigin - performance.now();
+  if (title.startsWith("Timeouts,")) return `// Node.js 20.3+ module. Local deadline uses the SAME monotonic clock as this process.
+import assert from "node:assert/strict";
+import { setTimeout as sleep } from "node:timers/promises";
+
+async function withDeadline(operation, { deadline, parentSignal }) {
+  if (!Number.isFinite(deadline)) throw new RangeError("finite local deadline required");
+  parentSignal?.throwIfAborted();
+  const remaining = deadline - performance.now();
   if (remaining <= 0) throw new DOMException("deadline exceeded", "TimeoutError");
-  const signal = AbortSignal.any([parentSignal, AbortSignal.timeout(remaining)]);
+  if (remaining > 2_147_483_647) throw new RangeError("deadline exceeds timer range");
+  const timeout = AbortSignal.timeout(Math.ceil(remaining));
+  const signal = parentSignal ? AbortSignal.any([parentSignal, timeout]) : timeout;
+  signal.throwIfAborted();
   return operation({ signal, deadline });
 }
 
-await withDeadline(async ({ signal, deadline }) => {
-  const project = await projects.get(id, { signal, deadline });
-  signal.throwIfAborted();
-  return jobs.submit(project, { signal, deadline });
-}, { deadline: Date.now() + 2000, parentSignal: request.signal });
+assert.equal(await withDeadline(async () => 42, { deadline: performance.now() + 1000 }), 42);
+await assert.rejects(withDeadline(async () => 42, { deadline: performance.now() - 1 }), { name: "TimeoutError" });
+await assert.rejects(withDeadline(async () => 42, { deadline: NaN }), RangeError);
+let started = false;
+await assert.rejects(withDeadline(async () => { started = true; }, {
+  deadline: performance.now() + 1000,
+  parentSignal: AbortSignal.abort(new Error("parent cancelled"))
+}), /parent cancelled/);
+assert.equal(started, false);
+await assert.rejects(withDeadline(({ signal }) => sleep(1000, null, { signal }), {
+  deadline: performance.now() + 10
+}), { name: "AbortError" });
 
-// Every child stops queued and active work and releases sockets, locks, and buffers.`;
+// Cancellation is cooperative: this helper cannot kill code that ignores signal,
+// interrupt blocking CPU work, or undo a remote write. Each adapter owns cleanup.
+// Never transmit performance.now() as a cross-process timestamp. Translate the
+// remaining budget at the transport boundary; account for transit/skew explicitly.
+// Nested calls reuse the local deadline, rather than getting a fresh full budget.
+// https://nodejs.org/api/globals.html#static-method-abortsignaltimeoutdelay`;
 
-  if (title.startsWith("Retries,")) return `async function retry(operation, { signal, maxAttempts = 3, baseMs = 50, budget }) {
+  if (title.startsWith("Retries,")) return `// Node.js module: retry only operations safe to repeat under the SAME identity.
+import assert from "node:assert/strict";
+import { setTimeout as sleep } from "node:timers/promises";
+
+async function retry(operation, { signal, isTransient, budget, maxAttempts = 3, baseMs = 50 }) {
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || !Number.isFinite(baseMs) || baseMs < 0) {
+    throw new RangeError("invalid retry limits");
+  }
   for (let attempt = 1; ; attempt += 1) {
+    signal.throwIfAborted(); // Includes cancellation before the first attempt.
     try { return await operation({ signal, attempt }); }
     catch (error) {
-      if (attempt >= maxAttempts || !isTransient(error) || !budget.take() || signal.aborted) throw error;
-      const cap = Math.min(1000, baseMs * 2 ** (attempt - 1));
-      const delay = Math.random() * cap; // full jitter
-      await new Promise((resolve, reject) => {
-        const timer = setTimeout(resolve, delay);
-        signal.addEventListener("abort", () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
-      });
+      signal.throwIfAborted();
+      if (attempt >= maxAttempts || !isTransient(error) || !budget.take()) throw error;
+      const cap = baseMs === 0 ? 0 : Math.min(1000, baseMs * 2 ** Math.min(attempt - 1, 30));
+      await sleep(Math.random() * cap, undefined, { signal }); // full jitter
     }
   }
-}`;
+}
 
-  if (title.startsWith("Overload control")) return `class Admission {
+const options = {
+  signal: new AbortController().signal, baseMs: 0,
+  isTransient: error => error.message === "temporary", budget: { take: () => true }
+};
+let calls = 0;
+assert.equal(await retry(async () => {
+  if (++calls < 3) throw new Error("temporary");
+  return "ok";
+}, options), "ok");
+assert.equal(calls, 3);
+for (const override of [{ maxAttempts: 1 }, { budget: { take: () => false } }, { isTransient: () => false }]) {
+  calls = 0;
+  await assert.rejects(retry(async () => { calls++; throw new Error("temporary"); }, { ...options, ...override }), /temporary/);
+  assert.equal(calls, 1);
+}
+calls = 0;
+await assert.rejects(retry(async () => { calls++; }, {
+  ...options, signal: AbortSignal.abort(new Error("cancelled"))
+}), /cancelled/);
+assert.equal(calls, 0);
+await assert.rejects(retry(async () => "unused", { ...options, maxAttempts: 0 }), RangeError);
+
+// The timer API owns abort-listener cleanup; settled sleeps do not leave our own
+// listeners attached. The parent signal should include the end-to-end deadline.
+// budget.take is a supplied synchronous retry-admission policy, not a fresh
+// per-attempt counter. Nested retry layers otherwise multiply downstream load.
+// This sequential helper does not implement hedging, Retry-After or reconciliation.
+// https://nodejs.org/api/timers.html#timerspromisessettimeoutdelay-value-options`;
+
+  if (title.startsWith("Overload control")) return `import assert from "node:assert/strict";
+class Admission {
   #active = 0;
-  constructor(limit) { this.limit = limit; }
+  #limit;
+  constructor(limit) {
+    if (!Number.isSafeInteger(limit) || limit < 1) throw new RangeError("positive integer limit required");
+    this.#limit = limit;
+  }
   async run(operation) {
-    if (this.#active >= this.limit) throw Object.assign(new Error("overloaded"), { status: 503, retryAfter: 1 });
+    if (this.#active >= this.#limit) throw Object.assign(new Error("overloaded"), { status: 503, retryAfter: 1 });
     this.#active += 1;
     try { return await operation(); }
     finally { this.#active -= 1; }
   }
 }
 
-const admission = new Admission(64);
+const admission = new Admission(1);
+let release;
+const active = admission.run(() => new Promise(resolve => { release = resolve; }));
+let rejectedWorkRan = false;
+await assert.rejects(admission.run(() => { rejectedWorkRan = true; }), { status: 503 });
+assert.equal(rejectedWorkRan, false);
+release("done");
+assert.equal(await active, "done");
+await assert.rejects(admission.run(() => { throw new Error("sync failure"); }), /sync failure/);
+await assert.rejects(admission.run(async () => { throw new Error("async failure"); }), /async failure/);
+assert.equal(await admission.run(async () => "slot restored"), "slot restored");
+assert.throws(() => new Admission(NaN), RangeError);
+// ponytail: per-instance, single-JS-isolate gate, not a fleet-wide rate limiter.
+// No waiting queue is created. A hung operation holds its slot until it settles;
+// release on actual completion, not merely when the caller stops waiting.
 // Keep ingress and internal queues bounded. Shed before expensive parsing or
 // fan-out, reserve capacity for health/control work, and offer a cheaper result
-// only when its product semantics are explicit.`;
+// only when its product semantics are explicit. Retry-After is illustrative,
+// not a guarantee that capacity will be available one second later.
+// https://sre.google/sre-book/handling-overload/`;
 
-  if (title.startsWith("Circuit breakers")) return `const dependencies = {
-  search: { concurrency: 20, queue: 20, breaker: { state: "closed", failures: [] } },
-  billing: { concurrency: 5, queue: 5, breaker: { state: "closed", failures: [] } }
-};
+  if (title.startsWith("Circuit breakers")) return `import assert from "node:assert/strict";
+// Focus: half-open probe admission/completion, using a synthetic monotonic clock.
+// The failure-counting policy has already opened this breaker at time zero.
+const breaker = { state: "open", probeAt: 100 };
 
 function mayAttempt(breaker, now) {
   if (breaker.state === "closed") return true;
   if (breaker.state === "open" && now >= breaker.probeAt) {
     breaker.state = "half-open";
-    return true; // exactly one bounded probe
+    return true; // one admitted probe per object in this JS isolate
   }
   return false;
 }
 
-// Separate pools prevent search saturation from consuming billing capacity.
+function finishProbe(breaker, succeeded, now, cooldown) {
+  if (breaker.state !== "half-open") throw new Error("no active probe");
+  breaker.state = succeeded ? "closed" : "open";
+  breaker.probeAt = succeeded ? Infinity : now + cooldown;
+}
+
+assert.equal(mayAttempt(breaker, 99), false);
+assert.equal(mayAttempt(breaker, 100), true);
+assert.equal(mayAttempt(breaker, 100), false); // No second probe while unresolved.
+finishProbe(breaker, false, 110, 100);
+assert.equal(mayAttempt(breaker, 209), false);
+assert.equal(mayAttempt(breaker, 210), true);
+finishProbe(breaker, true, 220, 100);
+assert.equal(mayAttempt(breaker, 221), true);
+assert.throws(() => finishProbe(breaker, true, 222, 100), /no active probe/);
+// One success closes this demonstration; production may require multiple probes.
+// A hung probe stays half-open: add a cooperative deadline and exactly one
+// completion path. Generations are needed if resets permit late stale results.
+// This is not a full breaker: no rolling failure window, classifier or transport.
+// Separate enforced pools can isolate dependencies; configuration objects alone
+// do not create concurrency limits. Use lesson 0430's gate as a local mechanism.
 // Readiness asks whether this instance can serve its contract, not whether
-// every optional dependency is healthy.`;
+// every optional dependency is healthy.
+// https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker`;
 
   if (title.startsWith("Idempotency,")) return `const operations = {
   addMember: { form: "set union", duplicateSafe: true, commutative: true },
@@ -7309,32 +9014,52 @@ console.table(operations);`;
   occurredAt: "2026-09-02T12:00:00Z",
   producer: "job-service",
   partitionKey: "job_42",
-  traceparent: "00-TRACE-SPAN-01",
+  traceparent: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
   data: { jobId: "job_42", resultUri: "s3://results/42" }
 };
 
-// Queue: one worker owns work. Pub/sub: independent subscriptions.
+// Trace value is a valid-format synthetic example, not a reusable production ID.
+// Queue: competing consumers receive deliveries; leases/redelivery can overlap
+// actual processing, so exclusive delivery ownership is not exactly-once work.
+// Pub/sub: independent subscriptions.
 // Log/stream: retained ordered partitions support replay.
-// Command requests an action; event states an immutable fact.`;
+// Command requests an action; event states an immutable fact. An event ID must
+// stay stable on redelivery. Trace IDs diagnose a flow, not deduplicate effects.
+// https://www.w3.org/TR/trace-context/`;
 
-  if (title.startsWith("Broker internals")) return `await producer.send({ topic: "jobs", key: job.id, value: event, acks: "all" });
+  if (title.startsWith("Broker internals")) return `// Adapter pseudocode, not a specific Kafka JavaScript client's API.
+// Disable automatic offset commits. records() below represents ONE assigned
+// partition, in order; offsets arrive as decimal strings, not JS Numbers.
+// Producer acks=all also depends on replication/minimum in-sync configuration;
+// it does not acknowledge successful consumer processing.
 
+async function processPartition(consumer, handle, retryPolicy) {
 for await (const record of consumer.records({ maxInFlight: 32 })) {
   try {
     await handle(record);
-    await consumer.commit(record.partition, record.offset + 1);
+    await consumer.commit(record.partition, (BigInt(record.offset) + 1n).toString());
   } catch (error) {
     await retryPolicy.route(record, error);
+    // Stop this partition. Routing a failure is NOT proof it was durably handled.
+    // Continuing and committing a later offset could skip this failed record.
+    throw error;
   }
+}
 }
 
 // Observe producer acknowledgement, broker append position, replica state,
 // consumer fetch position, processing position, committed offset, lag, in-flight
-// count, redelivery, retention horizon, and client/broker flow control.`;
+// count, redelivery, retention horizon, and client/broker flow control.
+// A commit error after a successful effect can cause replay: make effects
+// idempotent. Advancing past quarantine requires a durable disposition policy.
+// https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html`;
 
-  if (title.startsWith("Delivery semantics")) return `async function consume(record, database, broker) {
+  if (title.startsWith("Delivery semantics")) return `// Integration core; caller authenticates producer, authorizes tenant and validates
+// the envelope before this point. The database adapter is scoped to this tenant
+// and logical consumer, NOT to a transient worker-instance ID.
+async function consume(record, database, broker) {
   await database.transaction(async tx => {
-    const claimed = await tx.inbox.insertIfAbsent(record.eventId);
+    const claimed = await tx.inbox.insertIfAbsent(record.eventId, record.data);
     if (!claimed) return; // already committed locally
     await tx.applyBusinessEffect(record.data);
   });
@@ -7343,15 +9068,25 @@ for await (const record of consumer.records({ maxInFlight: 32 })) {
 
 // Ack before the transaction risks loss. Ack after it risks redelivery.
 // Atomic inbox + local effect turns redelivery into the same local outcome;
-// external effects need their own operation identity and reconciliation.`;
+// external effects need their own operation identity and reconciliation.
+// Required adapter contract: a unique (tenant, logical consumer, event ID) claim
+// and effect commit together; exceptions roll back both. Duplicate claims must
+// compare canonical intent and reject changed data rather than silently discard it.
+// Keep inbox entries through the replay window. Deleting them permits repeats.
+// broker.ack must acknowledge this delivery only (or a contiguous completed
+// offset prefix), never skip unfinished earlier work. An ack error after commit
+// means replay is possible; it does not justify undoing the committed effect.`;
 
   if (title.startsWith("Ordering,")) return `const partitionFor = event => stableHash(event.aggregateId) % partitionCount;
 
+// Adapter sketch: one partition, decimal-string offsets, auto-commit disabled.
+// Each key is assigned consistently for this topology; changing partition count
+// needs an ordering migration plan, not merely another modulo operation.
 async function handlePartition(records, ownershipSignal) {
   for await (const record of records) {
     ownershipSignal.throwIfAborted();
     await handleInOrder(record); // one key stays on one partition
-    await commit(record.offset + 1);
+    await commit((BigInt(record.offset) + 1n).toString());
   }
 }
 
@@ -7378,20 +9113,46 @@ const quarantineRecord = {
 // Retry topics delay bounded attempts without blocking the source partition.
 // Replay is an owned, audited change with idempotency and rate limits.`;
 
-  if (title.startsWith("Transactional outbox")) return `BEGIN;
-UPDATE jobs SET state = 'completed', result_uri = $2 WHERE id = $1;
+  if (title.startsWith("Transactional outbox")) return `-- SQL fragments; supply schema, parameter binding and transaction adapter.
+-- Producer: emit only for the actual running -> completed transition.
+BEGIN;
+WITH changed AS (
+  UPDATE jobs SET state = 'completed', result_uri = $2
+  WHERE id = $1 AND tenant_id = $5 AND state = 'running'
+  RETURNING id
+)
 INSERT INTO outbox(event_id, aggregate_id, kind, payload)
-VALUES ($3, $1, 'job.completed', $4);
+SELECT $3, id, 'job.completed', $4 FROM changed
+RETURNING event_id;
 COMMIT;
+-- Zero rows is NOT a newly completed job: reconcile replay versus stale/missing
+-- state. A failed outbox insert rolls back the job transition. Payload must be
+-- validated and derived from the committed transition, not an untrusted event.
 
 -- Relay claims unpublished rows or decodes WAL, publishes at least once, and
 -- records progress. Consumer commits identity and local effect together:
 BEGIN;
-INSERT INTO inbox(event_id) VALUES ($3) ON CONFLICT DO NOTHING RETURNING event_id;
-UPDATE project_stats SET completed = completed + 1 WHERE project_id = $5;
+-- Require UNIQUE(consumer, tenant_id, event_id) on inbox and a non-cascading
+-- FK (tenant_id, project_id) to project_stats, whose completed field is NOT NULL.
+WITH claimed AS (
+  INSERT INTO inbox(consumer, tenant_id, event_id, project_id, intent_hash)
+  VALUES ($1, $2, $3, $4, $5)
+  ON CONFLICT (consumer, tenant_id, event_id) DO NOTHING
+  RETURNING tenant_id, project_id
+)
+UPDATE project_stats AS stats SET completed = stats.completed + 1
+FROM claimed
+WHERE stats.tenant_id = claimed.tenant_id AND stats.project_id = claimed.project_id
+RETURNING stats.completed;
 COMMIT;
 
--- Only update stats when the inbox insert returned a new identity.`;
+-- Separate consumer parameter set from producer bindings. Duplicate: no claimed
+-- row, no increment. Foreign key failure: no committed inbox row. If your schema
+-- cannot ensure a target exists, the adapter must roll back a zero-row effect.
+-- On duplicate, compare stored canonical intent hash; changed intent is an error.
+-- Ack only after commit; consumer retries still require a retention contract.
+-- Run new/duplicate/mismatched/missing-target cases on a real database.
+-- https://www.postgresql.org/docs/current/queries-with.html`;
 
   if (title.startsWith("Sagas,")) return `const orderSaga = {
   reserveInventory: { compensate: "releaseInventory", timeoutMs: 2000 },
@@ -7401,15 +9162,18 @@ COMMIT;
 
 async function advance(instance, result) {
   const next = transition(instance.state, result);
-  await store.transaction(tx => {
-    tx.appendHistory(instance.id, result);
-    tx.saveState(instance.id, next);
-    tx.enqueueDueActions(instance.id, next.actions);
+  await store.transaction(async tx => {
+    await tx.appendHistory(instance.id, result);
+    await tx.saveState(instance.id, next);
+    await tx.enqueueDueActions(instance.id, next.actions);
   });
 }
 
 // Each action and compensation is idempotent. Irreversible steps and failed
-// compensation enter explicit manual-repair states instead of disappearing.`;
+// compensation enter explicit manual-repair states instead of disappearing.
+// Adapter must atomically deduplicate result identity and compare instance version
+// before committing next state; this sketch does not implement that concurrency
+// control. Reconcile an unknown payment outcome before attempting compensation.`;
 
   if (title.startsWith("Distributed transactions")) return `// Coordinator durable log
 PREPARING tx-42 participants=A,B
@@ -7428,7 +9192,8 @@ async function recover(inDoubt) {
   else await keepLocksAndEscalate(); // blocking preserves atomicity
 }`;
 
-  if (title.startsWith("Single-leader replication")) return `const cluster = {
+  if (title.startsWith("Single-leader replication")) return `// Serialized, integration-only write-path sketch, NOT a consensus algorithm.
+const cluster = {
   leader: { id: "A", term: 8, log: [], commitIndex: 0 },
   followers: [{ id: "B", matchIndex: 0 }, { id: "C", matchIndex: 0 }]
 };
@@ -7441,8 +9206,14 @@ async function write(command) {
   return { term: entry.term, index: entry.index };
 }
 
-// Route freshness-sensitive reads to a node that proves appliedIndex >= token.index.
-// Failover accepts only a candidate whose log contains every committed entry.`;
+// appendLeaderLog must persist the entry; majority acknowledgment must mean
+// durable matching entries in the current configuration. Leadership/term changes
+// must abort this path; commitIndex never decreases under concurrent completions.
+// Raft's current-term commit rule and election safety are omitted, not optional.
+// A freshness token needs stream/cluster identity as well as log position. Matching
+// appliedIndex can provide session freshness, but linearizable reads additionally
+// require current-authority proof; a deposed leader may have an old applied prefix.
+// Failover must preserve every committed entry, not merely elect any available node.`;
 
   if (title.startsWith("Multi-leader replication")) return `const left = { value: "Ada", clock: { eu: 5, us: 2 } };
 const right = { value: "Grace", clock: { eu: 4, us: 3 } };
@@ -7472,7 +9243,10 @@ async function quorumRead(key) {
 }
 
 // Sloppy quorum and hinted handoff change which nodes count; concurrent versions
-// and failures still require explicit resolution and anti-entropy.`;
+// and failures still require explicit resolution and anti-entropy.
+// All replica calls require bounded deadlines. allSettled waits for EVERY replica,
+// so this simple write path is not a return-at-W latency implementation. R+W>N
+// establishes overlap for a fixed replica set, not linearizability by itself.`;
 
   if (title.startsWith("Consistency models")) return `const history = [
   { process: "A", op: "write", value: 1, start: 0, end: 5 },
@@ -7505,7 +9279,10 @@ for (const policy of ["linearizable", "available-eventual"]) {
 }
 
 // PACELC asks about normal-operation latency/consistency choices as well as the
-// partition branch. State the guarantee per operation, not per product logo.`;
+// partition branch. State the guarantee per operation, not per product logo.
+// hasQuorum is only a precondition: quorumOperation must implement a protocol
+// preserving linearizability. CAP availability is a response guarantee at each
+// non-failing node, not an uptime percentage or the existence of one healthy side.`;
 
   if (title.startsWith("Sharding,")) return `function owner(key, ring) {
   const point = hash(key);
@@ -7522,33 +9299,73 @@ assertSkewBelow(distribution, 1.5);
 // Measure hot keys, virtual-node movement, routing-cache propagation, cross-shard
 // requests, scatter width, slowest-shard tail, and migration double-read/write windows.`;
 
-  if (title.startsWith("Consensus,")) return `function onAppendEntries(node, message) {
+  if (title.startsWith("Consensus,")) return `import assert from "node:assert/strict";
+// Focused AppendEntries PRECHECK, not a Raft implementation. Trusted RPC fixture,
+// serialized dispatch, zero-based log with sentinel term 0 at index 0.
+async function onAppendEntries(node, message, persistHardState) {
   if (message.term < node.currentTerm) return { term: node.currentTerm, success: false };
-  if (!matches(node.log, message.prevLogIndex, message.prevLogTerm)) return { term: node.currentTerm, success: false };
-  node.currentTerm = message.term;
+  if (message.term > node.currentTerm) {
+    // Higher term matters even when the log-prefix check will fail.
+    await persistHardState({ currentTerm: message.term, votedFor: null });
+    node.currentTerm = message.term;
+    node.votedFor = null;
+  }
   node.role = "follower";
-  appendWithoutConflicts(node.log, message.entries);
-  node.commitIndex = Math.min(message.leaderCommit, node.log.length - 1);
-  applyThrough(node, node.commitIndex);
-  return { term: node.currentTerm, success: true, matchIndex: node.log.length - 1 };
+  if (node.log[message.prevLogIndex]?.term !== message.prevLogTerm) {
+    return { term: node.currentTerm, success: false };
+  }
+  // Deliberately STOP here: do not claim append success before log persistence.
+  return { term: node.currentTerm, readyForLogProcessing: true };
 }
-
-// Test: one leader per term, stale-term rejection, majority commit, committed
-// prefix preservation, split votes, leader isolation, and recovered follower catch-up.`;
+const node = { currentTerm: 3, votedFor: "A", role: "candidate", log: [{ term: 0 }, { term: 3 }] };
+const persisted = [];
+const persist = async state => { persisted.push(state); };
+assert.deepEqual(await onAppendEntries(node, { term: 4, prevLogIndex: 1, prevLogTerm: 2 }, persist),
+  { term: 4, success: false });
+assert.equal(node.currentTerm, 4);
+assert.equal(node.votedFor, null);
+assert.equal(node.role, "follower");
+assert.deepEqual(persisted, [{ currentTerm: 4, votedFor: null }]);
+assert.deepEqual(await onAppendEntries(node, { term: 3, prevLogIndex: 1, prevLogTerm: 3 }, persist),
+  { term: 4, success: false });
+assert.equal(persisted.length, 1);
+assert.equal((await onAppendEntries(node, { term: 4, prevLogIndex: 1, prevLogTerm: 3 }, persist)).readyForLogProcessing, true);
+await assert.rejects(onAppendEntries(node, { term: 5 }, async () => { throw new Error("disk failure"); }), /disk failure/);
+// Persistence failure must stop normal processing; no success reply is allowed.
+// Remaining protocol: conflict handling without truncating a matching suffix,
+// durable log writes, nondecreasing commitIndex bounded by the last new entry,
+// application order, election safety, leader current-term commit rule, snapshots
+// and membership changes. The old sketch incorrectly used the entire local tail.
+// Do not deploy this precheck; use the full algorithm and tested implementation.
+// https://raft.github.io/raft.pdf`;
 
   if (title.startsWith("Membership,")) return `BEGIN;
-SELECT nextval('fencing_token_seq') AS token; -- new owner receives 1042
-UPDATE resources SET lease_owner = $1, lease_until = now() + interval '5 seconds'
-WHERE id = $2;
+-- READ COMMITTED; one authoritative database connection for this transaction.
+-- Lock BEFORE allocating a token; allocating first can reorder token issuance.
+SELECT id FROM resources WHERE id = $2 FOR UPDATE;
+UPDATE resources
+SET lease_owner = $1, lease_until = clock_timestamp() + interval '5 seconds',
+    fence = nextval('fencing_token_seq')
+WHERE id = $2 AND (lease_until IS NULL OR lease_until <= clock_timestamp())
+RETURNING fence, lease_until;
 COMMIT;
+-- Proceed only if UPDATE returned a row and COMMIT succeeded. Zero rows means
+-- a live owner exists or the resource is absent. Keep acquisition transactions
+-- short: waiting for locks/commit can consume the lease lifetime.
 
 -- Protected resource rejects every stale owner, even if its lease once looked valid.
 UPDATE protected_state
 SET value = $1, last_fence = $2
 WHERE id = $3 AND last_fence < $2;
+-- last_fence is NOT NULL. Require one changed row; otherwise reject stale work.
+-- Sequence gaps on rollback are expected. Do not reset/reuse a token sequence.
+-- Failover/restore must preserve the monotonic authority required by the target;
+-- merely naming a sequence does not prove that across asynchronous failover.
+-- One write per token is modeled here; renewal/multi-write leases need a policy.
 
 -- Heartbeat timeout creates suspicion, not proof of death. Membership and leader
--- authority require quorum; time-bounded leases require clock assumptions.`;
+-- authority require quorum; time-bounded leases require clock assumptions.
+-- https://www.postgresql.org/docs/current/functions-sequence.html`;
 
   if (title.startsWith("Service discovery")) return `const resolver = watchService("job-service");
 const balancer = leastOutstanding({ localityPreference: "same-zone" });
@@ -7603,22 +9420,27 @@ await projections.rebuild("job-list-v2", { fromPosition: 0 });
 // Upcast old event versions, deduplicate projection input, and verify snapshot
 // plus tail replay equals full replay.`;
 
-  if (title.startsWith("System design method")) return `const estimate = {
-  writesPerSecond: 2_000,
-  readsPerSecond: 20_000,
-  averageObjectBytes: 4_096,
-  retentionDays: 365,
-  peakFactor: 4,
-  targetP99Ms: 300
+  if (title.startsWith("System design method")) return `import assert from "node:assert/strict";
+const estimate = {
+  writesPerSecond: 2_000, readsPerSecond: 20_000,
+  averageObjectBytes: 4_096, retentionDays: 365,
+  peakFactor: 4, meanResponseSeconds: 0.08, targetP99Ms: 300
 };
-
 estimate.annualRawBytes = estimate.writesPerSecond * estimate.averageObjectBytes * 86_400 * estimate.retentionDays;
 estimate.peakRequestsPerSecond = (estimate.writesPerSecond + estimate.readsPerSecond) * estimate.peakFactor;
-estimate.averageConcurrency = estimate.peakRequestsPerSecond * (estimate.targetP99Ms / 1000); // conservative Little's Law input
+estimate.averageConcurrency = (estimate.writesPerSecond + estimate.readsPerSecond) * estimate.meanResponseSeconds;
+estimate.peakScenarioConcurrency = estimate.peakRequestsPerSecond * estimate.meanResponseSeconds;
+assert.equal(estimate.averageConcurrency, 1760);
+assert.equal(estimate.peakScenarioConcurrency, 7040);
+assert.equal(estimate.annualRawBytes, 258_342_912_000_000);
 console.table(estimate);
-
-// Clarify requirements -> invariants -> API -> data/ownership -> critical path
-// -> estimates -> failure/resilience -> observability/security -> evolution.`;
+// Little's Law uses consistent-window MEAN arrival rate and MEAN time in a stable
+// system, not p99 latency. The peak scenario assumes mean latency stays 80 ms;
+// saturation can invalidate that assumption. A p99 target is not a capacity bound.
+// Raw bytes omit indexes, replicas, versions, metadata, backups and compression.
+// Define whether each write creates a retained object: updates need another model.
+// Explain sensitivity to retention, payload size, arrival mix and bottleneck before
+// choosing a machine count; verify estimates with representative measurements.`;
 
   if (title.startsWith("System design case studies")) return `const cases = {
   shortener: { dominant: "read-heavy key lookup", hard: "hot links and abuse" },
@@ -7678,13 +9500,15 @@ for (const role of roles) {
 
 const checks = [
   text => !/responsible for|worked on/i.test(text),
-  text => /\d/.test(text),
+  text => /\\d/.test(text),
   text => text.length <= 220
 ];
 const rendered = bullet.action + "; " + bullet.result + ".";
 console.assert(checks.every(check => check(rendered)), rendered);
 
-# Extraction check: pdftotext resume.pdf - | sed -n '1,120p'`;
+// Extraction check (separate shell): pdftotext resume.pdf - | sed -n '1,120p'
+// A number is not proof. State test conditions/sample size; zero observed failures
+// is not a guarantee of zero production failure. Never invent impact metrics.`;
 
   if (title.startsWith("LinkedIn profile")) return `const linkedInProfile = {
   headline: "Full Stack AI Engineer | TypeScript, React, Python, FastAPI | Reliable RAG systems",
@@ -7728,13 +9552,26 @@ I build observable, evaluated AI products with TypeScript and Python.
 
 const sources = ["employer-career-site", "LinkedIn alert", "reputable general portal",
   "specialist startup portal", "community board", "known recruiter", "referral"];
+function matchesOfficialHost(value, trustedHostname) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === trustedHostname && !url.username && !url.password && !url.port;
+  } catch { return false; }
+}
 const verify = role => ({
-  officialPosting: role.officialUrl?.startsWith(role.companyDomain),
+  officialPosting: matchesOfficialHost(role.officialUrl, role.companyDomain),
   realCompany: Boolean(role.companyRegistryEvidence),
   noPaymentRequested: role.candidateFee === 0,
   contactDomainMatches: role.recruiterEmail.endsWith("@" + role.companyDomain)
 });
-console.table({ searches, sources });`;
+console.table({ searches, sources });
+console.assert(matchesOfficialHost("https://company.example/jobs/1", "company.example"));
+console.assert(!matchesOfficialHost("https://company.example.evil.test/jobs", "company.example"));
+console.assert(!matchesOfficialHost("https://company.example@evil.test/jobs", "company.example"));
+// trustedHostname must come from independent employer research, not the message.
+// These are screening signals, not proof of a genuine job or recruiter. Legitimate
+// external ATS/recruiter domains require separate verification via the employer.
+// https://consumer.ftc.gov/articles/job-scams`;
 
   if (title.startsWith("Application tracking")) return `const application = {
   id: crypto.randomUUID(),
@@ -7750,8 +9587,15 @@ console.table({ searches, sources });`;
 };
 
 function dedupeKey(item) {
-  return [item.company.trim().toLowerCase(), item.role.trim().toLowerCase(), new URL(item.canonicalUrl).pathname].join("|");
+  // Preserve the origin, query and fragment: an ATS may put the posting ID there.
+  return JSON.stringify([item.company.trim().toLowerCase(), item.role.trim().toLowerCase(), new URL(item.canonicalUrl).href]);
 }
+console.assert(dedupeKey(application) === dedupeKey({ ...application }));
+console.assert(dedupeKey({ ...application, canonicalUrl: "https://company.example/jobs?id=1" }) !==
+  dedupeKey({ ...application, canonicalUrl: "https://company.example/jobs?id=2" }));
+// This is a candidate identity key, not proof that two postings are the same.
+// Prefer an independently verified employer + posting ID when available; retain
+// original source URLs and manually resolve redirects/reposts before merging.
 
 // Safe automation: permitted email alerts/manual exports -> local normalization
 // -> dedupe -> reminder. A human verifies role, truth, personalization, and submit.
@@ -7774,31 +9618,47 @@ const logistics = {
 
 // Rehearse 30s, 90s, and 5m versions; stop when the interviewer has enough.`;
 
-  if (title.startsWith("Coding interview method")) return `function interviewLoop(problem) {
-  const contract = clarify(problem, ["inputs", "outputs", "constraints", "invalid cases"]);
-  const examples = testExamples(contract, ["normal", "empty", "boundary", "duplicate"]);
-  const bruteForce = describeCorrectBaseline(contract);
-  const invariant = stateInvariant(bruteForce);
-  const optimized = improveBottleneck(bruteForce, contract.constraints);
-  const code = implement(optimized, { communicate: true });
-  const tests = runByHand(code, examples);
-  return { code, tests, complexity: deriveComplexity(optimized), improvements: review(code) };
+  if (title.startsWith("Coding interview method")) return `// Worked rehearsal: find two DISTINCT indices summing to target, or return null.
+// Contract for this fixture: safe integers, and all subtraction results remain safe.
+// Baseline: check all i < j pairs, O(n²) time and O(1) extra space.
+// Improvement: remember earlier values. Before index j, seen contains only i < j.
+function pairSum(values, target) {
+  const seen = new Map();
+  for (let j = 0; j < values.length; j++) {
+    const needed = target - values[j];
+    if (seen.has(needed)) return [seen.get(needed), j];
+    seen.set(values[j], j);
+  }
+  return null;
 }
+console.assert(JSON.stringify(pairSum([2, 7, 11], 9)) === "[0,1]");
+console.assert(JSON.stringify(pairSum([3, 3], 6)) === "[0,1]");
+console.assert(pairSum([3], 6) === null && pairSum([], 6) === null);
+// Predict why inserting BEFORE lookup would incorrectly reuse one index.
+// With expected O(1) Map operations: O(n) time and O(n) space, not a language-level
+// worst-case hashing guarantee. If memory must be O(1), revisit the baseline or
+// ask whether sorting/mutation and losing original index order are acceptable.
 
 // Say assumptions and invariants aloud. If stuck: shrink the example, restore a
 // known-correct baseline, identify the first divergence, and ask a precise question.`;
 
   if (title.startsWith("JavaScript and Python coding")) return `// JavaScript: count with Map; sort explicitly with a numeric comparator.
 function topK(values, k) {
+  if (!Number.isSafeInteger(k) || k < 0 || !Array.isArray(values) || values.some(value => !Number.isFinite(value))) {
+    throw new RangeError("finite numeric values and nonnegative integer k required");
+  }
   const counts = new Map();
   for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
   return [...counts].sort((a, b) => b[1] - a[1] || a[0] - b[0]).slice(0, k).map(([value]) => value);
 }
 console.assert(JSON.stringify(topK([3, 1, 3, 2, 1, 3], 2)) === "[3,1]");
 
-# Python equivalent uses collections.Counter and heapq.nlargest when useful.
-# Practice without third-party packages. Track errors separately: algorithm,
-# language API, syntax, mutation/aliasing, boundary, complexity, or communication.`;
+console.assert(topK([], 2).length === 0 && topK([1, 2], 0).length === 0);
+// Python equivalent uses collections.Counter and heapq.nlargest when useful.
+// This sorts m unique values: O(n + m log m) time, O(m) auxiliary space. Ties use
+// ascending numeric value, so a Python heap version must preserve that tie policy.
+// Practice without third-party packages. Track errors separately: algorithm,
+// language API, syntax, mutation/aliasing, boundary, complexity, or communication.`;
 
   if (title.startsWith("Full-stack technical")) return `const answer = {
   define: "State the precise boundary and guarantee.",
@@ -7810,7 +9670,13 @@ console.assert(JSON.stringify(topK([3, 1, 3, 2, 1, 3], 2)) === "[3,1]");
 };
 
 const prompt = "Why can a Node.js service handle concurrent I/O on one JavaScript thread?";
-recordAnswer(prompt, answer, { targetSeconds: 120, noNotes: true });
+console.log({ prompt, answer });
+// Human rehearsal: answer aloud in two minutes without notes, then compare:
+// Socket waits can progress through OS facilities; eligible file/crypto work may
+// use libuv's pool. JavaScript callbacks still share the main thread. A long CPU
+// callback blocks other callbacks; async syntax alone does not move that work.
+// Senior follow-up: distinguish pool saturation from event-loop blocking using
+// loop-delay/utilization, dependency latency and a controlled profile.
 
 // Interleave React, JS/Node, Python/FastAPI, data, cloud, security, and operations.`;
 
@@ -7827,9 +9693,9 @@ recordAnswer(prompt, answer, { targetSeconds: 120, noNotes: true });
   evolution: ["single service", "measured bottleneck", "next justified split"]
 };
 
-function checkpoint(interviewer, design) {
-  return interviewer.confirm("I will trace the critical write path next; should I prioritize scale, consistency, or failure recovery?");
-}
+// Ask the interviewer: "I will trace the critical write path next; should I
+// prioritize scale, consistency, or failure recovery?" This is a rehearsal
+// worksheet, not an automated interviewer. Fill assumptions before drawing.
 
 // Draw one readable path and calculate before adding components.`;
 
@@ -7843,9 +9709,17 @@ function checkpoint(interviewer, design) {
   release: "versioned dataset + model/prompt/index config + regression gate"
 };
 
-for (const claim of ["quality", "groundedness", "safety", "latency", "cost"]) {
-  console.log(claim, evidenceFor(aiClaim, claim));
-}
+const evidenceRequired = {
+  quality: "held-out task success with sample counts and failure slices",
+  groundedness: "claim-to-source checks, citation correctness and abstention cases",
+  safety: "unauthorized retrieval/tool attempts and their observed denials",
+  latency: "end-to-end distribution with timeouts and offered load included",
+  cost: "per-task usage including retrieval, retries, failed attempts and fallback"
+};
+console.table(evidenceRequired);
+// The numbers in aiClaim are hypothetical targets, not measured results. Collect
+// each artifact before claiming the system met its target; compare a baseline
+// using the same cases and report regressions rather than only an average score.
 
 // Never answer 'the model is better' without dataset, slice, metric, uncertainty, and tradeoff.`;
 
@@ -7937,8 +9811,14 @@ console.assert(mayUse(proposal));
   { company: "B", base: 108, targetBonus: 5, expectedEquity: 2, pension: 3, relocation: 0, currency: "same" },
 ];
 
-const comparableAnnual = offer => offer.base + offer.targetBonus + offer.expectedEquity + offer.pension + offer.relocation;
-console.table(offers.map(offer => ({ company: offer.company, comparableAnnual: comparableAnnual(offer) })));
+// Fictional same-currency units, not market data or take-home pay. Relocation is
+// one-time; bonus/equity are contingent scenarios, not guaranteed base salary.
+const recurringScenario = offer => offer.base + offer.targetBonus + offer.expectedEquity + offer.pension;
+const firstYearScenario = offer => recurringScenario(offer) + offer.relocation;
+console.table(offers.map(offer => ({ company: offer.company,
+  base: offer.base, recurringScenario: recurringScenario(offer), firstYearScenario: firstYearScenario(offer) })));
+console.assert(recurringScenario(offers[0]) === 123 && firstYearScenario(offers[0]) === 127);
+console.assert(recurringScenario(offers[1]) === 118 && firstYearScenario(offers[1]) === 118);
 
 const counter = {
   appreciation: "I am excited about the role and team.",
@@ -7986,9 +9866,10 @@ const counter = {
   branches: ["React rendering", "FastAPI contracts", "PostgreSQL MVCC", "RAG evaluation", "AWS recovery"]
 };
 
-function verifyDemo() {
-  return Promise.all([checkLinks(), runSmokeTest(), verifySeedData(), openDashboards(), validateBackupVideo()]);
-}
+const preflight = ["links resolve", "smoke test passes", "seed data is disposable",
+  "dashboards are redacted", "backup recording plays", "no credentials on screen"];
+console.table(preflight.map(check => ({ check, verified: false })));
+// Perform and record these checks yourself; printing this list verifies nothing.
 
 // Never spend the whole interview fighting a demo; switch to evidence and continue.`;
 
@@ -8035,21 +9916,145 @@ const contribution = {
   communication: ["structured", "concise", "checks understanding", "adapts"]
 };
 
-function schedule(error) {
-  return { rootCause: classify(error), drills: ["tomorrow", "in 3 days", "in 7 days"],
-    proof: "same skill on a different prompt", owner: "learner" };
+function planPractice(observations) {
+  return observations.map(item => {
+    if (!item || !Object.hasOwn(scorecard, item.round) ||
+        !scorecard[item.round].includes(item.criterion) ||
+        !["demonstrated", "needs practice", "not observed"].includes(item.result) ||
+        typeof item.evidence !== "string" || !item.evidence.trim()) {
+      throw new TypeError("valid criterion, result and concrete evidence required");
+    }
+    return { ...item,
+      next: item.result === "needs practice" ? "targeted drill, then a different prompt"
+        : item.result === "not observed" ? "attempt a prompt that exposes this criterion"
+        : "recheck later without notes",
+      reviewAfterDays: [1, 3, 7]
+    };
+  });
 }
 
-const loop = runMock(["coding", "technical", "system-design", "behavioral"]);
-console.table(loop.errors.map(schedule));
+// Synthetic observations, not your interview record or an automatic grade.
+const observations = [
+  { round: "coding", criterion: "tests", result: "needs practice", evidence: "Fixture: empty input was not tested." },
+  { round: "systemDesign", criterion: "estimates", result: "demonstrated", evidence: "Fixture: derived arrival rate with units." },
+  { round: "behavioral", criterion: "reflection", result: "not observed", evidence: "Fixture: no reflection question was attempted." }
+];
+const plan = planPractice(observations);
+console.assert(plan[0].next.startsWith("targeted drill"));
+console.assert(plan[1].next === "recheck later without notes");
+console.assert(plan[2].next.startsWith("attempt a prompt"));
+try { planPractice([{ ...observations[0], criterion: "confidence" }]); throw new Error("accepted invalid criterion"); }
+catch (error) { console.assert(error instanceof TypeError); }
+console.table(plan);
 
-// Score observable behavior, not confidence or interviewer vibes.`;
+// A human supplies evidence from an actual attempt; this helper only organizes it.
+// Missing evidence is not failure or mastery. The suggested intervals are a starting
+// schedule, not a universal optimum. Adjust after delayed recall on changed prompts.
+// Get recording consent, redact employer/customer details and retain recordings only
+// as long as needed. Senior review includes decisions, influence and reflection.`;
 
   return fallback;
 }
 
 function infrastructureCodeFor(lesson, fallback) {
   const title = lesson.title;
+  if (lesson.trackId === "kubernetes") {
+    const experiments = {
+      "0547": ["Reconciliation, not a shell script", "Use an isolated cluster and namespace with a two-replica stateless Deployment. Record desired replicas, observed replicas and Pod owners.", "Delete only one disposable Pod and watch the owning controller replace it. Compare this with a standalone Pod that has no such owner.", "Replacement comes from a controller's desired-state loop, not from Kubernetes remembering every imperative command. Explain whether the application's needs justify operating a cluster."],
+      "0548": ["Identity and optimistic concurrency", "Read one test object including name, UID, generation, resourceVersion, spec and status. Save a redacted copy as evidence.", "Update the desired spec, then attempt a conflicting update from an older object version. Separately delete/recreate the disposable object with the same name.", "Names can be reused while UIDs change. Treat resourceVersion as opaque concurrency data, not an application timestamp; desired generation and observed status can temporarily differ."],
+      "0549": ["API request checkpoints", "Define one harmless test object and an identity allowed to read but not create it. Diagram authentication, authorization, admission, validation and persistence.", "Compare an unauthenticated request, a forbidden create and an invalid object submitted by an authorized test identity.", "Identify which stage rejects each request and what audit evidence is available. An admitted object is not proof that a controller successfully materialized the workload."],
+      "0550": ["Finalizer ownership", "In a disposable namespace, inspect an object's owner references and finalizers before deletion. Use a toy controller or a paper lifecycle with explicit cleanup responsibility.", "Make cleanup fail and trace deletionTimestamp plus retained object state. Restore cleanup rather than blindly stripping the finalizer.", "A finalizer is a cleanup protocol, not a guarantee that cleanup can succeed. Name retry, idempotency and orphan-recovery behavior before considering manual intervention."],
+      "0551": ["Unschedulable is not crashed", "Use a disposable Pod with a resource request larger than any test node's allocatable capacity. Inspect its phase, scheduling condition and events.", "Reduce the request to a feasible value, then introduce an impossible node-affinity constraint.", "Pending can result from constraints before a container ever starts. Compare requested resources with allocatable capacity and all placement constraints; current low CPU use does not override requests."],
+      "0552": ["Node-to-runtime responsibility", "Draw API server, node lease, kubelet, CRI runtime and Pod sandbox for one test Pod. Record node and Pod status without disrupting a real node.", "Use a tabletop image-pull failure and a separate lost-node-heartbeat scenario.", "Differentiate an unavailable image from an unavailable node. A desired Pod does not prove a running process; identify status owners, detection delay and replacement constraints."],
+      "0553": ["The Pod sharing boundary", "Create a disposable two-container Pod: one local server and one client. Specify ports and a shared emptyDir volume explicitly.", "Reach the server through localhost and exchange a marker through the volume. Contrast an ordinary container restart with full Pod replacement.", "Containers in a Pod share networking and declared volumes, not every filesystem path. Pod replacement changes identity and emptyDir lifetime; init and sidecar lifecycle depend on their configured role."],
+      "0554": ["Probe responsibilities", "Give a disposable application separate startup, readiness and liveness endpoints with deliberate failure switches. Set a bounded grace period.", "Fail readiness while keeping liveness healthy, then fail liveness after startup succeeds.", "Readiness affects service eligibility; liveness can trigger container restart. A slow dependency should not automatically make every instance enter a restart loop. Measure draining of in-flight work."],
+      "0556": ["Identity is not replication", "Draw a StatefulSet's ordinal names, headless discovery and one PVC per replica. State the database's own replication and quorum rules separately.", "Replace a disposable Pod while preserving its claim, then analyze loss of the storage's failure domain.", "Stable Pod identity does not implement data replication or backups. PVC retention and storage lifecycle require explicit review before deleting test resources."],
+      "0557": ["Node-local workload coverage", "Deploy a harmless DaemonSet in a test cluster with a narrow node selector and bounded requests. Record eligible nodes and scheduled Pods.", "Add a selector exclusion or a taint in a paper scenario and predict which nodes should receive the agent.", "A DaemonSet targets eligible nodes, not an unconditional replica count. Explain tolerations, update availability and how a broken privileged agent could affect every host."],
+      "0558": ["Jobs can repeat effects", "Use a harmless Job that records a stable operation ID in a test store. Specify retries, deadline and completion count.", "Simulate a worker crash after recording the effect but before normal completion. Then overlap two scheduled runs in a fixture.", "Job completion is not an exactly-once business guarantee. Define idempotency and concurrency policy; retries and deadlines bound execution rather than undoing completed effects."],
+      "0560": ["Routing object versus implementation", "Draw external DNS, load balancer, ingress or Gateway controller, route, Service and ready endpoints. Record the installed controller and supported API versions.", "Create a route specification without a matching controller in a disposable fixture, then separately mismatch its backend port.", "An API object alone does not forward packets. Find the responsible implementation and status conditions, then verify TLS termination, host matching and backend readiness."],
+      "0561": ["DNS search-path cost", "Inspect resolv.conf in a disposable Pod and query a short Service name and its fully qualified name using an approved diagnostic image.", "Compare a nonexistent short name with a trailing-dot absolute name and inspect query attempts where tooling permits.", "Search domains and ndots can expand lookup work. Separate DNS resolution from endpoint reachability; cached negative answers and application resolver behavior affect diagnosis."],
+      "0563": ["Configuration delivery and reload", "Mount a harmless ConfigMap key as a file and also expose it as an environment variable in a disposable Pod. Record the application's read/reload behavior.", "Update the ConfigMap, allow for projection propagation, and compare the mounted value with the existing process environment.", "An environment variable does not automatically reload in an existing process. Projected-file propagation and application reload are separate; subPath has different update behavior. Base64 encoding is not secret encryption."],
+      "0565": ["Claim, provisioner and data lifecycle", "Draw a PVC, StorageClass, provisioned volume, binding mode, access mode and reclaim policy using a test storage class.", "Analyze a pending claim and a Pod scheduled in an incompatible zone. Test snapshot restore only with disposable data.", "A claim request is not proof of an attached usable filesystem. Access modes are storage capabilities, not a general application authorization system; verify backend-specific lifecycle and recovery."],
+      "0566": ["Namespace isolation limits", "Place two fictional tenants in separate namespaces and list RBAC, network policy, quota and admission controls required by the threat model.", "Evaluate a cross-namespace network request and a resource-exhaustion attempt using harmless fixtures.", "A namespace alone is not a complete security boundary. Show which control denies each attempt and when hostile workloads require stronger cluster or infrastructure separation."],
+      "0570": ["Placement versus disruption", "Model three replicas across zones with topology spread and a PodDisruptionBudget. State available capacity and allowed voluntary disruptions.", "Compare a voluntary node drain with an involuntary zone loss, then analyze a drain when no replacement capacity exists.", "A disruption budget constrains supported voluntary evictions; it does not prevent all outages. Toleration permits placement but does not require it. Explain blocked maintenance without bypassing safety blindly."],
+      "0571": ["Correlate one user failure", "For a failed test request, connect application trace, Service endpoints, Pod readiness, events and node condition with timestamps and IDs.", "Expire the short-lived event evidence in a tabletop scenario and identify which durable collection would preserve the investigation.", "Events are not a complete durable audit log. Separate user SLOs from controller/node health and avoid high-cardinality labels containing user IDs or secrets."],
+      "0573": ["Render before applying", "Render a small Helm chart or Kustomize overlay locally using pinned tool and chart versions. Review the final objects, not only values files.", "Change a value that alters a selector or resource limit and compare rendered output. Include hook-created resources in the review.", "Templating can produce valid YAML with incorrect semantics. Review namespace, identity, secrets and lifecycle; a Helm rollback cannot automatically reverse every external or data effect."],
+      "0574": ["Reconciler ownership and drift", "Define Git as the approved desired state for a disposable workload. Identify the GitOps controller, permissions and reconciliation interval.", "Make an authorized temporary manual change in a sandbox and observe whether reconciliation restores declared state. Model an unavailable admission webhook separately.", "Write down who owns the field and how emergency changes are reconciled back to Git. Operators and webhooks introduce control-plane dependencies; custom resources are not implementations by themselves."],
+      "0575": ["Upgrade and recovery rehearsal", "Inventory component versions, API removals, node images, backups and provider/customer responsibilities. Read the exact target version-skew policy before proposing order.", "Rehearse node replacement and application recovery in a nonproduction cluster; separately restore an approved backup into an isolated recovery environment.", "A control-plane backup does not contain every external database or volume. Managed Kubernetes changes ownership, not all application recovery obligations; preserve observed downtime and restore checks."],
+      "0576": ["Kubernetes architecture defense", "Assemble the capstone's rendered manifests, RBAC matrix, resource budget, rollout evidence, SLOs and recovery procedures in an isolated cluster.", "Test one failed rollout, one unavailable dependency and one resource-pressure scenario with bounded fault injection.", "Explain controller, workload and storage responsibilities from observed evidence. Include cleanup and cost boundaries; a green kubectl apply does not establish production readiness."]
+    };
+    const exercise = experiments[lesson.number];
+    if (exercise) return exercise.map((text, index) => `# ${["Experiment specification (requires an isolated cluster unless tabletop)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n# ${text}`).join("\n\n");
+  }
+  if (lesson.trackId === "devops") {
+    const experiments = {
+      "0507": ["Find the delivery constraint", "Trace one fictional change from request to verified user outcome. Record active work, queue time, handoffs and rework separately.", "Halve build duration while leaving a two-day approval queue unchanged. Recalculate end-to-end lead time.", "Local utilization or more automation is not the objective. Propose the smallest change at the actual constraint and name its owner, feedback signal and failure risk."],
+      "0508": ["Resource exhaustion diagnosis", "In a disposable Linux service, record process identity, configured open-file limit and current descriptor count. Use systemctl status and journalctl only where systemd is actually the service manager.", "Use a bounded fixture that approaches its own descriptor limit, not the host's capacity. Observe the error and verify cleanup after requests end.", "Differentiate process limits, leaked handles and system-wide exhaustion. A restart can erase symptoms without fixing ownership; verify the count after repeated work."],
+      "0509": ["Locate the failing network layer", "For an endpoint you control, record hostname resolution, route, TCP reachability, TLS identity and HTTP status in order. Do not bypass certificate verification.", "Use separate fixtures for a wrong hostname, closed port and application error. Predict which diagnostic still succeeds in each case.", "A successful TCP connect does not prove valid TLS or a healthy application. Separate connect, handshake, response and overall deadlines in the evidence."],
+      "0511": ["Recover without rewriting shared work", "In a disposable Git repository, make two commits, create a branch and introduce a deliberate conflict. Record the commit graph before resolution.", "Compare a merge with a rebase on a private copy, then recover a mistaken private reference using its reflog.", "Explain which commit identities change and who might depend on them. Reflogs are local and retained by policy, not a permanent remote backup. Never practice force-push on a shared branch."],
+      "0513": ["Test the boundary that can fail", "Use one checkout flow with tax calculation, database uniqueness and an external payment contract. Assign one smallest meaningful test to each risk.", "Introduce a tax arithmetic bug, a duplicate insert and a provider schema mismatch separately.", "Show which test detects each fault and what it cannot prove. A mock provider passing unit tests is not evidence that the deployed provider accepts the request."],
+      "0514": ["Verify build origin", "For a test artifact, record content digest, source revision, build identity, dependency inventory and attestation verification policy.", "Substitute an artifact with the same display version but a different digest; separately substitute an untrusted builder identity.", "Verification must bind the artifact to the expected source and builder. An SBOM alone neither proves origin nor makes vulnerabilities harmless. Record the selected SLSA specification version."],
+      "0515": ["CI trust boundary", "Draw forked pull-request code, runner, workflow token, deployment environment and cloud role. Mark where untrusted code can execute.", "Evaluate a request from an untrusted branch against the intended OIDC subject/audience and environment approval rules using policy fixtures.", "Deny before giving untrusted code deployment authority. Short-lived credentials reduce exposure duration but do not make an overprivileged runner safe."],
+      "0516": ["Build once, promote the same object", "Assign a digest to a candidate artifact and record the tests that ran against it. Define staging and production references to that exact object.", "Rebuild the same source with a changed base dependency. Compare the resulting identity and ask whether previous test evidence still applies.", "A version label is not content identity. Retain tested artifacts and compatible configuration for rollback; do not rebuild a supposed rollback from moving dependencies."],
+      "0517": ["Configuration validation boundary", "Define a timeout with units, allowed range, default, owner and reload behavior. Separate a secret from ordinary configuration.", "Supply an invalid timeout and a missing secret, then change a valid flag while requests are active in a local fixture.", "Reject invalid startup state without printing secrets. Dynamic reload needs an atomic consistent view and a rollback path; a feature flag is a production change with an owner and expiry."],
+      "0521": ["Incident tabletop", "Assume checkout errors rise after a release. Assign incident commander, operator and communicator, with a shared timestamped decision log.", "Introduce evidence that the database is saturated and rolling back application code alone does not reduce queued work.", "Prioritize user-impact mitigation and verify recovery before declaring resolution. Preserve evidence, distinguish facts from hypotheses and assign follow-up actions to system causes, not personal blame."],
+      "0522": ["Queue stability arithmetic", "Assume arrivals of 120 jobs/s and sustained processing capacity of 100 jobs/s. Start with an empty queue and ignore variance only for this first calculation.", "Calculate backlog after 60 seconds, then lower admission to 90 jobs/s while capacity stays 100.", "Backlog first grows by 1200 jobs, then drains at 10 jobs/s under these assumptions. Add burst, service-time variance and autoscaler delay before choosing queue limits and deadlines."],
+      "0524": ["Platform as a product", "Interview a fictional application team whose first deployment takes three days. List delays and propose one self-service path with explicit ownership and an escape hatch.", "Compare a documented template with a new portal using adoption, completion time, support burden and failure recovery criteria.", "Choose the smallest intervention that removes the demonstrated obstacle. A portal is not automatically a platform; success is a user outcome, not the count of standardized tools."],
+      "0525": ["Risk-based release gate", "Threat-model a file-upload feature: attacker-controlled bytes, storage permissions, scanning, download authorization and audit evidence.", "Use harmless fixtures representing oversized input, wrong content type and another tenant's file identifier.", "Each gate must detect a named failure and have an owner. Policy-as-code passing does not certify the whole product or replace vulnerability response and exception expiry."],
+      "0526": ["Delivery capstone acceptance", "Connect source revision, tested artifact digest, environment configuration, deployment approval, user SLI and rollback instructions in one evidence bundle.", "Run an approved sandbox release with a deliberate failed health gate, then simulate a schema change that old code cannot read.", "Show when rollback is valid and when repair/roll-forward is required. Include incident communication and one measured improvement to the delivery process, not only a pipeline screenshot."]
+    };
+    const exercise = experiments[lesson.number];
+    if (exercise) return exercise.map((text, index) => `# ${["Exercise specification (not an executed release)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n# ${text}`).join("\n\n");
+  }
+  if (lesson.trackId === "docker") {
+    const experiments = {
+      "0527": ["Client and daemon are separate", "With Docker installed, inspect docker context show, docker version and docker info. Record the endpoint without exposing credentials.", "Select a deliberately unavailable disposable context, then run a read-only version request. Restore the original context afterward.", "Distinguish a missing client from an unreachable daemon. A client installed on the laptop does not prove containers run on that laptop; locate the daemon before inspecting host files."],
+      "0528": ["Image identity versus container state", "Use a disposable container from a recorded image digest. Write a marker inside its writable layer and inspect docker diff for that container.", "Start another container from the same image and check for the marker. Then restart the original container and check again.", "The original writable layer survives a restart; a newly created container does not inherit it. Image tags can move, while a digest identifies content. Remove only your disposable containers after recording evidence."],
+      "0529": ["Build-time and runtime configuration", "In a temporary build context, create a Dockerfile with FROM python:3.13-slim, WORKDIR /work, ARG BUILD_LABEL, ENV APP_MODE=demo, USER 10001 and CMD invoking Python to print its cwd and APP_MODE.", "Build with a BUILD_LABEL value, then run with APP_MODE=changed. Inspect image configuration and actual output.", "The working directory and runtime environment are observable; ARG is not automatically a runtime environment variable. EXPOSE documents a port but does not publish it. Never use ARG or ENV for build secrets."],
+      "0530": ["Cache invalidation experiment", "Create a tiny Python project with a dependency file and source file. Copy dependencies and install them before copying frequently changed source; exclude secrets and irrelevant files with .dockerignore.", "Build twice, then change only source, then only dependencies. Record which build steps are reused each time.", "A source change should not unnecessarily invalidate an earlier dependency step. A cache hit is not evidence of freshness or supply-chain trust; inspect the actual context and inputs."],
+      "0533": ["Graceful stop and PID 1", "Write a disposable Python process that installs a SIGTERM handler, reports receipt and exits. Use exec-form ENTRYPOINT and timestamp its start and stop.", "Stop it with a grace period, then repeat with a handler that exceeds that period. Compare logs, exit state and work completion.", "Receiving a signal is not equivalent to completing cleanup. Explain child reaping, init helpers and forced termination. Keep the experiment away from services holding real work."],
+      "0534": ["Isolation is layered", "Inspect a disposable container's namespaces, configured capabilities, seccomp policy and resource limits using the supported host/runtime tools.", "Compare process visibility with the host and attempt an operation deliberately excluded by the configured policy, without requesting privileged mode.", "Namespaces separate views, cgroups control resources, and capabilities/security policies constrain operations. None means the container has a separate kernel; identify host compromise boundaries."],
+      "0537": ["Writable layer versus durable volume", "Create a disposable named volume and two containers using it. Put a marker in the volume and a different marker in the first container's writable layer.", "Replace the first container and inspect both markers from the second. Verify ownership as the intended non-root user.", "The shared volume marker remains; container-layer data does not transfer to the replacement. A volume is not a backup. Restore a copied test dataset before removing only the named test resources."],
+      "0539": ["Unhealthy is not automatically restarted", "Run a disposable long-lived process with a Docker health check that can be made to fail while the main process remains alive.", "Trigger the unhealthy state, then separately exit the main process. Observe health state and restart count under the configured restart policy.", "Standalone Docker health status alone does not trigger a restart. Process exit and orchestrator behavior are separate. Dependencies can fail again after startup, so readiness and reconnect logic still matter."],
+      "0540": ["Logging and retention budget", "Run a bounded test process writing labelled lines to stdout and stderr. Record the configured logging driver and rotation settings before inspecting docker logs.", "Emit a fixed larger batch and compare log size and retention. Keep payloads synthetic and free of tokens or personal data.", "Application output, daemon logging configuration and external collection are separate layers. A container restart does not constitute a retention policy; calculate storage from rate times retention."],
+      "0541": ["Diagnose without changing the image", "Start with container state, exit code, logs, events and inspect output for a failed disposable workload. Form one hypothesis before executing inside it.", "Use a minimal image without a shell. Decide which host or approved debug-container evidence replaces shell access.", "A failed docker exec sh may mean no shell, not no running application. Preserve failure evidence before restart, and avoid installing diagnostic packages into the production image."],
+      "0542": ["Promotion by digest", "In an isolated registry, record the digest behind a candidate tag and the manifest/platform information. Use separate test names, never release tags.", "Move the test tag to another image, then compare pulling by tag with pulling by the recorded digest.", "A tag is a mutable reference; promotion should preserve tested content identity. Before retention or garbage collection, protect digests needed for rollback and inspect the registry's deletion behavior."],
+      "0544": ["Artifact trust decision", "Collect the digest, package inventory, vulnerability results, provenance and signature for one test image. State the trusted signer and build identity policy.", "Evaluate an unsigned image and an image signed by an untrusted identity using the same admission rules.", "A signature is only useful with an identity/trust policy; an SBOM is an inventory, not proof of safety. Record exceptions, expiry and rebuild ownership instead of treating a green scan as permanent assurance."],
+      "0545": ["Optimize a measured bottleneck", "Build equivalent baseline and smaller images for the same tiny application. Record compressed transfer size, startup, memory, build time and diagnostic capability.", "Apply a memory limit and exercise the same bounded workload. Compare failure behavior and whether the smaller image is still supportable.", "Image size is not runtime memory. Distroless removes tools as well as packages; retain a debugging plan. Choose optimizations from measurements, not a goal of the fewest layers."],
+      "0546": ["Container capstone acceptance", "Assemble an image and Compose application with explicit health checks, persistent state, network boundaries, non-root execution and log retention.", "Replace an application container, interrupt its database, then restore the test dataset from backup. Change only one condition per run.", "Provide expected versus observed behavior, cleanup instructions and resource ownership. A successful docker compose up is not evidence of recovery, isolation or correct shutdown."]
+    };
+    const exercise = experiments[lesson.number];
+    if (exercise) return exercise.map((text, index) => `# ${["Experiment specification (requires Docker)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n# ${text}`).join("\n\n");
+  }
+  if (lesson.trackId === "cloud-aws") {
+    const experiments = {
+      "0475": ["Managed database responsibility map", "Assume a managed database storing tenant records. Assign owners for host maintenance, application authorization, schema changes, backup configuration and restore testing.", "Remove application tenant filtering in a local fixture. Predict why managed hosting cannot repair the resulting data leak.", "A defensible answer names both provider and customer responsibilities and supplies an authorization test. Elasticity changes capacity, not the business invariant."],
+      "0476": ["Failure-domain and scope map", "Draw a client, regional load balancer, two Availability Zones and a regional database. Label every regional, zonal and global dependency from its service documentation.", "Remove one zone on paper, then the whole region. Trace traffic, credentials, state and recovery in each case.", "Two zones do not constitute regional disaster recovery. Identify unavailable dependencies and distinguish capacity remaining from data actually recoverable."],
+      "0477": ["Account guardrail review", "Use a fictional development OU and production OU. Write an identity allow for an action and an organizational deny for the same action.", "Trace the request through identity policy and guardrails. Then remove the identity allow while retaining a permissive guardrail.", "An SCP limits permissions; it does not grant the action. Include account ownership, break-glass review and audit evidence, not just an OU diagram."],
+      "0478": ["Credential-source diagnosis", "In an isolated account, use an explicitly named profile and region. Inspect credential SOURCE and caller identity without printing secret keys or session tokens.", "Predict what happens when an environment credential conflicts with the chosen invocation's profile behavior; verify against the exact CLI/SDK version and invocation form.", "Keep a redacted transcript showing effective identity, endpoint and region. A successful request to the wrong account is a failure; retries must not hide that mistake."],
+      "0480": ["Temporary-session boundary", "Design an OIDC trust policy for one repository and protected deployment environment. Separate who may assume the role from what the resulting role can do.", "Change the subject to an untrusted branch, then expire the session. Predict both denial paths before testing in a sandbox.", "Trust conditions and permission policies solve different problems. Retain denied-assumption and denied-action evidence; do not put long-lived cloud keys into CI."],
+      "0481": ["Envelope-encryption failure trace", "Draw plaintext, data key, encrypted data key, key-encryption key and ciphertext. Mark which process can hold each plaintext value.", "Deny decrypt for the intended caller, then change required encryption context. Predict which operation fails and how the application avoids logging sensitive material.", "Encryption context is authenticated metadata, not a place for secrets. Key rotation is not permission revocation or automatic re-encryption of every historical object; state the exact mechanism."],
+      "0483": ["Private-service versus internet path", "Draw a private subnet reaching an object store and a public API. Compare a service endpoint path with a NAT egress path; label DNS, routes, policy and billing dimensions.", "Remove the NAT route on paper. Identify which path can remain valid and which dependency should fail.", "PrivateLink, peering, transit routing and NAT are not interchangeable. Prove required directions and address families rather than assuming that private means reachable."],
+      "0484": ["Packet-denial diagnosis", "Create a paper request/return path with subnet ACLs, security groups and DNS. Record source/destination ports for both directions.", "Deny a return ephemeral port in the stateless ACL while leaving the stateful security group unchanged.", "Explain the differing state models. Flow-log rejection is evidence of filtering, not proof of the exact application cause; combine it with routes and endpoint checks."],
+      "0485": ["DNS failover timing", "Assume a primary and secondary endpoint, a configured health check and a stated TTL. Draw an authoritative response plus client and recursive caches.", "Make the primary unhealthy in a tabletop exercise. Trace clients with old cached answers and existing connections separately from new lookups.", "A DNS update is not instantaneous connection migration. The recovery plan must account for caching, health-detection time and whether the secondary has usable state."],
+      "0486": ["Cache-key isolation", "Define two users requesting the same URL with different authorization. List which response fields differ and how the cache key/policy handles them.", "Remove a user-varying dimension from the cache key in a local cache simulation.", "The test must reject cross-user reuse. Signed access, origin restrictions and WAF rules do not repair a wrong cache key; distinguish authorization from caching."],
+      "0487": ["Load-balancer health mismatch", "Draw listener, target group and application readiness endpoint. Specify protocol, port, timeout and a healthy response that represents ability to serve work.", "Keep a process alive while disabling its critical dependency. Compare TCP connection health with application readiness.", "Health is a chosen predicate, not proof of every request's success. Explain connection draining, long-lived requests and what happens when all targets fail."],
+      "0488": ["Instance replacement exercise", "Specify an immutable image, bootstrap inputs, instance role and readiness criterion for a replaceable application instance.", "Replace the instance on paper while bootstrap fails halfway. Locate the durable state and show how another instance recovers without manual repair.", "User data is not a substitute for repeatable deployment evidence. Identify IMDSv2 requirements, scale-in draining and which logs survive instance loss."],
+      "0489": ["Storage lifecycle table", "Compare an instance-local scratch file, a block volume and a shared file. State the workload's latency, sharing and recovery requirements.", "Terminate the instance and separately delete the volume in a tabletop scenario. Predict each artifact's survival using its configured lifecycle policy.", "Persistence, availability and backup are separate. A snapshot needs a restore test and an application-consistency strategy; storage choice must match access semantics."],
+      "0493": ["API boundary contract", "Specify a route, request schema, authorizer, integration timeout and stable client error shape for a model-backed endpoint.", "Send an unauthorized request, a throttled request and a backend timeout through a sandbox integration or a documented mock.", "Record which layer rejects each request and whether work continues after timeout. Compare HTTP, REST and WebSocket API capabilities using the chosen API type's documentation."],
+      "0494": ["Database failover versus restore", "Draw writer, read endpoints, application connection pool and backups. Declare RTO/RPO assumptions before selecting a managed database configuration.", "Trace an in-flight transaction through writer failover, then trace an accidental data deletion through point-in-time recovery.", "A replica is not a substitute for an independent recovery path. Clients need reconnect and retry decisions for unknown transaction outcomes; a proxy does not remove those semantics."],
+      "0495": ["Partition-key and expiry design", "Assume one large tenant supplies most writes. Compare tenant-only keys with time or hash bucketing and list the queries each design supports.", "Read an item after its expiry timestamp but before physical cleanup. Define the application's behavior independently of asynchronous TTL deletion.", "Show hot-key and query-amplification tradeoffs. State consistency per access path, especially indexes; do not claim a transaction or TTL automatically repairs a poor partition key."],
+      "0496": ["Cache stampede and stale data", "Specify authoritative database data, a cache key containing tenant and version, expiry policy and a maximum acceptable staleness.", "Expire a popular key while many callers arrive, then fail the cache completely. Predict database load and admission behavior.", "A bounded fallback and refresh coordination must protect the database. Cache eviction is not business deletion; replica failover does not make the cache authoritative."],
+      "0498": ["Replay-safe workflow", "Define one versioned event and a workflow with charge, reserve and notify steps. Give each effect a stable business identity.", "Replay the event after the original workflow partly succeeded. Then fail reservation after a successful charge.", "Identify duplicate suppression and compensation ownership. Replay is not time travel, and compensation is a new fallible operation rather than automatic transaction rollback."],
+      "0499": ["Streaming lag budget", "Assume an input rate, event size, partition key and consumer capacity. Calculate backlog growth when input exceeds drain rate.", "Pause one consumer, then restart it from its committed position. Trace duplicate processing and ordering per partition.", "Give retention and catch-up headroom numbers. Compare the chosen streaming service's shard/partition semantics; a larger buffer cannot stabilize permanent overload."],
+      "0501": ["Detection-to-response evidence", "Select an unauthorized policy change as a threat scenario. Map API audit, resource configuration, detection and incident ownership.", "Simulate the detection event using a fixture, with no real policy mutation. Identify required identity, time, resource and correlation fields.", "An alert is not containment. Separate observed events from inferred threats, preserve evidence and specify reviewed least-privilege response actions."],
+      "0503": ["Measured recovery plan", "Choose one critical user journey. Assign a recovery-time and data-loss objective and identify every dependency required for restore.", "Reconstruct the service from a backup in an approved sandbox; time data restore, secret/config recovery and application verification separately.", "A backup-success notification is not restore evidence. Compare measured RTO/RPO with objectives and identify what a zone loss versus region loss changes."],
+      "0504": ["Unit-cost model", "Build a worksheet for requests, compute duration, storage, egress, logs and support. Use dated regional prices supplied from official pricing, not invented constants.", "Double traffic, then increase output size without increasing request count. Recalculate costs and identify the dominant term.", "Report cost per successful user task, uncertainty and idle capacity. Commitments and Spot change risk as well as price; budget alerts are not guaranteed hard spending caps."],
+      "0506": ["Cloud architecture defense", "Produce a dependency diagram, IAM matrix, deployment plan, restore evidence and unit-cost worksheet for the full-stack AI capstone.", "Defend the design against a lost zone, a compromised application credential and a model-provider outage, one at a time.", "For each failure, name affected user behavior, detection, containment, recovery owner and evidence. A service inventory or VPC list is not an architecture defense."]
+    };
+    const exercise = experiments[lesson.number];
+    if (exercise) return exercise.map((text, index) => `# ${["Exercise (not an executed deployment)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n# ${text}`).join("\n\n");
+  }
 
   if (lesson.trackId === "cloud-aws" && /IAM identities/.test(title)) return `{
   "Version": "2012-10-17",
@@ -8087,7 +10092,10 @@ aws s3api put-bucket-versioning --bucket evidence-bucket \
   --versioning-configuration Status=Enabled
 
 aws s3api list-object-versions --bucket evidence-bucket --prefix recovery-test/
-# Delete a current version, then restore by removing its delete marker.`;
+# On DISPOSABLE versioned data, delete WITHOUT a version ID to create a delete
+# marker. Removing that marker can reveal the earlier version. Deleting a specific
+# version permanently removes that version; a delete marker cannot restore it.
+# Record object version IDs and retention/Object Lock policy before any deletion.`;
 
   if (lesson.trackId === "cloud-aws" && /ECR, ECS/.test(title)) return `{
   "family": "evidence-api",
@@ -8106,29 +10114,66 @@ aws s3api list-object-versions --bucket evidence-bucket --prefix recovery-test/
   }]
 }`;
 
-  if (lesson.trackId === "cloud-aws" && /Lambda execution/.test(title)) return `import json
-import os
+  if (lesson.trackId === "cloud-aws" && /Lambda execution/.test(title)) return `# Python 3.10+. Local batch algorithm; no AWS calls or deployed handler.
+# Integration MUST enable ReportBatchItemFailures on the SQS event-source mapping.
+def process_batch(event, process_record, *, fifo=False):
+    failed = []
+    records = event["Records"]
+    for index, record in enumerate(records):
+        try:
+            process_record(record)
+        except Exception:
+            failed.append({"itemIdentifier": record["messageId"]})
+            if fifo:
+                failed.extend({"itemIdentifier": rest["messageId"]}
+                              for rest in records[index + 1:])
+                break
+    return {"batchItemFailures": failed}
 
-def handler(event, context):
-    message_id = event["Records"][0]["messageId"]
-    if idempotency.claim(message_id) is False:
-        return {"duplicate": True}
-    try:
-        process(event["Records"][0]["body"], deadline_ms=context.get_remaining_time_in_millis())
-        return {"ok": True}
-    except Exception:
-        idempotency.release(message_id)
-        raise  # let the event-source retry and eventually use its DLQ`;
+event = {"Records": [{"messageId": str(i)} for i in range(3)]}
+seen = []
+def work(record):
+    seen.append(record["messageId"])
+    if record["messageId"] == "1": raise RuntimeError("fixture failure")
 
-  if (lesson.trackId === "cloud-aws" && /SQS, SNS/.test(title)) return `aws sqs create-queue --queue-name jobs-dlq
-aws sqs create-queue --queue-name jobs \
-  --attributes '{
-    "VisibilityTimeout":"60",
-    "ReceiveMessageWaitTimeSeconds":"20",
-    "RedrivePolicy":"{\"deadLetterTargetArn\":\"DLQ_ARN\",\"maxReceiveCount\":\"5\"}"
-  }'
+assert process_batch(event, work) == {"batchItemFailures": [{"itemIdentifier": "1"}]}
+assert seen == ["0", "1", "2"]
+seen.clear()
+assert process_batch(event, work, fifo=True) == {"batchItemFailures": [
+    {"itemIdentifier": "1"}, {"itemIdentifier": "2"}]}
+assert seen == ["0", "1"]
+assert process_batch({"Records": []}, work) == {"batchItemFailures": []}
+# A deployed handler passes its durable, idempotent record processor here.
+# Never acknowledge a batch after handling only Records[0]. A timeout or crash
+# can replay successful work too. A separate in-memory "claimed" flag cannot
+# prove an external effect completed; bind durable identity to the effect.
+# Bound per-record work by remaining invocation time and return unprocessed IDs.
+# Retain privacy-safe failure telemetry; this toy collects IDs but does not log.`;
 
-# Consumer rule: only delete after durable success; duplicates are expected.`;
+  if (lesson.trackId === "cloud-aws" && /SQS, SNS/.test(title)) return `{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Disposable standard-queue fixture, not an executed deployment. Review IAM, encryption, retention, redrive permissions, cost and cleanup first.",
+  "Metadata": {
+    "LessonScope": "Delete messages only after durable success; duplicates are expected. FIFO ordering, SNS subscriptions and consumer code are separate exercises."
+  },
+  "Resources": {
+    "DeadLetters": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": { "MessageRetentionPeriod": 1209600 }
+    },
+    "Jobs": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "VisibilityTimeout": 60,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": { "Fn::GetAtt": ["DeadLetters", "Arn"] },
+          "maxReceiveCount": 5
+        }
+      }
+    }
+  }
+}`;
 
   if (lesson.trackId === "cloud-aws" && /CloudWatch metrics/.test(title)) return `aws cloudwatch put-metric-alarm \
   --alarm-name api-fast-burn \
@@ -8136,9 +10181,14 @@ aws sqs create-queue --queue-name jobs \
   --metric-name ErrorBudgetBurnRate \
   --dimensions Name=Service,Value=api \
   --statistic Average --period 60 --evaluation-periods 5 \
-  --threshold 14.4 --comparison-operator GreaterThanThreshold
+  --threshold 14.4 --comparison-operator GreaterThanThreshold \
+  --treat-missing-data missing
 
-# Alarm a user symptom; use logs and traces to locate its cause.`;
+# ErrorBudgetBurnRate is a CUSTOM metric: this command does not calculate it.
+# Publish bad-events / eligible-events divided by the allowed failure fraction;
+# aggregate counts before calculating a fleet ratio, not averages of host ratios.
+# 14.4 is a fixture threshold, not a universal policy. Configure notification
+# actions and low/no-traffic behavior; a multi-window SLO alert needs more logic.`;
 
   if (lesson.trackId === "cloud-aws" && /CloudFormation, CDK/.test(title)) return `# Review before apply; preserve the exact plan as evidence.
 aws cloudformation create-change-set \
@@ -8152,8 +10202,25 @@ aws cloudformation describe-change-set \
 aws cloudformation detect-stack-drift --stack-name evidence-prod`;
 
   if (lesson.trackId === "cloud-aws" && /Amazon Bedrock/.test(title)) return `import boto3
-import json
 
+def text_answer(response):
+    # This adapter accepts only a completed, text-only turn; not tool use or truncation.
+    if not isinstance(response, dict) or response.get("stopReason") != "end_turn":
+        raise ValueError("completed text turn required")
+    output = response.get("output")
+    message = output.get("message") if isinstance(output, dict) else None
+    content = message.get("content") if isinstance(message, dict) else None
+    if not isinstance(content, list) or not content or any(
+        not isinstance(block, dict) or set(block) != {"text"} or not isinstance(block["text"], str)
+        for block in content
+    ):
+        raise ValueError("text-only content required")
+    answer = "".join(block["text"] for block in content)
+    if not answer.strip(): raise ValueError("empty answer")
+    return answer
+
+# Integration fixture: supply MODEL_ID, SYSTEM_PROMPT and an authorized bounded
+# untrusted_question. Requires existing boto3, credentials and supported model access.
 client = boto3.client("bedrock-runtime", region_name="us-east-1")
 response = client.converse(
     modelId=MODEL_ID,
@@ -8161,16 +10228,25 @@ response = client.converse(
     messages=[{"role": "user", "content": [{"text": untrusted_question}]}],
     inferenceConfig={"maxTokens": 500, "temperature": 0},
 )
-answer = response["output"]["message"]["content"][0]["text"]
-evaluation.record(question=untrusted_question, answer=answer, model=MODEL_ID)`;
+answer = text_answer(response)
+# Evaluate answer against held-out expected evidence before publishing it. Keep
+# sensitive prompts/responses out of ordinary logs. A completed text turn does not
+# establish factuality, authorization, prompt-injection resistance or task success.
+# Set SDK connect/read timeouts and retry limits within the product's total budget.`;
 
   if (lesson.trackId === "devops" && /Shell automation/.test(title)) return `#!/usr/bin/env bash
 set -Eeuo pipefail
 trap 'printf "failed line=%s exit=%s\\n" "$LINENO" "$?" >&2' ERR
 
 artifact="\${1:?usage: deploy ARTIFACT_DIGEST}"
-case "$artifact" in *@sha256:*) ;; *) printf 'digest required\\n' >&2; exit 2;; esac
+if [[ ! "$artifact" =~ ^[^[:space:]]+@sha256:[[:xdigit:]]{64}$ ]]; then
+  printf 'image reference with a 64-hex SHA-256 digest required\\n' >&2
+  exit 2
+fi
 
+# Fixture adapters ./deploy and ./smoke-test must already exist. Digest syntax
+# is not signature verification, provenance, authorization or idempotency.
+# Inspect the dry-run and approve the change before running the remaining lines.
 ./deploy --artifact "$artifact" --dry-run
 ./deploy --artifact "$artifact"
 ./smoke-test --deadline 60s`;
@@ -8191,17 +10267,23 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: {name: candidate, path: dist/}
       - run: make integration-test ARTIFACT=dist/`;
 
-  if (lesson.trackId === "devops" && /Deployment strategies/.test(title)) return `release candidate --artifact image@sha256:DIGEST --weight 5
+  if (lesson.trackId === "devops" && /Deployment strategies/.test(title)) return `# Pseudocode: release and observe are contracts, not supplied CLI programs.
+# Define traffic routing, minimum eligible samples, control comparison, telemetry
+# freshness and abort ownership before any rollout. Each promotion needs a new
+# observation gate; one ten-minute window does not validate later traffic steps.
+release candidate --artifact image@sha256:DIGEST --weight 5
 observe candidate --window 10m \
   --require 'availability>=99.9' \
   --require 'p95_ms<=350' \
   --require 'task_success>=95'
 
 release promote --weight 25
+# Repeat the observation gate at 25% before this final promotion:
 release promote --weight 100
 # Any failed gate runs: release abort --drain --restore-stable`;
 
@@ -8209,12 +10291,25 @@ release promote --weight 100
 ALTER TABLE projects ADD COLUMN display_name text;
 
 -- 2. Backfill in small resumable batches outside one giant transaction.
-UPDATE projects SET display_name = name
-WHERE id > :cursor AND display_name IS NULL
-ORDER BY id LIMIT 1000;
+-- PostgreSQL: UPDATE itself has no ORDER BY/LIMIT clause.
+WITH batch AS (
+  SELECT id FROM projects
+  WHERE display_name IS NULL
+  ORDER BY id LIMIT 1000
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE projects AS p SET display_name = p.name
+FROM batch WHERE p.id = batch.id
+RETURNING p.id;
 
 -- 3. Switch reads, verify, stop old writes, then contract later.
-ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;`;
+-- First deploy writers that populate BOTH columns; otherwise new nulls race the backfill.
+-- Resolve nullable source names explicitly, then repeat until no missing values remain.
+-- A zero-row SKIP LOCKED batch can mean contention, not completion; verify separately.
+-- SET NOT NULL can scan/lock the table: plan validation and lock timeout for its size.
+ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
+-- This schema recipe needs a disposable database and representative old/new clients.
+-- Dropping the old column is intentionally deferred until rollback compatibility expires.`;
 
   if (lesson.trackId === "devops" && /Observability, SLIs/.test(title)) return `groups:
 - name: api-slo
@@ -8226,9 +10321,20 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;`;
     expr: (1 - api:availability:ratio_rate5m) / (1 - 0.999) > 14.4
     for: 5m
     labels: {severity: page}
-    annotations: {runbook: "https://runbooks.example/api-availability"}`;
+    annotations: {runbook: "https://runbooks.example/api-availability"}
+# Single-window teaching rule, not a complete paging policy. Select the owned
+# service and eligible requests; this fixture counts non-5xx as good (including
+# 4xx) and cannot see requests that never reached the instrumented server.
+# No traffic gives an undefined ratio, not proof of availability. Handle missing
+# telemetry/low volume explicitly; add a short/long-window gate and real runbook.
+# Rate each counter before summing so instance resets are handled independently.`;
 
-  if (lesson.trackId === "devops" && /Infrastructure as code/.test(title)) return `terraform init -lockfile=readonly
+  if (lesson.trackId === "devops" && /Infrastructure as code/.test(title)) return `# Integration recipe: existing trusted configuration, provider binaries and
+# disposable authorized workspace required. init can download providers/modules.
+# Plan files and their JSON can contain plaintext secrets: restrict access,
+# never commit/upload them as ordinary interview evidence, and redact excerpts.
+umask 077
+terraform init -lockfile=readonly
 terraform fmt -check
 terraform validate
 terraform plan -out=reviewed.plan
@@ -8236,7 +10342,10 @@ terraform show -json reviewed.plan > reviewed-plan.json
 
 # Policy and human review consume reviewed-plan.json.
 terraform apply reviewed.plan
-terraform plan -detailed-exitcode  # detect remaining drift`;
+terraform plan -detailed-exitcode
+# Exit 0: no changes; 1: error; 2: changes proposed (not a command failure).
+# Proposed changes may reflect configuration edits as well as remote drift.
+# The apply above changes real resources; only run after explicit plan approval.`;
 
   if (lesson.trackId === "docker" && /BuildKit, multi-stage/.test(title)) return `# syntax=docker/dockerfile:1
 FROM python:3.13-slim AS build
@@ -8246,6 +10355,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip wheel --wheel-dir /wheels -r requirements.txt
 
 FROM python:3.13-slim AS runtime
+WORKDIR /app
 RUN useradd --uid 10001 --create-home app
 COPY --from=build /wheels /wheels
 RUN pip install --no-cache-dir /wheels/*
@@ -8259,12 +10369,19 @@ COPY . .
 USER 10001
 
 # Exec form: Python becomes PID 1 and receives signals directly.
+# The app still needs a termination handler and bounded draining; exec form
+# alone does not ensure graceful shutdown or reap arbitrary child processes.
 ENTRYPOINT ["python", "-m", "app"]
 CMD ["--host", "0.0.0.0", "--port", "8000"]
 
 # docker run image --port 9000 overrides CMD, not ENTRYPOINT.`;
 
-  if (lesson.trackId === "docker" && /Rootless Docker/.test(title)) return `docker run --rm \
+  if (lesson.trackId === "docker" && /Rootless Docker/.test(title)) return `# Non-root container hardening is NOT proof of a rootless daemon.
+# Inspect the selected daemon's SecurityOptions for rootless first.
+docker info --format '{{json .SecurityOptions}}'
+# Requires an existing configured daemon and verified local image. This command
+# is an integration exercise, not an instruction to install or pull anything.
+docker run --rm \
   --user 10001:10001 \
   --read-only \
   --tmpfs /tmp:rw,noexec,nosuid,size=64m \
@@ -8273,7 +10390,9 @@ CMD ["--host", "0.0.0.0", "--port", "8000"]
   --pids-limit 100 --memory 512m --cpus 1 \
   app@sha256:DIGEST
 
-docker inspect --format '{{json .HostConfig}}' CONTAINER_ID`;
+# In another terminal, inspect the running container before --rm removes it:
+# docker inspect --format '{{json .HostConfig}}' CONTAINER_ID
+# Verify actual limit enforcement; rootless resource flags need host support.`;
 
   if (lesson.trackId === "docker" && /Docker networking/.test(title)) return `docker network create --driver bridge private-app
 docker run -d --name api --network private-app api@sha256:DIGEST
@@ -8294,10 +10413,19 @@ docker exec api cat /etc/resolv.conf`;
     networks: [app]
   db:
     image: postgres:17@sha256:DIGEST
+    environment:
+      POSTGRES_PASSWORD: \${LESSON_DB_PASSWORD:?set a disposable database password}
+    networks: [app]
     volumes: [db-data:/var/lib/postgresql/data]
     healthcheck: {test: ["CMD-SHELL", "pg_isready -U postgres"], interval: 5s, timeout: 3s, retries: 12}
 networks: {app: {internal: true}}
-volumes: {db-data: {}}`;
+volumes: {db-data: {}}
+# Replace DIGEST with a verified image digest and provide the api build context.
+# Configure api with the same database credentials and host db; no connection
+# settings are inferred by depends_on. Use a secret-file integration for production.
+# depends_on gates startup only: the application still needs bounded reconnects.
+# This internal network intentionally has no external API egress; add a reviewed
+# egress path if the application calls an external model provider.`;
 
   if (lesson.trackId === "docker" && /Multi-platform images/.test(title)) return `docker buildx create --name evidence-builder --use
 docker buildx build \
@@ -8324,7 +10452,11 @@ spec:
       containers:
       - name: api
         image: registry.example/api@sha256:DIGEST
-        readinessProbe: {httpGet: {path: /ready, port: 8000}}`;
+        readinessProbe: {httpGet: {path: /ready, port: 8000}}
+# Fixture: replace the digest and supply resource requests/limits and app config.
+# maxUnavailable: 0 constrains this rollout, not node failures or every outage.
+# A progress deadline reports a stalled rollout; it does not roll back for you.
+# Ensure surge capacity, a meaningful readiness check and compatible old/new data.`;
 
   if (lesson.trackId === "kubernetes" && /Services, ClusterIP/.test(title)) return `apiVersion: v1
 kind: Service
@@ -8334,9 +10466,9 @@ spec:
   ports: [{name: http, port: 80, targetPort: 8000}]
   type: ClusterIP
 
-# Evidence:
-kubectl get service evidence-api -o yaml
-kubectl get endpointslice -l kubernetes.io/service-name=evidence-api -o wide`;
+# Save only this YAML as the Service manifest. Separate read-only shell checks:
+# kubectl get service evidence-api -o yaml
+# kubectl get endpointslice -l kubernetes.io/service-name=evidence-api -o wide`;
 
   if (lesson.trackId === "kubernetes" && /Kubernetes network model/.test(title)) return `apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -8349,7 +10481,15 @@ spec:
     ports: [{protocol: TCP, port: 8000}]
   egress:
   - to: [{namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: data}}}]
-    ports: [{protocol: TCP, port: 5432}]`;
+    ports: [{protocol: TCP, port: 5432}]
+# Requires a CNI that enforces NetworkPolicy. Rules from matching policies add
+# together; this is not a global deny override. The ingress podSelector matches
+# web Pods in product; egress currently permits ANY Pod in data on TCP 5432.
+# Narrow that destination with a podSelector in the SAME peer if required.
+# DNS is deliberately not allowed here: name-based DB connections need a
+# separate rule for the cluster's actual resolver path (usually UDP/TCP 53).
+# Database ingress must also permit the flow. Test allow/deny and DNS separately;
+# this policy supplies neither application authorization nor transport encryption.`;
 
   if (lesson.trackId === "kubernetes" && /ServiceAccounts, RBAC/.test(title)) return `apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -8369,11 +10509,12 @@ roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: job-reader}`;
   requests: {cpu: 250m, memory: 256Mi}
   limits: {cpu: "1", memory: 512Mi}
 
-# Diagnose enforcement and pressure:
-kubectl top pod -n product
-kubectl describe pod POD -n product
-kubectl get events -n product --sort-by=.lastTimestamp
-kubectl get pod POD -o jsonpath='{.status.containerStatuses[*].lastState}'`;
+# Container-field fragment, not a standalone Kubernetes object.
+# Diagnose enforcement and pressure using separate shell commands:
+# kubectl top pod -n product
+# kubectl describe pod POD -n product
+# kubectl get events -n product --sort-by=.lastTimestamp
+# kubectl get pod POD -n product -o jsonpath='{.status.containerStatuses[*].lastState}'`;
 
   if (lesson.trackId === "kubernetes" && /Horizontal Pod Autoscaler/.test(title)) return `apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -8388,11 +10529,18 @@ spec:
   - type: Resource
     resource:
       name: cpu
-      target: {type: Utilization, averageUtilization: 65}`;
+      target: {type: Utilization, averageUtilization: 65}
+# CPU utilization is relative to resource requests, not node capacity or limits.
+# Configure CPU requests on the target's relevant containers and a working
+# resource-metrics API. Missing metrics and unready Pods affect scaling decisions.
+# The replica ceiling cannot create node capacity; observe pending Pods and test
+# scale-up lag. CPU alone may miss queue pressure and external-model bottlenecks.`;
 
   if (lesson.trackId === "kubernetes" && /SecurityContext/.test(title)) return `spec:
   securityContext:
     runAsNonRoot: true
+    runAsUser: 10001
+    runAsGroup: 10001
     seccompProfile: {type: RuntimeDefault}
   containers:
   - name: api
@@ -8402,7 +10550,10 @@ spec:
       readOnlyRootFilesystem: true
       capabilities: {drop: ["ALL"]}
     volumeMounts: [{name: tmp, mountPath: /tmp}]
-  volumes: [{name: tmp, emptyDir: {medium: Memory, sizeLimit: 64Mi}}]`;
+  volumes: [{name: tmp, emptyDir: {medium: Memory, sizeLimit: 64Mi}}]
+# Pod-spec fragment: nest under template.spec for a Deployment. The image must
+# support UID/GID 10001 and keep writes on approved mounts. Memory-backed /tmp
+# consumes memory; sizeLimit is not a replacement for container memory limits.`;
 
   if (lesson.trackId === "kubernetes" && /Kubernetes debugging/.test(title)) return `kubectl get pod POD -o wide
 kubectl describe pod POD
@@ -8418,6 +10569,8 @@ kubectl get pod POD -o jsonpath='{.status.conditions}'
 }
 
 function apiDistributedDiagramFor(lesson, title, flow) {
+  // The dedicated L4/L7 trace below must win over the secondary word "HTTP".
+  if (title.startsWith("layer 4 and layer 7 load balancing")) return undefined;
   if (lesson.trackId === "api-distributed-systems" && /http|resource|representation|status code|validation|idempotency key|etag|pagination|filtering|versioning|rest|openapi|grpc|graphql|authentication|gateway|api security|api observability|api testing|developer experience/.test(title)) {
     return flow("api-contract-request", [
       ["01 · INTENT", "Client forms a contract request", "Method or operation, identity, representation, validators, deadline, and version enter."],
@@ -8502,6 +10655,491 @@ function apiDistributedDiagramFor(lesson, title, flow) {
 }
 
 function teachingProfileFor(lesson, profile) {
+  const crossTrackExercises = {
+    "0465": ["Place tests at real boundaries", "Use a checkout operation with a pure price rule, a uniqueness constraint and a payment adapter. Define one test for each boundary.", "Make the fake payment adapter accept a field the real contract rejects, then compare unit and contract-test evidence.", "A passing fake proves behavior against the fake only. Keep fast local feedback while testing the integration assumptions that can invalidate it."],
+    "0466": ["Properties, schedules and load", "For a bounded transfer fixture, define conservation of funds and at-most-one effect per operation ID. Generate small valid inputs and explicit interleavings.", "Repeat a request and reorder two competing operations, then run a bounded load test with arrival and service rates recorded.", "Separate logical invariant failures from overload. Random tests need reproducible seeds and minimized failures; chaos experiments need bounded blast radius and abort criteria."],
+    "0467": ["Threat model one tenant boundary", "Draw browser, API, database and secret store for a document-read operation. Identify attacker-controlled IDs, authenticated identity and authorization checks.", "Request another tenant's document using a valid identity, then remove the identity entirely in separate fixtures.", "Authentication is not object authorization. Deny before exposing fields, keep secrets out of responses/logs and record the trust boundary where each decision occurs."],
+    "0468": ["Trace a compromised dependency", "Inventory one deployed artifact's dependency source, resolved version, build identity and runtime permissions. Include browser and server exposure.", "Use a harmless fixture representing an unexpected lifecycle script and an altered artifact digest.", "A package allowlist or scanner is one control, not proof of safe behavior. Explain install isolation, artifact verification, least privilege and response ownership."],
+    "0469": ["User-focused reliability review", "Define a successful document-search request and an SLI denominator, time window and target. Record a small synthetic success/failure dataset.", "Introduce a dependency timeout and compare user failure with infrastructure health. Draft a short incident update from facts only.", "A healthy process can deliver failed user journeys. Tie alerts to actionable impact, use error-budget policy explicitly and verify recovery before closing the incident."],
+    "0586": ["Provider adapter contract", "Define a provider-independent request/response contract with required capabilities, cancellation, usage accounting and explicit errors. Implement two deterministic mock adapters before choosing a real SDK.", "Return a partial stream, malformed usage and an unsupported modality from separate fixtures.", "Normalize only semantics the adapters actually share. Do not hide differences in tool calls, finish reasons, retries or streaming behind an interface that promises more than either provider supports."],
+    "0587": ["Prompt change as an experiment", "Version the task instruction, input template and evaluation cases. Keep trusted instructions separate from quoted external content and label synthetic examples.", "Compare a candidate prompt with a baseline on held-out cases, including irrelevant and instruction-like text inside retrieved data.", "Delimiters help structure context but are not a security boundary. Explain improvements per failure category, token cost and regressions rather than selecting one pleasing answer."],
+    "0588": ["Shape is not business validity", "Define a small JSON output schema and a separate validator for allowed entity IDs, authorization and business constraints. Bound input/output size before parsing.", "Supply invalid JSON, valid JSON of the wrong shape and schema-valid content referencing an unauthorized entity.", "Reject each at its owning boundary. Repair attempts need a strict budget and must never turn model-generated fields into authority; schema compliance does not prove truth or permission."],
+    "0590": ["Task cost and fallback budget", "Specify a total deadline, attempt limit, maximum output, cache scope and retrieve-only fallback for a model-backed task. Use a controllable clock and mock provider.", "Make the first attempt consume most of the deadline, then return a rate-limit error. Test a cache entry from another tenant separately.", "Do not start a retry that cannot fit the remaining budget. Report cost per successful task, not only per model call, and prevent cross-tenant cache reuse."],
+    "0594": ["Compare retrieval signals", "Use a small labelled corpus with exact identifiers, paraphrases and ambiguous terms. Build a lexical baseline and compare supplied dense scores on the same queries.", "Use a query containing a rare exact identifier, then a synonym with little lexical overlap.", "Explain which failure each retrieval signal addresses. If combining ranks, record the fusion rule and tie policy; similarity score scales from different systems are not automatically comparable."],
+    "0595": ["Re-ingestion identity and provenance", "Give each source a stable ID, content version, permission metadata and deterministic chunk IDs. Preserve source offsets for citations.", "Ingest the same version twice, then update and delete it. Trace stale chunks and interrupted indexing.", "Repeated ingestion must not silently duplicate the corpus. Chunk size trades context against retrieval granularity; prove cleanup and provenance rather than treating successful embedding calls as completion."],
+    "0596": ["Context assembly under a budget", "Provide ranked candidate chunks with source IDs, token costs and authorization decisions. Assemble a bounded context while retaining citation provenance.", "Include duplicate chunks, one unauthorized high-score candidate and a query rewrite that changes the original intent.", "Reject unauthorized data before model exposure. Reranking cannot recover documents never retrieved; citations must refer to actual supplied evidence and support the associated claims."],
+    "0597": ["Separate retrieval and answer evaluation", "For a query with relevant IDs a and b, let top-three results be a, c, d. Compute recall@3=1/2 and precision@3=1/3 before grading an answer.", "Give the answer generator perfect evidence and separately give it an empty context. Compare the resulting failures with the retrieval metric.", "Define relevance labels and denominator conventions, including no-relevant-document queries. Retrieval recall, factual support and task success measure different stages; freeze regression cases and report slice counts."],
+    "0598": ["Permission and freshness regression", "Use two synthetic tenants and a versioned document. Define when permission revocation and source deletion must stop retrieval and cached answers.", "Revoke access after indexing, then query through lexical, vector, reranking and cache paths.", "Every path must enforce current authorization before exposure. Tombstones and index lag need explicit freshness semantics; answer caching cannot bypass revocation."],
+    "0602": ["Evaluated knowledge-product capstone", "Build ingestion, authorized retrieval, context assembly, answer citations and a versioned evaluation set. Label all mocked components.", "Re-ingest a changed document, revoke one user's access, remove relevant evidence and simulate a provider timeout.", "Submit stage-level metrics, failure traces and recovery instructions. A fluent demo answer is not proof of groundedness, freshness, security or production readiness."],
+    "0609": ["Replay after an external effect", "Model a workflow with a durable checkpoint, approved action identity and a fake external service that accepts an idempotency key.", "Crash after the external effect but before recording completion, then replay the checkpoint.", "The same action identity must recover the same result without a second effect. Approval must bind to the exact action; a checkpoint alone cannot make an external side effect exactly once."],
+    "0610": ["Decide whether another agent helps", "Compare one bounded worker with two specialist workers on the same labelled task set. Record handoff format, authority, tokens, latency and failure handling.", "Make one specialist return a contradictory or malformed result and another exceed its time budget.", "Measure quality benefit against coordination cost. A supervisor must handle disagreement and partial failure; multiple agents are not inherently more reliable than a simpler workflow."],
+    "0611": ["Budgeted control loop", "Define allowed tools, maximum steps, total deadline, spend limit and stop reasons using a deterministic fake agent.", "Make the fake repeat the same tool request, propose a forbidden action and consume the final budget in separate runs.", "The executor, not model prose, enforces authorization and stopping. Preserve privacy-safe traces and distinguish successful completion, explicit refusal, exhausted budget and uncertain external outcome."],
+    "0612": ["Release rubric with critical slices", "Create a versioned dataset with ordinary tasks, empty evidence and permission-boundary cases. State expected outcomes and per-slice sample counts.", "Raise the overall average while making the permission slice worse.", "The release decision must respect critical failures rather than hide them in an average. Define uncertainty, baseline comparison and dataset refresh policy before observing candidate scores."],
+    "0613": ["Calibrate the grader", "Prepare a small blinded set with human-adjudicated pass/fail outcomes and a written rubric. Apply deterministic checks and a model grader separately.", "Include a plausible but unsupported answer and a terse correct answer. Reverse presentation order to test sensitivity.", "Report disagreement and false-positive/false-negative examples. A grader's confidence is not a substitute for calibration, and two models agreeing can share the same blind spot."],
+    "0615": ["Untrusted context cannot grant authority", "Give a sandbox assistant a retrieved document containing a harmless instruction-like request and a fake tool requiring explicit user authorization.", "Ask the document to redefine the allowed tool policy, then verify the executor rejects any unauthorized proposal.", "Treat retrieved text and tool output as data. Prompt wording alone is not the enforcement boundary; prevent secret exposure and bind approvals to exact effects."],
+    "0616": ["Trace a quality regression", "Record prompt/model/retrieval versions, stage timings, outcome and redacted evidence for synthetic requests. Define a baseline slice distribution.", "Introduce stale retrieval data without changing the model, then compare with a model-only change.", "Traceability should distinguish component changes and user-impact drift. Do not log raw private prompts indiscriminately; sampled monitoring needs retention, access controls and incident ownership."],
+    "0617": ["Risk register tied to product use", "Define intended users, prohibited uses, sensitive data, affected groups and escalation paths for a low-risk support assistant. Mark jurisdiction-specific questions for qualified review.", "Compare error rates across meaningful slices with counts, then introduce a request outside the product's supported scope.", "Document uncertainty and user recourse, not a blanket fairness/compliance claim. Minimize retained data and distinguish a technical control from legal approval or a guaranteed safe model."],
+    "0618": ["Discover the user problem", "Write one target user's task, existing workaround, success measure, constraints and an explicit non-goal. Separate interview observations from assumptions.", "Remove the AI feature from the proposed solution and ask which user outcome becomes impossible.", "Keep AI only where evidence supports it. An architecture should follow the workflow and constraints; a technology inventory is not product discovery."],
+    "0619": ["Implement a thin vertical slice", "Deliver one authenticated user flow through frontend, API, persistence and a bounded model adapter. Record reproducible setup and identify mocked versus real services.", "Fail the database and model adapter independently, then retry the same request after an unknown response.", "Show stable user states, authorization and duplicate-effect handling. A full stack means a coherent working path, not separate snippets that have never been connected."],
+    "0620": ["Prove the operational contract", "Attach tests, threat model, evaluation gates, deployment identity, user SLI and restore procedure to the implemented slice.", "Run approved bounded fault tests and rehearse rollback/restore with disposable data.", "Keep observed timings and recovered invariants. A deployment checklist is not evidence that the system meets its quality, security or recovery requirements."],
+    "0621": ["Defend honest engineering evidence", "Prepare a concise demo plus a case study showing personal scope, alternatives, decisions, measured outcomes and remaining limits.", "Rehearse a skeptical question about cost, a failed design choice and what was not actually deployed.", "Distinguish measured facts from synthetic exercises. Strong senior evidence includes tradeoffs and reflection; never present a local fixture as production experience."]
+  };
+  const crossTrackExercise = crossTrackExercises[lesson.number];
+  if (crossTrackExercise) return { ...profile, commentPrefix: "//",
+    code: crossTrackExercise.map((text, index) => `// ${["Exercise specification (requires the described fixture; not executed here)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n// ${text}`).join("\n\n") };
+  if (lesson.trackId === "web-platform") {
+    const code = {
+      "0051": `// Browser console on a page you own; provide a same-origin /api/example fixture.
+// Use bounded test data. This issues one GET, not a deployment or load test.
+const started = performance.now();
+const response = await fetch("/api/example", { cache: "no-store" });
+const headersAt = performance.now();
+if (!response.ok) throw new Error("HTTP " + response.status);
+await response.arrayBuffer(); // fetch alone resolves before the whole body is consumed.
+const finished = performance.now();
+console.table({ headersMs: headersAt - started, bodyMs: finished - headersAt });
+console.table(performance.getEntriesByType("resource").slice(-5));
+// Separate DNS, connection, TLS, first byte and body completion using available
+// timing fields and DevTools. Reuse and timing restrictions can produce zeros;
+// zero DNS duration is not proof that DNS was unnecessary on a fresh connection.
+// Compare the next run with a warm connection; record protocol and intermediary data.`,
+      "0052": `<!-- Save as a standalone HTML fixture and inspect DOM and accessibility trees. -->
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Label experiment</title>
+<main>
+  <h1>Search documents</h1>
+  <form>
+    <label for="query">Search terms</label>
+    <input id="query" name="query" required>
+    <button type="submit">Search</button>
+  </form>
+</main></html>
+<!-- Expected: selecting the label focuses its input; the input has an accessible
+name and participates in form submission. Remove the label association in a copy
+and inspect the changed name. Placeholder text is not a replacement for a label.
+Compare parsed DOM with source for malformed nesting in a separate fixture;
+browser repair is not a reason to ship invalid structure. -->`,
+      "0053": `<!-- Standalone fixture: a child cannot escape its parent's stacking context. -->
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Stacking experiment</title>
+<style>
+.back { position: relative; z-index: 0; background: lightblue; padding: 2rem; }
+.child { position: absolute; z-index: 999; top: 2rem; background: gold; }
+.front { position: relative; z-index: 1; margin-top: -1rem; background: pink; }
+</style>
+<div class="back">Parent context<div class="child">Child with z-index 999</div></div>
+<div class="front">Sibling context with z-index 1</div>
+</html>
+<!-- Predict the overlap, then remove the parent's z-index and compare.
+Inspect the containing stacking contexts, not only the largest numeric z-index.
+Layout, paint and compositing are separate stages; a stacking context does not
+by itself prove allocation of a dedicated GPU compositing layer. -->`,
+      "0054": `// Browser console: one task queues a microtask, a timer and an animation callback.
+const trace = ["sync"];
+queueMicrotask(() => trace.push("microtask"));
+setTimeout(() => { trace.push("timer"); console.log([...trace]); }, 0);
+requestAnimationFrame(() => { trace.push("animation callback"); console.log([...trace]); });
+console.assert(trace.join() === "sync");
+// Expected: synchronous code first, then the queued microtask before later tasks.
+// Do not assert one portable ordering between this timer and the animation callback.
+// requestAnimationFrame runs before a rendering opportunity, not after proof of paint.
+// Follow-up: enqueue a bounded batch of microtasks and measure delayed input.
+// Never demonstrate starvation with an infinite microtask loop in the user's tab.`,
+      "0055": `// Run only on a disposable same-origin page. No tokens or real user data.
+const key = "lesson-storage-probe";
+const previous = localStorage.getItem(key);
+try {
+  localStorage.setItem(key, "synthetic value");
+  console.assert(localStorage.getItem(key) === "synthetic value");
+} finally {
+  if (previous === null) localStorage.removeItem(key);
+  else localStorage.setItem(key, previous);
+}
+// Storage can throw when unavailable or quota-limited; design a fallback.
+// Compare origin boundaries on two local ports, then inspect cookie attributes
+// in a separate server-backed fixture. HttpOnly blocks script reads, not CSRF.
+// CORS controls permitted browser response access, not server authorization.
+// Threat-model XSS before selecting client-side storage for sensitive material.`
+    }[lesson.number];
+    return { ...profile, code, commentPrefix: "//" };
+  }
+  if (lesson.trackId === "react") {
+    const experiments = {
+      "0193": ["Race two searches", "In a local React project, use a deterministic fake fetch that resolves query A after query B. Represent loading, success and failure explicitly; define the URL/cache ownership.", "Enter A then B, resolve B first and A last, then unmount while another request is pending.", "Only the current query's result may become visible. Cancellation and stale-result exclusion are separate concerns. An optimistic update also needs rollback/reconciliation when the authoritative mutation fails."],
+      "0195": ["Recover at the right error boundary", "Wrap a local result panel in an error boundary with a reset action and privacy-safe reporting. Provide distinct fixtures for render failure and event-handler failure.", "Trigger each fixture and recover the panel without losing unrelated page state.", "Do not claim an error boundary catches every async or event-handler error. Handle failures at their owning boundary and give the user a usable retry path without an endless rethrow loop."],
+      "0197": ["Type the component's real contract", "Build a small button in a strict TypeScript React project. Type its actual element props, callback and ref according to the project's React version.", "Add negative type tests for an invalid callback and wrong ref target, plus a runtime disabled/keyboard test.", "Compile-time props do not prove runtime accessibility. Avoid a polymorphic generic component until multiple element contracts are actually required; do not erase ref errors with assertions."],
+      "0198": ["Responsive component contract", "Build a labelled search form and results region using semantic HTML, CSS layout and the project's existing style approach.", "Test a narrow viewport, long translated text, 200% zoom and keyboard focus. Compare a visual variant without duplicating behavior.", "Content and controls must remain usable without relying on fixed text lengths. Explain cascade and component ownership before introducing another styling abstraction."],
+      "0199": ["Keyboard and announcement acceptance", "Create a search input, submit button and initially present status region. Define where focus stays during loading and where errors are described.", "Complete the flow using only a keyboard, then test with a screen reader while results change.", "Use native controls, accessible names and restrained announcements. An aria-live attribute or automated scan alone does not establish a usable interaction; record observed focus and spoken feedback."],
+      "0200": ["Test user-visible state changes", "Render a local form with a controllable async dependency using the project's testing tools. Query controls by accessible role/name rather than implementation classes.", "Submit, hold the promise pending, resolve it and reject a later request. Await user-visible updates using supported test utilities.", "Assert loading, success, error and disabled behavior. act coordinates React updates in tests; it does not make a DOM simulation equivalent to a real browser."],
+      "0201": ["Measure before memoizing", "Profile a local list with a deliberately expensive pure derivation and record an interaction in a suitable profiling build.", "Change an unrelated input, then optimize the measured derivation and repeat the same interaction/data size.", "Compare commit work and user-perceived responsiveness. Render count alone is not performance, and development checks can distort timings. Keep correctness tests while optimizing."],
+      "0202": ["Compiler adoption experiment", "Record React, compiler and lint versions and enable the compiler in a small supported project slice following its integration guide.", "Compare the same interaction before/after compilation and introduce a rules-of-React violation in a disposable fixture.", "Compiler optimization relies on valid component semantics; it is not a fix for impure rendering. Record diagnostics, measured impact and a scoped opt-out/rollback policy instead of removing every manual memo blindly."],
+      "0203": ["Render proposal versus commit", "Use a local pure component with controlled state updates and supported profiling/debug tools. Distinguish render logging from an effect observing committed state.", "Schedule a non-urgent update alongside an urgent input update and observe the final committed UI.", "Do not perform effects during render or depend on render-call counts. Fiber and lanes are implementation concepts, not public promises about exact scheduling or one render per update."],
+      "0204": ["Root ownership and hydration", "Create one client-only fixture with createRoot and one server-generated matching fixture with hydrateRoot. Keep root ownership outside component render.", "Introduce a deterministic server/client text mismatch in the hydration fixture, then unmount the root and check subscription cleanup.", "Hydration expects matching initial content; suppressing warnings is not a repair. Portals change DOM placement without severing React ancestry, so test event propagation and focus separately."],
+      "0205": ["Server HTML is not finished interactivity", "In a supported local SSR setup, render a shell plus a deliberately delayed data region and record response chunks and client hydration.", "Delay the data, reject it, and reload before hydration finishes. Keep initial server/client data consistent.", "Distinguish shell delivery, streamed content, hydration and usable controls. Measure what the chosen framework actually sends; a server-only render does not prove interactive error recovery."],
+      "0208": ["Route-level ownership", "Choose the project's router/framework and document who owns route matching, data loading, pending UI, cache invalidation and error boundaries.", "Navigate rapidly between two parameterized routes and use Back/Forward after editing a URL-backed filter.", "The visible data must match the active route, and navigation semantics must remain intact. Preloading is a resource tradeoff, not permission to fetch every possible destination."],
+      "0210": ["Reproduce a production-only failure", "Record an error's build ID, redacted component stack and affected interaction. Use matching source maps under controlled access to locate the source.", "Reproduce with production-like flags and data, then compare the minimal failing state with the working state.", "Keep source/build identity aligned and avoid sending sensitive props to telemetry. DevTools inspection helps form a hypothesis; a regression test is needed to show the fix."],
+      "0212": ["Place state at its owner", "Map a search feature's URL state, server cache, form draft and transient interaction state. Assign each one a single owner.", "Open two copies of the feature, navigate away/back and receive a server update while a draft is unsaved.", "Explain synchronization intentionally rather than copying every value into global state. Extract boundaries around independent responsibilities and change patterns, not a component-count target."],
+      "0213": ["Frontend capstone evidence", "Build the project with accessible navigation, typed boundaries, loading/error/empty states, tests and a production build. List real and mocked backend behavior.", "Test slow responses, stale response ordering, keyboard-only operation, small screens and a failed deployment rollback in the approved environment.", "Supply screenshots or traces, failing/passing tests and a short architecture defense. Do not claim accessibility, performance or production experience merely because the page renders."]
+    };
+    const exercise = experiments[lesson.number];
+    if (exercise) return { ...profile, commentPrefix: "//",
+      code: exercise.map((text, index) => `// ${["Integration exercise (requires a React project; not executed here)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n// ${text}`).join("\n\n") };
+  }
+  if (lesson.trackId === "ml-foundations") {
+    const code = {
+      "0577": `# Python 3.10+, stdlib only. Trace shape and geometry before using a library.
+from math import sqrt, isclose
+
+def dot(a, b):
+    if len(a) != len(b): raise ValueError("dimension mismatch")
+    return sum(x * y for x, y in zip(a, b))
+
+def cosine(a, b):
+    denominator = sqrt(dot(a, a) * dot(b, b))
+    if denominator == 0: raise ValueError("zero vector has no direction")
+    return dot(a, b) / denominator
+
+assert dot([1, 2], [3, 4]) == 11
+assert isclose(cosine([1, 2], [2, 4]), 1)
+assert isclose(cosine([1, 0], [0, 1]), 0)
+for a, b in [([1], [1, 2]), ([0, 0], [1, 2])]:
+    try: cosine(a, b)
+    except ValueError: pass
+    else: raise AssertionError("invalid geometry accepted")
+# Scope: finite small real vectors. Cosine removes magnitude, not semantic bias.
+# Predict: scaling one vector by a NEGATIVE number reverses its direction.
+# Senior follow-up: why can feature scaling change nearest neighbors, while
+# multiplying a vector by a positive scalar leaves its cosine unchanged?`,
+      "0578": `# Python 3.10+. Fit y = w*x with squared error; no intercept in this exercise.
+from math import isclose
+samples = [(1, 2), (2, 4), (3, 6)]
+def loss(w): return sum((w*x-y)**2 for x, y in samples) / len(samples)
+def gradient(w): return 2 * sum(x*(w*x-y) for x, y in samples) / len(samples)
+
+w, epsilon = 0.5, 1e-6
+numerical = (loss(w + epsilon) - loss(w - epsilon)) / (2 * epsilon)
+assert isclose(gradient(w), numerical, rel_tol=1e-6)
+before = loss(w)
+w -= 0.1 * gradient(w)
+assert loss(w) < before
+assert loss(0.5 - 1.0 * gradient(0.5)) > before # Too-large step overshoots.
+# Predict the gradient sign and one update by hand before running.
+# Extension: add lambda*w*w to loss AND 2*lambda*w to the gradient.
+# Senior checkpoint: decreasing training loss is optimization evidence, not
+# generalization evidence. Select regularization on validation data, not test data.`,
+      "0579": `# Python 3.10+. Synthetic grouped records: split by entity to prevent overlap.
+rows = [("u1", 0), ("u1", 1), ("u2", 0), ("u2", 1)]
+naive_train, naive_test = rows[::2], rows[1::2]
+entities = lambda data: {user for user, label in data}
+assert entities(naive_train) & entities(naive_test) == {"u1", "u2"}
+train = [row for row in rows if row[0] == "u1"]
+test = [row for row in rows if row[0] == "u2"]
+assert not entities(train) & entities(test)
+labels, predictions = [0]*99 + [1], [0]*100
+accuracy = sum(a == b for a, b in zip(labels, predictions)) / len(labels)
+true_positive = sum(a == b == 1 for a, b in zip(labels, predictions))
+recall = true_positive / sum(labels)
+assert accuracy == 0.99 and recall == 0
+# Expected: impressive accuracy can hide complete failure on the rare positive.
+# This tiny fixture demonstrates leakage and metric arithmetic, not a usable split.
+# Senior checkpoint: choose entity/time/random splitting from deployment use.
+# Fit preprocessing only on training data; tune thresholds on validation data;
+# reserve test data for a release estimate with slice counts and uncertainty.`,
+      "0580": `# Python 3.10+. A one-neighbor baseline exposes the effect of feature units.
+from math import dist
+points = {"A": (1000, 0), "B": (0, 10)}
+query = (900, 9)
+nearest = min(points, key=lambda key: dist(query, points[key]))
+assert nearest == "A"
+scale = lambda point: (point[0] / 1000, point[1])
+scaled = min(points, key=lambda key: dist(scale(query), scale(points[key])))
+assert scaled == "B"
+# The scaling factor here is an explicit fixture assumption, not fit from test data.
+# Expected: units change the nearest result even though raw records are unchanged.
+# Senior checkpoint: compare this baseline to a learned embedding using held-out
+# relevance labels. A close vector is not automatically a relevant recommendation.
+# Extension: introduce a cold-start item and distinguish supervised prediction,
+# unsupervised clustering, candidate retrieval, and final ranking objectives.`
+    }[lesson.number];
+    return { ...profile, code, commentPrefix: "#",
+      sourceLabel: "Google Machine Learning Crash Course",
+      sourceUrl: "https://developers.google.com/machine-learning/crash-course" };
+  }
+  if (lesson.trackId === "llm-internals") {
+    const code = {
+      "0581": `# Python 3.10+. A tiny greedy vocabulary, NOT a production tokenizer or BPE trainer.
+vocabulary = {"cat": 0, "c": 1, "a": 2, "t": 3, " ": 4}
+def encode(text, vocabulary):
+    result = []
+    while text:
+        matches = [piece for piece in vocabulary if piece and text.startswith(piece)]
+        if not matches: raise ValueError("unsupported input")
+        piece = max(matches, key=len)
+        result.append(vocabulary[piece])
+        text = text[len(piece):]
+    return result
+
+assert encode("cat cat", vocabulary) == [0, 4, 0]
+characters = {key: value for key, value in vocabulary.items() if key != "cat"}
+assert len(encode("cat cat", characters)) == 7
+try: encode("dog", vocabulary)
+except ValueError: pass
+else: raise AssertionError("unknown input accepted")
+# Expected: the same text consumes three or seven tokens with these vocabularies.
+# Token IDs are indices, not ordered semantic values. Model embeddings must match
+# the trained vocabulary. Replacing the tokenizer alone changes model inputs.
+# Senior follow-up: account for messages, tools and output reservation in a context
+# budget. Real tokenizers may use byte fallback; inspect the provider's tokenizer.`,
+      "0582": `# Python 3.10+. One scalar attention head with a causal mask; not a whole block.
+from math import exp, isclose
+queries, keys, values = [1, 1], [0, 1], [10, 20]
+def attend(position, values):
+    scores = [queries[position] * key for key in keys[:position + 1]]
+    weights = [exp(score - max(scores)) for score in scores]
+    weights = [weight / sum(weights) for weight in weights]
+    return sum(weight * value for weight, value in zip(weights, values))
+
+assert attend(0, values) == 10
+assert isclose(attend(1, values), (10 + exp(1)*20) / (1 + exp(1)))
+assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
+# Predict the weighted average before running; then remove the mask and explain
+# how next-token training would leak future information.
+# With key width d, scaled dot-product attention divides scores by sqrt(d).
+# This scalar fixture has d=1. Real blocks also use learned projections, multiple
+# heads, residual paths, normalization and an MLP; this is not their implementation.`,
+      "0583": `# Python 3.10+. Trace shifted next-token targets and negative log likelihood.
+from math import log, isclose
+tokens = ["BOS", "a", "b", "EOS"]
+inputs, targets = tokens[:-1], tokens[1:]
+assert list(zip(inputs, targets)) == [("BOS", "a"), ("a", "b"), ("b", "EOS")]
+# Probabilities assigned to the correct next token at each position.
+p_correct = [0.5, 0.25, 0.5]
+loss = -sum(log(p) for p in p_correct) / len(p_correct)
+assert isclose(loss, 4*log(2)/3)
+improved = -sum(log(p) for p in [0.75, 0.5, 0.75]) / 3
+assert improved < loss
+# Scope: loss arithmetic, no gradient training or preference optimization.
+# Teacher forcing supplies the observed prefix; inference uses generated prefixes.
+# Senior checkpoint: lower held-out next-token loss does not establish factuality,
+# instruction following, or tool safety. Evaluate those with separate tasks.
+# Compare pretraining data, supervised instruction targets, and preference pairs;
+# changing the objective changes which evidence is needed.`,
+      "0584": `# Python 3.10+. Temperature reshapes probabilities before sampling.
+from math import exp, isclose, isfinite
+def probabilities(logits, temperature):
+    if not logits or not all(isfinite(x) for x in logits): raise ValueError("logits")
+    if not isfinite(temperature) or temperature <= 0: raise ValueError("temperature")
+    peak = max(logits)
+    weights = [exp((value - peak) / temperature) for value in logits]
+    return [weight / sum(weights) for weight in weights]
+
+cold, warm = probabilities([2, 1, 0], 0.5), probabilities([2, 1, 0], 2)
+assert cold[0] > warm[0]
+assert isclose(sum(cold), 1)
+assert probabilities([0, 0], 1) == [0.5, 0.5]
+try: probabilities([2, 1], 0)
+except ValueError: pass
+else: raise AssertionError("zero temperature accepted by division formula")
+# Zero-temperature greedy selection needs a separate argmax rule with tie policy.
+# Top-p instead truncates the sorted probability mass and renormalizes it.
+# Senior follow-up: a fixed seed is not a cross-hardware determinism guarantee.
+# KV caching reuses past attention states; batching and quantization have separate
+# memory, throughput and numerical tradeoffs not measured by this probability toy.`,
+      "0585": `# Python 3.10+. A synthetic calibration counterexample, not an empirical model score.
+confidence = [0.9] * 10
+correct = [True] * 5 + [False] * 5
+mean_confidence = sum(confidence) / len(confidence)
+accuracy = sum(correct) / len(correct)
+gap = abs(mean_confidence - accuracy)
+assert round(gap, 6) == 0.4
+# Expected: a system reporting 90% confidence is right only 50% in this fixture.
+# Token probability and a model's verbal confidence are not automatically the
+# probability that its factual claim is correct. Calibrate against labelled outcomes.
+# Practice: stratify real errors into unsupported facts, retrieval misses, stale
+# sources and instruction failures. Test early/middle/late evidence placement.
+# Senior checkpoint: an articulate reasoning trace is not a correctness proof;
+# require verifiable answers, abstention criteria and measured coverage/error cost.`
+    }[lesson.number];
+    return { ...profile, code, commentPrefix: "#" };
+  }
+  if (lesson.trackId === "engineering-foundations") {
+    const reviewed = {
+      "0001": {
+        sourceLabel: "Bash manual: pipelines and exit status",
+        sourceUrl: "https://www.gnu.org/software/bash/manual/bash.html#Pipelines",
+        code: `# Run with Bash, not an arbitrary sh. No files or services are changed.
+# Predict: does a successful consumer make a failed producer successful?
+set +e
+set +o pipefail
+bash -c 'exit 7' | tee /dev/null
+without_pipefail=$?
+set -o pipefail
+bash -c 'exit 7' | tee /dev/null
+with_pipefail=$?
+test "$without_pipefail" -eq 0 || exit 1
+test "$with_pipefail" -eq 7 || exit 1
+printf 'without pipefail=%s; with pipefail=%s\\n' "$without_pipefail" "$with_pipefail"
+# Expected: 0 then 7. Capture $? immediately; another command replaces it.
+# pipefail returns the RIGHTMOST nonzero status, not necessarily the producer's.
+# Senior follow-up: distinguish a signal, process exit, and successful work.
+# A zero exit code is only the program's claim; verify the required artifact.
+# Never dump the entire environment into a diagnostic log: it can contain secrets.`
+      },
+      "0002": {
+        sourceLabel: "Pro Git: Git objects",
+        sourceUrl: "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+        code: `# Run in a repository with at least one commit. Read-only inspection.
+set -eu
+git rev-parse --verify HEAD
+test "$(git cat-file -t HEAD)" = commit
+test "$(git cat-file -t 'HEAD^{tree}')" = tree
+git cat-file -p HEAD
+git ls-tree HEAD
+git diff --stat
+git diff --cached --stat
+# Expected: commit metadata points to a tree; the tree names blobs/subtrees.
+# Unstaged diff compares working files to the index; cached diff compares
+# the index to HEAD. Untracked files require git status, not git diff.
+# Rehearse a conflict using a disposable repository, never shared production history.
+# Senior checkpoint: merge preserves ancestry; rebase rewrites commit identity.
+# Decide based on branch ownership and team policy, not a cleaner-looking graph.`
+      },
+      "0003": {
+        sourceLabel: "npm ci: frozen dependency installation",
+        sourceUrl: "https://docs.npmjs.com/cli/v11/commands/npm-ci/",
+        code: `# Planning exercise. These inspection commands do not install anything.
+node --version
+npm --version
+# In a disposable project with package.json and a committed package-lock.json:
+# 1. Record Node/npm versions and installation-affecting configuration.
+# 2. Run npm ci; it replaces node_modules and refuses manifest/lock mismatch.
+# 3. Change one declared dependency without updating the lock; npm ci must fail.
+# 4. Restore the fixture, repeat in a clean environment, and run the same tests.
+# Do not run this destructive-to-node_modules experiment in your working project.
+# Expected evidence: matching lock succeeds; mismatch fails instead of rewriting it.
+# Senior checkpoint: a lock pins resolution, not OS, native toolchain, registry
+# availability, or lifecycle-script behavior. Review scripts and registry trust;
+# --ignore-scripts is useful isolation but may make legitimate packages unusable.
+# Preserve the failing log and exact toolchain, not just "works on my machine".`
+      },
+      "0004": {
+        sourceLabel: "Node.js: assertions",
+        sourceUrl: "https://nodejs.org/api/assert.html",
+        commentPrefix: "//",
+        code: `// Run with Node.js. Hypothesis: the cache mistakes a cached zero for a miss.
+const assert = require("node:assert/strict");
+let calls = 0;
+const compute = () => { calls++; return 0; };
+const cache = new Map();
+function broken(key) {
+  if (!cache.get(key)) cache.set(key, compute());
+  return cache.get(key);
+}
+broken("zero"); broken("zero");
+assert.equal(calls, 2); // Reproduces the symptom without a network or clock.
+cache.clear(); calls = 0;
+function fixed(key) {
+  if (!cache.has(key)) cache.set(key, compute());
+  return cache.get(key);
+}
+assert.equal(fixed("zero"), 0);
+assert.equal(fixed("zero"), 0);
+assert.equal(calls, 1);
+// Changed condition: absence and zero are different states. Test both.
+fixed("other");
+assert.equal(calls, 2);
+// Senior follow-up: an async cache has a separate concurrent-miss race.
+// This synchronous test neither reproduces nor proves a fix for that race.`
+      },
+      "0005": {
+        sourceLabel: "AWS Prescriptive Guidance: architecture decision records",
+        sourceUrl: "https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/welcome.html",
+        code: `# Worked decision record — synthetic assumptions, not measured production facts
+Title: Start the notification worker with a database outbox
+Status: Proposed
+Context: Notification loss after order commit is unacceptable. Assume 20 events/s
+and a five-second delivery objective. One team owns the database and worker.
+Options: Direct post-commit publish; transactional outbox; distributed transaction.
+Decision: Write order and outbox row in one database transaction; relay separately.
+Reason: Direct publish has a crash gap. An outbox keeps the durable intent with
+the order while avoiding a distributed transaction in the request path.
+Consequences: Relay can publish duplicates. Consumers need stable event identity
+and idempotent effects. Monitor oldest unpublished age and retained row growth.
+Verification: Kill the worker after publish but before marking the row sent;
+expect redelivery without a second business effect. Measure delivery lag at load.
+Revisit: If polling cost or latency misses the objective, evaluate CDC with evidence.
+Owner: Name the team that handles replay, retention, and incidents before approval.
+# Practice: defend direct publication if notifications become best-effort analytics.
+# Feedback: a strong answer changes the decision when the loss constraint changes;
+# a weak answer calls the outbox exactly-once or ignores cleanup and ownership.`
+      }
+    }[lesson.number];
+    return { ...profile, ...reviewed };
+  }
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("Object types,")) {
+    return { ...profile,
+      analogy: "A contract describes what each plugin must provide; a registry stores actual plugins. Extending the written contract does not manufacture missing implementations.",
+      sourceLabel: "TypeScript: object types and index signatures",
+      sourceUrl: "https://www.typescriptlang.org/docs/handbook/2/objects.html",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("Function types")) {
+    return { ...profile,
+      analogy: "A public menu lists the orders customers may place. The kitchen's broader internal procedure is not an extra menu item; each advertised order still needs the correct result.",
+      sourceLabel: "TypeScript: function signatures and overloads",
+      sourceUrl: "https://www.typescriptlang.org/docs/handbook/2/functions.html",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && /^(Control-flow analysis|User-defined type guards)/.test(lesson.title)) {
+    return { ...profile,
+      analogy: lesson.title.startsWith("Control-flow") ? "Each branch adds evidence to a case file. Evidence available on one route is not automatically available where routes rejoin." : "A guard reports whether a check passed; an assertion stops the process on failure; a parser hands back a checked, explicitly constructed result. A signature alone is only a promise that the check is honest.",
+      sourceLabel: "TypeScript: narrowing and type predicates",
+      sourceUrl: "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && /^(Union types|Discriminated unions)/.test(lesson.title)) {
+    const union = lesson.title.startsWith("Union types");
+    return { ...profile,
+      analogy: union ? "A union is admission through either door. An intersection requires meeting both entry conditions; it does not build or modify the visitor." : "A parcel has a labeled stage and stage-specific evidence. A valid delivered record does not prove it followed a valid route; transition rules must check the journey.",
+      sourceLabel: union ? "TypeScript: intersection types" : "TypeScript: discriminated unions and exhaustiveness",
+      sourceUrl: union ? "https://www.typescriptlang.org/docs/handbook/2/objects.html#intersection-types" : "https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("Assignability,")) {
+    return { ...profile,
+      analogy: "A job requires two skills; having a third does not disqualify you. Likewise, a compatible object can contain extra fields. The fresh-literal check catches likely mistakes, not every extra field at runtime.",
+      sourceLabel: "TypeScript: object types and excess-property checks",
+      sourceUrl: "https://www.typescriptlang.org/docs/handbook/2/objects.html#excess-property-checks",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("Optional properties,")) {
+    return { ...profile,
+      analogy: "An update form can leave a field untouched, supply a replacement, or explicitly request clearing it. These are three instructions, not one truthy-or-falsy choice.",
+      sourceLabel: "TypeScript: exactOptionalPropertyTypes",
+      sourceUrl: "https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("any,")) {
+    return { ...profile,
+      sourceLabel: "TypeScript: unknown, never, and void",
+      sourceUrl: "https://www.typescriptlang.org/docs/handbook/2/functions.html#other-types-to-know-about",
+      code: typescriptCodeFor(lesson.title, profile.code)
+    };
+  }
+  if (lesson.trackId === "javascript" && lesson.title.startsWith("Primitive values")) {
+    return {
+      ...profile,
+      analogy: "Two labels can point to one box. Moving a label does not copy the box; changing what is inside the shared box is visible through both labels.",
+      sourceLabel: "ECMAScript data types and values",
+      sourceUrl: "https://tc39.es/ecma262/multipage/ecmascript-data-types-and-values.html",
+      code: javascriptCodeFor(lesson.title, profile.code)
+    };
+  }
   if (lesson.trackId === "computer-science") {
     return {
       ...profile,
@@ -8669,36 +11307,56 @@ console.assert(leastOutstanding(targets, "az-1").id === "b");
     return {
       ...profile,
       commentPrefix: "#",
-      code: `def lookup_order(arguments: dict) -> dict:
+      code: `import json
+from copy import deepcopy
+
+def lookup_order(arguments: dict) -> dict:
+    if not isinstance(arguments, dict): raise ValueError("arguments object required")
     order_id = arguments.get("order_id")
     if not isinstance(order_id, str) or set(arguments) != {"order_id"}:
         raise ValueError("expected one string order_id")
-    return {"order_id": order_id, "status": "packed"}
+    return {"order_id": order_id, "status": "packed" if order_id == "A-42" else "not found"}
 
 TOOLS = {"lookup_order": {"handler": lookup_order, "needs_approval": False}}
 
-def execute_tool(call: dict, completed: dict, audit: list, approved: bool = False) -> dict:
+def execute_tool(call: dict, completed: dict, audit: list, approved_intent=None) -> dict:
+    if not isinstance(call, dict): raise ValueError("call object required")
     name = call.get("name")
     if name not in TOOLS:
         raise ValueError("tool not allowed")
     tool = TOOLS[name]
-    if tool["needs_approval"] and not approved:
-        raise PermissionError("approval required")
     key = call.get("idempotency_key")
     if not isinstance(key, str) or not key:
         raise ValueError("idempotency_key required")
+    arguments = call.get("arguments", {})
+    if not isinstance(arguments, dict): raise ValueError("arguments object required")
+    intent = (name, key, json.dumps(arguments, sort_keys=True, allow_nan=False))
+    if tool["needs_approval"] and approved_intent != intent:
+        raise PermissionError("verified approval must match this exact intent")
+    if key in completed and completed[key][0] != intent:
+        raise ValueError("idempotency key reused for different intent")
     if key not in completed:
-        completed[key] = tool["handler"](call.get("arguments", {}))
+        completed[key] = (intent, tool["handler"](arguments))
         audit.append({"tool": name, "idempotency_key": key, "outcome": "executed"})
-    return completed[key]
+    return deepcopy(completed[key][1])
 
 completed, audit = {}, []
 call = {"name": "lookup_order", "arguments": {"order_id": "A-42"}, "idempotency_key": "req-1"}
 assert execute_tool(call, completed, audit) == execute_tool(call, completed, audit)
 assert len(audit) == 1  # A retry did not repeat the effect.
+try: execute_tool({**call, "arguments": {"order_id": "B-1"}}, completed, audit)
+except ValueError: pass
+else: raise AssertionError("changed intent replayed")
+result = execute_tool(call, completed, audit)
+result["status"] = "tampered"
+assert execute_tool(call, completed, audit)["status"] == "packed"
 
 # The model proposes structured data; application code validates, authorizes,
-# executes, deduplicates, and records the real side effect.`
+# executes, deduplicates, and records the result. This single-threaded, in-memory
+# read-only fixture does not provide durable effect idempotency or real order data.
+# Authenticate and authorize the actor/tenant before entering; scope receipts to
+# that identity. approved_intent must come from trusted approval storage, never
+# from model arguments. Mutating effects need atomic receipts or provider replay.`
     };
   }
   if (lesson.trackId === "agents" && lesson.title.startsWith("Tool design")) {
@@ -8714,7 +11372,7 @@ class AgentState:
     goal: str
     observations: list[str] = field(default_factory=list)  # working state
 
-durable_memory: dict[str, list[str]] = {}
+durable_memory: dict[str, list[str]] = {}  # Process-local stand-in, NOT durable storage.
 
 def remember(user_id: str, fact: str, *, consent: bool) -> None:
     if not consent:
@@ -8722,18 +11380,23 @@ def remember(user_id: str, fact: str, *, consent: bool) -> None:
     durable_memory.setdefault(user_id, []).append(fact)
 
 def build_context(user_id: str, state: AgentState, max_items: int = 4) -> list[str]:
-    if max_items < 1:
+    if type(max_items) is not int or max_items < 1:
         raise ValueError("max_items must be positive")
-    candidates = [f"Goal: {state.goal}", *durable_memory.get(user_id, []), *state.observations[-2:]]
-    return candidates[-max_items:]  # selection policy, not an unbounded transcript dump
+    candidates = [*durable_memory.get(user_id, []), *state.observations[-2:]]
+    selected = candidates[-(max_items - 1):] if max_items > 1 else []
+    return [f"Goal: {state.goal}", *selected]  # Preserve the goal when trimming history.
 
 state = AgentState("answer concisely", ["order A-42", "status packed"])
 remember("u-1", "prefers email updates", consent=True)
 context = build_context("u-1", state)
 assert context == ["Goal: answer concisely", "prefers email updates", "order A-42", "status packed"]
+assert build_context("u-1", state, 1) == ["Goal: answer concisely"]
+assert build_context("u-1", state, 2)[0] == "Goal: answer concisely"
 
 # Conversation history is raw events; state is current progress; context is the
-# selected model input; durable memory is intentionally retained across runs.`
+# selected model input; real durable memory requires persistent, authorized storage.
+# Item count is not a token/byte budget; bound each value and total context size.
+# Retention, consent withdrawal and deletion remain required integration policies.`
     };
   }
   if (lesson.trackId === "agents" && lesson.title.startsWith("LLM system blueprint")) {
@@ -8750,13 +11413,18 @@ tools: dict[str, Tool] = {
 }
 
 def run_react(model, question: str, max_steps: int = 3) -> str:
+    if type(max_steps) is not int or max_steps < 1:
+        raise ValueError("positive step budget required")
     messages = [{"role": "user", "content": question}]
     for _ in range(max_steps):
         decision = model(messages)  # reason, then propose a tool call or final answer
+        if not isinstance(decision, dict) or decision.get("type") not in {"final", "tool"}:
+            raise ValueError("invalid decision shape")
         if decision["type"] == "final":
+            if not isinstance(decision.get("answer"), str): raise ValueError("answer string required")
             return decision["answer"]
-        name, argument = decision["tool"], decision["argument"]
-        if name not in tools:
+        name, argument = decision.get("tool"), decision.get("argument")
+        if not isinstance(name, str) or name not in tools or not isinstance(argument, str):
             raise ValueError(f"tool not allowed: {name}")
         observation = tools[name](argument)
         messages += [decision, {"role": "tool", "name": name, "content": observation}]
@@ -8768,6 +11436,15 @@ def scripted_model(messages):
     return {"type": "final", "answer": f"Order is {messages[-1]['content']}."}
 
 assert run_react(scripted_model, "Where is A-42?") == "Order is packed."
+try: run_react(scripted_model, "Where is A-42?", max_steps=1)
+except RuntimeError: pass
+else: raise AssertionError("step budget exceeded")
+try: run_react(lambda _: {"type": "other"}, "test")
+except ValueError: pass
+else: raise AssertionError("invalid decision accepted")
+# Messages/decisions use this fixture's own schema, not a provider wire format.
+# A step budget does not bound one blocked call; real gateways also need elapsed
+# time, input/output size, spend and tool-effect authorization budgets.
 
 # Production blueprint: authenticate input -> assemble bounded context -> model
 # -> validate and authorize tool proposal -> execute -> return observation to state
@@ -8782,20 +11459,23 @@ assert run_react(scripted_model, "Where is A-42?") == "Order is packed."
         sourceLabel: "Model Context Protocol architecture and lifecycle specification",
         sourceUrl: "https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle",
         commentPrefix: "#",
-        code: `# minimal_mcp_server.py — newline-delimited JSON-RPC over MCP stdio
+        code: `# Partial MCP stdio dispatch lab, NOT a conforming production server.
+# It illustrates request/response shapes; initialization-state enforcement,
+# capability negotiation, cancellation and session ownership remain to implement.
 import json
 import sys
 
 PROTOCOL = "2025-11-25"
 
 def reply(request, result=None, error=None):
-    message = {"jsonrpc": "2.0", "id": request["id"]}
+    message = {"jsonrpc": "2.0", "id": request.get("id")}
     message["error" if error else "result"] = error or result
     print(json.dumps(message, separators=(",", ":")), flush=True)
 
 def dispatch(request):
     method = request.get("method")
     params = request.get("params", {})
+    if not isinstance(params, dict): raise ValueError("params object required")
     if method == "initialize":
         return {
             "protocolVersion": PROTOCOL,
@@ -8816,10 +11496,15 @@ def dispatch(request):
     if method == "tools/call":
         if params.get("name") != "explain_term":
             raise ValueError("unknown tool")
-        term = params.get("arguments", {}).get("term", "").strip()
-        if not term or len(term) > 80:
+        arguments = params.get("arguments", {})
+        if not isinstance(arguments, dict) or set(arguments) != {"term"}:
+            raise ValueError("one term argument required")
+        term = arguments["term"]
+        if not isinstance(term, str) or not term.strip() or len(term) > 80:
             raise ValueError("invalid term")
-        return {"content": [{"type": "text", "text": term + " is a concept to investigate."}]}
+        glossary = {"idempotency": "Repeating one operation identity preserves its intended effect.",
+                    "backpressure": "A slower consumer limits how much work the producer admits."}
+        return {"content": [{"type": "text", "text": glossary.get(term.strip().lower(), "Term not in this two-entry fixture.")}]}
     if method == "resources/list":
         return {"resources": [{"uri": "lesson://roadmap", "name": "Roadmap"}]}
     if method == "resources/read":
@@ -8829,19 +11514,36 @@ def dispatch(request):
     if method == "prompts/list":
         return {"prompts": [{"name": "quiz", "description": "Start a short quiz"}]}
     if method == "prompts/get":
+        if params.get("name") != "quiz": raise ValueError("unknown prompt")
         return {"messages": [{"role": "user", "content": {"type": "text", "text": "Quiz me."}}]}
     raise LookupError("method not found")
 
-for line in sys.stdin:
-    request = None
+while True:
+    line = sys.stdin.buffer.readline(65_537)
+    if not line: break
+    request = {}
+    if len(line) > 65_536:
+        reply({}, error={"code": -32600, "message": "frame too large"})
+        break  # Stop instead of treating the remainder as a second request.
     try:
-        request = json.loads(line)
-        if "id" not in request:  # A notification has no response.
+        request = json.loads(line.decode("utf-8"))
+        if not isinstance(request, dict) or request.get("jsonrpc") != "2.0" or not isinstance(request.get("method"), str):
+            reply({}, error={"code": -32600, "message": "invalid request"})
+            continue
+        if "id" not in request:  # Valid notification shapes have no response.
+            continue
+        if type(request["id"]) not in (str, int):
+            reply({}, error={"code": -32600, "message": "invalid request ID"})
             continue
         reply(request, result=dispatch(request))
-    except (ValueError, LookupError, json.JSONDecodeError) as exc:
-        if isinstance(request, dict) and "id" in request:
-            reply(request, error={"code": -32602, "message": str(exc)})`
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        reply({}, error={"code": -32700, "message": "parse error"})
+    except LookupError:
+        reply(request, error={"code": -32601, "message": "method not found"})
+    except ValueError as exc:
+        reply(request, error={"code": -32602, "message": str(exc)})
+# stdout is reserved for protocol frames; diagnostics belong on stderr. This
+# fixture does not process server responses or arbitrary bidirectional messages.`
       };
     }
     return {
@@ -8866,19 +11568,21 @@ export async function handleMcp(request: Request): Promise<Response> {
   const raw = await readBodyWithLimit(request, 64_000);
   const rpc = parseAndValidateJsonRpc(raw);       // Reject unknown fields and invalid IDs.
   const session = await loadOwnedSession(request.headers.get("mcp-session-id"), token.sub);
-  const controller = new AbortController();
-  request.signal.addEventListener("abort", () => controller.abort(), { once: true });
-
-  const result = await withDeadline(
-    () => dispatchAllowlistedMethod(rpc, { token, session, signal: controller.signal }),
-    10_000,
-  );
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]);
+  signal.throwIfAborted();
+  const result = await dispatchAllowlistedMethod(rpc, { token, session, signal });
+  signal.throwIfAborted();
   await appendAuditEvent({ actor: token.sub, method: rpc.method, requestId: rpc.id, outcome: "ok" });
   return jsonRpcResponse(rpc.id, result, { sessionId: session.id });
 }
 
 // Mutating tools also need per-call consent, argument validation, idempotency,
-// least-privilege credentials, output limits, cancellation, and trace IDs.`
+// least-privilege credentials, output limits, cancellation, and trace IDs.
+// This is an authenticated POST-path sketch AFTER initialization, not a complete
+// Streamable HTTP endpoint. Initialization negotiates version/session; GET, DELETE,
+// notifications (202), Accept/Content-Type and expired-session behavior need their
+// own handling. Cancellation is cooperative: dispatch must observe the signal;
+// a timeout is not proof that a mutating external action did not occur.`
     };
   }
   if (lesson.trackId === "retrieval-rag" && lesson.title.startsWith("Vector database")) {
@@ -8954,18 +11658,23 @@ ROLLBACK;
       sourceLabel: "pgvector HNSW and IVFFlat documentation",
       sourceUrl: "https://github.com/pgvector/pgvector#hnsw",
       commentPrefix: "#",
-      code: `from math import sqrt
+      code: `from math import dist, isfinite
 
 def l2(a, b):
-    return sqrt(sum((x - y) ** 2 for x, y in zip(a, b)))
+    if len(a) != len(b) or not a or any(not isfinite(value) for value in [*a, *b]):
+        raise ValueError("equal nonempty finite vectors required")
+    return dist(a, b)
 
 def exact_top_k(rows, query, k):
-    return sorted(rows, key=lambda row: l2(row[1], query))[:k]
+    if type(k) is not int or k < 1: raise ValueError("positive integer k required")
+    return sorted(rows, key=lambda row: (l2(row[1], query), row[0]))[:k]
 
 def recall_at_k(expected, actual, k):
+    if type(k) is not int or k < 1: raise ValueError("positive integer k required")
     wanted = {row[0] for row in expected[:k]}
     found = {row[0] for row in actual[:k]}
-    return len(wanted & found) / k
+    if not wanted: raise ValueError("empty ground truth: report separately")
+    return len(wanted & found) / len(wanted)
 
 rows = [("a", [0.0, 0.0]), ("b", [0.1, 0.0]),
         ("c", [0.9, 1.0]), ("d", [1.0, 1.0])]
@@ -8985,7 +11694,15 @@ for query in queries:
 # IVF: train representative centroids; sweep lists and probes.
 # PQ: sweep subvector count and code width, then rerank compressed candidates.
 # Record build time, bytes/vector, p50/p95 latency, update cost, and recall.
-assert recall_at_k(exact_top_k(rows, queries[0], 2), candidate_search(rows, queries[0], 2), 2) == 1.0`
+assert recall_at_k(exact_top_k(rows, queries[0], 2), candidate_search(rows, queries[0], 2), 2) == 1.0
+assert recall_at_k(rows[:2], [rows[0], rows[2]], 2) == 0.5
+assert recall_at_k(rows[:1], rows[:1], 5) == 1.0
+try: l2([1, 2], [1])
+except ValueError: pass
+else: raise AssertionError("dimension mismatch silently truncated")
+# Unique string IDs and one fixed embedding space are prerequisites. This is
+# ANN neighbor-set recall against exact top-k, not relevance recall over documents.
+# The candidate is intentionally exact until you supply a real approximate index.`
     };
   }
   if (lesson.trackId === "ai-application-engineering" && /AI frontend streaming|Generative UI|Conversation persistence/.test(lesson.title)) {
@@ -8995,45 +11712,54 @@ assert recall_at_k(exact_top_k(rows, queries[0], 2), candidate_search(rows, quer
         sourceLabel: "AI SDK UI stream protocol documentation",
         sourceUrl: "https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol",
         commentPrefix: "//",
-        code: `type StreamEvent = { id?: string; event: string; data: unknown };
+        code: `// Custom LF-only, JSON-data stream exercise, NOT a general SSE/AI SDK parser.
+// Real SSE also accepts CR/CRLF, retry fields and non-JSON data; AI SDK adds its
+// own typed parts and termination marker. Use its supported transport in the app.
+type StreamEvent = { id: string; event: string; data: unknown };
 
 export async function* readSse(response: Response): AsyncGenerator<StreamEvent> {
   if (!response.ok || !response.body) throw new Error("stream unavailable");
   const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
   let buffer = "";
+  let id = "";
   try {
     while (true) {
       const { value = "", done } = await reader.read();
-      buffer = (buffer + value).replaceAll("\\r\\n", "\\n");
+      buffer += value;
+      if (buffer.includes("\\r")) throw new Error("fixture requires LF line endings");
+      if (buffer.length > 65_536) throw new Error("decoded buffer limit");
       // One network chunk may contain half or many SSE events.
       let boundary;
       while ((boundary = buffer.indexOf("\\n\\n")) >= 0) {
-        const block = buffer.slice(0, boundary).replaceAll("\\r", "");
+        const block = buffer.slice(0, boundary);
         buffer = buffer.slice(boundary + 2);
-        let id: string | undefined;
         let event = "message";
         const data: string[] = [];
         for (const line of block.split("\\n")) {
-          if (line.startsWith("id:")) id = line.slice(3).trimStart();
-          else if (line.startsWith("event:")) event = line.slice(6).trimStart();
-          else if (line.startsWith("data:")) data.push(line.slice(5).trimStart());
+          const separator = line.indexOf(":");
+          const field = separator < 0 ? line : line.slice(0, separator);
+          let content = separator < 0 ? "" : line.slice(separator + 1);
+          if (content.startsWith(" ")) content = content.slice(1); // Exactly one space.
+          if (field === "id" && !content.includes("\\0")) id = content;
+          else if (field === "event") event = content || "message";
+          else if (field === "data") data.push(content);
         }
         if (data.length) yield { id, event, data: JSON.parse(data.join("\\n")) };
       }
       if (done) break;
     }
   } finally {
-    reader.releaseLock();
+    try { await reader.cancel(); } finally { reader.releaseLock(); }
   }
 }
 
-const controller = new AbortController();
-const response = await fetch("/api/chat", { method: "POST", signal: controller.signal });
-for await (const event of readSse(response)) {
-  applyTypedEvent(event);               // Batch visible updates per animation frame.
-  saveResumeCursor(event.id);           // Reconnect with the last committed event ID.
-}
-// A Stop button calls controller.abort(); the server must propagate cancellation.`
+// Caller supplies fetch's AbortSignal and validates typed event schemas before UI
+// updates. Save a resume cursor only after applying the event successfully. A
+// reader cancellation closes local consumption, not proof that provider work stopped.
+// Trailing data without a blank-line terminator is not a completed event. The
+// buffer cap is a fixture ceiling (even many valid events in one chunk can exceed
+// it); production needs incremental frame limits plus total/time/output budgets.
+// https://html.spec.whatwg.org/multipage/server-sent-events.html`
       };
     }
     if (lesson.title.startsWith("Generative UI")) {
@@ -9050,7 +11776,7 @@ for await (const event of readSse(response)) {
 function MessagePart({ part }: { part: Part }) {
   switch (part.type) {
     case "text": return <p>{part.text}</p>;
-    case "citation": return <a href={part.href}>{part.title}</a>;
+    case "citation": return <a href={safeCitationUrl(part.href)}>{part.title}</a>;
     case "tool": return <section aria-label={"Tool: " + part.name}>
       <p aria-live="polite">{part.state}</p>
       {part.state === "proposed" && <>
@@ -9066,12 +11792,17 @@ function MessagePart({ part }: { part: Part }) {
 
 async function decide(callId: string, decision: "approve" | "reject") {
   // The server reauthorizes the user and tool; UI approval is not authority.
-  await fetch("/api/tool-decisions", {
+  const response = await fetch("/api/tool-decisions", {
     method: "POST",
     headers: { "content-type": "application/json", "idempotency-key": callId + ":" + decision },
     body: JSON.stringify({ callId, decision }),
   });
-}`
+  if (!response.ok) throw new Error("Decision rejected: " + response.status);
+}
+// safeCitationUrl is a required boundary: allow only product-approved HTTPS
+// destinations, not javascript/data URLs. Server binds approval to user, tenant,
+// exact tool name/arguments/version and expiry; conflicting approve/reject
+// requests must serialize. Keep pending/error UI and retry policy explicit.`
       };
     }
     return {
@@ -9079,36 +11810,48 @@ async function decide(callId: string, decision: "approve" | "reject") {
       sourceLabel: "AI SDK UI persistence and resume-stream documentation",
       sourceUrl: "https://ai-sdk.dev/docs/ai-sdk-ui/chatbot-message-persistence",
       commentPrefix: "//",
-      code: `type Event = { streamId: string; sequence: number; type: string; payload: unknown };
+      code: `// Integration sketch; persistence/stream adapters below must be implemented.
+type Event = { streamId: string; sequence: number; type: string; payload: unknown };
 
 export async function postMessage(request: Request, chatId: string) {
   const user = await requireUser(request);
   await requireChatOwner(chatId, user.id);          // Server authority, never client claims.
-  const input = await validateMessage(await request.json());
+  const input = await validateMessage(await readBoundedJson(request, 64_000));
   const key = request.headers.get("idempotency-key");
   if (!key) return new Response("Missing idempotency key", { status: 400 });
 
-  const accepted = await messages.insertOnce({
+  const accepted = await messages.acceptWithOutbox({
     chatId, userId: user.id, idempotencyKey: key,
     messageId: crypto.randomUUID(), input,
   });
-  const stream = await streams.startOnce(accepted.messageId);
+  const stream = await streams.subscribe(accepted.streamId);
   return streamResponse(stream, { after: 0 });
 }
 
 export async function resume(request: Request, chatId: string) {
   const user = await requireUser(request);
   await requireChatOwner(chatId, user.id);
-  const after = Number(new URL(request.url).searchParams.get("after") || 0);
+  const params = new URL(request.url).searchParams;
+  const cursor = params.get("after") ?? "0";
+  if (!/^(0|[1-9][0-9]*)$/.test(cursor)) return new Response("Bad cursor", { status: 400 });
+  const after = Number(cursor);
   if (!Number.isSafeInteger(after) || after < 0) return new Response("Bad cursor", { status: 400 });
 
   // Events have unique(stream_id, sequence). Replayed events rebuild the same UI.
-  const events: Event[] = await streams.readAfter(chatId, after);
+  const streamId = params.get("streamId");
+  await streams.requireOwnedStream(streamId, chatId, user.id);
+  const events: Event[] = await streams.readAfter(streamId, after, { limit: 100 });
   return sse(events, { cacheControl: "no-store" });
 }
 
 // Tests: duplicate POST, disconnect/resume, concurrent tabs, ownership denial,
-// deletion during generation, malformed stored parts, and redacted telemetry.`
+// deletion during generation, malformed stored parts, and redacted telemetry.
+// acceptWithOutbox atomically commits scoped key + canonical intent + message +
+// stable stream identity + generation job. Replays return original IDs; changed
+// intent fails. A durable worker owns provider invocation, not subscribe().
+// This resume response is a bounded replay page, not a complete catch-up/live
+// handoff. Handle expired cursors, pagination and the gap between replay and tail
+// subscription explicitly; reauthorize before exposing each retained event.`
     };
   }
   if (lesson.trackId === "quality-security" && /Production webhooks|Application file storage|Background jobs|Audit logs|Admin systems/.test(lesson.title)) {
@@ -9118,34 +11861,34 @@ export async function resume(request: Request, chatId: string) {
         sourceLabel: "Stripe webhook production guidance",
         sourceUrl: "https://docs.stripe.com/webhooks",
         commentPrefix: "//",
-        code: `import { createHmac, timingSafeEqual } from "node:crypto";
-
-function sign(secret: string, timestamp: number, rawBody: Buffer) {
-  return createHmac("sha256", secret).update(timestamp + ".").update(rawBody).digest("hex");
+        code: `// Integration exercise: Stripe SDK and your HTTP/database adapters are required.
+// No SDK is installed by this review. Do not substitute a home-grown parser:
+// Stripe-Signature can contain multiple v1 signatures during key rotation.
+async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
+  // Adapter must enforce the limit WHILE reading, before full allocation.
+  const raw = await readBoundedRaw(request, 1_048_576);
+  const signature = request.headers.get("stripe-signature");
+  if (!signature) return new Response(null, { status: 400 });
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(raw, signature, endpointSecret, 300);
+  } catch {
+    return new Response(null, { status: 400 });
+  }
+  // Adapter validates event type/schema, provider account and live/test mode,
+  // then atomically stores scoped event identity + intent and durable job.
+  // Replay returns the same acceptance; mismatched intent is rejected.
+  await inbox.acceptVerifiedEvent(event);
+  return new Response(null, { status: 204 });
 }
 
-function verify(rawBody: Buffer, header: string, secrets: string[], now = Date.now()) {
-  const fields = Object.fromEntries(header.split(",").map(v => v.split("=", 2)));
-  const timestamp = Number(fields.t);
-  if (!Number.isSafeInteger(timestamp) || Math.abs(now / 1000 - timestamp) > 300) throw new Error("stale event");
-  const supplied = Buffer.from(fields.v1 || "", "hex");
-  const valid = secrets.some(secret => {
-    const expected = Buffer.from(sign(secret, timestamp, rawBody), "hex");
-    return supplied.length === expected.length && timingSafeEqual(supplied, expected);
-  });
-  if (!valid) throw new Error("bad signature");
-}
-
-export async function receive(request: Request) {
-  const raw = Buffer.from(await request.arrayBuffer()); // Verify before JSON parsing.
-  verify(raw, request.headers.get("webhook-signature") || "", activeAndPreviousSecrets());
-  const event = validateEvent(JSON.parse(raw.toString("utf8")));
-  await database.transaction(async tx => {
-    await tx.webhookEvents.insertOnce(event.id, raw); // Unique provider event ID.
-    await tx.jobs.insertOnce("webhook:" + event.id, { eventId: event.id });
-  });
-  return new Response(null, { status: 204 });          // Worker performs the slow effect.
-}`
+// Local custom-HMAC mechanics are in 0414; that scheme is NOT Stripe-compatible.
+// Integration evidence: original bytes succeed; reserialized bytes fail; invalid
+// signature and stale timestamp return 400; rotation accepts active signatures;
+// duplicate delivery creates one job; failed DB commit does not return 2xx.
+// A timestamp window does not suppress in-window replay. Order workers by domain
+// version or reconcile current provider state, not delivery arrival time.
+// Keep endpoint secrets out of code/logs; record IDs and error categories only.`
       };
     }
     if (lesson.title.startsWith("Application file storage")) {
@@ -9161,12 +11904,12 @@ ALLOWED = {"image/png", "image/jpeg", "application/pdf"}
 MAX_BYTES = 25 * 1024 * 1024
 
 def begin_upload(user, request, s3, db):
-    if request.content_type not in ALLOWED or not 0 < request.size <= MAX_BYTES:
+    if request.content_type not in ALLOWED or type(request.size) is not int or not 0 < request.size <= MAX_BYTES:
         raise ValueError("unsupported file")
     upload_id = str(uuid4())
-    key = str(PurePosixPath("quarantine") / user.tenant_id / upload_id)
+    key = "quarantine/" + upload_id  # Server-generated key, tenant ownership lives in DB.
     db.files.insert({"id": upload_id, "owner": user.id, "key": key,
-                     "name": request.display_name, "checksum": request.checksum,
+                     "name": request.display_name, "checksum": request.checksum, "size": request.size,
                      "state": "pending"})
     return s3.generate_presigned_post(
         Bucket="private-uploads", Key=key,
@@ -9180,12 +11923,24 @@ def begin_upload(user, request, s3, db):
 
 def complete_upload(user, upload_id, s3, db, jobs):
     record = db.files.require_owner(upload_id, user.id)
-    head = s3.head_object(Bucket="private-uploads", Key=record.key)
-    if head["ContentLength"] > MAX_BYTES or head.get("ChecksumSHA256") != record.checksum:
+    head = s3.head_object(Bucket="private-uploads", Key=record.key, ChecksumMode="ENABLED")
+    version = head.get("VersionId")
+    if not version or version == "null":
+        raise ValueError("versioned bucket required")
+    if head["ContentLength"] != record.size or head.get("ChecksumSHA256") != record.checksum:
         raise ValueError("stored object failed validation")
-    jobs.insert_once("scan:" + upload_id, {"file_id": upload_id})
-    db.files.transition(upload_id, "pending", "quarantined")
+    with db.transaction():
+        # Adapter atomically compares state and records this immutable version.
+        # A repeat returns false only for the same already-accepted version;
+        # a competing different version must raise, not silently replace it.
+        if db.files.accept_version(upload_id, "pending", "quarantined", version):
+            jobs.insert_once("scan:" + upload_id, {"file_id": upload_id, "version_id": version})
 
+# jobs is a same-database durable job/outbox adapter, not a remote queue client.
+# A presigned upload can be reused until expiry. Scan and copy this exact VersionId,
+# never the mutable latest key; publish only the version whose scan passed.
+# Configure bucket versioning, validate the base64 SHA-256 input, authorize tenant
+# ownership, bound display-name metadata, and supply checksum/KMS permissions.
 # Scanner validates magic bytes, malware result, and page/image limits before
 # moving to a non-public clean prefix. Downloads require authorization and a
 # short-lived URL with safe Content-Disposition; deletion removes bytes and metadata.`
@@ -9197,7 +11952,11 @@ def complete_upload(user, upload_id, s3, db, jobs):
         sourceLabel: "Amazon SQS visibility timeout documentation",
         sourceUrl: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html",
         commentPrefix: "#",
-        code: `# PostgreSQL-style lease algorithm; run each block in a transaction.
+        code: `from uuid import uuid4
+
+# PostgreSQL-style lease algorithm. Each claim transaction commits BEFORE work.
+# Schema: attempts NOT NULL DEFAULT 0; lease_owner stores an attempt UUID,
+# not a reusable worker name. Worker identity is separate diagnostic metadata.
 CLAIM = """
 WITH candidate AS (
   SELECT id FROM jobs
@@ -9216,21 +11975,31 @@ RETURNING *
 
 def run_one(db, worker, stopping):
     if stopping.is_set(): return False
-    job = db.fetch_one(CLAIM, {"worker": worker})
+    owner = str(uuid4())
+    job = db.fetch_one(CLAIM, {"worker": owner})
     if not job: return False
     try:
         # Business table has UNIQUE(job.id); repeated delivery cannot repeat effect.
         perform_idempotently(job)
-        db.execute("DELETE FROM jobs WHERE id=%s AND lease_owner=%s", job.id, worker)
+        deleted = db.execute("DELETE FROM jobs WHERE id=%s AND lease_owner=%s AND lease_until > clock_timestamp()", job.id, owner)
+        if deleted.rowcount != 1:
+            raise LeaseLostError("do not acknowledge another attempt's work")
     except RetryableError as error:
         delay = min(3600, 2 ** min(job.attempts, 10))
-        db.retry_after(job.id, worker, delay, str(error))
+        db.retry_after(job.id, owner, delay, safe_error_code(error))
     except PermanentError as error:
-        db.move_to_dead_letter(job.id, worker, str(error))
+        db.move_to_dead_letter(job.id, owner, safe_error_code(error))
     return True
 
 # On SIGTERM: stop claiming, extend or release owned leases, finish within the
-# shutdown deadline, then exit. Another worker recovers any expired lease.`
+# shutdown deadline, then exit. Another worker recovers any expired lease.
+# retry_after/dead-letter/heartbeat adapters require the same owner + live lease
+# predicate and check affected rows. LeaseLostError propagates to the supervisor.
+# Uniqueness alone is not idempotency: receipt and business effect must commit
+# together with intent checking; remote effects need provider idempotency or
+# reconciliation. Lease expiry does not stop a paused worker from performing I/O.
+# Integration test: pause attempt A past expiry, reclaim as B, resume A; A must
+# not delete, retry or extend B's lease. Verify effect deduplication separately.`
       };
     }
     if (lesson.title.startsWith("Audit logs")) {
@@ -9239,35 +12008,43 @@ def run_one(db, worker, stopping):
         sourceLabel: "OWASP Logging Cheat Sheet",
         sourceUrl: "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
         commentPrefix: "//",
-        code: `import { createHash } from "node:crypto";
+        code: `import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 
-type AuditEvent = {
-  occurredAt: string; actor: { id: string; type: string };
-  action: string; target: { type: string; id: string };
-  outcome: "allowed" | "denied" | "failed"; requestId: string;
-  reason?: string; changes?: Record<string, { from: unknown; to: unknown }>;
-};
-
-function canonical(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
-  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b));
-  return "{" + entries.map(([key, child]) => JSON.stringify(key) + ":" + canonical(child)).join(",") + "}";
+function auditDigest(previousHash, payload) {
+  if (previousHash !== "GENESIS" && !/^[0-9a-f]{64}$/.test(previousHash)) throw new Error("invalid predecessor");
+  if (typeof payload !== "string" || Buffer.byteLength(payload, "utf8") > 65_536) throw new Error("bounded payload required");
+  return createHash("sha256").update(JSON.stringify(["audit-v1", previousHash, payload])).digest("hex");
 }
 
-export async function appendAudit(event: AuditEvent) {
-  const clean = redactAndValidate(event);               // Never store tokens or raw secrets.
+async function appendAudit(event, auditStore, redactAndValidate) {
+  // Adapter returns a bounded JSON-only schema: actor, action, target, outcome,
+  // time, request ID and explicitly allowed changes. Never include raw secrets.
+  const payload = JSON.stringify(redactAndValidate(event));
   await auditStore.transaction(async tx => {
     const previous = await tx.lockTail();
-    const previousHash = previous?.hash || "GENESIS";
-    const hash = createHash("sha256").update(previousHash).update(canonical(clean)).digest("hex");
-    await tx.insert({ ...clean, previousHash, hash });   // Append-only role; no UPDATE/DELETE.
+    const previousHash = previous?.hash ?? "GENESIS";
+    const hash = auditDigest(previousHash, payload);
+    await tx.insert({ payload, previousHash, hash });
   });
 }
 
-// Verify the chain regularly and anchor its latest hash in separately controlled
-// immutable storage. A local hash chain alone cannot stop an administrator from
-// deleting the tail. Restrict readers, log reads, and enforce retention policy.`
+const payload = JSON.stringify({ actor: "user-1", action: "disable", outcome: "allowed" });
+const hash = auditDigest("GENESIS", payload);
+assert.equal(auditDigest("GENESIS", payload), hash);
+assert.notEqual(auditDigest("GENESIS", payload.replace("allowed", "denied")), hash);
+assert.notEqual(auditDigest(hash, payload), hash);
+assert.throws(() => auditDigest("bad", payload));
+assert.throws(() => auditDigest("GENESIS", undefined));
+assert.throws(() => auditDigest("GENESIS", "x".repeat(65_537)));
+
+// Store and verify the EXACT payload string, not parsed/reserialized JSONB.
+// This avoids inventing a JSON canonicalizer; it is not RFC 8785/JCS.
+// lockTail must serialize even the empty-chain case, e.g. a dedicated chain row.
+// Append-only DB role, separate immutable checkpoints and continuity verification
+// are integration requirements. A local chain cannot detect an administrator who
+// rewrites the entire chain or removes an unanchored tail. Redaction happens before
+// hashing; retention/deletion needs an explicit checkpoint and privacy policy.`
       };
     }
     return {
@@ -9296,7 +12073,13 @@ def disable_user(user_id: str, command: DisableCommand,
         raise HTTPException(400, "confirmation does not match target")
 
     with db.transaction():
-        result = operations.insert_once(idempotency_key, actor.user_id, preview)
+        # Scope + target authorization can change after preview. Lock/recheck in
+        # this transaction; confirmation is a safety rail, not authorization.
+        target = users.require_in_actor_scope_for_update(user_id, actor)
+        if command.confirmation != target.email:
+            raise HTTPException(409, "target changed since confirmation")
+        intent = {"action": "user.disable", "target": target.id, "reason": command.reason}
+        result = operations.insert_once(idempotency_key, actor.user_id, intent)
         if result.is_new:
             users.disable(target.id)
             sessions.revoke_all(target.id)
@@ -9304,7 +12087,13 @@ def disable_user(user_id: str, command: DisableCommand,
     return {"operation_id": result.id, "status": "complete"}
 
 # Large bulk actions add a reviewed change set, dual approval, rate limit,
-# progress visibility, per-item result, cancellation point, and rollback plan.`
+# progress visibility, per-item result, cancellation point, and rollback plan.
+# Required adapter contract: scope receipt by tenant + actor + operation + key,
+# compare canonical intent on replay, and commit receipt/user/session/audit changes
+# together. Session-store or audit writes in another service need durable outbox
+# delivery plus enforcement that a disabled identity cannot keep using old tokens.
+# Recheck current actor permissions; validate mode, bounded reason/key and trusted
+# timezone-aware auth time. Never put changing session counts in replay identity.`
     };
   }
   if (lesson.trackId === "agents" && lesson.title.startsWith("LangChain")) {
@@ -9338,11 +12127,12 @@ agent = create_agent(
 )
 
 request = {"messages": [{"role": "user", "content": "Where is A-42?"}]}
-for update in agent.stream(request, stream_mode="updates", version="v2"):
-    print(update)  # Model step, tool result, and final structured response.
-
 result = agent.invoke(request)
-print(result["structured_response"])`
+print(result["structured_response"])
+# Alternative: consume agent.stream(request, stream_mode="updates") instead of
+# invoke. Doing both runs the workflow twice and can repeat costs/effects. Pin and
+# verify your installed framework/provider versions; no packages are installed by
+# this lesson review. Fixture order data is not authenticated production data.`
     };
   }
   if (lesson.trackId === "agents" && lesson.title.startsWith("LangGraph")) {
@@ -9364,7 +12154,9 @@ class ApprovalState(BaseModel):
     status: Literal["pending", "approved", "rejected"] = "pending"
 
 def review(state: ApprovalState) -> Command[Literal["execute", "cancel"]]:
-    approved = interrupt({"question": "Approve?", "action": state["action"]})
+    approved = interrupt({"question": "Approve?", "action": state.action})
+    if type(approved) is not bool:
+        raise ValueError("approval must be an explicit boolean")
     status = "approved" if approved else "rejected"
     return Command(goto="execute" if approved else "cancel", update={"status": status})
 
@@ -9393,7 +12185,11 @@ print(paused["__interrupt__"])
 resumed = graph.invoke(Command(resume=True), config=config)
 print(resumed["status"])
 # Pydantic validates graph input, not every later node update or final output.
-# Replace InMemorySaver with a durable checkpointer before deployment.`
+# Replace InMemorySaver with a durable checkpointer before deployment.
+# Bind authenticated approval to tenant, actor, exact action/arguments/version and
+# expiry. A public thread ID or truthy resume value is not authorization. Nodes
+# before an interrupt may replay: keep irreversible effects after approval and
+# use a stable effect identity plus intent checking in the owning service.`
     };
   }
   if (lesson.trackId === "ai-quality-safety" && lesson.title.startsWith("LLM benchmarking")) {
@@ -9403,6 +12199,7 @@ print(resumed["status"])
       sourceUrl: "https://docs.langchain.com/langsmith/evaluation-types",
       commentPrefix: "#",
       code: `from dataclasses import dataclass
+from math import isfinite
 from statistics import mean, pstdev
 from time import perf_counter
 
@@ -9418,20 +12215,39 @@ CASES = [
 ]
 
 def run_candidate(candidate, repetitions=5):
-    scores, latencies, costs = [], [], []
-    for case in CASES:
-        for _ in range(repetitions):
+    if type(repetitions) is not int or not 1 <= repetitions <= 100:
+        raise ValueError("repetitions must be an integer from 1 to 100")
+    records = []
+    for case_id, case in enumerate(CASES):
+        for repetition in range(repetitions):
             started = perf_counter()
-            output, estimated_cost = candidate(case.prompt)
-            latencies.append((perf_counter() - started) * 1000)
-            costs.append(estimated_cost)
-            scores.append(int(output.strip() == case.expected))
+            score, cost, error = 0, None, None
+            try:
+                output, cost = candidate(case.prompt)
+                if not isinstance(output, str) or type(cost) not in (int, float) or not isfinite(cost) or cost < 0:
+                    raise ValueError("invalid candidate response or estimated cost")
+                score = int(output.strip() == case.expected)
+            except Exception as failure:
+                # Failed/invalid calls count as failed tasks. Their actual charge
+                # may be nonzero; unknown cost must not silently become zero.
+                cost, error = None, type(failure).__name__
+            records.append(dict(case_id=case_id, slice=case.slice, repetition=repetition,
+                                score=score, error=error, cost=cost,
+                                latency_ms=(perf_counter() - started) * 1000))
+    scores = [record["score"] for record in records]
+    known_costs = [record["cost"] for record in records if record["cost"] is not None]
     return {
         "quality_mean": mean(scores),
-        "quality_stddev": pstdev(scores),
-        "latency_ms_mean": mean(latencies),
-        "cost_mean": mean(costs),
+        "observed_score_stddev": pstdev(scores),
+        "quality_by_slice": {label: mean(r["score"] for r in records if r["slice"] == label)
+                             for label in sorted({case.slice for case in CASES})},
+        "latency_ms_mean_all_attempts": mean(r["latency_ms"] for r in records),
+        "known_cost_total": sum(known_costs),
+        "unknown_cost_runs": len(records) - len(known_costs),
+        "failed_calls": sum(r["error"] is not None for r in records),
         "runs": len(scores),
+        "independent_cases": len(CASES),
+        "records": records,
     }
 
 def baseline(prompt):
@@ -9440,9 +12256,31 @@ def baseline(prompt):
 def candidate(prompt):
     return ({"2 + 2": "4", "Return only YES": "Yes."}[prompt], 0.0005)
 
-print("baseline", run_candidate(baseline))
-print("candidate", run_candidate(candidate))
-# Compare the same cases and repetitions. Do not hide slice regressions.`
+baseline_result, candidate_result = run_candidate(baseline), run_candidate(candidate)
+assert baseline_result["quality_mean"] == 1
+assert candidate_result["quality_mean"] == 0.5
+assert candidate_result["quality_by_slice"] == {"format": 0, "simple": 1}
+assert candidate_result["runs"] == 10 and candidate_result["independent_cases"] == 2
+assert candidate_result["failed_calls"] == 0
+def unavailable(prompt): raise TimeoutError("synthetic failure")
+failed = run_candidate(unavailable, repetitions=1)
+assert failed["quality_mean"] == 0 and failed["failed_calls"] == 2
+assert failed["unknown_cost_runs"] == 2
+assert run_candidate(lambda _: ("4", float("nan")), repetitions=1)["failed_calls"] == 2
+for invalid in [0, -1, True, 1.5, 101]:
+    try: run_candidate(baseline, invalid)
+    except ValueError: pass
+    else: raise AssertionError("invalid repetition count")
+print({key: value for key, value in candidate_result.items() if key != "records"})
+# Fictional deterministic adapters and made-up costs: no model or API is called.
+# Two cases repeated five times are still TWO independent cases, not ten new tasks.
+# observed_score_stddev describes these binary scores; it is NOT a confidence
+# interval or standard error. It mixes between-case and within-case variation.
+# For a real comparison, retain paired per-case outcomes, representative slice
+# counts, model/prompt/data versions, and a justified uncertainty analysis.
+# Predeclare release thresholds; exact match is appropriate only for these tasks.
+# Real adapters need deadlines, bounded output, token/cost accounting and controlled
+# ordering/concurrency. This synchronous harness cannot interrupt a hung call.`
     };
   }
   if (lesson.trackId === "international-interviews") {
@@ -9488,7 +12326,11 @@ print("candidate", run_candidate(candidate))
       sourceUrl = "https://sre.google/sre-book/table-of-contents/";
       sourceLabel = "Google Site Reliability Engineering";
     }
-    return { ...profile, code: internationalInterviewCodeFor(lesson.title, profile.code), sourceUrl, sourceLabel };
+    const prefix = lesson.title.startsWith("GitHub profile") ? "#" : "//";
+    const code = prefix + " Fictional teaching examples and planning templates, not the learner's work history.\n" +
+      prefix + " Replace claims with truthful personal evidence; placeholders are not supplied tools.\n" +
+      internationalInterviewCodeFor(lesson.title, profile.code);
+    return { ...profile, code, sourceUrl, sourceLabel };
   }
   if (lesson.trackId === "api-distributed-systems") {
     let sourceUrl = "https://www.rfc-editor.org/rfc/rfc9110.html";
@@ -9535,7 +12377,13 @@ print("candidate", run_candidate(candidate))
   if (lesson.trackId === "data-systems") {
     let sourceUrl = "https://www.postgresql.org/docs/current/";
     let sourceLabel = "PostgreSQL current documentation";
-    if (/Transactions|MVCC|Isolation|locks|Deadlocks/.test(lesson.title)) {
+    if (lesson.title.startsWith("PostgreSQL data types")) {
+      sourceUrl = "https://www.postgresql.org/docs/current/ddl-generated-columns.html";
+      sourceLabel = "PostgreSQL generated-column restrictions";
+    } else if (lesson.title.startsWith("Deadlocks,")) {
+      sourceUrl = "https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html";
+      sourceLabel = "PostgreSQL complete-transaction retry guidance";
+    } else if (/Transactions|MVCC|Isolation|locks/.test(lesson.title)) {
       sourceUrl = "https://www.postgresql.org/docs/current/mvcc.html";
       sourceLabel = "PostgreSQL concurrency control documentation";
     } else if (/B-tree|Hash, GiST|Composite, covering/.test(lesson.title)) {
@@ -9773,8 +12621,8 @@ print("candidate", run_candidate(candidate))
       sourceLabel = "Node.js test runner documentation";
     }
     if (/Node security|permission model/.test(lesson.title)) {
-      sourceUrl = "https://nodejs.org/api/permissions.html";
-      sourceLabel = "Node.js permissions documentation";
+      sourceUrl = "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html";
+      sourceLabel = "OWASP SSRF prevention: application and network boundaries";
     }
     if (/diagnostics_channel|perf_hooks|Memory|CPU profiles/.test(lesson.title)) {
       sourceUrl = "https://nodejs.org/api/diagnostics_channel.html";
@@ -10069,6 +12917,167 @@ function diagramFor(lesson) {
 
   const apiDistributedDiagram = apiDistributedDiagramFor(lesson, title, flow);
   if (apiDistributedDiagram) return apiDistributedDiagram;
+  if (lesson.trackId === "web-platform") {
+    const traces = {
+      "0051": [["Resolve and connect", "DNS, transport and TLS may be reused or partially hidden in timing data."], ["Receive headers", "fetch resolves to a response before complete body consumption."], ["Consume the body", "Await body reading and compare request phases using observable timing evidence."]],
+      "0052": [["Parse source", "The HTML parser creates a DOM and can repair invalid source."], ["Associate semantics", "The explicit label points to the form control by its ID."], ["Inspect access", "Check the accessible name, keyboard operation and form behavior, not only visual appearance."]],
+      "0053": [["Create parent contexts", "The positioned parent and sibling each establish a z-index context."], ["Order within a context", "The child's 999 is compared inside its parent, not globally against every element."], ["Compare the overlap", "Removing the parent's context changes where the child participates in stacking."]],
+      "0054": [["Run synchronous work", "Queueing callbacks does not execute them before the current code finishes."], ["Drain microtasks", "The queued microtask runs at a checkpoint before later task processing."], ["Observe host scheduling", "Timer and animation opportunities depend on browser scheduling; an animation callback is not a paint receipt."]],
+      "0055": [["Choose an origin", "The fixture uses one disposable page and a synthetic storage key."], ["Read and restore", "The original value is preserved and restored after the check."], ["Review the threat model", "Origin storage, cookie flags, CORS and server authorization protect different boundaries."]]
+    };
+    return flow(`browser-${lesson.number}`, traces[lesson.number].map(([name, detail], index) => [`0${index + 1} · TRACE`, name, detail]), "Change the stated fixture condition and compare the observable result.", "Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.");
+  }
+
+  if (["ml-foundations", "llm-internals"].includes(lesson.trackId)) {
+    const traces = {
+      "0577": [["Choose compatible vectors", "Reject different dimensions before pairing coordinates."], ["Compute dot product and norms", "Multiply matching coordinates and sum; normalize only nonzero vectors."], ["Compare geometry", "Parallel positive vectors have cosine one; orthogonal vectors have cosine zero."]],
+      "0578": [["Define the loss", "Mean squared error measures this one-parameter model's training fit."], ["Check the derivative", "Compare the analytic gradient with a central finite difference."], ["Take a step", "The small step reduces loss; the oversized step increases it in this fixture."]],
+      "0579": [["Identify the deployment unit", "Repeated records for one user can cross a row-based split."], ["Separate entities", "The grouped fixture removes user overlap, without claiming statistical adequacy."], ["Challenge the metric", "An always-negative prediction reaches 99% accuracy and zero positive recall."]],
+      "0580": [["Compare raw distances", "The first feature dominates distance in its original units."], ["Rescale one feature", "Apply the same explicit scale to query and candidates."], ["Observe changed ranking", "The nearest candidate changes from A to B; relevance still needs labels."]],
+      "0581": [["Match the vocabulary", "The toy encoder chooses the longest matching piece."], ["Emit token IDs", "A whole-word piece and character pieces produce different sequence lengths."], ["Check unsupported text", "This toy rejects unknown text; real tokenizer fallback rules differ."]],
+      "0582": [["Mask future positions", "Position zero can only attend to the first value."], ["Normalize visible scores", "Exponentials turn the visible scores into weights summing to one."], ["Mix values", "The later position is a weighted average; changing a future value leaves the earlier output unchanged."]],
+      "0583": [["Shift targets", "Each observed prefix predicts the following token."], ["Score correct targets", "Negative log probabilities penalize assigning little mass to observed tokens."], ["Separate objectives", "A lower loss in this fixture does not measure factuality or tool safety."]],
+      "0584": [["Validate inputs", "The division formula requires finite logits and positive temperature."], ["Rescale score gaps", "Lower temperature increases the relative preference for the largest logit."], ["Normalize probabilities", "The probabilities sum to one; this example does not sample or measure inference speed."]],
+      "0585": [["Define labelled outcomes", "The fixture contains five correct and five incorrect answers."], ["Compare claims with accuracy", "Reported confidence is 90%, observed accuracy 50%."], ["Investigate the gap", "Calibration needs labelled data and slices, not trust in confident wording."]]
+    };
+    return flow(`numerical-${lesson.number}`, traces[lesson.number].map(([name, detail], index) => [`0${index + 1} · TRACE`, name, detail]),
+      "Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.",
+      "Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.");
+  }
+
+  if (lesson.trackId === "engineering-foundations") {
+    const cases = {
+      "0001": ["pipeline-exit", [
+        ["01 · PRODUCE", "Exit with status 7", "The producer fails even though it sends no bytes."],
+        ["02 · CONSUME", "tee succeeds", "The final process can return zero while the producer failed."],
+        ["03 · COLLECT", "Apply pipeline policy", "Default Bash reports the last status; pipefail reports the rightmost nonzero status."],
+        ["04 · VERIFY", "Capture immediately", "Save $? before any other command overwrites it, then check the required outcome."]
+      ], "What happens if both processes fail?", "The example reports 0 without pipefail and 7 with it; that alone does not prove business success."],
+      "0002": ["git-objects", [
+        ["01 · EDIT", "Working tree", "Files may differ from the staged snapshot."],
+        ["02 · STAGE", "Index", "The index selects content for the next commit, not necessarily every current edit."],
+        ["03 · SNAPSHOT", "Tree and blobs", "The tree names content objects and nested trees."],
+        ["04 · CONNECT", "Commit and references", "A commit records a tree and ancestry; branch references identify commits."]
+      ], "Why can one file have both staged and unstaged changes?", "Compare git diff with git diff --cached; inspect HEAD's object type and tree."],
+      "0003": ["dependency-reproduction", [
+        ["01 · RECORD", "Inputs", "Record manifest, lock, runtime, package manager and relevant configuration."],
+        ["02 · ISOLATE", "Disposable environment", "Keep the experiment away from the working project's node_modules."],
+        ["03 · INSTALL", "Frozen resolution", "npm ci rejects a manifest/lock mismatch instead of silently updating the lock."],
+        ["04 · COMPARE", "Artifact and tests", "Matching resolution does not guarantee identical OS-dependent builds or safe lifecycle scripts."]
+      ], "Which inputs are outside the lockfile?", "Preserve successful and mismatched-install logs from the disposable fixture; this is a proposed experiment, not a claimed result."],
+      "0004": ["debug-cache-zero", [
+        ["01 · OBSERVE", "Repeated computation", "Two reads of a cached zero still call the computation twice."],
+        ["02 · HYPOTHESIZE", "Truthiness confused with absence", "A falsey stored value does not mean the key is missing."],
+        ["03 · INTERVENE", "Check membership", "Map.has answers whether the key exists independently of its value."],
+        ["04 · FALSIFY", "Test another key", "An unseen key must still compute; fixing one symptom must preserve misses."]
+      ], "Would this test establish correctness for concurrent async requests?", "The assertions reproduce two calls, then establish one call per distinct key in this synchronous example."],
+      "0005": ["decision-evidence", [
+        ["01 · CONSTRAIN", "Name the loss requirement", "Notification loss after order commit is unacceptable in this scenario."],
+        ["02 · COMPARE", "Expose the crash gap", "Direct post-commit publication leaves committed orders without durable notification intent."],
+        ["03 · DECIDE", "Commit order and intent", "An outbox shares the database transaction; the relay still permits duplicate publication."],
+        ["04 · REVISIT", "Test and assign ownership", "Specify crash tests, lag metrics, retention ownership and a decision review trigger."]
+      ], "If notification loss becomes acceptable, which complexity can be removed?", "A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes."]
+    };
+    const [key, stages, probe, evidence] = cases[lesson.number];
+    return flow(key, stages, probe, evidence);
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("object types,")) {
+    return flow("typescript-object-registry", [
+      ["01 · CONTRACT", "Merge interface requirements", "PluginSpec requires name and run even though they appear in separate declarations."],
+      ["02 · FINITE KEYS", "Require known built-ins", "Record of a literal-key union requires search and export; it does not construct either plugin."],
+      ["03 · DYNAMIC KEYS", "Represent missing entries", "Indexed reads can be absent; Map.get makes missing registrations explicit."],
+      ["04 · RUNTIME", "Check key behavior", "Object numeric keys become strings; Map distinguishes them. Symbols are discoverable but omitted by JSON serialization."]
+    ], "If third parties add plugin names at runtime, why does a finite Record stop describing the registry? Compare Map with an own-property-checked or null-prototype dictionary.", "Object-contract checks passed; missing merged members and finite keys fail compilation, numeric object access aliases the string key, and Map preserves numeric/string distinctions.");
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("function types")) {
+    return flow("typescript-function-contract", [
+      ["01 · ADVERTISE", "Declare public signatures", "get accepts a string returning a string, or an array returning an array."],
+      ["02 · RESOLVE", "Match a caller to an overload", "An unresolved union matches neither public signature; the implementation signature is not a third overload."],
+      ["03 · EXECUTE", "Run one implementation", "A runtime typeof branch selects the string path or copies the array."],
+      ["04 · VERIFY", "Test the advertised relationship", "Static checks confirm return types; runtime assertions verify values and copy behavior."]
+    ], "If every accepted input has the same return type, what does overloading buy over a union parameter? Contrast count with get.", "Function-contract checks passed; calls and construction work, optional callback misuse fails compilation, and changing the returned array leaves its source untouched.");
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("control-flow analysis,")) {
+    return flow("typescript-flow-evidence", [
+      ["01 · ENTER", "Several possible value categories", "The declared input permits string, number, Date, or null."],
+      ["02 · RETURN", "Eliminate null on later paths", "The null branch returns; reaching the next statement proves that case did not apply."],
+      ["03 · DISTINGUISH", "Check category before use", "typeof permits string or number operations; instanceof identifies the Date branch."],
+      ["04 · REJOIN", "Keep only surviving evidence", "A check inside a non-returning branch does not remove null after that branch. Reassignment changes the current flow type."]
+    ], "Does in prove an own property or a string value? Use the inherited-name and numeric-name cases to justify your answer.", "Narrowing checks passed; empty string and zero survive, invalid name types are rejected by the value check, and the compiler catches operations outside their proven branch.");
+  }
+  if (lesson.trackId === "typescript" && title.startsWith("user-defined type guards,")) {
+    return flow("typescript-guard-contract", [
+      ["01 · INSPECT", "Receive unknown data", "Check object shape, exclude null and arrays, and correlate kind with the required string field."],
+      ["02 · REPORT", "Predicate returns a boolean", "The annotation promises a type relationship; tests must challenge whether that promise is true."],
+      ["03 · STOP", "Assertion throws on failure", "Only successful return lets the caller proceed with Command operations."],
+      ["04 · CONSTRUCT", "Parser selects output fields", "Return a fresh command, stripping extras. This example copies primitive fields, not arbitrary nested graphs."]
+    ], "A predicate claiming number but accepting only numbers below ten makes the false branch unsound: large numbers remain possible. How would a boolean return or a genuinely narrower modeled type avoid that false promise?", "Guard checks passed; malformed commands fail, the lying guard accepts null, the real guard rejects it, and the parsed output keeps its copied name after the input changes.");
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("union types,")) {
+    return flow("typescript-composition", [
+      ["01 · ALTERNATIVES", "Card OR bank", "Payment admits either shape. Both provide amount, but only card guarantees token."],
+      ["02 · NARROW", "Inspect the literal tag", "The card branch can read token; the bank branch can read account."],
+      ["03 · COMPOSE", "Payment AND trace ID", "An audited payment must meet a payment alternative and the trace requirement."],
+      ["04 · CONTRAST", "Requirements are not overwrites", "Conflicting string and number requirements leave no valid id; object spread instead uses the later value."]
+    ], "Can one value satisfy both sides of a union? Use the contact example, then explain why the distinct payment tags change the answer.", "Composition checks passed; both payment branches run, overlapping contacts are accepted, and the conflicting-property assignment is an expected compiler error.");
+  }
+  if (lesson.trackId === "typescript" && title.startsWith("discriminated unions,")) {
+    return flow("typescript-state-transitions", [
+      ["01 · START", "Loading r1", "The loading shape requires an attempt identifier."],
+      ["02 · SUPERSEDE", "Loading r2", "A newer start becomes the only active attempt under this policy."],
+      ["03 · IGNORE", "Completion for r1 arrives", "Its shape is valid, but its ID is stale. Keep loading r2."],
+      ["04 · COMPLETE", "Success for r2", "Matching completion supplies data. The exhaustive renderer handles the resulting variant."]
+    ], "Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.", "State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer's never check until its behavior is explicitly implemented.");
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("assignability,")) {
+    return flow("typescript-structural-boundary", [
+      ["01 · CHECK", "Compare required members", "A stored object with a string name satisfies PublicProfile even if it also has admin."],
+      ["02 · DISTINGUISH", "Fresh literals get an extra check", "Passing the literal directly catches its unexpected admin key; storing it first does not remove the key."],
+      ["03 · PROJECT", "Select public response fields", "Annotations and satisfies leave the original object unchanged. Build a new object to omit private fields."],
+      ["04 · VALIDATE", "Enforce the incoming contract", "The parser rejects unknown keys and wrong shapes at runtime; authorization remains a separate responsibility."]
+    ], "Should a write endpoint reject unknown fields while a reader tolerates additions? Explain typo detection, compatibility, and rollout consequences before choosing a policy.", "Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.");
+  }
+  if (lesson.trackId === "typescript" && title.startsWith("optional properties,")) {
+    return flow("typescript-patch-presence", [
+      ["01 · RECEIVE", "Decode an update instruction", "Omitted name means keep; a string means replace; null means clear. JSON cannot carry undefined."],
+      ["02 · VALIDATE", "Reject invalid supplied values", "Check own-property presence, allowed keys, and the value type before constructing NamePatch."],
+      ["03 · APPLY", "Branch on presence, not truthiness", "The normalized patch preserves both an empty string and null. Neither means leave unchanged."],
+      ["04 · CHECK", "Protect uncertain reads separately", "Enable both flags explicitly. An unknown dictionary key may return undefined; nullish fallback preserves a valid zero."]
+    ], "Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden?", "Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.");
+  }
+
+  if (lesson.trackId === "typescript" && title.startsWith("any,")) {
+    return flow("typescript-unknown-boundary", [
+      ["01 · RECEIVE", "External data enters as unknown", "The annotation permits any input value but forbids assuming it is a project."],
+      ["02 · CHECK", "Runtime guards inspect the input", "Reject null and non-objects, then check id and name are strings."],
+      ["03 · CONSTRUCT", "Return a checked project value", "Create a new object containing only the validated fields."],
+      ["04 · VERIFY", "Check types and runtime separately", "Compiler checks reject unsafe assignments; runtime checks reject malformed data."]
+    ], "Change name from a string to a number. Predict the runtime error, then replace unknown with any and compare the protection the compiler provides.", "tsc accepts the expected-error annotations; runtime prints Boundary checks passed; null, undefined, missing fields, and a numeric name are rejected.");
+  }
+
+  if (lesson.trackId === "javascript" && title.startsWith("primitive values")) {
+    return flow("javascript-values-identity", [
+      ["01 · VALUE", "Create a primitive and an object", "The string is immutable. The record object has its own identity."],
+      ["02 · ASSIGN", "Two bindings hold the same object", "alias = record copies the object value, so both bindings identify one object."],
+      ["03 · COPY", "Spread creates a new outer object", "copy = {...record} copies own enumerable property values into a different object."],
+      ["04 · MUTATE", "Mutation follows object identity", "Changing alias.name changes record.name; the copied string in copy.name stays unchanged."]
+    ], "Replace name with a nested profile object, make a shallow copy, and predict which mutation both records observe.", "record === alias is true; record === copy is false; compare the original and copied nested profile identities.");
+  }
+
+  // Async functions must be selected before the broader function/binding rule.
+  if (lesson.trackId === "javascript" && title.startsWith("async functions")) {
+    return flow("javascript-await", [
+      ["01 · CALL", "The async function starts running", "Its body executes synchronously until an await or completion."],
+      ["02 · AWAIT", "Await suspends this function", "The call returns a Promise; the caller can continue without waiting here."],
+      ["03 · SETTLE", "The awaited result becomes available", "Fulfillment resumes with a value; rejection resumes by throwing at the await."],
+      ["04 · RESUME", "A Promise job continues the function", "Later statements run, and return or throw settles the async function's Promise."]
+    ], "Log before calling, inside the function before and after await, and after calling; predict the order with an already-fulfilled Promise.", "The before-await log precedes the caller's after-call log; the after-await log runs later. Check the returned Promise and rejection path.");
+  }
 
   if (lesson.trackId === "react" && /effect|external synchronization/.test(title)) {
     return flow("react-effect", [
@@ -10096,22 +13105,22 @@ function diagramFor(lesson) {
   }
   if (lesson.trackId === "react") {
     return flow("react-render", [
-      ["01 · INPUT", "Props, state, and context", "One render sees an immutable snapshot of these values."],
+      ["01 · INPUT", "Props, state, and context", "Treat each render's inputs as immutable snapshots; React does not recursively freeze every object you supply."],
       ["02 · RENDER", "Components return elements", "Pure functions describe the next interface tree."],
       ["03 · RECONCILE", "Fiber work compares trees", "Type, position, and key decide preservation."],
       ["04 · COMMIT", "React updates the host UI", "DOM changes, refs, and commit effects become visible."]
     ], "Change one input or key and predict which component state is preserved.", "React DevTools, render count, DOM mutations, focus, and displayed state.");
   }
 
-  if (lesson.trackId === "fastapi" && /depends|dependenc|yield|callable class/.test(title)) {
+  if (lesson.trackId === "fastapi" && /^(depends|yield dependencies|callable dependencies|dependency injection)/.test(title)) {
     return flow("fastapi-dependencies", [
       ["01 · SIGNATURE", "Endpoint declares requirements", "Annotated parameters identify dependency callables."],
       ["02 · GRAPH", "FastAPI solves prerequisites", "Sub-dependencies are ordered before their consumers."],
       ["03 · REQUEST SCOPE", "Values are acquired and cached", "Each node normally runs once for this request."],
-      ["04 · UNWIND", "Yield resources close in reverse", "Cleanup runs after the response path completes."]
+      ["04 · UNWIND", "Yield resources close in reverse", "Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward."]
     ], "Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.", "Dependency call log, cache reuse, exception path, and resource-close events.");
   }
-  if (lesson.trackId === "fastapi" && /pydantic|parameter|request bod|form|file|validation/.test(title)) {
+  if (lesson.trackId === "fastapi" && /^(path parameters|query parameters|pydantic|forms|httpexception|settings)/.test(title)) {
     return flow("fastapi-validation", [
       ["01 · WIRE", "Untrusted HTTP values arrive", "Path, query, headers, cookies, or body carry text and bytes."],
       ["02 · PARSE", "Protocol representation is decoded", "Content type and parameter source determine parsing."],
@@ -10160,6 +13169,14 @@ function diagramFor(lesson) {
     ], "Trace one valid request and one failure while recording every ASGI event.", "Scope fields, middleware order, dependency calls, send events, and client response.");
   }
 
+  if (lesson.trackId === "python" && /^(runtime validation|copying, serialization|python security)/.test(title)) {
+    return flow("python-data-boundary", [
+      ["01 · RECEIVE", "Untrusted data enters", "Text, bytes or paths have not earned permission to drive an operation."],
+      ["02 · DECODE", "Choose a bounded format", "JSON decoding does not establish a domain schema; untrusted pickle can execute code."],
+      ["03 · VALIDATE", "Establish the intended contract", "Check types, versions, sizes and authority before use."],
+      ["04 · USE", "Perform the permitted operation", "Record safe rejection or a validated result; copying is not a security boundary."]
+    ], "Change the version, value type or path and predict which check rejects it.", "Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.");
+  }
   if (lesson.trackId === "python" && /module|package|import|sys\.modules/.test(title)) {
     return flow("python-import", [
       ["01 · STATEMENT", "Code requests a module", "The import name and current package define the search."],
@@ -10196,7 +13213,7 @@ function diagramFor(lesson) {
     return flow("python-object-lifetime", [
       ["01 · CREATE", "Objects and references appear", "Names and containers form an object graph."],
       ["02 · SHARE", "Aliases preserve reachability", "Shallow copies may still point to the same children."],
-      ["03 · RELEASE", "Strong references disappear", "Reference counting and cycle detection evaluate reachability."],
+      ["03 · RELEASE", "Strong references disappear", "CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise."],
       ["04 · OBSERVE", "Object remains or is reclaimed", "Weak references and memory traces expose the outcome."]
     ], "Create an alias or cycle, delete roots, and predict which objects remain reachable.", "Object IDs, weak references, GC statistics, allocation trace, and cleanup events.");
   }
@@ -10217,7 +13234,7 @@ function diagramFor(lesson) {
     ], "Change one binding, type, or mutable object and predict the resulting behavior.", "Object identity, type, frame locals, return value, exception, and timing.");
   }
 
-  if (lesson.trackId === "nodejs" && /buffer|arraybuffer|typedarray|dataview|binary/.test(title)) {
+  if (lesson.trackId === "nodejs" && /^(buffer|arraybuffer|typedarray|dataview)/.test(title)) {
     return flow("node-binary", [
       ["01 · BYTES", "Input enters a bounded buffer", "Length, allocation, encoding, and ownership must be explicit."],
       ["02 · VIEW", "Code reads through one typed view", "Offsets, endianness, aliases, and pooled backing storage shape access."],
@@ -10225,15 +13242,15 @@ function diagramFor(lesson) {
       ["04 · TRANSFER", "Owned output crosses the boundary", "A copy, view, clone, or transfer determines later mutation."]
     ], "Mutate a sliced Buffer and compare it with an explicit copy and transferred ArrayBuffer.", "byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.");
   }
-  if (lesson.trackId === "nodejs" && /stream|backpressure/.test(title)) {
+  if (lesson.trackId === "nodejs" && /^(stream|readable streams|writable streams|transform streams|node streams)/.test(title)) {
     return flow("node-stream", [
       ["01 · SOURCE", "Bytes arrive in chunks", "A file, socket, or producer controls chunk timing."],
-      ["02 · BUFFER", "Readable state holds data", "High-water marks limit eager production."],
+      ["02 · BUFFER", "Readable state holds data", "High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps."],
       ["03 · CONSUMER", "Transform or destination pulls", "Backpressure pauses upstream when writes cannot keep up."],
-      ["04 · FINISH", "Pipeline completes or destroys", "Errors and close events release every handle."]
+      ["04 · FINISH", "Pipeline completes or destroys", "Pipeline coordinates its streams; external resources and committed side effects need separate ownership."]
     ], "Slow the destination and confirm memory stays bounded.", "Chunk sizes, writable return values, drain events, RSS, and close/error order.");
   }
-  if (lesson.trackId === "nodejs" && /event loop|libuv|thread pool|worker thread|child process/.test(title)) {
+  if (lesson.trackId === "nodejs" && /^(node.js architecture|event loop|libuv|process.nexttick|timers)/.test(title)) {
     return flow("node-runtime", [
       ["01 · CALLBACK", "JavaScript schedules work", "The main thread initiates I/O, timers, or CPU work."],
       ["02 · RUNTIME", "Node delegates eligible work", "OS readiness, libuv, workers, or another process executes it."],
@@ -10257,7 +13274,7 @@ function diagramFor(lesson) {
       ["04 · EXPORT", "Consumer observes the public surface", "Namespace shape, shared state, errors, and packed artifacts prove behavior."]
     ], "Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.", "import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.");
   }
-  if (lesson.trackId === "nodejs" && /process lifecycle|signal|uncaught|unhandled|cluster|background job|durable queue/.test(title)) {
+  if (lesson.trackId === "nodejs" && /^(process lifecycle|uncaught|unhandled|cluster|background job|durable queue)/.test(title)) {
     return flow("node-process", [
       ["01 · ADMIT", "A ready process accepts work", "Listeners, connections, jobs, and queues create owned in-flight state."],
       ["02 · EXECUTE", "Runtime coordinates work", "Errors, retries, signals, and health state can change the path."],
@@ -10268,7 +13285,7 @@ function diagramFor(lesson) {
   if (lesson.trackId === "nodejs" && /worker_threads|native addon|node-api|webassembly|cpu work/.test(title)) {
     return flow("node-parallel", [
       ["01 · SUBMIT", "Main thread packages CPU work", "Input size, clone, transfer, or shared memory defines handoff cost."],
-      ["02 · EXECUTE", "Another isolate or native boundary runs", "CPU time no longer blocks the main JavaScript loop."],
+      ["02 · EXECUTE", "Choose where computation runs", "A worker can move CPU work off the main loop; synchronous native or WebAssembly calls still block their calling thread."],
       ["03 · RETURN", "Message, value, or failure crosses back", "Serialization, ownership, ABI, and cancellation shape the result."],
       ["04 · REUSE", "Bounded capacity handles the next item", "Worker lifetime, queue depth, crashes, and responsiveness remain observable."]
     ], "Compare inline CPU work with one reused worker while measuring transfer and loop delay separately.", "queue depth, clone or transfer time, worker identity, CPU time, event-loop delay, result, error, and termination.");
@@ -10298,7 +13315,7 @@ function diagramFor(lesson) {
     ], "Trace one operation with async hooks and inject a timeout or shutdown.", "Async IDs, handle count, event-loop delay, response, and exit sequence.");
   }
 
-  if (lesson.trackId === "javascript" && /declaration|lexical|execution context|hoisting|closure|function/.test(title)) {
+  if (lesson.trackId === "javascript" && /^(declarations|execution contexts|hoisting|closures|functions)/.test(title)) {
     return flow("javascript-bindings", [
       ["01 · CREATE", "Code establishes bindings", "Declaration instantiation creates and sometimes initializes names."],
       ["02 · RESOLVE", "A reference searches environments", "Outer links select the nearest matching binding."],
@@ -10306,7 +13323,7 @@ function diagramFor(lesson) {
       ["04 · OBSERVE", "Value, error, or retention appears", "Output and heap evidence reveal the selected environment."]
     ], "Shadow or capture one binding and predict every lookup and lifetime.", "Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.");
   }
-  if (lesson.trackId === "javascript" && /object|prototyp|class|descriptor|property|proxy|reflect|symbol/.test(title)) {
+  if (lesson.trackId === "javascript" && /^(objects|prototypes|classes|symbols|proxy)/.test(title)) {
     return flow("javascript-property", [
       ["01 · KEY", "An operation produces a property key", "Names become strings or symbols before lookup."],
       ["02 · OWN", "Own descriptors are inspected", "Data, accessor, and configuration flags constrain behavior."],
@@ -10346,7 +13363,7 @@ function diagramFor(lesson) {
       ["04 · DECODE", "A validated value emerges", "Bounds, schema, state, and worker evidence prove correctness."]
     ], "Decode one buffer with the wrong endianness, then coordinate one shared state transition.", "Byte dump, offsets, detached state, atomic values, worker messages, and decoded result.");
   }
-  if (lesson.trackId === "javascript" && /reachability|garbage collection|weak reference|finalization|engine pipeline|hidden class|inline cache|benchmark|performance|measurement/.test(title)) {
+  if (lesson.trackId === "javascript" && /reachability|garbage collection|weak reference|finalization|engine pipeline|hidden class|inline cache|benchmark|performance|measurement|cpu profiles/.test(title)) {
     return flow("javascript-engine", [
       ["01 · SOURCE", "Program creates executable work", "Parsing and object allocation establish runtime inputs."],
       ["02 · FEEDBACK", "Execution records observed behavior", "Types, shapes, calls, allocations, and timing form evidence."],
@@ -10453,6 +13470,36 @@ function diagramFor(lesson) {
     ], "Change one semantic or layout input and inspect which browser stages repeat.", "DevTools timeline, DOM, accessibility tree, computed style, layout, and paint.");
   }
 
+  if (lesson.trackId === "data-systems" && /^(application data patterns|data systems production architecture capstone)/.test(title)) {
+    return flow("database-command-replay", [
+      ["01 · CLAIM", "Claim the tenant-scoped request key", "The unique constraint chooses one writer; a conflicting insert does not authorize later writes."],
+      ["02 · BRANCH", "Replay or perform the operation", "Existing key: compare intent and return the saved result. New key: require the expected business write to succeed."],
+      ["03 · COMMIT", "Save effect, result and event together", "One transaction commits all records or rolls them all back. Return success only after commit."],
+      ["04 · RETRY", "Recover a lost response or duplicate delivery", "Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect."]
+    ], "Lose the response after commit, retry the same key, then reuse it with changed input.", "One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.");
+  }
+  if (lesson.trackId === "data-systems" && title.startsWith("resp,")) {
+    return flow("resp-byte-framing", [
+      ["01 · ENCODE", "Turn each argument into bytes", "UTF-8 character count and byte count can differ; binary arguments need no text decoding."],
+      ["02 · FRAME", "Prefix each payload with its byte length", "The array gives argument count. Each bulk string gives byte length, then payload and CRLF."],
+      ["03 · CHECK", "Compare exact bytes, not printed appearance", "Empty values, multibyte text and embedded CRLF exercise boundaries. Socket reads are not frames."]
+    ], "Replace ASCII with accented text and a payload containing CRLF; predict the length prefixes before running assertions.", "Exact frame bytes and passing assertions. Incremental reply parsing and real socket backpressure remain integration work.");
+  }
+  if (lesson.trackId === "data-systems" && title.startsWith("redis cluster")) {
+    return flow("redis-cluster-conditional-write", [
+      ["01 · ROUTE", "Find the primary owning the hash slot", "Matching hash tags place these keys together; one connection owns transaction state."],
+      ["02 · QUEUE", "Queue both commands", "HSET and SET NX are separate operations, even inside MULTI."],
+      ["03 · EXECUTE", "Inspect each result", "The existing lease makes SET NX return null, but HSET still updates the cart."],
+      ["04 · REASON", "Separate isolation from a condition", "Same-slot execution is not a guarded lease check; express the condition before the protected write."]
+    ], "Pre-create the lease, execute the transaction, and compare both replies with the cart value.", "Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.");
+  }
+  if (lesson.trackId === "data-systems" && title.startsWith("redis security")) {
+    return flow("redis-acl-boundary", [
+      ["01 · IDENTITY", "Provision a separate lab user", "Administrator credentials and application credentials have different responsibilities."],
+      ["02 · AUTHORIZE", "Check command and key permissions", "An allowed GET still fails for a key outside the permitted tenant prefix."],
+      ["03 · VERIFY", "Test both allowed and denied requests", "DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport."]
+    ], "Keep the command unchanged and switch only the tenant in the key; then try an administrative command.", "Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.");
+  }
   if (lesson.trackId === "data-systems" && /redis architecture|resp|strings|lists|bitmaps|ttl|atomic commands|pipelining/.test(title)) {
     return flow("redis-command", [
       ["01 · CLIENT", "Client frames one or more commands", "Connection, identity, key, arguments, and deadlines enter."],
@@ -10477,7 +13524,31 @@ function diagramFor(lesson) {
       ["04 · AUTHORITY", "Durable system accepts or rejects effect", "Idempotency, fencing, version, fallback, and business state close the proof."]
     ], "Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.", "Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.");
   }
-  if (lesson.trackId === "data-systems" && /wal|checkpoint|crash recovery|physical streaming|logical replication|backup|pitr/.test(title)) {
+  if (lesson.trackId === "data-systems" && /^connections,/.test(title)) {
+    return flow("postgres-pool", [
+      ["01 · ARRIVE", "Client requests database capacity", "A bounded pool admits or queues work; waiting consumes the caller's deadline."],
+      ["02 · BORROW", "Pool assigns a server connection", "In transaction pooling, ownership lasts for a transaction rather than the whole client session."],
+      ["03 · EXECUTE", "Backend runs the transaction", "Queries, lock waits, CPU and I/O determine how long this capacity remains occupied."],
+      ["04 · RELEASE", "Connection becomes reusable", "Commit or rollback ends transaction ownership; session-dependent features need explicit compatibility checks."]
+    ], "Increase pool size under the same workload; predict queue time and database contention before measuring.", "Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.");
+  }
+  if (lesson.trackId === "data-systems" && /^authentication,/.test(title)) {
+    return flow("postgres-access", [
+      ["01 · CONNECT", "Client establishes a protected connection", "TLS configuration and client certificate verification are distinct from password authentication."],
+      ["02 · AUTHENTICATE", "Server applies the matching connection rule", "pg_hba.conf selects an authentication method; success does not grant every SQL operation."],
+      ["03 · AUTHORIZE", "Role and object privileges restrict SQL", "Database connection, schema access, table privileges and ownership have separate effects."],
+      ["04 · FILTER", "Applicable row policies constrain access", "RLS evaluates row visibility and writes, subject to owner and privileged-role bypass rules."]
+    ], "Test the same request as runtime role and owner, then change tenant context and attempt a forbidden write.", "Connection role, TLS verification settings, grants, policy definitions, returned rows and rejected writes; redact secrets.");
+  }
+  if (lesson.trackId === "data-systems" && /^postgresql (observability|performance tuning)/.test(title)) {
+    return flow("postgres-diagnostics", [
+      ["01 · SYMPTOM", "Define the slow or failing workload", "Record request shape, concurrency, time window and the affected service objective."],
+      ["02 · MEASURE", "Locate waiting and repeated work", "Session waits, query statistics, plans and host metrics narrow the hypothesis."],
+      ["03 · CHANGE", "Test one bounded intervention", "Use representative data and hold workload conditions steady enough for comparison."],
+      ["04 · COMPARE", "Check improvement and regressions", "Compare correctness, throughput, tail latency and resource use; revert changes that do not help."]
+    ], "A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.", "Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.");
+  }
+  if (lesson.trackId === "data-systems" && /^(wal,|physical streaming|logical replication|backups,)/.test(title)) {
     return flow("postgres-durability", [
       ["01 · CHANGE", "Backend creates a database change", "Transaction identity and modified buffers define the candidate outcome."],
       ["02 · WAL", "Log record reaches required durability", "LSNs, flush policy, checkpoints, archive, and sender positions advance."],
@@ -10511,10 +13582,10 @@ function diagramFor(lesson) {
   }
   if (lesson.trackId === "data-systems" && /transaction|mvcc|isolation|lock|deadlock/.test(title)) {
     return flow("database-transaction", [
-      ["01 · BEGIN", "Transaction captures a database view", "Isolation level defines which changes are visible."],
+      ["01 · BEGIN", "Choose the isolation boundary", "Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN."],
       ["02 · READ / WRITE", "Statements acquire versions or locks", "Concurrent transactions may conflict."],
       ["03 · DECIDE", "Constraints and conflicts resolve", "The engine can wait, abort, commit, or require retry."],
-      ["04 · COMMIT", "One atomic outcome becomes visible", "Other transactions observe the durable result."]
+      ["04 · COMMIT", "Publish one atomic outcome", "Visibility follows the reader's snapshot. Crash durability also depends on WAL flush and replication settings."]
     ], "Run two conflicting transactions and predict the wait, error, or visible value.", "Transaction IDs, locks, snapshots, error code, retry, and final rows.");
   }
   if (lesson.trackId === "data-systems") {
@@ -10586,9 +13657,9 @@ function diagramFor(lesson) {
   }
   if (lesson.trackId === "retrieval-rag" && title.startsWith("vector database storage")) {
     return flow("vector-storage", [
-      ["01 · LOG", "Accepted mutation enters the WAL", "A sequence number makes acknowledged changes replayable after a crash."],
+      ["01 · LOG", "Mutation enters the durability path", "A sequence number orders records; recovery of acknowledged changes depends on the engine's flush and replication policy."],
       ["02 · SEGMENT", "Mutable storage applies the version", "Vector, payload, ID mapping, and indexes expose the newest point state."],
-      ["03 · MAINTAIN", "Tombstones and segments are rebuilt", "Vacuum, merge, indexing, and copy-on-write reclaim space without stopping reads."],
+      ["03 · MAINTAIN", "Tombstones and segments are rebuilt", "Compaction and indexing reclaim or reorganize storage; measure interference with reads and writes rather than assuming it is free."],
       ["04 · DISTRIBUTE", "Shards and replicas preserve service", "Routing, acknowledgements, snapshots, and restore tests define failure behavior."]
     ], "Create update/delete churn, interrupt a writer, compact, and restore a snapshot while checking the same tenant-scoped queries.", "WAL sequence, segment versions, tombstone count, optimizer state, shard/replica status, recall, p95 latency, and restored point IDs.");
   }
@@ -10621,7 +13692,7 @@ function diagramFor(lesson) {
       ["01 · STATE", "Invocation loads typed graph state", "Thread identity selects the checkpoint history."],
       ["02 · NODE", "One node returns a state update", "Reducers combine updates according to the declared state contract."],
       ["03 · ROUTE", "An edge selects the next node", "A condition, Command, or interrupt controls progress."],
-      ["04 · CHECKPOINT", "Runtime saves or resumes execution", "Durable state makes pause, recovery, and replay observable."]
+      ["04 · CHECKPOINT", "Runtime saves or resumes execution", "Restart recovery requires a persistent checkpointer; an in-memory saver only demonstrates same-process pause and resume."]
     ], "Interrupt before a sensitive action, restart the worker, then resume with the same thread ID twice.", "Checkpoint versions, pending interrupt, state before and after resume, routed node, idempotency key, side-effect count, and final status.");
   }
   if (lesson.trackId === "agents" && /model context protocol|mcp transports/.test(title)) {
@@ -10689,12 +13760,12 @@ function diagramFor(lesson) {
     ], "Change one feature or split while holding the evaluation protocol fixed.", "Dataset version, loss curve, parameters, predictions, slice metrics, and baseline.");
   }
 
-  if (lesson.trackId === "cloud-aws" && /IAM|STS|KMS|Secrets/.test(lesson.title)) {
+  if (lesson.trackId === "cloud-aws" && /^(iam identities|sts,|kms,)/.test(title)) {
     return flow("aws-authorization", [
       ["01 · PRINCIPAL", "A signed AWS request arrives", "Identity, session, action, resource, and context are known."],
       ["02 · POLICY", "Authorization policies combine", "Identity, resource, boundary, session, and SCP rules apply."],
       ["03 · DECISION", "Explicit deny or effective allow", "The service accepts or rejects the requested action."],
-      ["04 · AUDIT", "The API outcome is recorded", "Caller, request, resource, and error become inspectable."]
+      ["04 · AUDIT", "Verify the configured audit evidence", "Check that the relevant management or data events are enabled and retained; not every operation is automatically logged."]
     ], "Run one allowed and one explicitly denied request with the same role.", "Caller identity, policy simulator, encoded denial, service response, and CloudTrail.");
   }
   if (lesson.trackId === "cloud-aws" && /VPC|gateway|Security groups|Load Balancing|Route 53|CloudFront/.test(lesson.title)) {
@@ -10737,6 +13808,15 @@ function diagramFor(lesson) {
       ["04 · EVIDENCE", "Outcome enters operations", "Response, telemetry, audit, cost, and failure behavior prove reality."]
     ], "Change one identity, Region, quota, or dependency and predict the API and workload outcome.", "AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.");
   }
+  if ((lesson.trackId === "devops" && /^(linux processes|networking diagnostics|observability,|capacity planning)/.test(title)) ||
+      (lesson.trackId === "kubernetes" && /^kubernetes (observability|debugging)/.test(title))) {
+    return flow("operations-diagnosis", [
+      ["01 · SCOPE", "Name the affected request or workload", "Capture the symptom, time window, recent changes and expected behavior."],
+      ["02 · LOCATE", "Identify the failing layer", "Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause."],
+      ["03 · TEST", "Check one hypothesis safely", "Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output."],
+      ["04 · VERIFY", "Confirm recovery without a hidden regression", "Compare the same user-facing signal and check recurrence, capacity and rollback criteria."]
+    ], "The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.", "Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.");
+  }
   if (lesson.trackId === "devops") {
     return flow("delivery-change", [
       ["01 · SOURCE", "Reviewed change identifies intent", "Code, configuration, and dependencies are versioned."],
@@ -10745,7 +13825,7 @@ function diagramFor(lesson) {
       ["04 · OPERATE", "Telemetry confirms behavior", "Rollback or progression follows production evidence."]
     ], "Fail readiness during a staged rollout and verify traffic and rollback behavior.", "Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.");
   }
-  if (lesson.trackId === "docker" && /Dockerfile|Build context|BuildKit|image|registr/.test(lesson.title)) {
+  if (lesson.trackId === "docker" && /^(dockerfile|build context|buildkit|images|registries|multi-platform|container supply-chain|production image)/.test(title)) {
     return flow("docker-image-build", [
       ["01 · CONTEXT", "Builder receives declared inputs", "Dockerfile, context, base digests, args, and mounts enter."],
       ["02 · BUILD GRAPH", "BuildKit evaluates dependencies", "Cache keys decide which operations execute or reuse output."],
@@ -10753,7 +13833,7 @@ function diagramFor(lesson) {
       ["04 · VERIFY", "Registry and policy inspect output", "SBOM, provenance, signature, scan, and test attach evidence."]
     ], "Change one dependency and predict exactly which build nodes invalidate.", "Context size, build log, cache hits, layer history, digest, SBOM, and signature.");
   }
-  if (lesson.trackId === "docker" && /network/.test(lesson.title)) {
+  if (lesson.trackId === "docker" && title.startsWith("docker networking")) {
     return flow("docker-network-packet", [
       ["01 · PROCESS", "Container opens a socket", "Its network namespace owns interfaces, routes, and localhost."],
       ["02 · BRIDGE / DNS", "Docker resolves and forwards", "Embedded DNS and bridge networking locate the peer."],
@@ -10761,7 +13841,7 @@ function diagramFor(lesson) {
       ["04 · PEER", "Destination returns traffic", "Connection state, packet path, and application response are visible."]
     ], "Break DNS, route, or published-port configuration one at a time.", "Container routes, resolv.conf, network inspect, host sockets, packets, and response.");
   }
-  if (lesson.trackId === "docker" && /volume|mount|filesystem|storage/.test(lesson.title)) {
+  if (lesson.trackId === "docker" && title.startsWith("overlay filesystems")) {
     return flow("docker-storage", [
       ["01 · IMAGE", "Read-only layers provide files", "Overlay storage exposes the packaged filesystem."],
       ["02 · WRITABLE", "Container creates runtime changes", "Copy-on-write state belongs to this container."],
@@ -10777,7 +13857,7 @@ function diagramFor(lesson) {
       ["04 · EXIT", "State and evidence remain", "Logs, health, metrics, exit code, events, and persistent mounts explain outcome."]
     ], "Run once with one incorrect user, signal, or resource limit and diagnose it.", "Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.");
   }
-  if (lesson.trackId === "kubernetes" && /Service|Ingress|Gateway|DNS|network model|CNI/.test(lesson.title)) {
+  if (lesson.trackId === "kubernetes" && /^(services,|ingress,|cluster dns,|kubernetes network model,)/.test(title)) {
     return flow("kubernetes-network", [
       ["01 · CLIENT POD", "A connection targets a name", "DNS resolves a Service or external route."],
       ["02 · SERVICE", "Stable identity selects endpoints", "Selectors and readiness produce EndpointSlices."],
@@ -10822,7 +13902,7 @@ function diagramFor(lesson) {
       ["01 · COMMIT", "Provider records event and delivery", "A stable event ID and version connect the business transaction to an outbox or delivery record."],
       ["02 · SIGN + SEND", "Raw body crosses HTTP", "Timestamped HMAC, timeout, attempt number, and secret version travel with the request."],
       ["03 · VERIFY + STORE", "Consumer authenticates and persists", "Raw-byte verification, freshness, schema checks, unique event ID, and transaction precede acknowledgment."],
-      ["04 · PROCESS", "Worker applies effect once", "Retries, duplicates, disorder, dead letters, and rotation are visible without pretending exactly-once transport."]
+      ["04 · PROCESS", "Worker guards repeated effects", "Atomic receipts or a provider's idempotency contract must protect the effect; delivery deduplication alone is insufficient."]
     ], "Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one.", "Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.");
   }
   if (lesson.trackId === "quality-security" && title.startsWith("application file storage")) {
@@ -10864,6 +13944,42 @@ function diagramFor(lesson) {
       ["03 · SLICE", "One end-to-end behavior runs", "The smallest implementation crosses policy and adapters while keeping state valid."],
       ["04 · PROVE + EVOLVE", "Tests and a changed requirement challenge it", "Acceptance evidence, edge cases, complexity, and a real extension expose design quality."]
     ], "Add one realistic requirement after the first working slice and predict the smallest safe change.", "Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.");
+  }
+  if (lesson.trackId === "systems-foundations" && ["0060", "0063", "0064", "0065", "0066"].includes(lesson.number)) {
+    const cases = {
+      "0060": ["tcp-round-model", [
+        ["01 · ROUND", "Window starts at one", "The fixture advances in synthetic RTT-sized rounds, not individual ACKs."],
+        ["02 · GROW", "Double, then add", "Below threshold the toy window doubles; above it, each round adds one."],
+        ["03 · TIMEOUT", "Reset and lower threshold", "Round five models timeout loss, not duplicate-ACK fast recovery."],
+        ["04 · LIMIT", "Receiver can be tighter", "The usable window is bounded by both congestion and receiver windows."]
+      ], "Why would doubling on every ACK overstate slow-start growth?", "Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior."],
+      "0063": ["scheduler-progress", [
+        ["01 · VALIDATE", "Require positive work and quantum", "Zero quantum cannot reduce remaining work; reject it before the loop."],
+        ["02 · SELECT", "Pop the next ready task", "The ready queue gives each runnable task a turn."],
+        ["03 · RUN", "Consume at most one quantum", "Remaining work decreases by min(quantum, remaining)."],
+        ["04 · REQUEUE", "Keep unfinished tasks only", "Positive remaining work goes to the back; completed work leaves the queue."]
+      ], "What loop invariant proves termination for positive finite bursts?", "The total remaining burst decreases on every iteration; empty input yields an empty trace."],
+      "0064": ["ordered-account-locks", [
+        ["01 · GUARD", "Reject self-transfer and invalid amount", "Acquiring the same non-reentrant lock twice would deadlock."],
+        ["02 · ORDER", "Sort live objects by identity", "Both transfer directions acquire the same two locks in the same order."],
+        ["03 · CHANGE", "Check funds while holding locks", "Debit and credit occur together in the cooperating process."],
+        ["04 · RELEASE", "Exit both lock contexts", "Verify balances and failed-transfer preservation; this is not durable storage."]
+      ], "What breaks if two objects represent the same bank account?", "One shared object/lock per account is required; lock ordering alone does not enforce domain identity."],
+      "0065": ["page-translation-replacement", [
+        ["01 · SPLIT", "Page number plus offset", "divmod divides the virtual address by the configured page size."],
+        ["02 · LOOK UP", "Resolve frame or fault", "A missing mapping raises the fixture's page-fault exception."],
+        ["03 · COMBINE", "Frame base plus offset", "Frame nine with offset 0x234 produces physical address 0x9234."],
+        ["04 · COMPARE", "Run a separate LRU experiment", "The reference string 1,2,1,3,1 produces three misses with capacity two."]
+      ], "Does a page fault necessarily imply reading swap?", "No: mappings, permissions, demand-zero and backing storage require distinct handling; this toy only counts misses."],
+      "0066": ["durable-file-replacement", [
+        ["01 · STAGE", "Create an owned temporary file", "Unique same-directory staging avoids sharing one fixed temporary name."],
+        ["02 · SYNC", "Flush and fsync file data", "Do not replace the visible destination before staged data is ready."],
+        ["03 · REPLACE", "Atomically change the name", "Readers see the old or new file, not a partially rewritten destination."],
+        ["04 · SYNC DIRECTORY", "Persist namespace change", "A later sync failure does not roll back an already completed rename."]
+      ], "If directory fsync fails, can the caller safely assume the old file remains?", "No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence."]
+    };
+    const [key, stages, probe, evidence] = cases[lesson.number];
+    return flow(key, stages, probe, evidence);
   }
   if (lesson.trackId === "systems-foundations" && /request to wire|ipv4|routing tables|udp, tcp|tcp flow control|dns resolution/.test(title)) {
     return flow("network-packet-path", [
@@ -11835,7 +14951,7 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["libuv worker pool", "The shared libuv worker pool performs selected filesystem, DNS, crypto, and compression operations that cannot use ordinary readiness notification."],
     ["uv_threadpool_size", "UV_THREADPOOL_SIZE configures the shared libuv pool before it initializes. Increasing it changes capacity and memory use but does not replace admission control."],
     ["saturation", "Saturation means a constrained resource has no spare capacity, so new work queues and tail latency rises. Queue depth and wait time reveal it."],
-    ["error-first callbacks", "An error-first callback receives an error in its first argument and a result later. APIs must call it exactly once and callers must handle both paths."],
+    ["error-first callbacks", "A one-shot error-first callback receives an error (or null) as its first argument and success values in later arguments. The API must define timing and invoke completion once; this convention is not a streaming event protocol."],
     ["promisify", "util.promisify adapts conventional error-first callback APIs into Promises. Nonstandard callback layouts need an explicit adapter."],
     ["error propagation", "Node errors travel through synchronous throws, callback arguments, EventEmitter error events, Promise rejection, streams, workers, and process exit; each boundary needs ownership."],
     ["eventemitter", "EventEmitter invokes registered listeners synchronously in order when emit is called. Emission itself is ordinary JavaScript, not an event-loop phase."],
@@ -11999,9 +15115,9 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["images", "A container image is immutable configuration plus content-addressed filesystem layers and metadata. A digest identifies content; a tag is a movable name."],
     ["containers", "A container is a running or stopped process configuration created from an image, with a writable layer, namespaces, cgroups, mounts, and networking."],
     ["layers", "Image layers store filesystem changes and are shared by content digest. Build instruction inputs determine when a cached layer can be reused."],
-    ["build context", "The build context is the set of files the builder may read. Keeping it small improves speed and prevents accidental secret or irrelevant-data transfer."],
+    ["build context", "The build context supplies files available to a build. Exclude secrets and irrelevant files explicitly with .dockerignore and use secret mounts where needed; a small context alone is not proof that it contains no secrets."],
     ["buildkit", "BuildKit evaluates a build dependency graph, parallelizes independent work, and supports ephemeral cache, secret, SSH, and bind mounts."],
-    ["multi-stage builds", "A multi-stage Dockerfile builds in several named stages and selectively copies final artifacts into a smaller runtime stage."],
+    ["multi-stage builds", "A multi-stage Dockerfile uses multiple FROM stages, optionally named, and copies selected artifacts between them. Keeping build tools out of the final stage can reduce its size and attack surface."],
     ["entrypoint", "ENTRYPOINT defines the executable a container normally runs. Exec form preserves argument boundaries and lets that process receive signals directly."],
     ["cmd", "CMD supplies default command or arguments that docker run may replace. When combined with exec-form ENTRYPOINT, it commonly provides overridable defaults."],
     ["pid 1", "The first process in a container has special signal and orphan-reaping responsibilities. Shell wrappers can accidentally prevent the application from receiving termination."],
@@ -12019,17 +15135,17 @@ Object.assign(SIMPLE_CONCEPTS, {
   kubernetes: [
     ["desired state", "Desired state is the spec stored through the Kubernetes API. Controllers repeatedly compare it with observed state and act to reduce differences."],
     ["control plane", "The control plane exposes and stores the API, schedules Pods, and runs controllers. Worker nodes execute the actual application data plane."],
-    ["api server", "The API server authenticates, authorizes, admits, validates, converts, persists, and audits Kubernetes API requests."],
+    ["api server", "The API server handles authentication, authorization and resource-specific validation, admission and persistence. Audit evidence depends on the configured audit policy and backend; reads do not follow every write-processing step."],
     ["etcd", "etcd is the strongly consistent key-value store backing Kubernetes API state. Cluster recovery depends on protected, tested etcd backups or managed-provider equivalents."],
     ["controllers", "A controller is a level-triggered reconciliation loop that watches objects and makes idempotent changes toward desired state."],
     ["scheduler", "The scheduler assigns unscheduled Pods to feasible nodes by filtering constraints, scoring choices, and binding the result."],
     ["kubelet", "The kubelet watches assigned Pod specs on one node and asks the container runtime and other node plugins to make them real."],
     ["pods", "A Pod is the smallest schedulable Kubernetes workload unit. Its containers share a network namespace and can share declared volumes."],
-    ["readiness", "Readiness indicates whether a Pod should receive Service traffic. Failure removes its endpoint without necessarily restarting the container."],
+    ["readiness", "Readiness reports whether a Pod should receive normal Service traffic. A failed probe normally marks its endpoint not ready rather than restarting the container or deleting the EndpointSlice entry. Publication overrides and existing connections need separate consideration."],
     ["liveness", "Liveness indicates whether a stuck container should be restarted. A probe that measures dependencies incorrectly can amplify an outage."],
     ["deployments", "A Deployment manages ReplicaSets and performs declarative stateless rollouts while respecting availability and surge settings."],
     ["statefulsets", "A StatefulSet gives Pods stable ordinal identity and coordinated storage and rollout behavior. The application still owns replication and data correctness."],
-    ["services", "A Service provides stable virtual access to a dynamic set of ready endpoints selected from Pods."],
+    ["services", "A typical selector-based Service gives stable access to changing Pod endpoints. Headless Services do not allocate a cluster virtual IP; selectorless and ExternalName Services use different backend or DNS mechanisms."],
     ["endpointslices", "EndpointSlices hold scalable groups of Service backends and readiness information consumed by the network data plane."],
     ["ingress", "Ingress is an API for HTTP routing that requires an ingress controller to implement it. Gateway API offers more expressive role-oriented traffic APIs."],
     ["cni", "CNI plugins configure Pod network interfaces, addresses, routes, and sometimes NetworkPolicy enforcement when the runtime creates a sandbox."],
@@ -12042,7 +15158,7 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["rbac", "Kubernetes RBAC grants additive API verbs over resources through Roles or ClusterRoles and their bindings."],
     ["securitycontext", "SecurityContext declares runtime identity and kernel restrictions such as non-root users, capabilities, filesystem behavior, and seccomp."],
     ["hpa", "The Horizontal Pod Autoscaler is a feedback controller that calculates desired replicas from metrics and target utilization or values."],
-    ["taints", "A taint repels Pods unless they tolerate it. Affinity and topology rules express placement attraction, separation, and spread."],
+    ["taints", "A taint discourages scheduling, blocks scheduling or evicts Pods according to its effect. A matching toleration permits that boundary but does not guarantee placement. Affinity, resources and topology constraints still apply."],
     ["helm", "Helm renders parameterized charts and records releases. Template power can hide the final API objects, so rendering and schema tests matter."],
     ["gitops", "GitOps uses a pull-based controller to reconcile versioned desired state into clusters and report drift and health."],
     ["crds", "A CustomResourceDefinition adds a new API type. A controller or other consumer must give that stored declarative data behavior."]
@@ -12628,7 +15744,7 @@ const BEGINNER_GLOSSARY = {
     "lifecycle": "The MCP lifecycle covers connection, initialization, normal requests and notifications, cancellation or progress, and orderly transport shutdown.",
     "mcp transports": "MCP transports carry JSON-RPC messages between a client and server. Standard input/output suits local child processes; Streamable HTTP supports remote requests and optional event streams.",
     "streamable http": "Streamable HTTP is MCP's remote transport using HTTP POST and GET behavior, protocol headers, optional session identity, and SSE streams where supported.",
-    "sessions": "An MCP session is server-associated transport state identified by a server-issued opaque ID. The server binds it to the correct principal and never treats it as authentication by itself.",
+    "sessions": "An MCP session holds protocol state. Streamable HTTP servers may issue an opaque session ID, which must be bound to the principal rather than treated as authentication. Stdio does not use that HTTP session header.",
     "authorization": "MCP authorization protects remote HTTP resources and scopes which principal can use which server capability. The server validates token issuer, audience, expiry, and scopes.",
     "consent": "MCP consent keeps the user informed and in control before exposing data or performing sensitive tool actions; protocol connectivity alone does not imply permission.",
     "testing": "MCP testing checks negotiation, schemas, errors, cancellation, transport disconnects, authorization, hostile inputs, output limits, and duplicate or long-running work.",
@@ -12657,7 +15773,7 @@ const BEGINNER_GLOSSARY = {
     "tool design": "Tool design creates narrow operations with clear names, schemas, permissions, errors, and idempotency behavior.",
     "descriptions": "Tool descriptions tell the model when a tool is suitable and which result the tool provides.",
     "schemas": "Tool schemas define valid argument names, types, required fields, and structural limits.",
-    "state": "Agent state is the durable information that describes current progress, decisions, results, and pending work.",
+    "state": "Agent state describes current progress, decisions, results, and pending work. It is durable only if the application persists it with a defined recovery contract.",
     "memory": "Agent memory is selected information from earlier work that the system makes available for later decisions.",
     "context management": "Context management selects which instructions, state, history, evidence, and tool results enter each model call.",
     "checkpoints": "A checkpoint stores durable progress so execution can resume after interruption or failure.",
@@ -12784,8 +15900,8 @@ const BEGINNER_GLOSSARY = {
     "shutdown": "Shutdown is the lifecycle phase that stops new work, drains active work, and closes process resources.",
     "shared resources": "Shared resources are clients, pools, models, or caches reused by requests in one application process.",
     "application state": "Application state stores process-scoped objects that lifespan code creates and later closes.",
-    "async def": "An async def function returns a coroutine and can suspend with await while other event-loop work proceeds.",
-    "def": "A def function runs synchronously from start to return and cannot use await directly.",
+    "async def": "Calling an async def coroutine function creates a coroutine; its body progresses when awaited or scheduled. With yield it instead defines an async generator. await can suspend, but synchronous work in the body still blocks its thread.",
+    "def": "A regular def defines a synchronous function; adding yield defines a generator whose body advances during iteration. Neither permits await directly. FastAPI runs synchronous endpoints in a thread pool, not every helper function you call yourself.",
     "blocking calls": "A blocking call keeps its current thread busy while it waits and can stop event-loop progress if used on that thread.",
     "timeouts": "A timeout limits how long an operation may wait before the application cancels or abandons that operation.",
     "structured concurrency": "Structured concurrency keeps child tasks inside a parent scope that owns their completion, failure, cancellation, and cleanup.",
@@ -12796,7 +15912,7 @@ const BEGINNER_GLOSSARY = {
     "consistency": "Consistency states which data invariants and visibility guarantees must hold before and after an operation.",
     "durable jobs": "A durable job stores work outside the web process so a worker can retry or resume it after failure.",
     "queues": "A queue stores work or messages until a consumer can process them and records delivery progress.",
-    "password hashing": "Password hashing converts a password into a slow salted verifier that does not reveal the original password.",
+    "password hashing": "Password hashing stores a salted, deliberately costly verifier rather than plaintext. It raises the cost of offline guessing but cannot make weak passwords unguessable; algorithm and work-factor choices matter.",
     "bearer tokens": "A bearer token grants authority to any holder who presents it, so transport and storage must protect it.",
     "identity": "Identity is the verified principal represented by a user, service, device, or workload identifier.",
     "authorization": "Authorization checks whether the current principal can perform a specified action on a specified resource.",
@@ -12806,8 +15922,8 @@ const BEGINNER_GLOSSARY = {
     "samesite": "The SameSite cookie attribute controls when a browser sends a cookie with cross-site requests.",
     "secure attributes": "Secure cookie attributes limit transport, script access, cross-site sending, path, domain, and lifetime.",
     "browser clients": "Browser clients enforce origin and cookie rules that do not apply to general HTTP clients.",
-    "https redirects": "An HTTPS redirect changes an HTTP request to an encrypted HTTPS URL before application data is exchanged.",
-    "origin policy": "An origin policy defines which browser origins can read responses or send credentialed cross-origin requests.",
+    "https redirects": "An HTTPS redirect tells a client to retry at an HTTPS URL. The initial HTTP request was already unencrypted; redirects cannot undo that exposure. HSTS can upgrade future requests before transmission when its policy is already known.",
+    "origin policy": "Browser origin rules restrict cross-origin access. CORS grants selected response-reading access, while cookies and request modes govern credentials. Some cross-origin requests are sent without a preflight, so CORS is not CSRF protection or server authorization.",
     "ordering": "Middleware ordering defines which wrapper sees a request first and which wrapper sees a response or error first.",
     "context": "Request context is data associated with the current request, such as a principal, trace, deadline, or correlation identifier.",
     "request ids": "A request ID is a correlation value used to connect logs, errors, traces, and support reports for one request.",
@@ -12865,17 +15981,35 @@ function beginnerTrackContext(lesson) {
 }
 
 function simpleConceptExplanation(term, lesson) {
+  if (lesson.trackId === "typescript" && lesson.title.startsWith("Function types") && term.toLowerCase() === "parameters") {
+    return "Parameters describe the inputs a function accepts. Optional parameters permit omission; rest parameters collect additional arguments. This is distinct from the capitalized Parameters<F> utility, which extracts parameter types into a tuple.";
+  }
   const normalized = term.toLowerCase();
+  if (lesson.trackId === "nodejs" && normalized === "sessions" && lesson.title.startsWith("HTTP/2")) {
+    return "An HTTP/2 session manages one connection shared by multiple request/response streams. Connection-level settings and flow control affect those streams; gracefully closing a session is different from cancelling one stream. This is not a TLS resumption session or a user's login session.";
+  }
+  if (lesson.trackId === "api-distributed-systems" && normalized === "partitions" && lesson.title.startsWith("Ordering")) {
+    return "A broker partition is an ordered subdivision of a message log. Partitioning permits parallel consumers, but ordering is usually guaranteed only within one partition, not across the whole topic. It is different from a network partition, where nodes cannot communicate.";
+  }
+  const correction = TERM_CORRECTIONS[lesson.trackId]?.[normalized];
+  if (correction) return correction;
   if (lesson.trackId === "api-distributed-systems" && normalized === "safety") {
     return lesson.title.startsWith("HTTP methods")
       ? "HTTP safety means a method is intended only to observe, so automated clients may invoke it without requesting a state change. Incidental logging or accounting can still occur."
       : "Distributed-systems safety means a forbidden outcome never occurs, regardless of timing, retries, failures, or how long the execution continues.";
   }
   const catalog = SIMPLE_CONCEPTS[lesson.trackId] || [];
-  const match = catalog.find(([key]) => normalized.includes(key) || key.includes(normalized));
-  if (match) return match[1];
+  const exact = catalog.find(([key]) => normalized === key);
+  if (exact) return exact[1];
   const beginnerDefinition = BEGINNER_GLOSSARY[lesson.trackId]?.[normalized];
   if (beginnerDefinition) return beginnerDefinition;
+  if (COMMON_TERMS[normalized]) return COMMON_TERMS[normalized];
+  // A short substring such as "in" must never select an unrelated definition.
+  // Prefer the most specific whole phrase, and report unresolved terms in the audit.
+  const match = catalog.filter(([key]) => key.length >= 4 &&
+    (` ${normalized} `).includes(` ${key} `))
+    .sort((a, b) => b[0].length - a[0].length)[0];
+  if (match) return match[1];
   if (lesson.trackId === "react") {
     return `${term} is one responsibility inside React's render-and-commit model. Ask what input it reads, whether it participates in rendering or commit, what identity it preserves, and which observable UI change it can cause.`;
   }
@@ -12928,14 +16062,9 @@ function simpleConceptExplanation(term, lesson) {
 function beginnerFoundationMarkup(lesson) {
   const [field, overview] = beginnerTrackContext(lesson);
   return `<section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to ${escapeHtml(field)}. ${escapeHtml(overview)}</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>`;
 }
 
@@ -12976,7 +16105,7 @@ function codeReadingGuideMarkup(lesson, diagram) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> ${escapeHtml(diagram.stages.map((stage) => stage.name).join(" → "))}.</p>
+    <p><strong>Conceptual mechanism:</strong> ${escapeHtml(diagram.stages.map((stage) => stage.name).join(" → "))}. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>`;
 }
 
@@ -12994,8 +16123,9 @@ function commonMistakesMarkup(diagram, traceSubject) {
 
 function lessonHtml(lesson, profile) {
   const d = diagramFor(lesson);
+  const senior = SENIOR_CASES[lesson.trackId];
   const traceSubject = traceSubjectFor(lesson);
-  const codeComment = profile.commentPrefix || (["python", "fastapi", "cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? "#" : "//");
+  const exerciseSpecification = /^(?:#|\/\/) (?:Exercise|Experiment|Integration exercise)/.test(profile.code);
   const options = [
     "Trace mechanisms and verify evidence",
     "Memorize terminology and skip verification",
@@ -13008,7 +16138,7 @@ function lessonHtml(lesson, profile) {
     id: lesson.id,
     title: lesson.title,
     correctIndex: actualCorrectIndex,
-    evidenceSummary: `${lesson.title}: traced the mechanism, completed the practical lab, and passed retrieval practice.`
+    evidenceSummary: `${lesson.title}: completed the orientation check; practical work and senior interview understanding are not verified.`
   }).replaceAll("<", "\\u003c");
 
   return `<!doctype html>
@@ -13024,6 +16154,7 @@ function lessonHtml(lesson, profile) {
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -13065,19 +16196,29 @@ function lessonHtml(lesson, profile) {
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>${escapeHtml(sentence(lesson.practical))}</p>
+${REUSE_PURPOSE[lesson.number] ? `<p><strong>Distinct exercise:</strong> ${escapeHtml(REUSE_PURPOSE[lesson.number])}</p>` : ""}
+${lesson.trackId === "typescript" ? `<p><strong>Before you run:</strong> ${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
+${lesson.trackId === "data-systems" && Number(lesson.number) < 381 ? `<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>` : ""}
+${["cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? `<p><strong>Lab scope:</strong> Infrastructure snippets are recipes or fragments, not a supplied deployment. Resolve placeholders, required files, tool versions, identity, region or cluster context, and application configuration first. Use an isolated learning environment with a cost limit and cleanup plan. Inspect commands before running: some create resources, publish images, change permissions, or alter data. Never paste them into a production session. Local content checks do not establish that the integration works.</p>` : ""}
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>${exerciseSpecification ? "Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code." : "Run the smallest working example in its required environment and save the result."}</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>${escapeHtml(profile.code)}
-
-${codeComment} Lesson focus: ${escapeHtml(lesson.title)}
-${codeComment} Prediction: ______________________________________________
-${codeComment} Observation: _____________________________________________
-${codeComment} Revised model: ___________________________________________</code></pre>
+    <pre aria-label="Starter code"><code>${escapeHtml(profile.code)}</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review">
+    <h2>Understand, challenge, verify</h2>
+    <p><strong>Plain model:</strong> ${escapeHtml(typescriptReviewFor(lesson)[0])}</p>
+    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+      <p>${escapeHtml(typescriptReviewFor(lesson)[1])}</p>
+    </details>
+    <p><a href="${typescriptSourceFor(lesson.number)}" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
+    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+  </section>` : ""}
 
   ${codeReadingGuideMarkup(lesson, d)}
 
@@ -13094,11 +16235,23 @@ ${codeComment} Revised model: ___________________________________________</code>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace ${escapeHtml(traceSubject)}. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="${escapeHtml(lesson.trackId)}">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> ${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
+        <p><strong>Evidence to explain:</strong> ${escapeHtml(sentence(d.evidence))}</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Worked track case: ${escapeHtml(senior.title)} ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of ${escapeHtml(lesson.title)}?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         ${rotated.map((option, index) => `<label class="option"><input type="radio" name="answer" value="${index}"/><span class="key">${String.fromCharCode(65 + index)}</span><span>${escapeHtml(option)}</span></label>`).join("")}
@@ -13127,7 +16280,7 @@ ${codeComment} Revised model: ___________________________________________</code>
     ${lesson.trackId === "kubernetes" ? '<a href="../reference/kubernetes-deep-dive-map.html" target="_blank">Kubernetes coverage map ↗</a>' : ""}
     ${lesson.trackId === "international-interviews" ? '<a href="../reference/international-interviews-deep-dive-map.html" target="_blank">International interviews coverage map ↗</a>' : ""}
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
@@ -13159,7 +16312,7 @@ ${codeComment} Revised model: ___________________________________________</code>
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -13172,7 +16325,7 @@ ${codeComment} Revised model: ___________________________________________</code>
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";
@@ -13201,6 +16354,51 @@ function reactReferenceHtml(reactLessons) {
   const coverage = reactLessons.map((lesson, index) => `<li><span>${String(index + 1).padStart(2, "0")}</span><a href="${escapeHtml(lesson.path.replace("lessons/", "../lessons/"))}">${escapeHtml(lesson.title)}</a></li>`).join("");
 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>React Complete Deep Dive · Coverage Map</title><style>:root{color-scheme:dark;--bg:#080b11;--panel:#101722;--text:#dbe7f4;--muted:#9babc0;--cyan:#79e8ff;--lime:#b6f36b;--line:#33445a;--font:"IBM Plex Mono Nerd Font","IBM Plex Mono",monospace}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.65 var(--font)}main{max-width:980px;margin:auto;padding:40px 24px 80px}h1{font-size:clamp(28px,5vw,48px);line-height:1.1}h2{margin-top:42px;color:#fff}.lede{max-width:760px;color:var(--muted);font-size:16px}table{width:100%;border-collapse:collapse;background:var(--panel)}th,td{padding:12px;border:1px solid var(--line);text-align:left}th{color:var(--lime)}code,a{color:var(--cyan)}ol{padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px}li{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}li span{color:var(--lime)}@media(max-width:700px){ol{grid-template-columns:1fr}}@media print{body{background:#fff;color:#111}main{max-width:none}table,li{background:#fff}a,code{color:#111}}</style></head><body><main><p>FULL_STACK_AI_ENGINEER / REFERENCE</p><h1>React Complete Deep Dive</h1><p class="lede">A compact map of all ${reactLessons.length} React lessons. Use it to locate every modern hook, runtime boundary, production concern, and interview-practice unit.</p><h2>Complete hook index</h2><table><thead><tr><th>Hook or resource API</th><th>Lesson with an example</th></tr></thead><tbody>${hookRows}</tbody></table><h2 id="coverage">Full coverage sequence</h2><ol>${coverage}</ol></main></body></html>`;
+}
+
+function seniorReferenceHtml(lessons) {
+  const sections = Object.entries(SENIOR_CASES).map(([trackId, item]) => {
+    const first = lessons.find(lesson => lesson.trackId === trackId);
+    if (!first) throw new Error(`Senior case has no curriculum track: ${trackId}`);
+    return `<section id="${escapeHtml(trackId)}">
+      <p class="eyebrow">${escapeHtml(first.trackTitle)}</p><h2>${escapeHtml(item.title)}</h2>
+      <p>${escapeHtml(item.scenario)}</p>
+      <p><strong>Before revealing:</strong> Explain your decision aloud. State your assumptions, a competing option, and a failure you would test.</p>
+      <details><summary>Worked reasoning — reveal after your attempt</summary><p>${escapeHtml(item.reasoning)}</p></details>
+      <h3>Change the constraint</h3><p>${escapeHtml(item.followup)}</p>
+      <details><summary>What a strong follow-up answer covers</summary><p>${escapeHtml(item.signals)}</p></details>
+      <p class="links"><a href="${escapeHtml(item.source[1])}" rel="noreferrer">${escapeHtml(item.source[0])} ↗</a> · <a href="${escapeHtml(first.path.replace("../../lessons/", "../lessons/"))}">Open track lessons</a> · <a href="#rubric">Self-review rubric</a></p>
+    </section>`;
+  }).join("\n");
+  return `<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Senior interview practice and review rubric</title>
+<style>:root{color-scheme:dark;--bg:#080b11;--text:#dbe7f4;--muted:#aebfce;--line:#3b526c;--accent:#79e8ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,sans-serif}main{max-width:880px;margin:auto;padding:40px 24px 80px}h1{font-size:clamp(28px,5vw,42px);line-height:1.2}h2{font-size:25px;line-height:1.3}h3{font-size:18px}a{color:var(--accent)}section{margin:36px 0;padding:25px;border:1px solid var(--line);border-radius:10px;scroll-margin-top:20px}p{max-width:75ch}.eyebrow,.links{font-size:14px;color:var(--muted)}nav ul{columns:2;padding-left:20px}nav li{margin-bottom:8px}details{margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:7px}summary{cursor:pointer;color:#b6f36b}a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}table{width:100%;border-collapse:collapse}th,td{border:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}dt{font-weight:bold;margin-top:16px}dd{margin:4px 0 16px}@media(max-width:650px){nav ul{columns:1}section{padding:18px}table{font-size:14px}}@media print{body{background:white;color:black}main{max-width:none;padding:0}a,summary,.eyebrow,.links{color:black}nav{display:none}section{break-inside:auto;border-color:#777}details::details-content{content-visibility:visible}h2,h3{break-after:avoid}}
+</style></head><body><main>
+<p class="eyebrow">FULL STACK AI ENGINEER · SENIOR PRACTICE</p><h1>Explain it. Defend it. Change one constraint.</h1>
+<p>Target: senior engineering interviews for a learner with around ten years of experience. Experience establishes context, not automatic mastery of every technology. Use a lesson's basic explanation when the topic is new, then practice the decision it supports.</p>
+<p>These are authored practice scenarios, not transcripts or promises about any employer's interview. Numbers are hypothetical constraints. A worked answer illustrates reasoning; other answers can be strong when they state assumptions and preserve the required guarantees.</p>
+<section id="rubric"><h2>A usable senior answer</h2>
+<table><thead><tr><th>Dimension</th><th>Evidence to look for</th></tr></thead><tbody>
+<tr><td>Correctness</td><td>Trace a concrete input through the actual mechanism. Separate guarantees from observations and assumptions.</td></tr>
+<tr><td>Judgment</td><td>Compare a credible alternative. Explain the deciding constraint, cost, and when the decision changes.</td></tr>
+<tr><td>Failure and verification</td><td>Name a counterexample or failure, predict the result, and identify a test or measurement that could disprove your explanation.</td></tr>
+<tr><td>Delivery and ownership</td><td>Explain who owns the decision and operation, how to introduce the change, and what recovery or rollback can and cannot undo.</td></tr>
+<tr><td>Communication</td><td>Clarify ambiguity, explain plainly, use evidence honestly, and respond to a changed requirement without defending the original design at all costs.</td></tr>
+</tbody></table>
+<p>For each dimension, record <strong>missing</strong>, <strong>supported</strong>, or <strong>needs follow-up</strong>. This is a self-review tool, not a hiring score or an automatic assessment. A correctness or permission failure is not cancelled out by polished communication.</p>
+<p>Allow about 10–15 minutes for an initial attempt and feedback. Implementation and incident exercises can take much longer. Close the answer, retry after 48 hours, and revisit after one week with a different input. Ask Codex to challenge one claim at a time and correct the explanation before moving on.</p>
+<p>A useful evidence note records the lesson, your prediction, the observed result, what you changed, and the next question. Reading a guide or passing the legacy orientation check does not show that the lab was completed.</p>
+</section>
+<section id="priorities"><h2>Use the curriculum as a depth library</h2>
+<p>The 24-week schedule allows 144–192 study hours at 6–8 hours per week. Even 644 readings at 15 minutes each require 161 hours before labs, revision, projects, or mock interviews. Do not equate finishing the catalog with finishing the interview core.</p>
+<p>Start with a diagnostic coding exercise, a system design discussion, one stack-specific debugging case, an AI evaluation case, and a real leadership story. Select lessons from demonstrated gaps. Reuse topics you know through retrieval and changed constraints; spend implementation time where your evidence is weak.</p>
+<p>Prioritize correctness, data and API contracts, concurrency, security, operability, and technical leadership across the stack. Deep compiler, obscure runtime, and platform internals are valuable extensions when the role or a failed explanation makes them relevant. Choose exact company and stack emphasis from target roles; years of experience do not imply Staff-level scope.</p>
+</section>
+<nav aria-label="Track scenarios"><h2>28 worked track cases</h2><ul>${Object.entries(SENIOR_CASES).map(([id, item]) => `<li><a href="#${escapeHtml(id)}">${escapeHtml(item.title)}</a></li>`).join("")}</ul></nav>
+${sections}
+<section id="glossary"><h2>Shared engineering vocabulary</h2><p>Use these meanings consistently. Language- or platform-specific behavior takes precedence; consult the lesson's primary source for that boundary.</p><dl>${Object.entries(COMMON_TERMS).map(([term, definition]) => `<dt>${escapeHtml(term)}</dt><dd>${escapeHtml(definition)}</dd>`).join("")}</dl></section>
+<p><a href="../lesson.html">Return to lessons</a> · <a href="../CONTENT-REVIEW.md">Read the curriculum review</a></p>
+</main></body></html>`;
 }
 
 function fastApiReferenceHtml(fastApiLessons) {
@@ -13357,6 +16555,7 @@ async function generate() {
   }
 
   await writeFile(join(lessonsDirectory, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  await writeFile(join(referenceDirectory, "senior-interview-practice.html"), seniorReferenceHtml(manifest.lessons), "utf8");
   await writeFile(
     join(referenceDirectory, "react-deep-dive-map.html"),
     reactReferenceHtml(manifest.lessons.filter((lesson) => lesson.trackId === "react")),
@@ -13398,4 +16597,6 @@ async function generate() {
   console.log(`Generated ${manifest.lessons.length} lessons across ${manifest.tracks.length} tracks.`);
 }
 
-await generate();
+export { simpleConceptExplanation, diagramFor, lessonHtml, teachingProfileFor, TRACK_PROFILES, parseRoadmap };
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await generate();

@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,8 +37,8 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a database transaction</h2>
-      <ol class="trace-flow" data-flow="database-transaction" aria-label="Mechanism trace: Transaction captures a database view then Statements acquire versions or locks then Constraints and conflicts resolve then One atomic outcome becomes visible. Experiment: Run two conflicting transactions and predict the wait, error, or visible value.">
-        <li class="trace-stage"><span>01 · BEGIN</span><strong>Transaction captures a database view</strong><small>Isolation level defines which changes are visible.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · READ / WRITE</span><strong>Statements acquire versions or locks</strong><small>Concurrent transactions may conflict.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><strong>Constraints and conflicts resolve</strong><small>The engine can wait, abort, commit, or require retry.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>One atomic outcome becomes visible</strong><small>Other transactions observe the durable result.</small></li>
+      <ol class="trace-flow" data-flow="database-transaction" aria-label="Mechanism trace: Choose the isolation boundary then Statements acquire versions or locks then Constraints and conflicts resolve then Publish one atomic outcome. Experiment: Run two conflicting transactions and predict the wait, error, or visible value.">
+        <li class="trace-stage"><span>01 · BEGIN</span><strong>Choose the isolation boundary</strong><small>Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · READ / WRITE</span><strong>Statements acquire versions or locks</strong><small>Concurrent transactions may conflict.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><strong>Constraints and conflicts resolve</strong><small>The engine can wait, abort, commit, or require retry.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>Publish one atomic outcome</strong><small>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
@@ -59,19 +55,19 @@
       <article class="concept-card" data-subtopic="Deadlocks">
         <span>01</span>
         <h3>Deadlocks</h3>
-        <p><strong>What it means:</strong> A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+        <p><strong>What it means:</strong> A deadlock is a cycle in which every transaction waits for another in the same cycle. PostgreSQL detects the cycle and aborts one participant so progress can resume.</p>
       </article><article class="concept-card" data-subtopic="serialization failures">
         <span>02</span>
         <h3>serialization failures</h3>
-        <p><strong>What it means:</strong> serialization failures is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Serialization failures require retrying the complete transaction with fresh reads, not only the final statement.</p>
       </article><article class="concept-card" data-subtopic="timeouts">
         <span>03</span>
         <h3>timeouts</h3>
-        <p><strong>What it means:</strong> timeouts is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
       </article><article class="concept-card" data-subtopic="retry budgets">
         <span>04</span>
         <h3>retry budgets</h3>
-        <p><strong>What it means:</strong> retry budgets is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Retry budgets bound total repeated work and time so contention does not become a retry storm.</p>
       </article><article class="concept-card" data-subtopic="idempotent transactions">
         <span>05</span>
         <h3>idempotent transactions</h3>
@@ -85,8 +81,8 @@
     <div class="walkthrough-grid">
       <article>
         <span>01 · BEGIN</span>
-        <h3>Transaction captures a database view</h3>
-        <p>Isolation level defines which changes are visible.</p>
+        <h3>Choose the isolation boundary</h3>
+        <p>Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</p>
       </article><article>
         <span>02 · READ / WRITE</span>
         <h3>Statements acquire versions or locks</h3>
@@ -97,8 +93,8 @@
         <p>The engine can wait, abort, commit, or require retry.</p>
       </article><article>
         <span>04 · COMMIT</span>
-        <h3>One atomic outcome becomes visible</h3>
-        <p>Other transactions observe the durable result.</p>
+        <h3>Publish one atomic outcome</h3>
+        <p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
       </article>
     </div>
     <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run two conflicting transactions and predict the wait, error, or visible value.</p><p><strong>Then inspect:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
@@ -109,30 +105,41 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce a deadlock, eliminate inconsistent lock order, and add bounded jittered retries around the whole transaction.</p>
+
+
+<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code># Retry the complete database unit, never just the failed statement.
-for attempt in 0 1 2 3; do
-  if psql -X --set ON_ERROR_STOP=1 --file transfer.sql; then exit 0; fi
-  status=$?
-  # Production code checks SQLSTATE 40001 and 40P01 specifically and preserves
-  # one idempotency key. Other errors escape immediately.
-  sleep &quot;0.$((RANDOM % (2 ** attempt + 1)))&quot;
-done
-exit &quot;$status&quot;
+    <pre aria-label="Starter code"><code>import random
+import time
 
-# Prevent common deadlocks by locking accounts in stable account_id order.
-# Also set lock_timeout and statement_timeout below the caller deadline.
+def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
+    if type(attempts) is not int or not 1 &lt;= attempts &lt;= 10:
+        raise ValueError(&quot;attempts must be an integer from 1 to 10&quot;)
+    for attempt in range(attempts):
+        try:
+            return run_transaction()
+        except Exception as error:
+            if getattr(error, &quot;sqlstate&quot;, None) not in {&quot;40001&quot;, &quot;40P01&quot;} or attempt + 1 == attempts:
+                raise
+            pause(random.uniform(0, min(0.05 * 2 ** attempt, 0.5)))
 
-// Lesson focus: Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+# Adapter contract: each call begins a fresh transaction, reruns reads and domain
+# decisions, commits on success and rolls back before raising. Keep one durable
+# operation identity across retries. Do not repeat external effects blindly.
+# The driver must expose sqlstate; other errors escape unchanged. In production,
+# add a caller deadline/cancellation and bound statements/locks within that budget.
+# Avoid deadlocks by locking accounts in stable ID order. Isolation alone cannot
+# repair missing business rules: a retry must recheck sufficient funds/invariants.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -141,7 +148,7 @@ exit &quot;$status&quot;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Transaction captures a database view → Statements acquire versions or locks → Constraints and conflicts resolve → One atomic outcome becomes visible.</p>
+    <p><strong>Conceptual mechanism:</strong> Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -165,11 +172,23 @@ exit &quot;$status&quot;
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="data-systems">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
+        <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trust abstractions and ignore failures</span></label>
@@ -179,7 +198,7 @@ exit &quot;$status&quot;
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">PostgreSQL concurrency control documentation ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html" target="_blank" rel="noreferrer">PostgreSQL complete-transaction retry guidance ↗</a></div>
     
     
     
@@ -198,12 +217,12 @@ exit &quot;$status&quot;
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"data-systems--deadlocks-serialization-failures-timeouts-retry-budgets-and-idempotent-t","title":"Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions","correctIndex":0,"evidenceSummary":"Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"data-systems--deadlocks-serialization-failures-timeouts-retry-budgets-and-idempotent-t","title":"Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions","correctIndex":0,"evidenceSummary":"Deadlocks, serialization failures, timeouts, retry budgets, and idempotent transactions: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -230,7 +249,7 @@ exit &quot;$status&quot;
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -243,7 +262,7 @@ exit &quot;$status&quot;
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

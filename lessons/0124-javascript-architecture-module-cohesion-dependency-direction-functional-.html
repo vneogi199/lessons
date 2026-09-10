@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to JavaScript. JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a build and installation</h2>
-      <ol class="trace-flow" data-flow="javascript-bindings" aria-label="Mechanism trace: Code establishes bindings then A reference searches environments then The running context uses it then Value, error, or retention appears. Experiment: Shadow or capture one binding and predict every lookup and lifetime.">
-        <li class="trace-stage"><span>01 · CREATE</span><strong>Code establishes bindings</strong><small>Declaration instantiation creates and sometimes initializes names.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>A reference searches environments</strong><small>Outer links select the nearest matching binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>The running context uses it</strong><small>Calls, closures, and blocks read or update the binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Value, error, or retention appears</strong><small>Output and heap evidence reveal the selected environment.</small></li>
+      <ol class="trace-flow" data-flow="javascript-modules" aria-label="Mechanism trace: Host identifies each module then The dependency graph connects then Modules execute in graph order then Importer observes live exports. Experiment: Create a two-module cycle and move one early read across initialization.">
+        <li class="trace-stage"><span>01 · RESOLVE</span><strong>Host identifies each module</strong><small>Specifiers become module records under host rules.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><strong>The dependency graph connects</strong><small>Environments and live import bindings are initialized.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>Modules execute in graph order</strong><small>Cycles and top-level await can delay or expose early reads.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Importer observes live exports</strong><small>Loaded chunks, values, or failures prove the boundary.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Shadow or capture one binding and predict every lookup and lifetime.</strong>
-        <small><b>Inspect:</b> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</small>
+        <strong>Create a two-module cycle and move one early read across initialization.</strong>
+        <small><b>Inspect:</b> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</small>
       </div>
     </aside>
   </div>
@@ -63,23 +59,23 @@
       </article><article class="concept-card" data-subtopic="module cohesion">
         <span>02</span>
         <h3>module cohesion</h3>
-        <p><strong>What it means:</strong> module cohesion is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+        <p><strong>What it means:</strong> Module cohesion means the responsibilities grouped in a module belong together and tend to change for related reasons. A file containing unrelated utilities has weak cohesion despite being small.</p>
       </article><article class="concept-card" data-subtopic="dependency direction">
         <span>03</span>
         <h3>dependency direction</h3>
-        <p><strong>What it means:</strong> dependency direction is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+        <p><strong>What it means:</strong> Dependency direction records which module relies on another&#039;s contract. Keep volatile effects behind explicit boundaries so core policy does not depend on incidental framework details.</p>
       </article><article class="concept-card" data-subtopic="functional core">
         <span>04</span>
         <h3>functional core</h3>
-        <p><strong>What it means:</strong> functional core is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+        <p><strong>What it means:</strong> A functional core expresses domain decisions as functions of explicit input, leaving I/O to surrounding code. This makes policy easier to test without simulating external systems.</p>
       </article><article class="concept-card" data-subtopic="object boundaries">
         <span>05</span>
         <h3>object boundaries</h3>
-        <p><strong>What it means:</strong> object boundaries is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+        <p><strong>What it means:</strong> Object boundaries define who can observe or mutate an object&#039;s state. Exposing mutable internals lets callers bypass invariants even when the class methods are carefully designed.</p>
       </article><article class="concept-card" data-subtopic="contracts">
         <span>06</span>
         <h3>contracts</h3>
-        <p><strong>What it means:</strong> contracts is one part of JavaScript&#039;s language, execution, object, or host-interaction model. Ask which values and bindings enter, which ECMAScript rule or host boundary acts, what state or control flow changes, and which focused experiment proves the result.</p>
+        <p><strong>What it means:</strong> A contract states observable inputs, outputs, guarantees, errors, and constraints that callers may rely on. It includes failure behavior, not just a function signature.</p>
       </article>
     </div>
   </section>
@@ -88,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CREATE</span>
-        <h3>Code establishes bindings</h3>
-        <p>Declaration instantiation creates and sometimes initializes names.</p>
+        <span>01 · RESOLVE</span>
+        <h3>Host identifies each module</h3>
+        <p>Specifiers become module records under host rules.</p>
       </article><article>
-        <span>02 · RESOLVE</span>
-        <h3>A reference searches environments</h3>
-        <p>Outer links select the nearest matching binding.</p>
+        <span>02 · LINK</span>
+        <h3>The dependency graph connects</h3>
+        <p>Environments and live import bindings are initialized.</p>
       </article><article>
         <span>03 · EVALUATE</span>
-        <h3>The running context uses it</h3>
-        <p>Calls, closures, and blocks read or update the binding.</p>
+        <h3>Modules execute in graph order</h3>
+        <p>Cycles and top-level await can delay or expose early reads.</p>
       </article><article>
-        <span>04 · OBSERVE</span>
-        <h3>Value, error, or retention appears</h3>
-        <p>Output and heap evidence reveal the selected environment.</p>
+        <span>04 · CONSUME</span>
+        <h3>Importer observes live exports</h3>
+        <p>Loaded chunks, values, or failures prove the boundary.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Shadow or capture one binding and predict every lookup and lifetime.</p><p><strong>Then inspect:</strong> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Create a two-module cycle and move one early read across initialization.</p><p><strong>Then inspect:</strong> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p></div>
   </section>
 
   
@@ -113,44 +109,44 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Refactor a tightly coupled feature into a pure domain core with adapters for clock, storage, network, and telemetry.</p>
+<p><strong>Distinct exercise:</strong> Review the serial integration core and define the repository&#039;s transaction contract. Test it with adapters that reproduce same-key replay, changed-intent conflict and failure; the sample does not provide a production repository.</p>
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>export function createProcessor({ repository, publish, clock, telemetry, concurrency = 4 }) {
+    <pre aria-label="Starter code"><code>// Integration core: the repository contract below must be implemented and tested.
+export function createProcessor({ repository, validateCommand }) {
   return async function process(commands, signal) {
-    const seen = new Set();
-    return mapBounded(commands, concurrency, async command =&gt; {
+    const results = [];
+    // ponytail: serial admission here; add bounded concurrency only after measuring
+    // the transaction pool and establishing ordering and overload requirements.
+    for (const command of commands) {
       signal.throwIfAborted();
       validateCommand(command);
-      if (seen.has(command.idempotencyKey)) return { status: &quot;duplicate&quot; };
-      seen.add(command.idempotencyKey);
-
-      const started = clock.now();
-      try {
-        const event = await repository.commit(command, { signal });
-        await publish(event, { signal });
-        telemetry.observe(&quot;command.duration&quot;, clock.now() - started, { status: &quot;ok&quot; });
-        return { status: &quot;accepted&quot;, eventId: event.id };
-      } catch (cause) {
-        telemetry.increment(&quot;command.failure&quot;, { kind: cause.name });
-        throw new Error(&quot;command processing failed&quot;, { cause });
-      }
-    });
+      results.push(await repository.commitOnceWithOutbox(command, { signal }));
+    }
+    return results;
   };
 }
 
-// Composition root injects real adapters. Tests inject deterministic clock,
-// repository, publisher, and telemetry. Production evidence includes queue
-// depth, latency percentiles, abort count, duplicate rate, heap, and profiles.
-
-// Lesson focus: JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+// Repository requirement: atomically store the business effect, stable result,
+// idempotency key + intent fingerprint, and outbox event in one transaction.
+// Replay the same result for matching intent; reject reuse with different intent.
+// A separate relay publishes committed outbox events and can publish duplicates.
+// Consumers need their own idempotent effect boundary. Never replace this with
+// a per-request Set or a database commit followed by an unrecorded publish call.
+// Acceptance tests in the integration project: concurrent same-key requests,
+// changed-intent conflict, crash after commit, relay replay and cancellation.
+// An aborted caller does not prove an already committed transaction was undone.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -159,16 +155,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Code establishes bindings → A reference searches environments → The running context uses it → Value, error, or retention appears.</p>
+    <p><strong>Conceptual mechanism:</strong> Host identifies each module → The dependency graph connects → Modules execute in graph order → Importer observes live exports. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a build and installation from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Shadow or capture one binding and predict every lookup and lifetime.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Create a two-module cycle and move one early read across initialization.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p></article>
     </div>
   </section>
 
@@ -183,11 +179,23 @@
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a build and installation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="javascript">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Organize domain policy separately from effects, inject capabilities at composition roots, preserve module invariants, and validate external data at runtime.</p>
+        <p><strong>Evidence to explain:</strong> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trust abstractions and ignore failures</span></label>
@@ -216,12 +224,12 @@
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"javascript--javascript-architecture-module-cohesion-dependency-direction-functional-","title":"JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts","correctIndex":0,"evidenceSummary":"JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"javascript--javascript-architecture-module-cohesion-dependency-direction-functional-","title":"JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts","correctIndex":0,"evidenceSummary":"JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -248,7 +256,7 @@
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -261,7 +269,7 @@
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to FastAPI. FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an HTTP request</h2>
-      <ol class="trace-flow" data-flow="fastapi-validation" aria-label="Mechanism trace: Untrusted HTTP values arrive then Protocol representation is decoded then Pydantic applies the schema then Endpoint receives a typed value. Experiment: Send one valid payload and three malformed boundary cases.">
-        <li class="trace-stage"><span>01 · WIRE</span><strong>Untrusted HTTP values arrive</strong><small>Path, query, headers, cookies, or body carry text and bytes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Protocol representation is decoded</strong><small>Content type and parameter source determine parsing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Pydantic applies the schema</strong><small>Conversion, constraints, and validators produce data or errors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ARGUMENT</span><strong>Endpoint receives a typed value</strong><small>Invalid input instead becomes a structured 422 response.</small></li>
+      <ol class="trace-flow" data-flow="fastapi-security" aria-label="Mechanism trace: Request presents identity evidence then Server verifies the principal then Policy evaluates this resource then Allow or reject safely. Experiment: Replay the request as another tenant and with an expired credential.">
+        <li class="trace-stage"><span>01 · CREDENTIAL</span><strong>Request presents identity evidence</strong><small>Token, cookie, certificate, or trusted proxy data arrives.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><strong>Server verifies the principal</strong><small>Check integrity, expiry, issuer, audience, and session state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><strong>Policy evaluates this resource</strong><small>Tenant, ownership, role, and scope rules decide access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECISION</span><strong>Allow or reject safely</strong><small>Return minimal data and a stable denial response.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Send one valid payload and three malformed boundary cases.</strong>
-        <small><b>Inspect:</b> Parsed types, validation error locations, status code, and generated schema.</small>
+        <strong>Replay the request as another tenant and with an expired credential.</strong>
+        <small><b>Inspect:</b> Principal fields, policy decision, audit event, response status, and leaked fields.</small>
       </div>
     </aside>
   </div>
@@ -63,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="streaming">
         <span>02</span>
         <h3>streaming</h3>
-        <p><strong>What it means:</strong> StreamingResponse sends chunks as an iterator produces them instead of building the whole body first. The generator must handle cancellation, cleanup, and slow clients.</p>
+        <p><strong>What it means:</strong> A streaming response sends body chunks incrementally. Its generator and resources must remain valid for the stream&#039;s lifetime, and disconnects or errors must release them.</p>
       </article><article class="concept-card" data-subtopic="files">
         <span>03</span>
         <h3>files</h3>
@@ -79,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="headers">
         <span>06</span>
         <h3>headers</h3>
-        <p><strong>What it means:</strong> Proxy headers report the original client, host, and scheme after a trusted proxy forwards a request. Trust them only from known infrastructure or clients can forge security-sensitive metadata.</p>
+        <p><strong>What it means:</strong> Headers carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them.</p>
       </article>
     </div>
   </section>
@@ -88,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · WIRE</span>
-        <h3>Untrusted HTTP values arrive</h3>
-        <p>Path, query, headers, cookies, or body carry text and bytes.</p>
+        <span>01 · CREDENTIAL</span>
+        <h3>Request presents identity evidence</h3>
+        <p>Token, cookie, certificate, or trusted proxy data arrives.</p>
       </article><article>
-        <span>02 · PARSE</span>
-        <h3>Protocol representation is decoded</h3>
-        <p>Content type and parameter source determine parsing.</p>
+        <span>02 · AUTHENTICATE</span>
+        <h3>Server verifies the principal</h3>
+        <p>Check integrity, expiry, issuer, audience, and session state.</p>
       </article><article>
-        <span>03 · VALIDATE</span>
-        <h3>Pydantic applies the schema</h3>
-        <p>Conversion, constraints, and validators produce data or errors.</p>
+        <span>03 · AUTHORIZE</span>
+        <h3>Policy evaluates this resource</h3>
+        <p>Tenant, ownership, role, and scope rules decide access.</p>
       </article><article>
-        <span>04 · ARGUMENT</span>
-        <h3>Endpoint receives a typed value</h3>
-        <p>Invalid input instead becomes a structured 422 response.</p>
+        <span>04 · DECISION</span>
+        <h3>Allow or reject safely</h3>
+        <p>Return minimal data and a stable denial response.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Send one valid payload and three malformed boundary cases.</p><p><strong>Then inspect:</strong> Parsed types, validation error locations, status code, and generated schema.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Replay the request as another tenant and with an expired credential.</p><p><strong>Then inspect:</strong> Principal fields, policy decision, audit event, response status, and leaked fields.</p></div>
   </section>
 
   
@@ -113,20 +109,31 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Return JSON, streamed CSV, a ranged file, a redirect, cache headers, and a secure cookie while verifying wire-level behavior.</p>
+
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>from collections.abc import AsyncIterator
+import csv
+import io
 from fastapi import Response
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 
 async def csv_rows() -&gt; AsyncIterator[bytes]:
     yield b&quot;id,name\n&quot;
     async for project in repository.iter_projects(batch_size=100):
-        yield (str(project.id) + &quot;,&quot; + project.name + &quot;\n&quot;).encode()
+        row = io.StringIO(newline=&quot;&quot;)
+        csv.writer(row).writerow([str(project.id), project.name])
+        yield row.getvalue().encode(&quot;utf-8&quot;)
+# csv.writer quotes separators/newlines correctly. Spreadsheet formula injection
+# is a different risk: apply a documented spreadsheet-safe export policy when
+# opening user-controlled values in spreadsheets; CSV quoting alone does not fix it.
 
 @app.get(&quot;/exports/projects&quot;)
 async def export_projects() -&gt; StreamingResponse:
@@ -136,13 +143,11 @@ async def export_projects() -&gt; StreamingResponse:
     )
 
 @app.get(&quot;/latest&quot;, response_class=RedirectResponse)
-async def latest(): return &quot;/reports/current&quot;
-
-# Lesson focus: Response classes, streaming, files, redirects, cookies, and headers
-# Prediction: ______________________________________________
-# Observation: _____________________________________________
-# Revised model: ___________________________________________</code></pre>
+async def latest(): return &quot;/reports/current&quot;</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -151,16 +156,16 @@ async def latest(): return &quot;/reports/current&quot;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Untrusted HTTP values arrive → Protocol representation is decoded → Pydantic applies the schema → Endpoint receives a typed value.</p>
+    <p><strong>Conceptual mechanism:</strong> Request presents identity evidence → Server verifies the principal → Policy evaluates this resource → Allow or reject safely. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an HTTP request from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Send one valid payload and three malformed boundary cases.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Replay the request as another tenant and with an expired credential.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Parsed types, validation error locations, status code, and generated schema.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Principal fields, policy decision, audit event, response status, and leaked fields.</p></article>
     </div>
   </section>
 
@@ -175,11 +180,23 @@ async def latest(): return &quot;/reports/current&quot;
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="fastapi">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Understand Response bypass paths, media types, content length, iterators and backpressure, file transfer, background cleanup, header mutation, and cookie attributes.</p>
+        <p><strong>Evidence to explain:</strong> Principal fields, policy decision, audit event, response status, and leaked fields.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Response classes, streaming, files, redirects, cookies, and headers?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
@@ -208,12 +225,12 @@ async def latest(): return &quot;/reports/current&quot;
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"fastapi--response-classes-streaming-files-redirects-cookies-and-headers","title":"Response classes, streaming, files, redirects, cookies, and headers","correctIndex":2,"evidenceSummary":"Response classes, streaming, files, redirects, cookies, and headers: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"fastapi--response-classes-streaming-files-redirects-cookies-and-headers","title":"Response classes, streaming, files, redirects, cookies, and headers","correctIndex":2,"evidenceSummary":"Response classes, streaming, files, redirects, cookies, and headers: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -240,7 +257,7 @@ async def latest(): return &quot;/reports/current&quot;
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -253,7 +270,7 @@ async def latest(): return &quot;/reports/current&quot;
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

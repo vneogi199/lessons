@@ -30,11 +30,13 @@
       document.querySelector("#track-count").textContent = `${tracks.length} tracks`;
       document.querySelector("#track-summary").innerHTML = tracks.map((track) => {
         const next = track.lessons.find((lesson) => !store.isComplete(lesson.id));
+        const first = next || track.lessons[0];
+        const firstHref = first ? `lesson.html#${encodeURIComponent(first.id)}` : "#";
         return `<article class="track-summary-card">
-          <div><h3>${escapeHtml(track.title)}</h3><strong>${track.progress.percent}%</strong></div>
+          <div><h3><a class="track-title-link" href="${firstHref}">${escapeHtml(track.title)}</a></h3><strong>${track.progress.percent}%</strong></div>
           <p>${track.progress.complete}/${track.progress.total} lessons mastered</p>
           <div class="dashboard-progress" aria-label="${escapeHtml(track.title)}: ${track.progress.percent}% complete"><span style="width:${track.progress.percent}%"></span></div>
-          ${next ? `<a href="./#${encodeURIComponent(next.id)}">Next: ${escapeHtml(next.title)} →</a>` : "<span class=\"track-complete\">Track complete ✓</span>"}
+          ${next ? `<a href="lesson.html#${encodeURIComponent(next.id)}">Next: ${escapeHtml(next.title)} →</a>` : "<span class=\"track-complete\">Track complete ✓</span>"}
         </article>`;
       }).join("");
     } catch (error) {

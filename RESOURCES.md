@@ -2,6 +2,72 @@
 
 ## Knowledge
 
+- [Generated-column restrictions](https://www.postgresql.org/docs/current/ddl-generated-columns.html), [complete-transaction retry](https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html), and [logical replication limits](https://www.postgresql.org/docs/17/logical-replication-restrictions.html)
+  Use for immutable generation expressions, fresh decisions after serialization failure and explicit schema/sequence migration. Retry helpers and text checks do not validate database isolation or replication.
+
+- [Deployment progress](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/), [HPA metrics](https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/), and [Prometheus rate](https://prometheus.io/docs/prometheus/latest/querying/functions/)
+  Use for stalled-rollout reporting versus recovery, request-relative CPU utilization and rate-before-aggregation. Explain missing telemetry and insufficient capacity before treating a configuration as an availability guarantee.
+
+- [NetworkPolicy semantics](https://kubernetes.io/docs/concepts/services-networking/network-policies/), [Docker rootless mode](https://docs.docker.com/engine/security/rootless/), and [Terraform plan behavior](https://developer.hashicorp.com/terraform/cli/commands/plan)
+  Use to distinguish additive network rules from global deny, non-root container identity from daemon privilege, and secret-bearing plan artifacts from safe interview evidence. Check DNS paths and the meaning of Terraform exit code 2 explicitly.
+
+- [SQS CloudFormation resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-sqs-queue.html), [S3 version deletion](https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeletingObjectVersions.html), and [Bedrock Converse response](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html)
+  Use for native redrive-policy structure, reversible delete markers versus permanent version deletion, and text completion versus tool/truncated/guardrail output. Local parsers are not AWS deployment tests.
+
+- [Kubernetes endpoint conditions](https://kubernetes.io/docs/concepts/services-networking/endpoint-slices/), [Service variants](https://kubernetes.io/docs/concepts/services-networking/service/), and [Docker multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
+  Use for readiness versus endpoint deletion, headless/selectorless service exceptions and optional stage naming. Review these as configured behaviors, not universal diagrams.
+
+- [CloudTrail data-event selection](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html), [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence), and [MCP transports](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)
+  Use to check which operations are actually audited, what survives a process restart and when HTTP session identifiers apply. These controls require explicit configuration, not just a named library or service.
+
+- [HSTS threat model](https://datatracker.ietf.org/doc/html/rfc6797#section-2.3.1), [FastAPI dependency cleanup scopes](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/), and [Python coroutine definitions](https://docs.python.org/3/reference/compound_stmts.html#coroutine-function-definition)
+  Use for the insecure first-request limitation of redirects, before/after-response cleanup and distinguishing coroutine functions from async generators.
+
+- [Node stream lifecycle](https://nodejs.org/api/stream.html), [filesystem staging](https://nodejs.org/api/fs.html#fspromisesmkdtempprefix-options), and [HTTP/2 session close](https://nodejs.org/api/http2.html#http2sessionclosecallback)
+  Use for backpressure thresholds, per-operation temporary-file ownership and graceful session close versus merely sending GOAWAY. Local checks do not prove crash durability or TLS lifecycle behavior.
+- [Fetch body consumption](https://fetch.spec.whatwg.org/#body-mixin) and [Node AbortSignal](https://nodejs.org/api/globals.html#class-abortsignal)
+  Use for bounded decoded-body reads, combining cancellation with deadlines and distinguishing cooperative cancellation from interrupting synchronous parsing.
+
+- [React state identity](https://react.dev/learn/preserving-and-resetting-state), [effect cleanup](https://react.dev/reference/react/useEffect), and [native dialog semantics](https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element)
+  Use for parent-scoped keys, stale callback cleanup and the difference between portal placement and actual modal behavior. Browser checks remain required.
+- [SSE interpretation](https://html.spec.whatwg.org/multipage/server-sent-events.html), [LangGraph graph/state API](https://docs.langchain.com/oss/python/langgraph/graph-api), and [MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)
+  Use to distinguish an LF-only JSON fixture from a protocol implementation, Pydantic attribute access from dictionary state, and a dispatch demo from a negotiated MCP session.
+- [Stripe signature verification](https://docs.stripe.com/webhooks/signature), [S3 HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html), and [presigned uploads](https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html)
+  Use for original signed bytes, provider-native verification, checksum retrieval and pinning the object version that was actually scanned. Mocks verify adapter control flow only.
+- [TCP congestion control, RFC 5681](https://www.rfc-editor.org/rfc/rfc5681.html), [Python locks](https://docs.python.org/3/library/threading.html), and [temporary files](https://docs.python.org/3/library/tempfile.html)
+  Use for ACK-versus-round reasoning, non-reentrant lock behavior and safe owned staging files. Kernel/network/crash behavior is not established by the local models.
+- [FTC job-scam guidance](https://consumer.ftc.gov/articles/job-scams)
+  Use for independently verifying hiring claims. A matching URL/email is only a screening signal, not proof that the recruiter or offer is genuine.
+- [ASGI HTTP messages](https://asgi.readthedocs.io/en/latest/specs/www.html), [AnyIO cancellation](https://anyio.readthedocs.io/en/latest/cancellation.html), and [FastAPI error handling](https://fastapi.tiangolo.com/tutorial/handling-errors/)
+  Use for streamed request boundaries, cancellation-scope ownership and redacted validation responses. Syntax and framework-free checks do not establish FastAPI integration correctness.
+- [OAuth security best practice, RFC 9700](https://www.rfc-editor.org/rfc/rfc9700.html), [PyJWT API](https://pyjwt.readthedocs.io/en/stable/api.html), [HTTP preconditions](https://www.rfc-editor.org/rfc/rfc9110.html#name-if-match), and [Deprecation header](https://www.rfc-editor.org/rfc/rfc9745.html)
+  Use for replacing legacy password grants, explicit JWT verification requirements, strong conditional writes and structured deprecation dates.
+- [Python queue accounting](https://docs.python.org/3/library/asyncio-queue.html), [total ordering](https://docs.python.org/3/library/functools.html#functools.total_ordering), and [finite decimals](https://docs.python.org/3/library/decimal.html#decimal.Decimal.is_finite)
+  Use for shutdown accounting, consistent comparisons and money-domain counterexamples. Local assertions demonstrate the mechanism, not production throughput.
+- [Raft paper](https://raft.github.io/raft.pdf), [PostgreSQL data-modifying CTEs](https://www.postgresql.org/docs/current/queries-with.html), and [sequence functions](https://www.postgresql.org/docs/current/functions-sequence.html)
+  Use for term persistence before consistency checks, effect gating and sequence/rollback limits. A Raft precheck is not an implementation of consensus; SQL examples still require a real database.
+- [Circuit breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) and [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+  Use for probe-state reasoning and valid trace metadata. Distinguish a small state-machine exercise from a complete breaker, and tracing identity from business idempotency identity.
+- [Lamport: Time, Clocks, and the Ordering of Events](https://lamport.azurewebsites.net/pubs/time-clocks.pdf), [SRE monitoring](https://sre.google/sre-book/monitoring-distributed-systems/), and [handling overload](https://sre.google/sre-book/handling-overload/)
+  Use for causality versus total ordering, separating successful and failed request measurements, and explaining admission-control limits. Synthetic exercises are not production measurements.
+- [Node abortable timers](https://nodejs.org/api/timers.html#timerspromisessettimeoutdelay-value-options) and [Kafka consumer API](https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)
+  Use for deadline/retry cleanup and committed-offset reasoning. The Java consumer contract grounds the broker lesson; its JavaScript adapter is explicitly illustrative, not a library API.
+- [Redis benchmarking](https://redis.io/docs/latest/operate/oss_and_stack/management/optimization/benchmarks/), [LPUSH](https://redis.io/docs/latest/commands/lpush/), [ZRANGE](https://redis.io/docs/latest/commands/zrange/), and [SETBIT](https://redis.io/docs/latest/commands/setbit/)
+  Use for controlled measurement, exact ordering exercises and bitmap allocation limits. Separate predicted command results from measured results on a real instance.
+- [Redis protocol specification](https://redis.io/docs/latest/develop/reference/protocol-spec/), [Cluster specification](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/), and [ACL SETUSER](https://redis.io/docs/latest/commands/acl-setuser/)
+  Use for byte-length framing, same-slot transaction constraints, and separate identity/command/key authorization exercises. The local RESP encoder checks do not test a live Redis client or server.
+- [Redis transactions](https://redis.io/docs/latest/develop/using-commands/transactions/), [WAIT](https://redis.io/docs/latest/commands/wait/), [XTRIM](https://redis.io/docs/latest/commands/xtrim/), and [persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)
+  Use for transaction-error counterexamples, connection-scoped replication evidence, retention risk and offline recovery exercises. These sources support content review, not a claim that local Redis integration tests ran.
+- [PostgreSQL row security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html), [transaction-local settings](https://www.postgresql.org/docs/current/sql-set.html), and [monitoring statistics](https://www.postgresql.org/docs/current/monitoring-stats.html)
+  Review sources for tenant-boundary caveats, transaction scope and version-specific monitoring views. SQL integration execution is still required.
+- [Lambda SQS partial batch failures](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html), [Node performance hooks](https://nodejs.org/api/perf_hooks.html), and [OWASP SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+  Review sources for batch acknowledgment, event-loop measurements and the limits of URL parsing alone as a network security control.
+- [Amazon senior engineer interview preparation](https://www.amazon.jobs/content/en/how-we-hire/sde-iii-interview-prep)
+  Employer-authored senior expectations. Use for: architectural judgment, robust coding, technical leadership, and truthful behavioral evidence; do not generalize one company's process to all interviews.
+- [AWS Builders' Library: safe retries](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/), [Google SRE canarying releases](https://sre.google/workbook/canarying-releases/), and [scikit-learn common pitfalls](https://scikit-learn.org/stable/common_pitfalls.html)
+  Primary sources for worked senior cases involving unknown outcomes, release evidence, and evaluation leakage. Use for: counterexamples, failure experiments, and defensible tradeoffs.
+- [Lost in the Middle](https://arxiv.org/abs/2307.03172)
+  Research evaluating long-context use. Use for: explaining why accepted context length does not guarantee reliable use of evidence, then test current models on the actual workload.
 - [ASD-STE100 Simplified Technical English, Issue 9](https://www.asd-ste100.org/assets/files/ASD-STE100_ISSUE9.pdf) and [official STE overview](https://www.asd-ste100.org/about_STE.html)
   The official controlled-language standard and overview. Use for: short active sentences, controlled technical terms, gradual descriptive detail, one-topic paragraphs, direct procedures, and consistent beginner explanations.
 - [GitHub Octoverse 2025](https://github.blog/news-insights/octoverse/octoverse-a-new-developer-joins-github-every-second-as-ai-leads-typescript-to-1/)

@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,40 +22,35 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
       <span class="section-label">02 · Mental model</span>
-      <p>Learn how predicate and assertion signatures instruct the checker and why an incorrect implementation creates unsoundness.</p>
-      <p class="analogy"><strong>Analogy:</strong> A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>A predicate returns a boolean and promises a type relationship; an assertion function throws on failure and narrows after a normal return. The checker trusts these signatures without proving their implementations. A parser can validate and construct a fresh projected value. The lab accepts extra fields structurally, then strips them during parsing; shape validity does not establish business validity or authorization.</p>
+      <p class="analogy"><strong>Analogy:</strong> A guard reports whether a check passed; an assertion stops the process on failure; a parser hands back a checked, explicitly constructed result. A signature alone is only a promise that the check is honest.</p>
     </section>
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a type-checking decision</h2>
-      <ol class="trace-flow" data-flow="typescript-narrowing" aria-label="Mechanism trace: A value begins with a possible type then Control flow tests the runtime value then Checker removes impossible cases then Branch returns or reaches never. Experiment: Add one new discriminated variant and observe every non-exhaustive consumer.">
-        <li class="trace-stage"><span>01 · DECLARED</span><strong>A value begins with a possible type</strong><small>Its declaration describes every permitted variant.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVIDENCE</span><strong>Control flow tests the runtime value</strong><small>A discriminant, guard, equality, or reachability fact is learned.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NARROW</span><strong>Checker removes impossible cases</strong><small>Only operations valid for the remaining variants are allowed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><strong>Branch returns or reaches never</strong><small>Diagnostics and type tests expose missing or unsafe paths.</small></li>
+      <ol class="trace-flow" data-flow="typescript-guard-contract" aria-label="Mechanism trace: Receive unknown data then Predicate returns a boolean then Assertion throws on failure then Parser selects output fields. Experiment: A predicate claiming number but accepting only numbers below ten makes the false branch unsound: large numbers remain possible. How would a boolean return or a genuinely narrower modeled type avoid that false promise?">
+        <li class="trace-stage"><span>01 · INSPECT</span><strong>Receive unknown data</strong><small>Check object shape, exclude null and arrays, and correlate kind with the required string field.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPORT</span><strong>Predicate returns a boolean</strong><small>The annotation promises a type relationship; tests must challenge whether that promise is true.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STOP</span><strong>Assertion throws on failure</strong><small>Only successful return lets the caller proceed with Command operations.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSTRUCT</span><strong>Parser selects output fields</strong><small>Return a fresh command, stripping extras. This example copies primitive fields, not arbitrary nested graphs.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Add one new discriminated variant and observe every non-exhaustive consumer.</strong>
-        <small><b>Inspect:</b> Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</small>
+        <strong>A predicate claiming number but accepting only numbers below ten makes the false branch unsound: large numbers remain possible. How would a boolean return or a genuinely narrower modeled type avoid that false promise?</strong>
+        <small><b>Inspect:</b> Guard checks passed; malformed commands fail, the lying guard accepts null, the real guard rejects it, and the parsed output keeps its copied name after the input changes.</small>
       </div>
     </aside>
   </div>
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Learn how predicate and assertion signatures instruct the checker and why an incorrect implementation creates unsoundness.</p>
+    <p class="concept-intro"><strong>How they connect:</strong> A predicate returns a boolean and promises a type relationship; an assertion function throws on failure and narrows after a normal return. The checker trusts these signatures without proving their implementations. A parser can validate and construct a fresh projected value. The lab accepts extra fields structurally, then strips them during parsing; shape validity does not establish business validity or authorization.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="User-defined type guards">
         <span>01</span>
@@ -67,15 +63,15 @@
       </article><article class="concept-card" data-subtopic="predicates">
         <span>03</span>
         <h3>predicates</h3>
-        <p><strong>What it means:</strong> predicates is one part of TypeScript&#039;s compiler, type relationship, project, or runtime-boundary model. Ask what static information enters, which checker rule acts, what JavaScript remains after erasure, and which diagnostic plus runtime test proves the contract.</p>
+        <p><strong>What it means:</strong> A signature such as input is Command promises that true identifies Command and false excludes it from the current input type. TypeScript trusts that promise. A check for only some numbers must not claim to identify all numbers: its false branch could still contain numbers.</p>
       </article><article class="concept-card" data-subtopic="validation">
         <span>04</span>
         <h3>validation</h3>
-        <p><strong>What it means:</strong> Runtime validation examines actual external values after types have erased and produces trusted data or structured errors.</p>
+        <p><strong>What it means:</strong> Validation checks input against explicit rules before relying on it. Structure, length, range, allowed values, and business constraints may require different checks.</p>
       </article><article class="concept-card" data-subtopic="narrowing safety">
         <span>05</span>
         <h3>narrowing safety</h3>
-        <p><strong>What it means:</strong> Narrowing removes possibilities from a union using runtime evidence such as typeof, a discriminant, equality, property presence, or a trusted predicate.</p>
+        <p><strong>What it means:</strong> A narrowed type is only as trustworthy as its evidence and the assumptions that remain valid. Incorrect predicates, assertions, external data, or later mutation can break those assumptions. Test both accepted and rejected cases; construct an owned value when shared mutation is a risk.</p>
       </article>
     </div>
   </section>
@@ -84,43 +80,49 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · DECLARED</span>
-        <h3>A value begins with a possible type</h3>
-        <p>Its declaration describes every permitted variant.</p>
+        <span>01 · INSPECT</span>
+        <h3>Receive unknown data</h3>
+        <p>Check object shape, exclude null and arrays, and correlate kind with the required string field.</p>
       </article><article>
-        <span>02 · EVIDENCE</span>
-        <h3>Control flow tests the runtime value</h3>
-        <p>A discriminant, guard, equality, or reachability fact is learned.</p>
+        <span>02 · REPORT</span>
+        <h3>Predicate returns a boolean</h3>
+        <p>The annotation promises a type relationship; tests must challenge whether that promise is true.</p>
       </article><article>
-        <span>03 · NARROW</span>
-        <h3>Checker removes impossible cases</h3>
-        <p>Only operations valid for the remaining variants are allowed.</p>
+        <span>03 · STOP</span>
+        <h3>Assertion throws on failure</h3>
+        <p>Only successful return lets the caller proceed with Command operations.</p>
       </article><article>
-        <span>04 · PROVE</span>
-        <h3>Branch returns or reaches never</h3>
-        <p>Diagnostics and type tests expose missing or unsafe paths.</p>
+        <span>04 · CONSTRUCT</span>
+        <h3>Parser selects output fields</h3>
+        <p>Return a fresh command, stripping extras. This example copies primitive fields, not arbitrary nested graphs.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Add one new discriminated variant and observe every non-exhaustive consumer.</p><p><strong>Then inspect:</strong> Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> A predicate claiming number but accepting only numbers below ten makes the false branch unsound: large numbers remain possible. How would a boolean return or a genuinely narrower modeled type avoid that false promise?</p><p><strong>Then inspect:</strong> Guard checks passed; malformed commands fail, the lying guard accepts null, the real guard rejects it, and the parsed output keeps its copied name after the input changes.</p></div>
   </section>
 
   
 
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
-    <p>Implement tested guards and assertion functions for API payloads while keeping parsing separate from boolean checks.</p>
+    <p>Compile and run valid and malformed command cases; expect Guard checks passed. Contrast the deliberately lying predicate with the tested guard. Verify that parsing drops extra fields and isolates copied string values from later mutation. Tomorrow, reconstruct the guard/assertion/parser distinction before reading the code.</p>
+
+<p><strong>Before you run:</strong> Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>type Command =
+    <pre aria-label="Starter code"><code>// Save as guards.ts; tsc --strict --target ES2022 guards.ts
+// Then run: node guards.js
+type Command =
   | { kind: &quot;create&quot;; name: string }
   | { kind: &quot;archive&quot;; id: string };
 
 function isCommand(input: unknown): input is Command {
-  if (typeof input !== &quot;object&quot; || input === null) return false;
+  if (typeof input !== &quot;object&quot; || input === null || Array.isArray(input)) return false;
   const value = input as Record&lt;string, unknown&gt;;
   return value.kind === &quot;create&quot; &amp;&amp; typeof value.name === &quot;string&quot;
     || value.kind === &quot;archive&quot; &amp;&amp; typeof value.id === &quot;string&quot;;
@@ -130,18 +132,56 @@ function assertCommand(input: unknown): asserts input is Command {
   if (!isCommand(input)) throw new TypeError(&quot;invalid command&quot;);
 }
 
-function execute(input: unknown) {
+function parseCommand(input: unknown): Command {
   assertCommand(input);
-  if (input.kind === &quot;create&quot;) return input.name.trim();
-  return input.id; // control flow eliminated create
+  // Projection returns a fresh value and drops extra fields; no normalization here.
+  return input.kind === &quot;create&quot;
+    ? { kind: &quot;create&quot;, name: input.name }
+    : { kind: &quot;archive&quot;, id: input.id };
 }
 
-// A false predicate implementation lies to the checker. Test guard logic at runtime.
+function check(condition: boolean): void {
+  if (!condition) throw new Error(&quot;check failed&quot;);
+}
+for (const valid of [{ kind: &quot;create&quot;, name: &quot;&quot; }, { kind: &quot;archive&quot;, id: &quot;p1&quot; }]) {
+  check(isCommand(valid));
+  check(JSON.stringify(parseCommand(valid)) === JSON.stringify(valid));
+}
+for (const invalid of [null, [], {}, { kind: &quot;create&quot;, name: 7 },
+  { kind: &quot;archive&quot; }, { kind: &quot;delete&quot;, id: &quot;p1&quot; }]) {
+  check(!isCommand(invalid));
+  let rejected = false;
+  try { parseCommand(invalid); } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    rejected = true;
+  }
+  check(rejected);
+}
+const original = { kind: &quot;create&quot;, name: &quot;Ada&quot;, admin: true };
+const parsed = parseCommand(original);
+original.name = &quot;changed&quot;;
+check(parsed.kind === &quot;create&quot; &amp;&amp; parsed.name === &quot;Ada&quot;);
+check(!(&quot;admin&quot; in parsed));
 
-// Lesson focus: User-defined type guards, assertion functions, predicates, validation, and narrowing safety
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+// Deliberately unsound: the compiler trusts this promise, not its correctness.
+function lies(input: unknown): input is Command { return true; }
+check(lies(null) &amp;&amp; !isCommand(null));
+console.log(&quot;Guard checks passed&quot;);
+// Policy: structural shape check, extra fields accepted then stripped by parsing.
+// Empty strings are shape-valid; business rules and authorization are separate.
+// Intended for decoded JSON: hostile getters/proxies and deep cloning are out of scope.
+// A boolean guard does not freeze its input; mutation can invalidate earlier evidence.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+  </section>
+
+<section class="card" id="typescript-review">
+    <h2>Understand, challenge, verify</h2>
+    <p><strong>Plain model:</strong> A predicate returns a boolean and promises a type relationship; an assertion function throws on failure and narrows after a normal return. The checker trusts these signatures without proving their implementations. A parser can validate and construct a fresh projected value. The lab accepts extra fields structurally, then strips them during parsing; shape validity does not establish business validity or authorization.</p>
+    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+      <p>What must be true on both the true and false branches of a type predicate? Why is a small-number check unsafe as a predicate for all numbers? Explain mutation after validation, parser ownership, unknown-field policy, and why authorization belongs outside a shape guard.</p>
+    </details>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
+    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
   <section class="card code-guide">
@@ -151,35 +191,47 @@ function execute(input: unknown) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> A value begins with a possible type → Control flow tests the runtime value → Checker removes impossible cases → Branch returns or reaches never.</p>
+    <p><strong>Conceptual mechanism:</strong> Receive unknown data → Predicate returns a boolean → Assertion throws on failure → Parser selects output fields. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a type-checking decision from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Add one new discriminated variant and observe every non-exhaustive consumer.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: A predicate claiming number but accepting only numbers below ten makes the false branch unsound: large numbers remain possible. How would a boolean return or a genuinely narrower modeled type avoid that false promise?</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Guard checks passed; malformed commands fail, the lying guard accepts null, the real guard rejects it, and the parsed output keeps its copied name after the input changes.</p></article>
     </div>
   </section>
 
   <section class="card interview">
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
-      <li>Compare a predicate, an assertion function, and a parser returning validated data.</li>
+      <li>What must be true on both the true and false branches of a type predicate? Why is a small-number check unsafe as a predicate for all numbers? Explain mutation after validation, parser ownership, unknown-field policy, and why authorization belongs outside a shape guard.</li>
       <li>Trace a type-checking decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
-      <li>How would you implement tested guards and assertion functions for API payloads while keeping parsing separate from boolean checks, and which evidence would prove the result?</li>
+      <li>How would you compile and run valid and malformed command cases; expect Guard checks passed. Contrast the deliberately lying predicate with the tested guard. Verify that parsing drops extra fields and isolates copied string values from later mutation. Tomorrow, reconstruct the guard/assertion/parser distinction before reading the code, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="typescript">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> A predicate returns a boolean and promises a type relationship; an assertion function throws on failure and narrows after a normal return. The checker trusts these signatures without proving their implementations. A parser can validate and construct a fresh projected value. The lab accepts extra fields structurally, then strips them during parsing; shape validity does not establish business validity or authorization.</p>
+        <p><strong>Evidence to explain:</strong> Guard checks passed; malformed commands fail, the lying guard accepts null, the real guard rejects it, and the parsed output keeps its copied name after the input changes.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of User-defined type guards, assertion functions, predicates, validation, and narrowing safety?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trust abstractions and ignore failures</span></label>
@@ -189,7 +241,7 @@ function execute(input: unknown) {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html" target="_blank" rel="noreferrer">TypeScript: narrowing and type predicates ↗</a></div>
     
     
     
@@ -208,12 +260,12 @@ function execute(input: unknown) {
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"typescript--user-defined-type-guards-assertion-functions-predicates-validation-and-n","title":"User-defined type guards, assertion functions, predicates, validation, and narrowing safety","correctIndex":0,"evidenceSummary":"User-defined type guards, assertion functions, predicates, validation, and narrowing safety: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"typescript--user-defined-type-guards-assertion-functions-predicates-validation-and-n","title":"User-defined type guards, assertion functions, predicates, validation, and narrowing safety","correctIndex":0,"evidenceSummary":"User-defined type guards, assertion functions, predicates, validation, and narrowing safety: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -240,7 +292,7 @@ function execute(input: unknown) {
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -253,7 +305,7 @@ function execute(input: unknown) {
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

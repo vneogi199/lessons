@@ -1,7 +1,7 @@
 version: 1
-updated: 2026-09-04
+updated: 2026-09-06
 title: International Full Stack AI Engineer
-audience: Developer with basic JavaScript and Python familiarity
+audience: Senior interview candidate with around ten years of experience; use clear entry explanations for unfamiliar topics
 
 strategy:
   core_duration_weeks: 24
@@ -601,41 +601,41 @@ tracks:
         practical: Remove redundant annotations, add contracts at unstable boundaries, and inspect inferred types with compile-time assertions.
         interview: Explain when inference improves maintainability and when an explicit contract is necessary.
       - title: any, unknown, never, void, undefined, null, and top or bottom types
-        behind_the_scenes: Compare escape hatches, safe top types, unreachable bottom types, absent values, function-return conventions, and strict null checking.
-        practical: Replace any with unknown at an external boundary and narrow it into a trusted domain value.
-        interview: Contrast any, unknown, never, and void with precise assignability examples.
+        behind_the_scenes: unknown accepts external values but requires evidence before use; any bypasses that protection. never represents no possible value. void tells a caller to ignore a return value, while null and undefined are actual runtime values. Type annotations do not validate input.
+        practical: Predict which assignments the compiler rejects, then run the parser against valid data, null, undefined, missing fields, and a numeric name. Expect Boundary checks passed. Explain why shape validation still does not establish permission or business validity.
+        interview: Why can a number-returning callback satisfy () => void, and why does changing an input from any to unknown still require runtime validation?
       - title: Assignability, structural compatibility, freshness, excess property checks, and open object types
-        behind_the_scenes: Trace member-wise compatibility, source and target relationships, fresh object-literal checks, variable assignment, and the absence of exact object types.
-        practical: Diagnose an extra-property bug and design a runtime boundary that rejects unknown keys.
-        interview: Explain why a variable with extra fields may be assignable when the same object literal is rejected.
+        behind_the_scenes: Structural compatibility asks whether the source supplies the target's required members with compatible types, not whether both objects have identical keys. Fresh object literals receive additional excess-property checks. Assigning a stored object or using satisfies does not strip fields or validate runtime input. Explicit projection controls response fields; a runtime parser enforces an incoming unknown-field policy.
+        practical: Predict the two expected compiler errors, then compile and run the lab. Compare serialization before and after explicit projection; reject invalid shapes and unknown keys at the input boundary. Expect Assignability checks passed. Remove the unknown-key guard and confirm the rejection check fails.
+        interview: Why does storing a literal change excess-property checking without changing its runtime fields? Design separate policies for public response projection and incoming write validation; explain when rejecting unknown keys conflicts with forward compatibility.
       - title: Optional properties, exactOptionalPropertyTypes, indexed access, noUncheckedIndexedAccess, and safe absence
-        behind_the_scenes: Separate a missing property from a present undefined value and model uncertain key lookup under stricter compiler options.
-        practical: Harden configuration and dictionary access without non-null assertions or truthiness mistakes.
-        interview: Explain how strict optional and indexed-access flags expose real production failure paths.
+        behind_the_scenes: An omitted property and a present property containing undefined are different object shapes. exactOptionalPropertyTypes preserves that distinction when assigning optional fields. noUncheckedIndexedAccess makes uncertain dictionary reads include undefined. These flags add static checks; they do not validate incoming JSON.
+        practical: Enable strict, exactOptionalPropertyTypes, and noUncheckedIndexedAccess explicitly. Run the lab to check omitted, nonempty, empty-string, and null patches; reject present undefined and invalid input. Expect Optional-property checks passed. Handle an absent dictionary key without discarding a valid zero. Then replace the presence check with truthiness and explain the failing cases.
+        interview: A PATCH endpoint treats an omitted field as leave unchanged. How would you represent set, clear, and leave unchanged across JSON, runtime validation, and TypeScript without relying on truthiness?
       - title: Union types, intersection types, common members, impossible intersections, and composition
-        behind_the_scenes: Understand set-like combinations, accessible operations, intersection normalization, conflicting properties, and how runtime values satisfy combined structure.
-        practical: Model alternative payment inputs and composed service capabilities without unsafe assertions.
-        interview: Compare unions and intersections using value sets and property access.
+        behind_the_scenes: A union accepts values satisfying either alternative; only operations safe for every remaining alternative are available before narrowing. An intersection requires both contracts at once; it does not merge objects or overwrite conflicting properties. A string-and-number property becomes never. Ordinary structural unions can overlap; distinct literal tags make alternatives distinguishable.
+        practical: Predict the three expected compiler errors, then run the payment-composition lab and expect Composition checks passed. Contrast overlapping contact shapes with tagged payment alternatives, and an impossible intersection with runtime spread. Tomorrow, reconstruct the union-versus-intersection distinction from memory before rereading.
+        interview: A teammate uses an intersection to override an API field from string to number. Explain why that fails, how an explicit replacement type differs, and why neither approach migrates or validates existing runtime data.
       - title: Discriminated unions, state machines, exhaustiveness, never, and illegal states
-        behind_the_scenes: Use literal discriminants and control-flow analysis to correlate fields, eliminate variants, and detect missing cases through never.
-        practical: Replace booleans and nullable fields with an exhaustive request-lifecycle state machine.
-        interview: Show how discriminated unions make illegal states unrepresentable and future changes compiler-visible.
+        behind_the_scenes: A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.
+        practical: Predict the state after start r1, start r2, resolve r1, resolve r2. Compile and run the lab; expect State-machine checks passed. Remove a request-ID guard to expose the stale-response failure, then restore it. Add a cancelled state and follow the compiler error to the missing consumer. Tomorrow, explain why a union alone cannot enforce transitions.
+        interview: Can two individually well-typed states form an illegal transition? Explain stale successes and failures, unique attempt IDs, runtime validation, cancellation versus ignoring results, and how to introduce a new state without silently defaulting old consumers.
       - title: Control-flow analysis, narrowing, typeof, instanceof, in, equality, and truthiness
-        behind_the_scenes: Follow how assignments, conditions, returns, reachability, aliases, and built-in guards refine or widen the checker view at each program point.
-        practical: Draw the flow graph for a mixed union and remove unsafe casts through evidence-producing conditions.
-        interview: Explain narrowing as control-flow analysis rather than permanent mutation of a declared type.
+        behind_the_scenes: Narrowing changes what the checker knows at a particular program point, not the variable's declared contract. A returning null branch removes null from subsequent paths; assignments establish new flow facts. typeof distinguishes primitive categories but reports object for null. in proves property presence including inherited properties, not the property's value type. instanceof checks a runtime constructor relationship, not a deserialized JSON shape.
+        practical: Predict outputs for null, an empty string, zero, and a Date, then compile and run the lab; expect Narrowing checks passed. Explain both expected compiler errors. Replace the explicit null check with truthiness and find the lost valid values. Tomorrow, draw the branches from memory and contrast presence with value validation.
+        interview: Why can a string-or-number variable become number after assignment without changing its declared type? Explain where narrowing stops being reliable evidence at an external boundary, across mutation, or when instanceof is applied to deserialized objects.
       - title: User-defined type guards, assertion functions, predicates, validation, and narrowing safety
-        behind_the_scenes: Learn how predicate and assertion signatures instruct the checker and why an incorrect implementation creates unsoundness.
-        practical: Implement tested guards and assertion functions for API payloads while keeping parsing separate from boolean checks.
-        interview: Compare a predicate, an assertion function, and a parser returning validated data.
+        behind_the_scenes: A predicate returns a boolean and promises a type relationship; an assertion function throws on failure and narrows after a normal return. The checker trusts these signatures without proving their implementations. A parser can validate and construct a fresh projected value. The lab accepts extra fields structurally, then strips them during parsing; shape validity does not establish business validity or authorization.
+        practical: Compile and run valid and malformed command cases; expect Guard checks passed. Contrast the deliberately lying predicate with the tested guard. Verify that parsing drops extra fields and isolates copied string values from later mutation. Tomorrow, reconstruct the guard/assertion/parser distinction before reading the code.
+        interview: What must be true on both the true and false branches of a type predicate? Why is a small-number check unsafe as a predicate for all numbers? Explain mutation after validation, parser ownership, unknown-field policy, and why authorization belongs outside a shape guard.
       - title: Function types, call signatures, construct signatures, parameters, callbacks, and overloads
-        behind_the_scenes: Study parameter and return compatibility, optional and rest parameters, contextual callbacks, implementation signatures, and overload resolution.
-        practical: Design a public API with one honest generic or union signature instead of misleading overloads.
-        interview: Explain when overloads are appropriate and why the implementation signature is invisible to callers.
+        behind_the_scenes: Call signatures describe invocation; construct signatures describe new. Overloads advertise input/output relationships, but callers cannot use the broader implementation signature directly. Optional parameters allow omission; a callback may ignore a supplied index without making that index optional. All signatures are erased, so runtime tests must verify the implementation's promises.
+        practical: Predict three compiler errors, then run the lab and expect Function-contract checks passed. Compare shape-dependent get overloads with a single union-based count signature. Verify the returned array is a copy. Tomorrow, explain why ignoring a callback parameter differs from declaring it optional.
+        interview: A caller has a string-or-array value that neither overload accepts. Would you narrow at the caller, expose a union overload, or redesign the API? Explain return precision, compatibility, and why the implementation body still needs runtime tests.
       - title: Object types, interfaces, type aliases, declaration merging, index signatures, and property keys
-        behind_the_scenes: Compare structural contracts, aliasable expressions, interface merging, index constraints, numeric key behavior, and symbol properties.
-        practical: Model a plugin registry and choose intentionally between an interface, type alias, Record, and Map.
-        interview: Compare interface and type without claiming one is always superior.
+        behind_the_scenes: Interfaces can merge compatible declarations; aliases can name object shapes and other type expressions such as unions. Neither creates runtime values or exact-key validation. A finite Record requires its listed keys, while an index signature describes values at a key category. Object numeric access uses string keys; symbols remain distinct. Map preserves key identity and represents missing entries explicitly.
+        practical: Predict four compiler errors, then run the registry lab with noUncheckedIndexedAccess and expect Object-contract checks passed. Compare numeric and string keys in an object and Map, and inspect symbol enumeration versus JSON serialization. Tomorrow, explain which guarantees belong to types and which belong to the container.
+        interview: Design a registry with known built-ins and runtime third-party registrations. Choose interface or alias for the contract and Record, dictionary, or Map for storage; discuss declaration merging conflicts, missing keys, serialization, prototype names, and why accepting a plugin does not make its code safe.
       - title: Readonly, const assertions, readonly arrays, tuples, satisfies, and literal preservation
         behind_the_scenes: Distinguish compile-time write restrictions from runtime immutability, preserve literals, validate shapes without replacing inference, and model fixed positions.
         practical: Define an immutable route catalog retaining literal keys and values while satisfying a broader contract.

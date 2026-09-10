@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to Node.js. Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#nodejs">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -42,7 +38,7 @@
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an event-loop operation</h2>
       <ol class="trace-flow" data-flow="node-stream" aria-label="Mechanism trace: Bytes arrive in chunks then Readable state holds data then Transform or destination pulls then Pipeline completes or destroys. Experiment: Slow the destination and confirm memory stays bounded.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>Bytes arrive in chunks</strong><small>A file, socket, or producer controls chunk timing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUFFER</span><strong>Readable state holds data</strong><small>High-water marks limit eager production.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUMER</span><strong>Transform or destination pulls</strong><small>Backpressure pauses upstream when writes cannot keep up.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><strong>Pipeline completes or destroys</strong><small>Errors and close events release every handle.</small></li>
+        <li class="trace-stage"><span>01 · SOURCE</span><strong>Bytes arrive in chunks</strong><small>A file, socket, or producer controls chunk timing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUFFER</span><strong>Readable state holds data</strong><small>High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUMER</span><strong>Transform or destination pulls</strong><small>Backpressure pauses upstream when writes cannot keep up.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><strong>Pipeline completes or destroys</strong><small>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
@@ -75,11 +71,11 @@
       </article><article class="concept-card" data-subtopic="cancellation">
         <span>05</span>
         <h3>cancellation</h3>
-        <p><strong>What it means:</strong> cancellation is one part of Node&#039;s JavaScript host, asynchronous runtime, system boundary, or process lifecycle. Ask which input and handle enter, whether V8, Node, libuv, a worker, or the OS owns progress, what resource state changes, and which runtime evidence proves the result.</p>
+        <p><strong>What it means:</strong> Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
       </article><article class="concept-card" data-subtopic="composition">
         <span>06</span>
         <h3>composition</h3>
-        <p><strong>What it means:</strong> composition is one part of Node&#039;s JavaScript host, asynchronous runtime, system boundary, or process lifecycle. Ask which input and handle enter, whether V8, Node, libuv, a worker, or the OS owns progress, what resource state changes, and which runtime evidence proves the result.</p>
+        <p><strong>What it means:</strong> Composition builds behavior from collaborating parts with explicit ownership and contracts, rather than inheriting all behavior from a base class.</p>
       </article>
     </div>
   </section>
@@ -94,7 +90,7 @@
       </article><article>
         <span>02 · BUFFER</span>
         <h3>Readable state holds data</h3>
-        <p>High-water marks limit eager production.</p>
+        <p>High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps.</p>
       </article><article>
         <span>03 · CONSUMER</span>
         <h3>Transform or destination pulls</h3>
@@ -102,7 +98,7 @@
       </article><article>
         <span>04 · FINISH</span>
         <h3>Pipeline completes or destroys</h3>
-        <p>Errors and close events release every handle.</p>
+        <p>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</p>
       </article>
     </div>
     <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow the destination and confirm memory stays bounded.</p><p><strong>Then inspect:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p></div>
@@ -113,39 +109,44 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a gzip file pipeline with AbortSignal, checksums, atomic output, and injected failure.</p>
+<p><strong>Distinct exercise:</strong> Run the compression recipe only in a disposable directory with input.ndjson. Inject source, transform and destination failures separately; verify all pipeline stages close and no incomplete output is published. It creates/replaces files, not a read-only demo.</p>
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>import { createReadStream, createWriteStream, promises as fs } from &quot;node:fs&quot;;
 import { createGzip } from &quot;node:zlib&quot;;
 import { pipeline } from &quot;node:stream/promises&quot;;
+import { dirname, join } from &quot;node:path&quot;;
 
-const controller = new AbortController();
-const source = new URL(&quot;./input.ndjson&quot;, import.meta.url);
-const temporary = new URL(&quot;./input.ndjson.gz.tmp&quot;, import.meta.url);
-const target = new URL(&quot;./input.ndjson.gz&quot;, import.meta.url);
-
-try {
-  await pipeline(
-    createReadStream(source),
-    createGzip(),
-    createWriteStream(temporary, { mode: 0o600 }),
-    { signal: controller.signal }
-  );
-  await fs.rename(temporary, target);
-} catch (error) {
-  await fs.rm(temporary, { force: true });
-  throw error;
+async function gzipFile(source, target, signal) {
+  // Trusted paths; stage on the target filesystem in a directory owned by this call.
+  const directory = await fs.mkdtemp(join(dirname(target), &quot;.gzip-&quot;));
+  const temporary = join(directory, &quot;output.gz&quot;);
+  try {
+    await pipeline(
+      createReadStream(source), createGzip(),
+      createWriteStream(temporary, { flags: &quot;wx&quot;, mode: 0o600 }), { signal }
+    );
+    await fs.rename(temporary, target);
+  } finally {
+    await fs.rm(directory, { recursive: true, force: true });
+  }
 }
-
-// Lesson focus: Transform streams, pipeline, finished, error propagation, cancellation, and composition
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+// await gzipFile(&quot;input.ndjson&quot;, &quot;input.ndjson.gz&quot;, AbortSignal.timeout(5000));
+// A shared .tmp name can overwrite or delete another call&#039;s work. Unique staging
+// prevents that, but successful concurrent replacements still have last-writer wins.
+// ponytail: replacement is not crash-durability proof; add file/directory fsync
+// and platform-specific failure tests when persistence across power loss matters.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -154,7 +155,7 @@ try {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys.</p>
+    <p><strong>Conceptual mechanism:</strong> Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -178,11 +179,23 @@ try {
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="nodejs">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
+        <p><strong>Evidence to explain:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Transform streams, pipeline, finished, error propagation, cancellation, and composition?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
@@ -211,12 +224,12 @@ try {
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"nodejs--transform-streams-pipeline-finished-error-propagation-cancellation-and-c","title":"Transform streams, pipeline, finished, error propagation, cancellation, and composition","correctIndex":2,"evidenceSummary":"Transform streams, pipeline, finished, error propagation, cancellation, and composition: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"nodejs--transform-streams-pipeline-finished-error-propagation-cancellation-and-c","title":"Transform streams, pipeline, finished, error propagation, cancellation, and composition","correctIndex":2,"evidenceSummary":"Transform streams, pipeline, finished, error propagation, cancellation, and composition: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -243,7 +256,7 @@ try {
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -256,7 +269,7 @@ try {
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";
