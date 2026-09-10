@@ -11,7 +11,7 @@ const traceHeadings = new Set();
 const diagramKeys = new Set();
 const requiredFragments = [
   'lang="en-US"',
-  "Beginner foundation",
+  "Core foundation",
   "Mental model",
   "Blackboard",
   "Detailed term guide",
@@ -92,8 +92,8 @@ for (const [index, lesson] of manifest.lessons.entries()) {
     if (!diagramKey) failures.push(`${lesson.id}: missing a topic-aware blackboard flow key`);
     else diagramKeys.add(diagramKey);
     const diagramStageCount = (html.match(/class="trace-stage"/g) || []).length;
-    if (diagramStageCount !== 4) {
-      failures.push(`${lesson.id}: expected 4 readable blackboard stages, found ${diagramStageCount}`);
+    if (diagramStageCount < 3 || diagramStageCount > 4) {
+      failures.push(`${lesson.id}: expected 3 or 4 readable blackboard stages, found ${diagramStageCount}`);
     }
     if (!html.includes("↺ TEST THE MODEL") || !html.includes("<b>Inspect:</b>")) {
       failures.push(`${lesson.id}: blackboard is missing its experiment or evidence guidance`);
@@ -299,9 +299,9 @@ const requiredTypeScriptExamples = [
   ["TypeScript design goals", "JSON.parse"],
   ["Type annotations", "satisfies Record"],
   ["any,", "input: unknown"],
-  ["Assignability", "noUncheckedIndexedAccess"],
+  ["Assignability", "toPublicProfile"],
   ["Discriminated unions", "assertNever"],
-  ["Control-flow analysis", "isCommand"],
+  ["Control-flow analysis", "unreachable: never"],
   ["Function types", "function get(id: string)"],
   ["Readonly,", "as const satisfies"],
   ["Generics,", "function indexById"],
@@ -367,7 +367,7 @@ const requiredNodeExamples = [
   ["Configuration,", "loadConfig"],
   ["Node errors", "DependencyError"],
   ["Process lifecycle", "shutdown"],
-  ["child_process", "spawn"],
+  ["child_process", "execFile"],
   ["worker_threads", "new Worker"],
   ["Background jobs", "LocalQueue"],
   ["Node test runner", "node:test"],
@@ -508,7 +508,7 @@ const infrastructureExpectations = {
       ["VPCs, CIDR", "AWS::EC2::VPC"],
       ["S3 buckets", "put-public-access-block"],
       ["ECR, ECS", "FARGATE"],
-      ["Lambda execution", "idempotency.claim"],
+      ["Lambda execution", "batchItemFailures"],
       ["SQS, SNS", "VisibilityTimeout"],
       ["CloudWatch metrics", "ErrorBudgetBurnRate"],
       ["CloudFormation, CDK", "create-change-set"],
@@ -560,14 +560,14 @@ const infrastructureExpectations = {
       ["Job portals", "const searches"],
       ["Application tracking", "dedupeKey"],
       ["Recruiter screens", "const introduction"],
-      ["Coding interview method", "interviewLoop"],
+      ["Coding interview method", "function pairSum"],
       ["JavaScript and Python coding", "function topK"],
       ["Full-stack technical", "const answer"],
       ["System-design interviews", "const design"],
       ["AI engineering", "const aiClaim"],
       ["Behavioral story bank", "const story"],
       ["Leadership", "conflictReview"],
-      ["Portfolio presentations", "verifyDemo"],
+      ["Portfolio presentations", "const preflight"],
       ["Networking", "const outreach"],
       ["Relocation readiness", "officialImmigrationAuthority"],
       ["Mock interview loops", "const scorecard"],
@@ -736,7 +736,7 @@ const requiredAiLessons = [
   ["ai-application-engineering", "Generative UI", "assertNever", "ai-sdk.dev/docs/ai-sdk-ui"],
   ["ai-application-engineering", "Conversation persistence", "idempotency-key", "ai-sdk.dev/docs/ai-sdk-ui"],
   ["ai-application-engineering", "Tool calling", "execute_tool", "developers.openai.com/api/docs"],
-  ["quality-security", "Production webhooks", "timingSafeEqual", "docs.stripe.com/webhooks"],
+  ["quality-security", "Production webhooks", "constructEvent", "docs.stripe.com/webhooks"],
   ["quality-security", "Application file storage", "generate_presigned_post", "docs.aws.amazon.com/AmazonS3"],
   ["quality-security", "Background jobs", "SKIP LOCKED", "docs.aws.amazon.com/AWSSimpleQueueService"],
   ["quality-security", "Audit logs", "previousHash", "cheatsheetseries.owasp.org"],

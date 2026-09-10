@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a concurrent task</h2>
-      <ol class="trace-flow" data-flow="data-boundary" aria-label="Mechanism trace: Application expresses an invariant then Database organizes durable state then Concurrency rules protect changes then State survives failure. Experiment: Break one assumption with concurrent or failed work and verify the invariant survives.">
-        <li class="trace-stage"><span>01 · MODEL</span><strong>Application expresses an invariant</strong><small>Schema and access patterns turn meaning into constraints.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STORAGE</span><strong>Database organizes durable state</strong><small>Indexes, pages, logs, and caches support access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COORDINATE</span><strong>Concurrency rules protect changes</strong><small>Transactions and locks define legal interleavings.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>State survives failure</strong><small>Backups, logs, replicas, and checks prove durability.</small></li>
+      <ol class="trace-flow" data-flow="database-command-replay" aria-label="Mechanism trace: Claim the tenant-scoped request key then Replay or perform the operation then Save effect, result and event together then Recover a lost response or duplicate delivery. Experiment: Lose the response after commit, retry the same key, then reuse it with changed input.">
+        <li class="trace-stage"><span>01 · CLAIM</span><strong>Claim the tenant-scoped request key</strong><small>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BRANCH</span><strong>Replay or perform the operation</strong><small>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Save effect, result and event together</strong><small>One transaction commits all records or rolls them all back. Return success only after commit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RETRY</span><strong>Recover a lost response or duplicate delivery</strong><small>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Break one assumption with concurrent or failed work and verify the invariant survives.</strong>
-        <small><b>Inspect:</b> Constraints, query plan, lock state, log position, replica state, and restored data.</small>
+        <strong>Lose the response after commit, retry the same key, then reuse it with changed input.</strong>
+        <small><b>Inspect:</b> One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</small>
       </div>
     </aside>
   </div>
@@ -59,7 +55,7 @@
       <article class="concept-card" data-subtopic="Application data patterns">
         <span>01</span>
         <h3>Application data patterns</h3>
-        <p><strong>What it means:</strong> Application data patterns is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Application data patterns coordinate persistence with retries, events, reads, and domain invariants.</p>
       </article><article class="concept-card" data-subtopic="optimistic concurrency">
         <span>02</span>
         <h3>optimistic concurrency</h3>
@@ -67,7 +63,7 @@
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>03</span>
         <h3>idempotency</h3>
-        <p><strong>What it means:</strong> idempotency is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
       </article><article class="concept-card" data-subtopic="outbox">
         <span>04</span>
         <h3>outbox</h3>
@@ -75,15 +71,15 @@
       </article><article class="concept-card" data-subtopic="inbox">
         <span>05</span>
         <h3>inbox</h3>
-        <p><strong>What it means:</strong> inbox is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> An inbox records consumed message identities transactionally with effects to support duplicate-safe processing.</p>
       </article><article class="concept-card" data-subtopic="pagination">
         <span>06</span>
         <h3>pagination</h3>
-        <p><strong>What it means:</strong> pagination is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Pagination divides results into bounded pages; stable ordering and concurrent changes determine whether rows can be skipped or repeated.</p>
       </article><article class="concept-card" data-subtopic="read consistency">
         <span>07</span>
         <h3>read consistency</h3>
-        <p><strong>What it means:</strong> read consistency is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Read consistency defines which committed state a read may observe, especially through replicas and caches.</p>
       </article>
     </div>
   </section>
@@ -92,24 +88,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · MODEL</span>
-        <h3>Application expresses an invariant</h3>
-        <p>Schema and access patterns turn meaning into constraints.</p>
+        <span>01 · CLAIM</span>
+        <h3>Claim the tenant-scoped request key</h3>
+        <p>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</p>
       </article><article>
-        <span>02 · STORAGE</span>
-        <h3>Database organizes durable state</h3>
-        <p>Indexes, pages, logs, and caches support access.</p>
+        <span>02 · BRANCH</span>
+        <h3>Replay or perform the operation</h3>
+        <p>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</p>
       </article><article>
-        <span>03 · COORDINATE</span>
-        <h3>Concurrency rules protect changes</h3>
-        <p>Transactions and locks define legal interleavings.</p>
+        <span>03 · COMMIT</span>
+        <h3>Save effect, result and event together</h3>
+        <p>One transaction commits all records or rolls them all back. Return success only after commit.</p>
       </article><article>
-        <span>04 · RECOVER</span>
-        <h3>State survives failure</h3>
-        <p>Backups, logs, replicas, and checks prove durability.</p>
+        <span>04 · RETRY</span>
+        <h3>Recover a lost response or duplicate delivery</h3>
+        <p>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Break one assumption with concurrent or failed work and verify the invariant survives.</p><p><strong>Then inspect:</strong> Constraints, query plan, lock state, log position, replica state, and restored data.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Lose the response after commit, retry the same key, then reuse it with changed input.</p><p><strong>Then inspect:</strong> One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p></div>
   </section>
 
   
@@ -117,32 +113,70 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a duplicate-safe command with version checking and a transactional outbox, then consume it idempotently.</p>
+
+
+<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>BEGIN;
-INSERT INTO command_receipts(request_id, status)
-VALUES ($1, &#039;started&#039;) ON CONFLICT (request_id) DO NOTHING;
--- Stop if the receipt already contains the authoritative prior result.
-UPDATE projects SET name = $2, version = version + 1
-WHERE tenant_id = $3 AND id = $4 AND version = $5
-RETURNING id, version;
-INSERT INTO outbox(event_id, aggregate_id, kind, payload)
-VALUES ($1, $4, &#039;project.renamed&#039;, jsonb_build_object(&#039;name&#039;, $2));
-UPDATE command_receipts SET status = &#039;done&#039; WHERE request_id = $1;
-COMMIT;
-
--- Publisher claims with FOR UPDATE SKIP LOCKED; consumer stores event_id in an
--- inbox table in the same transaction as its local side effect.
-
-// Lesson focus: Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+    <pre aria-label="Starter code"><code>// Integration core: db.transaction must use ONE connection, BEGIN/COMMIT,
+// roll back on every thrown error, and use READ COMMITTED isolation.
+// tx.query returns { rows }; no driver, schema or authorization is supplied.
+// Before calling: authenticate tenant, authorize project, validate all inputs.
+// command_receipts needs UNIQUE(tenant_id, request_id), intent text, result jsonb.
+// projects needs UNIQUE(tenant_id, id); outbox needs UNIQUE(tenant_id, event_id).
+async function renameProject(db, { tenant, requestId, projectId, name, version }) {
+  // Fixed tuple of validated primitives; includes operation + schema version.
+  const intent = JSON.stringify([&quot;rename-v1&quot;, projectId, name, version]);
+  return db.transaction(async tx =&gt; {
+    const claim = await tx.query(
+      &quot;INSERT INTO command_receipts(tenant_id, request_id, intent) VALUES ($1,$2,$3) ON CONFLICT (tenant_id, request_id) DO NOTHING RETURNING request_id&quot;,
+      [tenant, requestId, intent]
+    );
+    if (claim.rows.length === 0) {
+      // A separate statement gets a fresh READ COMMITTED snapshot after a
+      // competing insert commits. Never fall through to business writes.
+      const prior = await tx.query(
+        &quot;SELECT intent, result FROM command_receipts WHERE tenant_id=$1 AND request_id=$2&quot;,
+        [tenant, requestId]
+      );
+      const receipt = prior.rows[0];
+      if (!receipt || receipt.result == null) throw new Error(&quot;receipt unavailable&quot;);
+      if (receipt.intent !== intent) throw new Error(&quot;idempotency key reused&quot;);
+      return receipt.result;
+    }
+    const updated = await tx.query(
+      &quot;UPDATE projects SET name=$1, version=version+1 WHERE tenant_id=$2 AND id=$3 AND version=$4 RETURNING id, version&quot;,
+      [name, tenant, projectId, version]
+    );
+    if (updated.rows.length !== 1) throw new Error(&quot;version conflict or missing project&quot;);
+    const result = updated.rows[0];
+    await tx.query(
+      &quot;INSERT INTO outbox(tenant_id, event_id, aggregate_id, kind, payload) VALUES ($1,$2,$3,&#039;project.renamed&#039;,$4::jsonb)&quot;,
+      [tenant, requestId, projectId, JSON.stringify({ name, version: result.version })]
+    );
+    await tx.query(
+      &quot;UPDATE command_receipts SET result=$3::jsonb WHERE tenant_id=$1 AND request_id=$2&quot;,
+      [tenant, requestId, JSON.stringify(result)]
+    );
+    return result;
+  });
+}
+// A stale update rolls back the claim: this example does not cache failures.
+// Keep receipts for the promised retry window; deletion permits re-execution.
+// Relay may publish twice after a crash; consumer inbox + effect commit together.
+// Practice: replay same intent, reject changed intent, race two clients, then
+// force UPDATE to return zero rows: no event or successful receipt may commit.
+// https://www.postgresql.org/docs/current/sql-insert.html
+// https://www.postgresql.org/docs/current/transaction-iso.html</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -151,16 +185,16 @@ COMMIT;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Application expresses an invariant → Database organizes durable state → Concurrency rules protect changes → State survives failure.</p>
+    <p><strong>Conceptual mechanism:</strong> Claim the tenant-scoped request key → Replay or perform the operation → Save effect, result and event together → Recover a lost response or duplicate delivery. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Break one assumption with concurrent or failed work and verify the invariant survives.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Lose the response after commit, retry the same key, then reuse it with changed input.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Constraints, query plan, lock state, log position, replica state, and restored data.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p></article>
     </div>
   </section>
 
@@ -175,11 +209,23 @@ COMMIT;
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="data-systems">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
+        <p><strong>Evidence to explain:</strong> One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Memorize terminology and skip verification</span></label>
@@ -208,12 +254,12 @@ COMMIT;
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"data-systems--application-data-patterns-optimistic-concurrency-idempotency-outbox-inbo","title":"Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency","correctIndex":1,"evidenceSummary":"Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"data-systems--application-data-patterns-optimistic-concurrency-idempotency-outbox-inbo","title":"Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency","correctIndex":1,"evidenceSummary":"Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -240,7 +286,7 @@ COMMIT;
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -253,7 +299,7 @@ COMMIT;
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

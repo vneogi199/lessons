@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,45 +22,40 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
       <span class="section-label">02 · Mental model</span>
-      <p>Compare structural contracts, aliasable expressions, interface merging, index constraints, numeric key behavior, and symbol properties.</p>
-      <p class="analogy"><strong>Analogy:</strong> A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>Interfaces can merge compatible declarations; aliases can name object shapes and other type expressions such as unions. Neither creates runtime values or exact-key validation. A finite Record requires its listed keys, while an index signature describes values at a key category. Object numeric access uses string keys; symbols remain distinct. Map preserves key identity and represents missing entries explicitly.</p>
+      <p class="analogy"><strong>Analogy:</strong> A contract describes what each plugin must provide; a registry stores actual plugins. Extending the written contract does not manufacture missing implementations.</p>
     </section>
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a database query</h2>
-      <ol class="trace-flow" data-flow="typescript-check" aria-label="Mechanism trace: JavaScript plus type syntax then Control flow builds a type model then Unsafe relationships are reported then Types disappear from JavaScript. Experiment: Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>JavaScript plus type syntax</strong><small>Declarations describe values and relationships.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECKER</span><strong>Control flow builds a type model</strong><small>Inference, narrowing, generics, and assignability interact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DIAGNOSTIC</span><strong>Unsafe relationships are reported</strong><small>Compiler options decide which uncertainty is rejected.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EMIT</span><strong>Types disappear from JavaScript</strong><small>Runtime behavior still needs real boundary validation.</small></li>
+      <ol class="trace-flow" data-flow="typescript-object-registry" aria-label="Mechanism trace: Merge interface requirements then Require known built-ins then Represent missing entries then Check key behavior. Experiment: If third parties add plugin names at runtime, why does a finite Record stop describing the registry? Compare Map with an own-property-checked or null-prototype dictionary.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Merge interface requirements</strong><small>PluginSpec requires name and run even though they appear in separate declarations.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FINITE KEYS</span><strong>Require known built-ins</strong><small>Record of a literal-key union requires search and export; it does not construct either plugin.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DYNAMIC KEYS</span><strong>Represent missing entries</strong><small>Indexed reads can be absent; Map.get makes missing registrations explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RUNTIME</span><strong>Check key behavior</strong><small>Object numeric keys become strings; Map distinguishes them. Symbols are discoverable but omitted by JSON serialization.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</strong>
-        <small><b>Inspect:</b> Type diagnostic, inferred type, declaration output, runtime value, and validation result.</small>
+        <strong>If third parties add plugin names at runtime, why does a finite Record stop describing the registry? Compare Map with an own-property-checked or null-prototype dictionary.</strong>
+        <small><b>Inspect:</b> Object-contract checks passed; missing merged members and finite keys fail compilation, numeric object access aliases the string key, and Map preserves numeric/string distinctions.</small>
       </div>
     </aside>
   </div>
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Compare structural contracts, aliasable expressions, interface merging, index constraints, numeric key behavior, and symbol properties.</p>
+    <p class="concept-intro"><strong>How they connect:</strong> Interfaces can merge compatible declarations; aliases can name object shapes and other type expressions such as unions. Neither creates runtime values or exact-key validation. A finite Record requires its listed keys, while an index signature describes values at a key category. Object numeric access uses string keys; symbols remain distinct. Map preserves key identity and represents missing entries explicitly.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Object types">
         <span>01</span>
         <h3>Object types</h3>
-        <p><strong>What it means:</strong> Object types is one part of TypeScript&#039;s compiler, type relationship, project, or runtime-boundary model. Ask what static information enters, which checker rule acts, what JavaScript remains after erasure, and which diagnostic plus runtime test proves the contract.</p>
+        <p><strong>What it means:</strong> An object type describes members a value must supply, including properties and possibly call, construct, or index signatures. It can be anonymous, an interface, or named by an alias. It does not construct the object, validate external data, or usually prohibit all extra fields.</p>
       </article><article class="concept-card" data-subtopic="interfaces">
         <span>02</span>
         <h3>interfaces</h3>
@@ -79,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="property keys">
         <span>06</span>
         <h3>property keys</h3>
-        <p><strong>What it means:</strong> property keys is one part of TypeScript&#039;s compiler, type relationship, project, or runtime-boundary model. Ask what static information enters, which checker rule acts, what JavaScript remains after erasure, and which diagnostic plus runtime test proves the contract.</p>
+        <p><strong>What it means:</strong> Runtime object property keys are strings or symbols; numeric property access converts the number to a string. TypeScript also models numeric keys, and PropertyKey is string | number | symbol. Map keys retain their original value identity instead of using object-property coercion.</p>
       </article>
     </div>
   </section>
@@ -88,63 +84,98 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · SOURCE</span>
-        <h3>JavaScript plus type syntax</h3>
-        <p>Declarations describe values and relationships.</p>
+        <span>01 · CONTRACT</span>
+        <h3>Merge interface requirements</h3>
+        <p>PluginSpec requires name and run even though they appear in separate declarations.</p>
       </article><article>
-        <span>02 · CHECKER</span>
-        <h3>Control flow builds a type model</h3>
-        <p>Inference, narrowing, generics, and assignability interact.</p>
+        <span>02 · FINITE KEYS</span>
+        <h3>Require known built-ins</h3>
+        <p>Record of a literal-key union requires search and export; it does not construct either plugin.</p>
       </article><article>
-        <span>03 · DIAGNOSTIC</span>
-        <h3>Unsafe relationships are reported</h3>
-        <p>Compiler options decide which uncertainty is rejected.</p>
+        <span>03 · DYNAMIC KEYS</span>
+        <h3>Represent missing entries</h3>
+        <p>Indexed reads can be absent; Map.get makes missing registrations explicit.</p>
       </article><article>
-        <span>04 · EMIT</span>
-        <h3>Types disappear from JavaScript</h3>
-        <p>Runtime behavior still needs real boundary validation.</p>
+        <span>04 · RUNTIME</span>
+        <h3>Check key behavior</h3>
+        <p>Object numeric keys become strings; Map distinguishes them. Symbols are discoverable but omitted by JSON serialization.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</p><p><strong>Then inspect:</strong> Type diagnostic, inferred type, declaration output, runtime value, and validation result.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> If third parties add plugin names at runtime, why does a finite Record stop describing the registry? Compare Map with an own-property-checked or null-prototype dictionary.</p><p><strong>Then inspect:</strong> Object-contract checks passed; missing merged members and finite keys fail compilation, numeric object access aliases the string key, and Map preserves numeric/string distinctions.</p></div>
   </section>
 
   
 
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
-    <p>Model a plugin registry and choose intentionally between an interface, type alias, Record, and Map.</p>
+    <p>Predict four compiler errors, then run the registry lab with noUncheckedIndexedAccess and expect Object-contract checks passed. Compare numeric and string keys in an object and Map, and inspect symbol enumeration versus JSON serialization. Tomorrow, explain which guarantees belong to types and which belong to the container.</p>
+
+<p><strong>Before you run:</strong> Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>interface Project { readonly id: string; name: string }
-type ProjectKey = keyof Project;
-type Coordinate = readonly [x: number, y: number];
-
-const routes = {
-  projects: { method: &quot;GET&quot;, path: &quot;/projects&quot; },
-  create: { method: &quot;POST&quot;, path: &quot;/projects&quot; }
-} as const satisfies Record&lt;string, {
-  method: &quot;GET&quot; | &quot;POST&quot;;
-  path: string;
-}&gt;;
-
-type RouteName = keyof typeof routes;
-type CreateMethod = typeof routes.create.method; // &quot;POST&quot;
-
-function move(point: Coordinate): Coordinate {
-  return [point[0] + 1, point[1] + 1];
+    <pre aria-label="Starter code"><code>// Save as objects.ts. Compile, then run node objects.js:
+// tsc --strict --noUncheckedIndexedAccess --target ES2022 objects.ts
+interface PluginSpec { name: string }
+interface PluginSpec { run: () =&gt; string } // declarations merge; no runtime object created
+type PluginName = &quot;search&quot; | &quot;export&quot;; // aliases can also name unions
+type PluginTable = Record&lt;PluginName, PluginSpec&gt;;
+const search: PluginSpec = { name: &quot;search&quot;, run: () =&gt; &quot;found&quot; };
+const builtins: PluginTable = {
+  search,
+  export: { name: &quot;export&quot;, run: () =&gt; &quot;saved&quot; }
+};
+interface Counts { [key: string]: number }
+function compilerExamples(counts: Counts, key: string): void {
+  // @ts-expect-error both merged declarations contribute required members
+  const missing: PluginSpec = { name: &quot;search&quot; };
+  // @ts-expect-error finite Record requires every listed key
+  const incomplete: PluginTable = { search };
+  // @ts-expect-error string-indexed values must be numbers
+  const wrong: Counts = { label: &quot;total&quot; };
+  // @ts-expect-error arbitrary indexed reads may be absent with the flag enabled
+  const count: number = counts[key];
 }
+function check(condition: boolean): void {
+  if (!condition) throw new Error(&quot;check failed&quot;);
+}
+check(builtins.search.run() === &quot;found&quot;);
+check(builtins.export.run() === &quot;saved&quot;);
+const counts: Counts = { 1: 7 };
+check(counts[1] === counts[&quot;1&quot;]); // object numeric access uses string keys
+check(counts[&quot;missing&quot;] === undefined);
+const metadata = Symbol(&quot;metadata&quot;);
+const tagged = { visible: true, [metadata]: &quot;internal&quot; };
+check(Object.keys(tagged).join(&quot;,&quot;) === &quot;visible&quot;);
+check(Reflect.ownKeys(tagged).includes(metadata)); // symbol keys are discoverable
+check(JSON.stringify(tagged) === &#039;{&quot;visible&quot;:true}&#039;);
 
-// readonly is compile-time shallow protection. Freeze or copy where runtime
-// ownership requires actual mutation prevention.
+// Dynamic registry: Map has explicit absence and no inherited entry names.
+const registry = new Map&lt;string, PluginSpec&gt;();
+registry.set(&quot;__proto__&quot;, search);
+check(registry.get(&quot;__proto__&quot;) === search);
+check(registry.get(&quot;missing&quot;) === undefined);
+const keys = new Map&lt;string | number, string&gt;([[1, &quot;number&quot;], [&quot;1&quot;, &quot;string&quot;]]);
+check(keys.size === 2); // unlike object property access, these keys stay distinct
+console.log(&quot;Object-contract checks passed&quot;);
+// Interfaces and aliases are erased, not validators or exact-key enforcement.
+// Plugin execution here is trusted local code; a registry is not a sandbox.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+  </section>
 
-// Lesson focus: Object types, interfaces, type aliases, declaration merging, index signatures, and property keys
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+<section class="card" id="typescript-review">
+    <h2>Understand, challenge, verify</h2>
+    <p><strong>Plain model:</strong> Interfaces can merge compatible declarations; aliases can name object shapes and other type expressions such as unions. Neither creates runtime values or exact-key validation. A finite Record requires its listed keys, while an index signature describes values at a key category. Object numeric access uses string keys; symbols remain distinct. Map preserves key identity and represents missing entries explicitly.</p>
+    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+      <p>Design a registry with known built-ins and runtime third-party registrations. Choose interface or alias for the contract and Record, dictionary, or Map for storage; discuss declaration merging conflicts, missing keys, serialization, prototype names, and why accepting a plugin does not make its code safe.</p>
+    </details>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
+    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
   <section class="card code-guide">
@@ -154,35 +185,47 @@ function move(point: Coordinate): Coordinate {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> JavaScript plus type syntax → Control flow builds a type model → Unsafe relationships are reported → Types disappear from JavaScript.</p>
+    <p><strong>Conceptual mechanism:</strong> Merge interface requirements → Require known built-ins → Represent missing entries → Check key behavior. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database query from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: If third parties add plugin names at runtime, why does a finite Record stop describing the registry? Compare Map with an own-property-checked or null-prototype dictionary.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Type diagnostic, inferred type, declaration output, runtime value, and validation result.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Object-contract checks passed; missing merged members and finite keys fail compilation, numeric object access aliases the string key, and Map preserves numeric/string distinctions.</p></article>
     </div>
   </section>
 
   <section class="card interview">
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
-      <li>Compare interface and type without claiming one is always superior.</li>
+      <li>Design a registry with known built-ins and runtime third-party registrations. Choose interface or alias for the contract and Record, dictionary, or Map for storage; discuss declaration merging conflicts, missing keys, serialization, prototype names, and why accepting a plugin does not make its code safe.</li>
       <li>Trace a database query for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
-      <li>How would you model a plugin registry and choose intentionally between an interface, type alias, Record, and Map, and which evidence would prove the result?</li>
+      <li>How would you predict four compiler errors, then run the registry lab with noUncheckedIndexedAccess and expect Object-contract checks passed. Compare numeric and string keys in an object and Map, and inspect symbol enumeration versus JSON serialization. Tomorrow, explain which guarantees belong to types and which belong to the container, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="typescript">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Interfaces can merge compatible declarations; aliases can name object shapes and other type expressions such as unions. Neither creates runtime values or exact-key validation. A finite Record requires its listed keys, while an index signature describes values at a key category. Object numeric access uses string keys; symbols remain distinct. Map preserves key identity and represents missing entries explicitly.</p>
+        <p><strong>Evidence to explain:</strong> Object-contract checks passed; missing merged members and finite keys fail compilation, numeric object access aliases the string key, and Map preserves numeric/string distinctions.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Object types, interfaces, type aliases, declaration merging, index signatures, and property keys?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
@@ -192,7 +235,7 @@ function move(point: Coordinate): Coordinate {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/objects.html" target="_blank" rel="noreferrer">TypeScript: object types and index signatures ↗</a></div>
     
     
     
@@ -211,12 +254,12 @@ function move(point: Coordinate): Coordinate {
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"typescript--object-types-interfaces-type-aliases-declaration-merging-index-signature","title":"Object types, interfaces, type aliases, declaration merging, index signatures, and property keys","correctIndex":2,"evidenceSummary":"Object types, interfaces, type aliases, declaration merging, index signatures, and property keys: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"typescript--object-types-interfaces-type-aliases-declaration-merging-index-signature","title":"Object types, interfaces, type aliases, declaration merging, index signatures, and property keys","correctIndex":2,"evidenceSummary":"Object types, interfaces, type aliases, declaration merging, index signatures, and property keys: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -243,7 +286,7 @@ function move(point: Coordinate): Coordinate {
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -256,7 +299,7 @@ function move(point: Coordinate): Coordinate {
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

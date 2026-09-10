@@ -1,0 +1,928 @@
+import assert from "node:assert/strict";
+import { readFile, writeFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { runInNewContext } from "node:vm";
+import { execFileSync } from "node:child_process";
+import { SENIOR_CASES, REUSE_PURPOSE } from "./senior-content.mjs";
+import { typescriptReviewFor, typescriptSourceFor, TYPESCRIPT_EXECUTABLE_LESSONS } from "./typescript-review.mjs";
+import { simpleConceptExplanation, diagramFor } from "./generate-lessons.mjs";
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
+const manifest = JSON.parse(await readFile(join(root, "lessons/manifest.json"), "utf8"));
+const decode = text => text.replace(/&#039;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const cell = text => text.replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", " ");
+const codeGroups = new Map();
+const rows = [];
+const algorithmChecks = [];
+const machineCodingChecks = [];
+const numericalChecks = [];
+const javascriptChecks = [];
+const pythonTrackChecks = [];
+for (const [term, expected] of [["https redirects", /already unencrypted/], ["origin policy", /not CSRF protection/], ["async def", /async generator/], ["def", /not every helper/]]) {
+  assert.match(simpleConceptExplanation(term, {trackId:"fastapi", title:"Security and execution boundaries"}), expected);
+}
+// Secondary words in a long title must not override its principal mechanism.
+for (const [number, key] of Object.entries({
+  "0086":"javascript-evaluation", "0106":"javascript-jobs", "0119":"javascript-engine",
+  "0121":"javascript-boundary", "0217":"node-runtime", "0222":"node-runtime",
+  "0232":"node-network", "0233":"node-network", "0237":"node-network",
+  "0247":"node-boundary", "0248":"node-parallel", "0284":"python-data-boundary",
+  "0293":"python-data-boundary", "0301":"python-data-boundary", "0326":"fastapi-security",
+  "0335":"fastapi-stream", "0527":"docker-container-run", "0535":"docker-container-run",
+  "0538":"docker-container-run", "0541":"docker-container-run", "0542":"docker-image-build",
+  "0546":"docker-container-run", "0556":"kubernetes-storage", "0567":"kubernetes-policy",
+  "0450":"load-balancer-path", "0494":"aws-data-request",
+  "0366":"database-query", "0371":"postgres-pool", "0376":"postgres-access",
+  "0377":"postgres-diagnostics", "0378":"postgres-diagnostics",
+  "0508":"operations-diagnosis", "0509":"operations-diagnosis",
+  "0520":"operations-diagnosis", "0522":"operations-diagnosis",
+  "0571":"operations-diagnosis", "0572":"operations-diagnosis"
+})) {
+  const lesson = manifest.lessons.find(item => item.number === number);
+  assert.equal(diagramFor(lesson).key, key, `${number}: incorrect principal diagram`);
+}
+for (const [title, key] of [["RESP, connections", "resp-byte-framing"], ["Redis Cluster", "redis-cluster-conditional-write"], ["Redis security", "redis-acl-boundary"]]) {
+  assert.equal(diagramFor({ trackId: "data-systems", title }).key, key);
+}
+assert.equal(diagramFor({ trackId: "data-systems", title: "Application data patterns, optimistic concurrency" }).key, "database-command-replay");
+assert.equal(diagramFor({ trackId: "data-systems", title: "Data systems production architecture capstone" }).key, "database-command-replay");
+const python = process.env.LESSON_PYTHON || "python3";
+execFileSync(python, ["-I", "-c", "import sys; assert sys.version_info >= (3, 12), 'Python 3.12+ required; set LESSON_PYTHON to a suitable interpreter'"], { stdio: "pipe" });
+
+// One runnable regression check for the semantic routing bugs found in review.
+const js = { trackId: "javascript", title: "Primitive values, objects, typeof, null, undefined, and identity" };
+assert.match(simpleConceptExplanation("null", js), /not an object/);
+assert.match(simpleConceptExplanation("Set", js), /Set stores unique/);
+assert.match(simpleConceptExplanation("WeakSet", js), /WeakSet holds/);
+assert.match(simpleConceptExplanation("in", { trackId: "typescript", title: "Control-flow analysis" }), /in operator checks whether a property exists/);
+assert.match(simpleConceptExplanation("Parameters", { trackId: "typescript", title: "Built-in utility types" }), /extracts a tuple/);
+assert.match(simpleConceptExplanation("top or bottom types", { trackId: "typescript", title: "any, unknown" }), /never has no possible values/);
+assert.equal(diagramFor({ trackId: "typescript", title: "any, unknown, never, void, undefined, null, and top or bottom types" }).key, "typescript-unknown-boundary");
+assert.match(simpleConceptExplanation("Readonly", { trackId: "typescript", title: "Readonly" }), /readonly/i);
+assert.match(simpleConceptExplanation("sessions", { trackId: "nodejs", title: "HTTP/2, sessions" }), /multiple request\/response streams/);
+assert.match(simpleConceptExplanation("partitions", { trackId: "api-distributed-systems", title: "Ordering, partitions" }), /message log/);
+assert.equal(diagramFor(js).key, "javascript-values-identity");
+assert.equal(diagramFor({ trackId: "javascript", title: "Async functions, await, suspension, resumption, errors, and sequential execution" }).key, "javascript-await");
+assert.equal(Object.keys(SENIOR_CASES).length, manifest.tracks.length);
+
+const reference = await readFile(join(root, "reference/senior-interview-practice.html"), "utf8");
+const tsReport = ["# TypeScript content review", "",
+  "All 45 lessons (0126–0170) received a content-review pass: concrete term definitions, plain explanations, senior reasoning checkpoints, and explicit lab scope. This is not certification of every integration or learner mastery.", "",
+  "Verification: run `node scripts/check-typescript-lessons.mjs` for 26 generated snippets with compiler checks and runtime assertions/probes. The remaining 19 are intentional counterexamples, configuration/tooling recipes, integration sketches, or project assignments; they were reviewed as content, not executed end-to-end. No React/Node packages were installed for this review.", "",
+  "Corrected empty-input generic unsoundness, event-name remapping, declaration/implementation confusion, a declare-only runtime call, missing HTTP status checks, and mouse-only table selection. Integration exercises explicitly identify authorization, cancellation, packaging, and host prerequisites.", "",
+  "Use the labs' stated prerequisites. The test runner uses installed TypeScript 5.3.3; newer APIs such as NoInfer require their documented compiler version. Shared snippets now have distinct lesson-specific exercises. They are not complete implementations of every subtopic in the title.", ""];
+for (const lesson of manifest.lessons.filter(item => item.trackId === "typescript")) {
+  const [model, reasoning, evidence] = typescriptReviewFor(lesson);
+  tsReport.push(`## ${lesson.number} · ${lesson.title}`, "",
+    `[Lesson](${lesson.path.replace(/^\.\.\/\.\.\//, "")}) · [Primary reference](${typescriptSourceFor(lesson.number)})`, "",
+    `Model: ${model}`, "", `Senior checkpoint: ${reasoning}`, "", `Practice: ${evidence}`, "",
+    `Verification scope: ${TYPESCRIPT_EXECUTABLE_LESSONS.has(lesson.number) ? "Included in the compiler/runtime check command." : "Content reviewed; requires the described project or exercise-specific verification."}`, "");
+}
+await writeFile(join(root, "TYPESCRIPT-CONTENT-REVIEW.md"), tsReport.join("\n"));
+for (const lesson of manifest.lessons) {
+  const path = lesson.path.replace(/^\.\.\/\.\.\//, "");
+  const html = await readFile(join(root, path), "utf8");
+  const terms = [...html.matchAll(/data-subtopic="([^"]+)"[\s\S]*?<p><strong>What it means:<\/strong> ([\s\S]*?)<\/p>/g)];
+  const missing = terms.filter(([, , definition]) => /is one part of|is one responsibility|is a technical term/.test(definition)).map(([, term]) => decode(term));
+  const code = (html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code>/)?.[1] || "").trim();
+  assert.ok(!/(?:\/\/|#) Lesson focus:/.test(code), `${lesson.id}: practice annotations must not corrupt copied code`);
+  assert.ok(html.includes("<strong>Practice notes:</strong>"), `${lesson.id}: retain prediction and observation outside code`);
+  assert.ok(html.includes("<strong>Tomorrow, without notes:</strong>"), `${lesson.id}: include delayed recall and corrective practice`);
+  assert.ok(!html.includes("Which approach best demonstrates mastery"), `${lesson.id}: orientation is not a knowledge assessment`);
+  if (lesson.trackId === "kubernetes") {
+    assert.ok(!/^kubectl /m.test(decode(code)) || !/^apiVersion:|^resources:|^spec:/m.test(decode(code)), `${lesson.id}: do not mix executable shell commands with YAML`);
+  }
+  if (lesson.trackId === "devops" && lesson.title.startsWith("Shell automation")) {
+    const guard = decode(code).split("./deploy --artifact")[0];
+    const valid = `registry.example/app@sha256:${"a".repeat(64)}`;
+    execFileSync("bash", ["-s", "--", valid], { input: guard, stdio: "pipe" });
+    for (const invalid of ["image@sha256:", "image@sha256:DIGEST", `image@sha256:${"g".repeat(64)}`, `image@sha256:${"a".repeat(63)}`, `bad image@sha256:${"a".repeat(64)}`]) {
+      assert.throws(() => execFileSync("bash", ["-s", "--", invalid], { input: guard, stdio: "pipe" }), `${lesson.id}: reject malformed digest`);
+    }
+  }
+  assert.equal(missing.length, 0, `${lesson.id}: placeholder definitions must be replaced before publishing`);
+  if (lesson.number === "0614") {
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.trackId === "data-systems" && lesson.title.startsWith("Deadlocks,")) {
+    execFileSync(python, ["-I", "-c", decode(code) + `
+class Failure(Exception):
+    def __init__(self, state): self.sqlstate = state
+calls, sleeps = [], []
+def transient():
+    calls.append(1)
+    if len(calls) < 3: raise Failure("40001")
+    return "committed"
+assert retry_transaction(transient, pause=sleeps.append) == "committed"
+assert len(calls) == 3 and len(sleeps) == 2
+assert all(0 <= delay <= 0.5 for delay in sleeps)
+for state, count in [("40P01", 4), ("23505", 1), (None, 1)]:
+    calls.clear()
+    original = Failure(state)
+    def fail():
+        calls.append(1)
+        raise original
+    try: retry_transaction(fail, pause=lambda _: None)
+    except Failure as error: assert error is original
+    else: raise AssertionError("must preserve failure")
+    assert len(calls) == count
+for attempts in [0, -1, 11, True, 1.5]:
+    try: retry_transaction(lambda: None, attempts=attempts)
+    except ValueError: pass
+    else: raise AssertionError("invalid retry bound")
+`], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.trackId === "data-systems" && /^(?:--[^\n]*\n\s*)*(?:SELECT|CREATE|BEGIN|ALTER|EXPLAIN|WITH|REVOKE|SET)\b/.test(decode(code))) {
+    assert.ok(!/^#|^psql |^ps |^hostssl /m.test(decode(code)), `${lesson.id}: SQL must not contain shell/INI syntax`);
+  }
+  if (lesson.trackId === "fastapi" && lesson.number !== "0342") {
+    // Syntax only: framework imports and integration adapters are unavailable.
+    execFileSync(python, ["-I", "-c", "import ast,sys; ast.parse(sys.stdin.read())"], { input: decode(code), timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0331") {
+    execFileSync(python, ["-I", "-c", decode(code) + `
+import asyncio
+async def check():
+    for chunks, headers, expected in [
+        ([b"ab", b"cd"], [], 200),
+        ([b"ab", b"cde"], [], 413),
+        ([b"12345"], [(b"content-length", b"1")], 413),
+        ([b"x"], [(b"content-encoding", b"gzip")], 415),
+        ([b""], [], 200),
+    ]:
+        messages = [{"type": "http.request", "body": chunk, "more_body": i < len(chunks)-1}
+                    for i, chunk in enumerate(chunks)]
+        sent, calls = [], []
+        async def receive(): return messages.pop(0)
+        async def send(message): sent.append(message)
+        async def app(scope, receive, send):
+            body = await receive()
+            calls.append(body["body"])
+            assert not body["more_body"]
+            await send({"type": "http.response.start", "status": 200})
+        await BodyLimit(app, 4)({"type": "http", "headers": headers}, receive, send)
+        assert sent[0]["status"] == expected
+        assert calls == ([b"".join(chunks)] if expected == 200 else [])
+    sent = []
+    async def disconnected(): return {"type": "http.disconnect"}
+    async def forbidden(*args): raise AssertionError("must not call downstream or send")
+    await BodyLimit(forbidden)({"type": "http"}, disconnected, forbidden)
+    for limit in (0, -1, True):
+        try: BodyLimit(forbidden, limit)
+        except ValueError: pass
+        else: raise AssertionError("bad limit accepted")
+asyncio.run(check())
+`], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.trackId === "python") {
+    if (!["0297", "0298"].includes(lesson.number)) {
+      execFileSync(python, ["-I", "-c", "import ast,sys; ast.parse(sys.stdin.read())"], { input: decode(code), timeout: 10000, stdio: "pipe" });
+    }
+    // Read through before execution: skip multi-file/native/process/external labs.
+    if (!["0271", "0290", "0297", "0298", "0299", "0301", "0302"].includes(lesson.number)) {
+      execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+      pythonTrackChecks.push(lesson.number);
+    }
+  }
+  if (lesson.trackId === "systems-foundations") {
+    // Twelve offline stdlib experiments; no packets, containers or kernel tuning.
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (["0589", "0600", "0603", "0604"].includes(lesson.number)) {
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0607") {
+    const requests = [
+      "{bad", "[]", JSON.stringify({ jsonrpc: "2.0", id: true, method: "tools/list" }),
+      JSON.stringify({ jsonrpc: "2.0", id: 1, method: "missing" }),
+      JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "explain_term", arguments: { term: 3 } } }),
+      JSON.stringify({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "explain_term", arguments: { term: "idempotency" } } }),
+      JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })
+    ];
+    const output = execFileSync(python, ["-I", "-c", decode(code)], { input: requests.join("\n") + "\n", encoding: "utf8", timeout: 10000 });
+    const responses = output.trim().split("\n").map(line => JSON.parse(line));
+    assert.equal(responses.length, 6);
+    assert.deepEqual(responses.slice(0, 5).map(response => response.error.code), [-32700, -32600, -32600, -32601, -32602]);
+    assert.equal(responses[0].id, null);
+    assert.match(responses[5].result.content[0].text, /operation identity/);
+  }
+  if (lesson.number === "0606") {
+    // Extract only the node function: no claim that Pydantic/LangGraph executed.
+    const probe = `import ast,sys
+from types import SimpleNamespace as NS
+tree = ast.parse(sys.stdin.read())
+node = next(item for item in tree.body if isinstance(item, ast.FunctionDef) and item.name == "review")
+node.returns = None
+for argument in node.args.args: argument.annotation = None
+answers = iter([True, False, "false"])
+def interrupt(payload):
+    assert payload["action"] == "refund"
+    return next(answers)
+Command = lambda **kwargs: NS(**kwargs)
+exec(compile(ast.Module(body=[node], type_ignores=[]), "lesson-node", "exec"))
+assert review(NS(action="refund")).goto == "execute"
+assert review(NS(action="refund")).goto == "cancel"
+try: review(NS(action="refund"))
+except ValueError: pass
+else: raise AssertionError("truthy string approved")
+`;
+    execFileSync(python, ["-I", "-c", probe], { input: decode(code), timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0302") {
+    execFileSync(python, ["-I", "-c", decode(code) + `
+import asyncio
+from copy import deepcopy
+# Sequential transaction fake: verifies service branching, not database isolation.
+state = {"receipts": {}, "projects": []}
+fail_commit = False
+class FakeUow:
+    async def __aenter__(self):
+        self.pending = deepcopy(state)
+        return self
+    async def __aexit__(self, *args): pass
+    async def claim(self, key, intent):
+        prior = self.pending["receipts"].get(key)
+        if prior:
+            if prior[0] != intent: raise ValueError("changed intent")
+            return prior[1]
+        self.pending["receipts"][key] = [intent, None]
+    async def add_project(self, project):
+        result = dict(project, id=len(self.pending["projects"]) + 1)
+        self.pending["projects"].append(result)
+        return result
+    async def save_result(self, key, project):
+        self.pending["receipts"][key][1] = project
+    async def commit(self):
+        if fail_commit: raise RuntimeError("commit failed")
+        state.update(self.pending)
+async def check():
+    global fail_commit
+    service = ProjectService(FakeUow)
+    first = await service.create(CreateProject(" Demo ", "k"))
+    assert await service.create(CreateProject("Demo", "k")) == first
+    assert len(state["projects"]) == 1
+    for command in (CreateProject("Other", "k"), CreateProject(" ", "b"), CreateProject("X", "")):
+        try: await service.create(command)
+        except ValueError: pass
+        else: raise AssertionError("invalid command accepted")
+    fail_commit = True
+    try: await service.create(CreateProject("Other", "new"))
+    except RuntimeError: pass
+    else: raise AssertionError("commit failure ignored")
+    assert len(state["projects"]) == 1 and "new" not in state["receipts"]
+    fail_commit = False
+    assert (await service.create(CreateProject("Other", "new")))["id"] == 2
+asyncio.run(check())
+`], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.title.startsWith("Kafka producers")) {
+    const effects = [], commits = [];
+    const handleBatch = runInNewContext(decode(code) + "\nhandleBatch", {
+      applyBusinessEffect: async (_tx, value) => { if (value === "fail") throw new Error("effect failed"); effects.push(value); }
+    });
+    const database = { transaction: async fn => fn({ inbox: { insertIfAbsent: async () => true } }) };
+    const consumer = { commitOffset: async offset => commits.push(offset) };
+    const record = { topic: "jobs", partition: 0, offset: "9007199254740993", value: "ok" };
+    await handleBatch(consumer, database, []);
+    assert.equal(commits.length, 0);
+    await handleBatch(consumer, database, [record]);
+    assert.deepEqual(commits, ["9007199254740994"]);
+    await assert.rejects(handleBatch(consumer, database, [record, { ...record, partition: 1 }]), /one partition/);
+    assert.deepEqual(effects, ["ok"]);
+    await assert.rejects(handleBatch(consumer, database, [{ ...record, value: "fail" }]), /effect failed/);
+    assert.equal(commits.length, 1);
+  }
+  if (lesson.number === "0439") {
+    const order = [];
+    let failState = false;
+    const advance = runInNewContext(decode(code) + "\nadvance", {
+      transition: () => ({ actions: ["ship"] }),
+      store: { transaction: async fn => {
+        await fn({
+          appendHistory: async () => { await Promise.resolve(); order.push("history"); },
+          saveState: async () => { await Promise.resolve(); if (failState) throw new Error("state failed"); order.push("state"); },
+          enqueueDueActions: async () => { await Promise.resolve(); order.push("actions"); }
+        });
+        order.push("commit");
+      } }
+    });
+    await advance({ id: "s1", state: "paid" }, {});
+    assert.deepEqual(order, ["history", "state", "actions", "commit"]);
+    order.length = 0; failState = true;
+    await assert.rejects(advance({ id: "s1", state: "paid" }, {}), /state failed/);
+    assert.deepEqual(order, ["history"]);
+  }
+  if (lesson.number === "0435") {
+    // Sequential transaction fake tests adapter use, not real isolation/durability.
+    const consume = runInNewContext(decode(code) + "\nconsume");
+    let receipts = new Map(), effects = 0, acknowledgements = 0;
+    let failEffect = false, failAck = false;
+    const database = { async transaction(callback) {
+      const staged = new Map(receipts);
+      let pendingEffects = 0;
+      await callback({
+        inbox: { async insertIfAbsent(id, data) {
+          const intent = JSON.stringify(data);
+          if (staged.has(id)) {
+            if (staged.get(id) !== intent) throw new Error("changed intent");
+            return false;
+          }
+          staged.set(id, intent);
+          return true;
+        } },
+        async applyBusinessEffect() {
+          if (failEffect) throw new Error("effect failed");
+          pendingEffects++;
+        }
+      });
+      receipts = staged;
+      effects += pendingEffects;
+    } };
+    const broker = { async ack(record) {
+      assert.ok(receipts.has(record.eventId), "ack must follow commit");
+      if (failAck) throw new Error("ack failed");
+      acknowledgements++;
+    } };
+    const record = { eventId: "e1", data: { value: 1 } };
+    await consume(record, database, broker);
+    await consume(record, database, broker);
+    assert.equal(effects, 1);
+    assert.equal(acknowledgements, 2);
+    await assert.rejects(consume({ ...record, data: { value: 2 } }, database, broker), /changed intent/);
+    assert.equal(acknowledgements, 2);
+    failEffect = true;
+    await assert.rejects(consume({ ...record, eventId: "e2" }, database, broker), /effect failed/);
+    assert.equal(receipts.has("e2"), false);
+    assert.equal(acknowledgements, 2);
+    failEffect = false;
+    failAck = true;
+    await assert.rejects(consume({ ...record, eventId: "e2" }, database, broker), /ack failed/);
+    assert.equal(effects, 2);
+    failAck = false;
+    await consume({ ...record, eventId: "e2" }, database, broker);
+    assert.equal(effects, 2);
+    assert.equal(acknowledgements, 3);
+  }
+  if (lesson.number === "0470") {
+    const receive = runInNewContext(decode(code) + "\nreceive", { Response });
+    const raw = Buffer.from("original bytes");
+    let accepted = 0, failVerification = false, failDatabase = false;
+    const stripe = { webhooks: { constructEvent(body, signature, secret, tolerance) {
+      assert.equal(body, raw); assert.equal(signature, "signed");
+      assert.equal(secret, "secret"); assert.equal(tolerance, 300);
+      if (failVerification) throw new Error("invalid signature");
+      return { id: "evt-1" };
+    } } };
+    const inbox = { async acceptVerifiedEvent(event) {
+      if (failDatabase) throw new Error("database failed");
+      assert.equal(event.id, "evt-1"); accepted++;
+    } };
+    const read = async (_request, limit) => { assert.equal(limit, 1_048_576); return raw; };
+    const request = { headers: new Headers({ "stripe-signature": "signed" }) };
+    assert.equal((await receive(request, stripe, "secret", inbox, read)).status, 204);
+    failVerification = true;
+    assert.equal((await receive(request, stripe, "secret", inbox, read)).status, 400);
+    assert.equal(accepted, 1);
+    failVerification = false; failDatabase = true;
+    await assert.rejects(receive(request, stripe, "secret", inbox, read), /database failed/);
+    assert.equal((await receive({ headers: new Headers() }, stripe, "secret", inbox, read)).status, 400);
+  }
+  if (lesson.number === "0471") {
+    execFileSync(python, ["-I", "-c", decode(code) + `
+from types import SimpleNamespace as NS
+from contextlib import nullcontext
+record = NS(key="quarantine/key", size=3, checksum="checksum")
+queued, transitions = [], []
+class Files:
+    def require_owner(self, upload_id, owner): return record
+    def accept_version(self, *args):
+        if transitions: return False
+        transitions.append(args)
+        return True
+class S3:
+    version = "v1"
+    def head_object(self, **args):
+        assert args["ChecksumMode"] == "ENABLED"
+        return {"VersionId": self.version, "ContentLength": 3, "ChecksumSHA256": "checksum"}
+s3 = S3()
+db = NS(files=Files(), transaction=nullcontext)
+jobs = NS(insert_once=lambda key, value: queued.append((key, value)))
+complete_upload(NS(id="owner"), "upload", s3, db, jobs)
+complete_upload(NS(id="owner"), "upload", s3, db, jobs)
+assert len(queued) == 1 and queued[0][1]["version_id"] == "v1"
+s3.version = "null"
+try: complete_upload(NS(id="owner"), "upload", s3, db, jobs)
+except ValueError: pass
+else: raise AssertionError("unversioned object accepted")
+assert len(queued) == 1
+`], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0472") {
+    execFileSync(python, ["-I", "-c", decode(code) + `
+from types import SimpleNamespace as NS
+class RetryableError(Exception): pass
+class PermanentError(Exception): pass
+class LeaseLostError(Exception): pass
+safe_error_code = lambda error: type(error).__name__
+mode, owners, retried = "ok", [], []
+def perform_idempotently(job):
+    if mode == "retry": raise RetryableError("sensitive detail")
+class DB:
+    rowcount = 1
+    def fetch_one(self, sql, params):
+        owners.append(params["worker"])
+        return NS(id="job", attempts=1)
+    def execute(self, sql, job, owner):
+        assert "lease_until > clock_timestamp()" in sql and owner == owners[-1]
+        return NS(rowcount=self.rowcount)
+    def retry_after(self, job, owner, delay, error): retried.append((owner, delay, error))
+db = DB()
+stopping = NS(is_set=lambda: False)
+assert run_one(db, "worker", stopping)
+assert run_one(db, "worker", stopping)
+assert owners[0] != owners[1] and "worker" not in owners
+db.rowcount = 0
+try: run_one(db, "worker", stopping)
+except LeaseLostError: pass
+else: raise AssertionError("stale lease acknowledged")
+mode = "retry"
+run_one(db, "worker", stopping)
+assert retried[-1] == (owners[-1], 2, "RetryableError")
+assert not run_one(db, "worker", NS(is_set=lambda: True))
+`], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0434") {
+    const processPartition = runInNewContext(decode(code) + "\nprocessPartition");
+    for (const mode of ["success", "handler-error", "commit-error"]) {
+      const handled = [], committed = [], routed = [];
+      const consumer = {
+        async *records() {
+          yield { partition: 0, offset: "9007199254740993" };
+          yield { partition: 0, offset: "9007199254740994" };
+        },
+        async commit(partition, offset) {
+          assert.equal(partition, 0);
+          committed.push(offset);
+          if (mode === "commit-error") throw new Error("commit failed");
+        }
+      };
+      const work = processPartition(consumer, async record => {
+        handled.push(record.offset);
+        if (mode === "handler-error") throw new Error("handler failed");
+      }, { route: async record => { routed.push(record.offset); } });
+      if (mode === "success") await work;
+      else await assert.rejects(work, /failed/);
+      assert.equal(handled.length, mode === "success" ? 2 : 1);
+      assert.deepEqual(committed, mode === "success" ? ["9007199254740994", "9007199254740995"] : mode === "commit-error" ? ["9007199254740994"] : []);
+      assert.equal(routed.length, mode === "success" ? 0 : 1);
+    }
+  }
+  if (lesson.number === "0382") {
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0393") {
+    const loadProject = runInNewContext(decode(code) + "\nloadProject");
+    const project = { tenantId: 42, id: 7, version: 3 };
+    for (const mode of ["hit", "negative", "miss", "corrupt", "wrong-version", "read-error", "write-error", "db-error", "db-wrong-version"]) {
+      let reads = 0, writes = 0;
+      const redis = {
+        async get(key) {
+          assert.equal(key, "project:[42,7,3]");
+          if (mode === "read-error") throw new Error("cache unavailable");
+          if (mode === "hit") return JSON.stringify(project);
+          if (mode === "negative") return "null";
+          if (mode === "corrupt") return "{";
+          if (mode === "wrong-version") return JSON.stringify({ ...project, version: 2 });
+          return null;
+        },
+        async set(key, value, options) {
+          writes++;
+          assert.equal(key, "project:[42,7,3]");
+          assert.deepEqual(JSON.parse(value), project);
+          assert.ok(options.EX >= 300 && options.EX < 360);
+          if (mode === "write-error") throw new Error("cache unavailable");
+        }
+      };
+      const database = { async findProjectVersion(...args) {
+        reads++;
+        assert.deepEqual(args, [42, 7, 3]);
+        if (mode === "db-error") throw new Error("database unavailable");
+        return mode === "db-wrong-version" ? { ...project, version: 4 } : project;
+      } };
+      const request = loadProject(42, 7, 3, redis, database);
+      if (mode.startsWith("db-")) await assert.rejects(request, /database/);
+      else assert.deepEqual(JSON.parse(JSON.stringify(await request)), mode === "negative" ? null : project);
+      assert.equal(reads, ["hit", "negative"].includes(mode) ? 0 : 1);
+      assert.equal(writes, ["hit", "negative", "db-error", "db-wrong-version"].includes(mode) ? 0 : 1);
+    }
+  }
+  if (lesson.number === "0380") {
+    // Adapter-contract checks only: not PostgreSQL execution or lock testing.
+    const rename = runInNewContext(decode(code) + "\nrenameProject");
+    const input = { tenant: 42, requestId: "r1", projectId: 7, name: "New", version: 1 };
+    const result = { id: 7, version: 2 };
+    const intent = JSON.stringify(["rename-v1", 7, "New", 1]);
+    const scenarios = [
+      { replies: [[{ request_id: "r1" }], [result], [], []], verbs: ["INSERT", "UPDATE", "INSERT", "UPDATE"] },
+      { replies: [[], [{ intent, result }]], verbs: ["INSERT", "SELECT"] },
+      { replies: [[], [{ intent: "changed", result }]], verbs: ["INSERT", "SELECT"], error: /key reused/ },
+      { replies: [[{ request_id: "r1" }], []], verbs: ["INSERT", "UPDATE"], error: /version conflict/ },
+      { replies: [[], []], verbs: ["INSERT", "SELECT"], error: /receipt unavailable/ }
+    ];
+    for (const scenario of scenarios) {
+      const calls = [];
+      const db = { transaction: async callback => callback({ query: async (sql, params) => {
+        calls.push(sql.split(" ")[0]);
+        assert.ok(params.includes(42), "tenant must be bound in every statement");
+        assert.ok(calls.length <= scenario.replies.length, "unexpected write after rejected claim/update");
+        return { rows: scenario.replies[calls.length - 1] };
+      } }) };
+      if (scenario.error) await assert.rejects(rename(db, input), scenario.error);
+      else assert.equal(await rename(db, input), result);
+      assert.deepEqual(calls, scenario.verbs);
+    }
+  }
+  if (REUSE_PURPOSE[lesson.number]) assert.ok(decode(html).includes(REUSE_PURPOSE[lesson.number]), `${lesson.id}: missing distinct exercise`);
+  if (["0001", "0002"].includes(lesson.number)) {
+    // Reviewed read-only shell experiments; no installs or repository changes.
+    execFileSync("bash", ["--noprofile", "--norc", "-c", decode(code)], { cwd: root, timeout: 10000, stdio: "pipe", env: { ...process.env, GIT_PAGER: "cat", GIT_EXTERNAL_DIFF: "" } });
+  }
+  if (lesson.number === "0004") {
+    execFileSync(process.execPath, ["--input-type=commonjs", "-e", decode(code)], { timeout: 1000, stdio: "pipe" });
+  }
+  if (["0228", "0229"].includes(lesson.number)) {
+    const directory = await mkdtemp(join(tmpdir(), "lesson-gzip-"));
+    try {
+      const probe = `
+import assert from "node:assert/strict";
+import { gunzipSync } from "node:zlib";
+await fs.writeFile("input", "café");
+await fs.writeFile("output.gz.tmp", "unrelated");
+await gzipFile("input", "output.gz");
+assert.equal(gunzipSync(await fs.readFile("output.gz")).toString(), "café");
+await assert.rejects(gzipFile("missing", "output.gz"));
+await assert.rejects(gzipFile("input", "output.gz", AbortSignal.abort()));
+assert.equal(gunzipSync(await fs.readFile("output.gz")).toString(), "café");
+assert.equal(await fs.readFile("output.gz.tmp", "utf8"), "unrelated");
+await Promise.all([gzipFile("input", "output.gz"), gzipFile("input", "output.gz")]);
+assert.deepEqual((await fs.readdir(".")).sort(), ["input", "output.gz", "output.gz.tmp"]);
+`;
+      execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + probe], { cwd: directory, timeout: 10000, stdio: "pipe" });
+    } finally { await rm(directory, { recursive: true, force: true }); }
+  }
+  if (lesson.number === "0497") {
+    const template = JSON.parse(decode(code));
+    assert.equal(template.Resources.Jobs.Type, "AWS::SQS::Queue");
+    assert.equal(template.Resources.DeadLetters.Type, "AWS::SQS::Queue");
+    assert.deepEqual(template.Resources.Jobs.Properties.RedrivePolicy, {
+      deadLetterTargetArn: {"Fn::GetAtt":["DeadLetters", "Arn"]}, maxReceiveCount:5
+    });
+    assert.equal(template.Resources.Jobs.Properties.ReceiveMessageWaitTimeSeconds, 20);
+  }
+  if (lesson.number === "0505") {
+    const probe = `
+import ast
+source = ${JSON.stringify(decode(code))}
+module = ast.parse(source)
+function = next(node for node in module.body if isinstance(node, ast.FunctionDef) and node.name == "text_answer")
+exec(compile(ast.Module(body=[function], type_ignores=[]), "bedrock-text-boundary", "exec"))
+def response(content, stop="end_turn"):
+    return {"stopReason":stop, "output":{"message":{"content":content}}}
+assert text_answer(response([{"text":"hello "}, {"text":"world"}])) == "hello world"
+for invalid in [None, {}, response([]), response([{"text":" "}]), response([{"toolUse":{}}]), response([{"text":42}]), response([{"text":"partial"}], "max_tokens"), response([{"text":"blocked"}], "guardrail_intervened")]:
+    try: text_answer(invalid)
+    except ValueError: pass
+    else: raise AssertionError("invalid completion accepted")
+`;
+    execFileSync(python, ["-I", "-c", probe], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0232") {
+    const probe = `
+import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+const socket = new EventEmitter();
+const written = [];
+let paused = 0, resumed = 0, destroyed;
+socket.setTimeout = () => {};
+socket.pause = () => { paused++; };
+socket.resume = () => { resumed++; };
+socket.destroy = error => { destroyed = error; };
+socket.write = bytes => { written.push(JSON.parse(bytes)); return written.length !== 1; };
+server.emit("connection", socket);
+socket.emit("data", Buffer.from("a\\nb\\n"));
+assert.deepEqual(written, [{echo:"a"}]);
+assert.equal(paused, 1);
+socket.emit("drain");
+assert.deepEqual(written, [{echo:"a"},{echo:"b"}]);
+assert.equal(resumed, 1);
+socket.emit("data", Buffer.from("part"));
+socket.emit("data", Buffer.from("ial\\n"));
+assert.deepEqual(written.at(-1), {echo:"partial"});
+socket.emit("data", Buffer.alloc(4097));
+assert.match(destroyed.message, /input buffer/);
+server.close();
+`;
+    execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + probe], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0236") {
+    const probe = `
+import assert from "node:assert/strict";
+const previousFetch = globalThis.fetch;
+try {
+  for (const [bytes, expected] of [[Buffer.from('{"name":"café"}'), {name:"café"}], [Buffer.from("[]"), null], [Buffer.from("null"), null], [Buffer.from("{"), null], [Buffer.from([255]), null], [Buffer.alloc(65), null]]) {
+    globalThis.fetch = async (url, options) => {
+      assert.equal(options.redirect, "error");
+      return new Response(new ReadableStream({start(controller) { for (const byte of bytes) controller.enqueue(Uint8Array.of(byte)); controller.close(); }}));
+    };
+    if (expected) assert.deepEqual(await fetchJson("https://fixture.invalid", {maxBytes:64}), expected);
+    else await assert.rejects(fetchJson("https://fixture.invalid", {maxBytes:64}));
+  }
+  let cancelled = false;
+  globalThis.fetch = async () => new Response(new ReadableStream({cancel(){cancelled=true;}}), {status:503});
+  await assert.rejects(fetchJson("https://fixture.invalid"), /HTTP 503/);
+  assert.equal(cancelled, true);
+  globalThis.fetch = async () => { throw new Error("must not fetch"); };
+  await assert.rejects(fetchJson("https://fixture.invalid", {signal:AbortSignal.abort()}), {name:"AbortError"});
+  await assert.rejects(fetchJson("https://fixture.invalid", {maxBytes:0}), /byte limit/);
+} finally { globalThis.fetch = previousFetch; }
+`;
+    execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + probe], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0237") {
+    // Local event/callback contract only; no TLS certificates or listening sockets.
+    const source = decode(code)
+      .replace('import http2 from "node:http2";', `
+import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+let complete, expire;
+const fakeTimeout = callback => { expire = callback; return 1; };
+const fakeClearTimeout = () => {};
+const http2 = {createSecureServer(options) {
+  assert.equal(options.allowHTTP1, false);
+  const fixture = new EventEmitter();
+  fixture.close = callback => { complete = callback; };
+  return fixture;
+}};`)
+      .replace('import { readFileSync } from "node:fs";', 'const readFileSync = () => "fixture";')
+      .replace('setTimeout(', 'fakeTimeout(').replace('clearTimeout(', 'fakeClearTimeout(');
+    for (const forced of [false, true]) {
+      const probe = `
+const session = new EventEmitter();
+let closed = 0, destroyed = 0;
+session.close = () => { closed++; };
+session.destroy = () => { destroyed++; session.emit("close"); };
+server.emit("session", session);
+assert.equal(activeSessions.size, 1);
+const pending = shutdown();
+assert.equal(shutdown(), pending);
+assert.equal(closed, 1);
+if (${forced}) {
+  expire();
+  await assert.rejects(pending, /deadline/);
+  assert.equal(destroyed, 1);
+} else {
+  session.emit("close"); complete(); await pending;
+}
+assert.equal(activeSessions.size, 0);
+const late = new EventEmitter();
+late.destroy = () => { destroyed++; };
+const before = destroyed;
+server.emit("session", late);
+assert.equal(destroyed, before + 1);
+`;
+      execFileSync(process.execPath, ["--input-type=module", "-e", source + probe], { timeout: 10000, stdio: "pipe" });
+    }
+  }
+  if (lesson.number === "0230") {
+    const directory = await mkdtemp(join(tmpdir(), "lesson-atomic-write-"));
+    try {
+      const checks = '\nimport assert from "node:assert/strict";\nimport { readFile, readdir, mkdir } from "node:fs/promises";\nassert.deepEqual(JSON.parse(await readFile("state.json", "utf8")), { version: 1 });\nawait atomicWrite("state.json", "replacement");\nassert.equal(await readFile("state.json", "utf8"), "replacement");\nawait mkdir("blocked");\nawait assert.rejects(atomicWrite("blocked", "cannot replace directory"));\nassert.deepEqual((await readdir(".")).sort(), ["blocked", "state.json"]);';
+      execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + checks], { cwd: directory, timeout: 10000, stdio: "pipe" });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }
+  if (["0246", "0250", "0251", "0252", "0403", "0405", "0414", "0426", "0427", "0428", "0429", "0430", "0431", "0447", "0453", "0473"].includes(lesson.number)) {
+    execFileSync(process.execPath, ["--input-type=module", "-e", decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (["0622", "0623", "0624", "0626", "0627", "0628", "0629", "0630", "0631", "0632", "0633", "0634", "0635", "0636", "0637", "0638", "0639", "0640", "0641", "0642", "0643", "0644"].includes(lesson.number)) {
+    execFileSync(process.execPath, ["--input-type=module", "-e", 'import { ok as reviewAssert } from "node:assert/strict"; console.assert = reviewAssert;\n' + decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (["0220", "0222", "0223", "0224", "0225", "0226", "0118", "0119", "0120", "0254"].includes(lesson.number)) {
+    execFileSync(process.execPath, ["--input-type=module", "-e", 'import { ok as reviewAssert } from "node:assert/strict"; console.assert = reviewAssert;\n' + decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0247") {
+    const revision = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+    const probe = `
+import assert from "node:assert/strict";
+assert.ok((await inspectRevision(${JSON.stringify(revision)})).length > 0);
+await assert.rejects(inspectRevision("--help"), /invalid/);
+await assert.rejects(inspectRevision("0".repeat(40)));
+await assert.rejects(inspectRevision(${JSON.stringify(revision)}, AbortSignal.abort()), {name:"AbortError"});
+`;
+    execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + probe], { cwd: root, timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0248") {
+    const directory = await mkdtemp(join(tmpdir(), "lesson-worker-"));
+    try {
+      await writeFile(join(directory, "worker.mjs"), `
+import { parentPort, workerData } from "node:worker_threads";
+if (workerData === "success") parentPort.postMessage(42);
+if (workerData === "error") throw new Error("worker fixture failure");
+if (workerData === "hang") setInterval(() => {}, 1000);
+`);
+      await writeFile(join(directory, "probe.mjs"), decode(code) + `
+import assert from "node:assert/strict";
+assert.equal(await runWorker("success", AbortSignal.timeout(5000)), 42);
+await assert.rejects(runWorker("error", AbortSignal.timeout(5000)), /worker fixture failure/);
+await assert.rejects(runWorker("empty", AbortSignal.timeout(5000)), /before result: 0/);
+await assert.rejects(runWorker("hang", AbortSignal.timeout(100)), {name:"TimeoutError"});
+`);
+      execFileSync(process.execPath, [join(directory, "probe.mjs")], { timeout: 10000, stdio: "pipe" });
+    } finally { await rm(directory, { recursive: true, force: true }); }
+    // Exercise the wrapper's lifecycle, not real worker scheduling or isolation.
+    const source = decode(code).replace('import { Worker } from "node:worker_threads";', `
+import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+let latest;
+class Worker extends EventEmitter {
+  constructor() { super(); latest = this; this.stopped = false; }
+  async terminate() { this.stopped = true; if (this.failure) throw this.failure; }
+}`);
+    const probe = `
+await assert.rejects(runWorker(1, AbortSignal.abort()));
+assert.equal(latest, undefined);
+const success = runWorker(1, new AbortController().signal);
+latest.emit("message", 42);
+assert.equal(await success, 42);
+assert.equal(latest.stopped, true);
+const exited = runWorker(1, new AbortController().signal);
+latest.emit("exit", 0);
+await assert.rejects(exited, /before result/);
+const controller = new AbortController();
+const aborted = runWorker(1, controller.signal);
+controller.abort(false);
+await assert.rejects(aborted, reason => reason === false);
+const failed = runWorker(1, new AbortController().signal);
+latest.failure = new Error("termination failed");
+latest.emit("message", 42);
+await assert.rejects(failed, /termination failed/);
+`;
+    execFileSync(process.execPath, ["--input-type=module", "-e", source + probe], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0235") {
+    const probe = `
+import assert from "node:assert/strict";
+const handler = server.listeners("request")[0];
+for (const [bytes, status] of [[Buffer.from('{"name":" Demo "}'),200], [Buffer.from("null"),422], [Buffer.from("[]"),422], [Buffer.from("{bad"),400], [Buffer.from([255]),400], [Buffer.alloc(65537),413]]) {
+  let observed;
+  await handler({method:"POST",url:"/projects",async *[Symbol.asyncIterator](){yield bytes;}}, {writeHead(code){observed=code;return this;},end(){}});
+  assert.equal(observed,status);
+}
+server.close();
+`;
+    execFileSync(process.execPath, ["--input-type=module", "-e", decode(code) + probe], { timeout: 10000, stdio: "pipe" });
+  }
+  if (["0244", "0245"].includes(lesson.number)) {
+    assert.throws(() => execFileSync(process.execPath, ["--unhandled-rejections=strict", "--input-type=module", "-e", decode(code)], { timeout: 10000, stdio: "pipe" }), error => error.status === 1 && /controlled fixture failure/.test(String(error.stderr)));
+  }
+  if (["0080", "0081", "0083", "0084", "0085", "0086", "0087", "0088", "0089", "0090", "0091", "0092", "0093", "0094", "0095", "0096", "0097", "0098", "0099", "0100", "0101", "0102", "0106", "0107", "0108", "0109", "0112", "0114", "0115", "0122", "0123"].includes(lesson.number)) {
+    const prelude = 'import { ok as reviewAssert } from "node:assert/strict"; console.assert = reviewAssert;\n';
+    execFileSync(process.execPath, ["--input-type=module", "-e", prelude + decode(code)], { timeout: 10000, stdio: "pipe" });
+    javascriptChecks.push(lesson.number);
+  }
+  if (lesson.trackId === "computer-science") {
+    let checks = 0;
+    runInNewContext(decode(code), { console: {
+      assert(value) { checks += 1; assert.ok(value, `${lesson.number}: algorithm assertion failed`); },
+      log() {}, table() {}
+    } }, { timeout: 1000 });
+    assert.ok(checks > 0, `${lesson.number}: algorithm example must execute an assertion, not merely define a helper`);
+    algorithmChecks.push({ number: lesson.number, checks });
+  }
+  if (lesson.trackId === "lld-machine-coding") {
+    // These reviewed examples use only local in-memory stdlib operations.
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+    machineCodingChecks.push(lesson.number);
+  }
+  if (["ml-foundations", "llm-internals"].includes(lesson.trackId) || lesson.number === "0492") {
+    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+    numericalChecks.push(lesson.number);
+  }
+  if (lesson.trackId === "typescript") {
+    assert.equal(missing.length, 0, `${lesson.id}: TypeScript definitions regressed`);
+    assert.ok(html.includes('id="typescript-review"'), `${lesson.id}: missing review checkpoint`);
+    assert.ok(typescriptReviewFor(lesson).every(value => typeof value === "string" && value.length > 20), `${lesson.id}: incomplete teaching review`);
+  }
+  if (lesson.number === "0082") {
+    let checks = 0;
+    runInNewContext(decode(code), { console: {
+      assert(value) { checks += 1; assert.ok(value); },
+      table() {}
+    } }, { timeout: 1000 });
+    assert.equal(checks, 3, "primitive-values lab must exercise all three identity/copy assertions");
+  }
+  const codeKey = `${lesson.trackId}\n${code}`;
+  const group = codeGroups.get(codeKey) || [];
+  group.push(lesson.number);
+  codeGroups.set(codeKey, group);
+  const item = SENIOR_CASES[lesson.trackId];
+  assert.ok(item?.scenario && item.reasoning && item.followup && item.signals, `${lesson.id}: missing authored senior practice`);
+  assert.ok(html.includes(`senior-interview-practice.html#${lesson.trackId}`), `${lesson.id}: missing senior reference`);
+  assert.ok(reference.includes(`id="${lesson.trackId}"`), `${lesson.id}: broken senior reference anchor`);
+  assert.ok(html.includes("Do not infer mastery"), `${lesson.id}: handoff must not overstate evidence`);
+  rows.push({ ...lesson, path, missing, codeKey, terms: terms.length });
+}
+
+const missingCount = rows.reduce((sum, row) => sum + row.missing.length, 0);
+const missingLessons = rows.filter(row => row.missing.length).length;
+const sharedLessons = rows.filter(row => codeGroups.get(row.codeKey).length > 1).length;
+const unresolvedReuse = rows.filter(row => codeGroups.get(row.codeKey).length > 1 && !REUSE_PURPOSE[row.number] && row.trackId !== "typescript");
+assert.equal(unresolvedReuse.length, 0, "Every reused starter needs a reviewed, lesson-specific exercise");
+const lines = [
+  "# Curriculum content review — senior full-stack AI engineering",
+  "",
+  "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-10.",
+  "",
+  "## Verdict",
+  "",
+  "The curriculum-wide definition and shared-starter review pass is complete: generic title-term definitions are replaced, every retained reused starter has a distinct exercise, and unrelated generic starters have been replaced by concrete experiments or explicitly scoped integration assignments. This remains a depth library, not a fully executed or certified senior interview course. An experiment specification is not a supplied working application.",
+  "",
+  `All ${rows.length} generated lesson files across ${manifest.tracks.length} tracks were inspected by the content audit for term definitions, starter-code reuse, and senior-practice links. The curriculum topics, generator's shared teaching paths, representative explanations, and selected technical claims received manual review. This is not a line-by-line factual certification of every explanation, nor an execution test of every embedded lab. The appendix records a result for every lesson; absence of an automated flag is not a quality pass.`,
+  "",
+  "## Findings and changes",
+  "",
+  "Copy-boundary review (2026-09-10): all 644 starter blocks keep prediction/observation annotations outside code; SQS JSON parses without stripping comments. Kubernetes YAML no longer includes executable shell diagnostics. Specialized DevOps/Docker/Kubernetes starters now distinguish integration recipes and pseudocode from supplied executables, explain rollout gates, secret-bearing Terraform plans, rootless daemon versus non-root container, additive NetworkPolicy/DNS requirements, HPA CPU requests and rollout-deadline limits. The shell digest guard executes offline valid/invalid cases without invoking deployment adapters. No infrastructure integration ran.",
+  "",
+  "1. **Assessment does not establish knowledge.** All 644 lessons originally used the same three orientation answers and claimed mastery after the obvious choice. The current progress interaction is explicitly labelled as orientation only, and the handoff no longer claims practical work was completed. Written rehearsal, a reasoning checkpoint, and 28 authored track cases now add feedback and changed constraints. Replacing the progress mechanism with written self-assessment remains a learner choice.",
+  `2. **Placeholder definitions replaced throughout the catalog.** The initial complete audit found 1,892 generic fallback definitions in 458 lessons. Exact corrections and shared vocabulary now leave ${missingCount} fallback definitions in ${missingLessons} lessons. The audit prevents their reintroduction across all 644 lessons. Concrete wording is not itself proof of factual correctness or sufficient depth; contextual review still matters.`,
+  "3. **Loose matching selected the wrong subject.** A term such as TypeScript's `in` could match unrelated catalog text. Exact definitions now take priority, and fallback matching uses the longest whole phrase. All 46 JavaScript lessons now have concrete definitions for their title-level terms. Primitive values and async functions have dedicated mechanism traces rather than inheriting property-lookup or lexical-binding traces. Broader diagram routing still deserves lesson-specific review.",
+  `4. **Starter reuse is now intentional and scoped.** Initially 230 lessons shared an identical starter. Currently ${sharedLessons} retain shared mechanisms, each with reviewed lesson-specific practice and limits; ${unresolvedReuse.length} reuse cases remain unexplained. Infrastructure, advanced React, AI and capstone placeholders now give concrete setup, a changed condition and expected evidence where a ready-made implementation is not supplied. These assignments still require the learner's implementation and appropriate environment.`,
+  "5. **Senior reasoning needed a worked example.** Every track now has a concrete scenario, a reasoned answer, a changed constraint, feedback criteria, and a primary-source link. Lessons link to their track's case rather than repeating the full case in 644 pages. These cases supplement the topic-specific exercises; they are not 644 individually authored interview answers.",
+  "6. **Repeated introductory prose added reading cost.** Removed the four generic input/state/mechanism/tradeoff cards from every lesson. Retained a short entry explanation, the term guide, and the underlying code. Reading estimates now explicitly exclude implementation and interview practice.",
+  "7. **The schedule cannot represent exhaustive mastery.** At 6–8 hours/week, 24 weeks provides 144–192 hours. Even 644 readings of 15 minutes consume 161 hours before labs and projects. The senior reference recommends a diagnostic-led core with deep extensions. Selecting a numbered core sequence still needs target-role emphasis and evidence of the learner's actual gaps.",
+  "",
+  "## Executed examples",
+  "PostgreSQL follow-up: the deadlock/serialization retry adapter executes offline success, retry exhaustion, nonretryable-error and bound checks. SQL starters received execution-context, generated-expression, snapshot-session, invariant-recheck, replication-slot and hybrid-ranking corrections. The SQL text guard rejects shell/INI contamination; it is not a SQL parser or PostgreSQL integration test. No database server or extension was installed or run.",
+  "Node follow-up: both gzip starters execute owned-staging success/failure/cancellation/concurrent-replacement checks. HTTP/2 session tracking, normal drain, forced deadline and late-session rejection use event adapters, not TLS. Fetch checks cover split UTF-8, object-only JSON, size limits, errors, cancellation and body disposal without network requests. TCP framing checks pause after a false write result and drain buffered frames before resuming; they use a socket fake. The local queue deliberately demonstrates two failures with assertions; it is not a deployable queue. The Node test-runner cancellation fixture executes. A cross-track diagram regression matrix includes PostgreSQL EXPLAIN, pooling, access, diagnostics and infrastructure troubleshooting; these checks do not establish every diagram's factual completeness.",
+  "AWS follow-up: 0497 parses its CloudFormation JSON and verifies the queue/redrive relationship locally. Lesson 0505 extracts and executes the text-only response validator against completed, partial, tool, guardrail and malformed fixtures; no boto3 import, credentials or model calls are used. S3 version-deletion and custom CloudWatch burn-metric assumptions were corrected. No AWS resources were created or changed.",
+  "",
+  "Systems foundations 0056–0067: all 12 offline Python experiments execute. Fixed invalid scheduler progress, self-transfer deadlock, amount validation, truncated UDP headers, per-RTT versus per-ACK congestion wording, zero-capacity replacement and unique temporary-file cleanup. Five examples have mechanism-specific diagrams. Local file replacement is not a power-loss durability test.",
+  "The separate TypeScript check command additionally compiles/executes 12 software-design snippets, four service/domain snippets and the custom streaming fixture (0591). Its original 26 TypeScript-track checks remain unchanged. Reservation/transaction tests use local fakes. The streaming checks cover split UTF-8, retained IDs, incomplete/invalid frames, a buffer ceiling and early cancellation; the LF-only JSON fixture is explicitly not a complete SSE or AI SDK implementation.",
+  "Security operations: 0470 verifies SDK/HTTP adapter plumbing, not Stripe cryptography; 0471 checks accepted upload-version propagation/replay with fakes, not S3; 0472 checks attempt-specific lease identity and stale acknowledgment rejection, not SQL leases. Lesson 0473 executes audit hashing/tamper-input checks while preserving exact stored payload bytes. Real authorization, concurrency, scan/promotion, audit anchoring and recovery remain integration requirements.",
+  "AI/agents: 0589/0600/0603/0604 execute tool-intent replay, exact-neighbor recall/dimension bounds, scripted control-loop limits and goal-preserving context selection. Lesson 0607 runs malformed/valid newline-frame checks for its explicitly partial MCP dispatcher; it is not a conforming server certification. A function extracted from 0606 checks explicit boolean approval and model attribute access without executing LangGraph/Pydantic. Other provider/framework examples remain source-reviewed integration sketches.",
+  "Interview track: all 22 JavaScript planning/rehearsal snippets execute, with throwing assertions where present (some are smoke-only); the remaining lesson is a Markdown profile template. Fixed the generated résumé digit regex, exact-host screening, numeric top-k scope, one-time versus recurring offer arithmetic and fictional-evidence labels. Removed unsupplied interview/recording/demo helpers; the pair-sum rehearsal checks distinct-index behavior. The mock-interview planner distinguishes demonstrated, needs-practice and unobserved criteria; it organizes human evidence, not automatic interview grades. No live job, compensation, immigration, employer-process or learner-achievement claims are inferred from these fixtures.",
+  `Python track: ${pythonTrackChecks.length} single-file snippets execute with the installed interpreter; some are smoke checks, not complete function/branch coverage. All 41 Python-format starters parse. Multi-file imports, spawned workers, native extensions, packaging and the external image-conversion command remain unexecuted. Lesson 0302 additionally checks service replay, changed intent and failed commit with a sequential fake, not a database.`,
+  "FastAPI: all 42 Python-format starters receive AST syntax checks only; framework packages are unavailable and were not installed. Lesson 0331 additionally runs framework-free ASGI body-limit cases for chunked input, lying Content-Length, compressed input, empty bodies, disconnect and invalid configuration. Authentication, SQLAlchemy, WebSocket/SSE, framework cancellation and HTTP integration remain unexecuted.",
+  "API lessons 0403/0405/0414/0447/0453 execute boundary parsing, strong If-Match comparison, custom webhook signature checks, a deliberately partial Raft precheck and mean-latency sizing assertions. The saga callback (0439) checks awaited write ordering/failure; the service-architecture Kafka batch checks empty/mixed/failed batches and large offsets with scripted adapters. These do not verify database rollback, consensus, broker delivery or network security.",
+  "API lesson 0431 executes half-open probe admission and completion checks; it is not a complete circuit-breaker implementation. Lesson 0435 uses a sequential transaction fake to check duplicate suppression, changed-intent rejection, failed effects and replay after acknowledgment failure. Real inbox isolation, crash durability and broker acknowledgment semantics remain integration requirements. Lesson 0433's trace example and delivery-ownership explanation were corrected.",
+  "API lessons 0426/0427/0430 now execute logical-clock, synthetic-latency and admission-control assertions. These cover concurrency versus equality, missing outcomes and percentile input bounds, overload rejection and slot restoration after errors. They do not establish real load capacity, distributed clock safety or fleet-wide admission guarantees.",
+  "API lessons 0428/0429 execute Node deadline/retry self-checks, including expired and cancelled work, invalid limits and retry admission. Lesson 0434 runs three broker-adapter scenarios for success, handler failure and commit failure, checking that processing stops before a later offset can skip failed work and that large offsets retain precision. These are local checks, not Kafka integration, remote cancellation or load tests. Lesson 0436 received the corresponding offset-precision correction.",
+  "Redis starters 0381–0395 have received targeted review across the follow-up batches. Data-structure and benchmark lessons now specify initial state, expected values, load limits and measurement caveats. Only the offline protocol and cache-adapter checks execute locally; no Redis server behavior or benchmark results are claimed.",
+  "Lesson 0382 executes offline Python RESP encoding assertions for ASCII, multibyte text, binary CRLF, empty payloads and invalid input. Redis protocol, cluster and ACL lessons 0382/0391/0395 now have example-specific diagrams. Cluster/ACL commands remain source-reviewed but unexecuted; no Redis software was installed.",
+  "Lesson 0393 has nine executed cache-adapter scenarios covering hits, negative hits, misses, malformed data, wrong versions and cache/database failures. Scripted adapters do not verify Redis TTL timing, failover or real database reads. Redis lessons 0386/0387/0389/0390/0392/0394 additionally received source-based safety corrections and explicit counterexamples; their server commands were not executed.",
+  "Lesson 0380 additionally has five executed adapter-contract checks for successful writes, replay, mismatched intent, stale updates and missing receipts. These use scripted query responses, not PostgreSQL: they verify branching, not SQL syntax, locks, transaction rollback or concurrency. Lesson 0396 specifies the corresponding real-database failure experiments. No software installations are authorized.",
+  `The runner additionally executes ${javascriptChecks.length} selected JavaScript module/test examples with throwing assertions, three benchmark examples with a correctness assertion, Buffer, timer, EventEmitter, UTF-8 transform and readable-cleanup examples, Node shutdown, URL-policy and event-loop measurement checks, and two deliberately failing child-process examples. HTTP parsing uses request/response fakes; child execution uses read-only Git. Worker lifecycle checks include actual local threads for success, throw, empty exit and deadline termination, plus adapter-only edge cases. These checks do not cover worker pools, transfers, shared-memory races or process isolation. They ran on Node ${process.version}; newer language/host features need a compatible runtime.`,
+  `All ${numericalChecks.filter(number => number !== "0492").length} ML/LLM numerical examples and the Lambda/SQS batch algorithm (0492) run with Python assertions. These are deliberately small mechanism experiments, not trained models or provider integrations. Foundations 0001/0002 run read-only Bash/Git checks and 0004 runs Node assertions; 0003 is a dependency-install experiment specification and 0005 is a worked decision record, not an executed deployment.`,
+  `The review command executes ${algorithmChecks.length} computer-science examples: ${algorithmChecks.filter(item => item.checks).length} contain throwing assertions and ${algorithmChecks.filter(item => !item.checks).length} are smoke checks only. It also executes all ${machineCodingChecks.length} low-level-design Python examples with their assertions, plus the JavaScript primitive-values example. Quickselect mutation, a two-pointer trace expectation, and non-finite money inputs were corrected. The repository example now explicitly distinguishes an in-memory event append from a transactional outbox.`,
+  "",
+  "Python examples require Python 3.12+ without optimization flags. Set LESSON_PYTHON to the interpreter executable if python3 is older. These small local tests do not establish concurrency scalability, production safety, or integration correctness.",
+  "",
+  "## Senior standard",
+  "",
+  "A ready lesson should let the learner explain a concrete mechanism, work through an example with expected results, identify a counterexample, compare a plausible alternative, and defend the choice after a constraint changes. Include operational or delivery consequences where relevant; do not force distributed-system vocabulary into a simple language exercise. Senior behavioral evidence should show personal scope, influence, mentoring, honest outcomes, and reflection.",
+  "",
+  "The teach skill informed the entry explanation → attempt → feedback → delayed retrieval structure. The new case studies are original exercises grounded in the linked primary sources; they are not employer questions or universal hiring rubrics. [Amazon's senior preparation](https://www.amazon.jobs/content/en/how-we-hire/sde-iii-interview-prep) is one example of employer expectations, not a prediction of every company's process.",
+  "",
+  "See [senior practice and glossary](reference/senior-interview-practice.html) for the worked cases and self-review rubric.",
+  "The [complete TypeScript content-review pass](TYPESCRIPT-CONTENT-REVIEW.md) covers all 45 TypeScript lessons, with concrete definitions and explicit verification limits. Run `node scripts/check-typescript-lessons.mjs` for the 26 selected compiler/runtime checks; the track's integration exercises are not automatically certified.",
+  "",
+  "## Track review",
+  "",
+  "| Track | Lessons | Lessons with definition gaps | Review and next content work |",
+  "| --- | ---: | ---: | --- |"
+];
+for (const track of manifest.tracks) {
+  const group = rows.filter(row => row.trackId === track.id);
+  lines.push(`| [${cell(track.title)}](reference/senior-interview-practice.html#${track.id}) | ${group.length} | ${group.filter(row => row.missing.length).length} | ${cell(SENIOR_CASES[track.id].gap)} |`);
+}
+lines.push("", "## How to close the remaining gaps", "",
+  "- Preserve zero fallback definitions and check context-sensitive meanings. Broker partitions and HTTP/2 sessions now have routing regression checks to prevent unrelated definitions being substituted.",
+  "- For each reused starter, either explain its distinct purpose in this lesson or replace it with a topic-specific runnable experiment. Supply setup, expected output, and a failing case. Label illustrative fragments and external dependencies honestly.",
+  "- Review each diagram against the actual code and lesson objective; matching a keyword does not prove that the diagram teaches the right mechanism.",
+  "- Add topic-specific answer criteria and plausible misconceptions. Keep reference depth separate from the short learning path; do not add more headings as a substitute for explanation.",
+  "- Pin or record runtime/framework versions for labs, then run them in their required environments. Language, SQL, browser, cloud, and framework examples cannot all be certified by compiling the HTML's navigation script.",
+  "", "## Per-lesson audit", "",
+  "Every lesson has the senior rehearsal and a linked worked track case. The table below reports remaining structural content concerns. **Review lab and explanation** means no fallback/reuse flag was found; it does not mean the lesson has been technically certified. Shared-starter numbers refer to exact matches within the same track, excluding the generated lesson-title comment.",
+  "", "| Lesson | Definition gaps | Starter review |", "| --- | --- | --- |");
+for (const row of rows) {
+  const shared = codeGroups.get(row.codeKey).filter(number => number !== row.number);
+  const purpose = REUSE_PURPOSE[row.number] || (row.trackId === "typescript" ? typescriptReviewFor(row)[2] : "");
+  lines.push(`| [${row.number} · ${cell(row.title)}](${row.path}) | ${row.missing.length ? cell(row.missing.join(", ")) : "None detected"} | ${shared.length ? `Shared with ${shared.join(", ")}; ${purpose ? `reviewed exercise: ${cell(purpose)}` : "verify distinct teaching purpose"}` : "Review lab and explanation"} |`);
+}
+lines.push("", "## Reproduce", "", "```sh", "node scripts/generate-lessons.mjs", "node scripts/validate-lessons.mjs", "node scripts/review-lessons.mjs", "```", "",
+  "Requires Python 3.12+; for example, use `LESSON_PYTHON=python3.13 node scripts/review-lessons.mjs` if the default Python is older. The review checks semantic routing, all 644 lessons' definition coverage, senior case links, and the local examples described above. Run `node scripts/check-typescript-lessons.mjs` separately for TypeScript. Structural checks and selected executions do not substitute for reviewing and running the remaining technical labs.", "");
+await writeFile(join(root, "CONTENT-REVIEW.md"), lines.join("\n"));
+console.log(`Reviewed ${rows.length} lessons / ${manifest.tracks.length} tracks; ${missingCount} fallback definitions in ${missingLessons} lessons; ${sharedLessons} lessons with a scoped shared starter; ${unresolvedReuse.length} unexplained reuse cases. Wrote CONTENT-REVIEW.md.`);

@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to networking and operating systems. Networking moves messages between programs and machines. An operating system manages processes, memory, files, devices, and protected access to hardware.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a request from application to wire</h2>
-      <ol class="trace-flow" data-flow="network-packet-path" aria-label="Mechanism trace: Application creates a message then Names and peers become addresses then Bytes cross layered networks then The destination observes the request. Experiment: Change one address, route, MTU, or loss condition and predict where the exchange changes.">
-        <li class="trace-stage"><span>01 · APP</span><strong>Application creates a message</strong><small>A URL, payload, and protocol semantics define the intended exchange.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE + CONNECT</span><strong>Names and peers become addresses</strong><small>DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRANSPORT + ROUTE</span><strong>Bytes cross layered networks</strong><small>TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PEER</span><strong>The destination observes the request</strong><small>Acknowledgments, responses, packet captures, and errors expose the outcome.</small></li>
+      <ol class="trace-flow" data-flow="tcp-round-model" aria-label="Mechanism trace: Window starts at one then Double, then add then Reset and lower threshold then Receiver can be tighter. Experiment: Why would doubling on every ACK overstate slow-start growth?">
+        <li class="trace-stage"><span>01 · ROUND</span><strong>Window starts at one</strong><small>The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GROW</span><strong>Double, then add</strong><small>Below threshold the toy window doubles; above it, each round adds one.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TIMEOUT</span><strong>Reset and lower threshold</strong><small>Round five models timeout loss, not duplicate-ACK fast recovery.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LIMIT</span><strong>Receiver can be tighter</strong><small>The usable window is bounded by both congestion and receiver windows.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one address, route, MTU, or loss condition and predict where the exchange changes.</strong>
-        <small><b>Inspect:</b> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</small>
+        <strong>Why would doubling on every ACK overstate slow-start growth?</strong>
+        <small><b>Inspect:</b> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</small>
       </div>
     </aside>
   </div>
@@ -59,31 +55,31 @@
       <article class="concept-card" data-subtopic="TCP flow control">
         <span>01</span>
         <h3>TCP flow control</h3>
-        <p><strong>What it means:</strong> TCP flow control is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> TCP flow control uses the receiver&#039;s advertised window to avoid sending more outstanding data than it can accept.</p>
       </article><article class="concept-card" data-subtopic="congestion control">
         <span>02</span>
         <h3>congestion control</h3>
-        <p><strong>What it means:</strong> congestion control is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Congestion control adapts sending pressure to network conditions, distinct from a receiver&#039;s buffer capacity.</p>
       </article><article class="concept-card" data-subtopic="slow start">
         <span>03</span>
         <h3>slow start</h3>
-        <p><strong>What it means:</strong> slow start is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Slow start increases TCP&#039;s congestion window rapidly from a small starting point until a threshold or congestion signal changes behavior.</p>
       </article><article class="concept-card" data-subtopic="AIMD">
         <span>04</span>
         <h3>AIMD</h3>
-        <p><strong>What it means:</strong> AIMD is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Additive increase and multiplicative decrease cautiously raises sending allowance and sharply reduces it after congestion evidence.</p>
       </article><article class="concept-card" data-subtopic="retransmission">
         <span>05</span>
         <h3>retransmission</h3>
-        <p><strong>What it means:</strong> retransmission is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Retransmission sends unacknowledged data again after loss is inferred. The receiver must distinguish repeats from new bytes.</p>
       </article><article class="concept-card" data-subtopic="backpressure">
         <span>06</span>
         <h3>backpressure</h3>
-        <p><strong>What it means:</strong> backpressure is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Backpressure makes a producer slow down when a consumer cannot keep up. It limits queued work rather than allowing memory and latency to grow without bound.</p>
       </article><article class="concept-card" data-subtopic="overload">
         <span>07</span>
         <h3>overload</h3>
-        <p><strong>What it means:</strong> overload is one part of moving data across a network or managing work across an operating-system boundary. Ask which bytes or resource request enter, which protocol or kernel rule acts, what state changes, and which packet, syscall, process, memory, or file evidence proves the result.</p>
+        <p><strong>What it means:</strong> Overload occurs when offered work exceeds sustainable capacity, growing queues or causing rejection and failure.</p>
       </article>
     </div>
   </section>
@@ -92,24 +88,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · APP</span>
-        <h3>Application creates a message</h3>
-        <p>A URL, payload, and protocol semantics define the intended exchange.</p>
+        <span>01 · ROUND</span>
+        <h3>Window starts at one</h3>
+        <p>The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</p>
       </article><article>
-        <span>02 · RESOLVE + CONNECT</span>
-        <h3>Names and peers become addresses</h3>
-        <p>DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</p>
+        <span>02 · GROW</span>
+        <h3>Double, then add</h3>
+        <p>Below threshold the toy window doubles; above it, each round adds one.</p>
       </article><article>
-        <span>03 · TRANSPORT + ROUTE</span>
-        <h3>Bytes cross layered networks</h3>
-        <p>TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</p>
+        <span>03 · TIMEOUT</span>
+        <h3>Reset and lower threshold</h3>
+        <p>Round five models timeout loss, not duplicate-ACK fast recovery.</p>
       </article><article>
-        <span>04 · PEER</span>
-        <h3>The destination observes the request</h3>
-        <p>Acknowledgments, responses, packet captures, and errors expose the outcome.</p>
+        <span>04 · LIMIT</span>
+        <h3>Receiver can be tighter</h3>
+        <p>The usable window is bounded by both congestion and receiver windows.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one address, route, MTU, or loss condition and predict where the exchange changes.</p><p><strong>Then inspect:</strong> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Why would doubling on every ACK overstate slow-start growth?</p><p><strong>Then inspect:</strong> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p></div>
   </section>
 
   
@@ -117,15 +113,20 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate congestion-window growth and loss, compare it with a receive window, and connect socket buffering to application-level bounded queues.</p>
+
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>def congestion_trace(acks: int, loss_at: int) -&gt; list[int]:
+    <pre aria-label="Starter code"><code># Toy round/RTT-level trace, NOT an update for every ACK or a real TCP stack.
+def congestion_trace(rounds: int, loss_at: int) -&gt; list[int]:
     window, threshold, trace = 1, 8, []
-    for step in range(acks):
+    for step in range(rounds):
         trace.append(window)
         if step == loss_at:
             threshold = max(2, window // 2)
@@ -144,13 +145,14 @@ receiver_window = 6
 sendable = min(trace[4], receiver_window)
 assert sendable == 6
 # Flow control protects the receiver; congestion control protects the path.
-# Application backpressure must still bound work before bytes reach the socket.
-
-# Lesson focus: TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload
-# Prediction: ______________________________________________
-# Observation: _____________________________________________
-# Revised model: ___________________________________________</code></pre>
+# This reset models a timeout, not fast recovery after duplicate ACKs. Real
+# slow start grows with acknowledgments (roughly doubling per RTT), and modern
+# implementations differ in initial window, recovery and congestion algorithm.
+# Application backpressure must still bound work before bytes reach the socket.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -159,16 +161,16 @@ assert sendable == 6
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Application creates a message → Names and peers become addresses → Bytes cross layered networks → The destination observes the request.</p>
+    <p><strong>Conceptual mechanism:</strong> Window starts at one → Double, then add → Reset and lower threshold → Receiver can be tighter. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a request from application to wire from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one address, route, MTU, or loss condition and predict where the exchange changes.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Why would doubling on every ACK overstate slow-start growth?</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p></article>
     </div>
   </section>
 
@@ -183,11 +185,23 @@ assert sendable == 6
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="systems-foundations">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Keep a sender within receiver capacity and estimated network capacity while acknowledgements grow windows, loss reduces them, retransmission repairs gaps, and applications propagate pressure.</p>
+        <p><strong>Evidence to explain:</strong> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
@@ -216,12 +230,12 @@ assert sendable == 6
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"systems-foundations--tcp-flow-control-congestion-control-slow-start-aimd-retransmission-backp","title":"TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload","correctIndex":2,"evidenceSummary":"TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"systems-foundations--tcp-flow-control-congestion-control-slow-start-aimd-retransmission-backp","title":"TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload","correctIndex":2,"evidenceSummary":"TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -248,7 +262,7 @@ assert sendable == 6
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -261,7 +275,7 @@ assert sendable == 6
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

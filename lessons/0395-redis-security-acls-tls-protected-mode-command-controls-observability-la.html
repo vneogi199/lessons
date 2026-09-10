@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an object&#039;s lifetime</h2>
-      <ol class="trace-flow" data-flow="database-query" aria-label="Mechanism trace: Application submits a query then Optimizer chooses operations then Engine reads and transforms rows then Rows and metrics return. Experiment: Change one index or predicate and compare estimated versus actual work.">
-        <li class="trace-stage"><span>01 · SQL</span><strong>Application submits a query</strong><small>Parameters and transaction context define the request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>Optimizer chooses operations</strong><small>Statistics and indexes shape scans, joins, and order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Engine reads and transforms rows</strong><small>Buffers, locks, and I/O determine actual cost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>Rows and metrics return</strong><small>The plan and timing reveal whether the model was correct.</small></li>
+      <ol class="trace-flow" data-flow="redis-acl-boundary" aria-label="Mechanism trace: Provision a separate lab user then Check command and key permissions then Test both allowed and denied requests. Experiment: Keep the command unchanged and switch only the tenant in the key; then try an administrative command.">
+        <li class="trace-stage"><span>01 · IDENTITY</span><strong>Provision a separate lab user</strong><small>Administrator credentials and application credentials have different responsibilities.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><strong>Check command and key permissions</strong><small>An allowed GET still fails for a key outside the permitted tenant prefix.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY</span><strong>Test both allowed and denied requests</strong><small>DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one index or predicate and compare estimated versus actual work.</strong>
-        <small><b>Inspect:</b> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</small>
+        <strong>Keep the command unchanged and switch only the tenant in the key; then try an administrative command.</strong>
+        <small><b>Inspect:</b> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</small>
       </div>
     </aside>
   </div>
@@ -59,35 +55,35 @@
       <article class="concept-card" data-subtopic="Redis security">
         <span>01</span>
         <h3>Redis security</h3>
-        <p><strong>What it means:</strong> Redis security is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Redis security requires network restriction, authentication, least-privilege commands, transport protection, and safe operational access.</p>
       </article><article class="concept-card" data-subtopic="ACLs">
         <span>02</span>
         <h3>ACLs</h3>
-        <p><strong>What it means:</strong> ACLs is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Redis ACLs restrict authenticated users by supported command and key/channel permissions.</p>
       </article><article class="concept-card" data-subtopic="TLS">
         <span>03</span>
         <h3>TLS</h3>
-        <p><strong>What it means:</strong> TLS is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> TLS protects a connection&#039;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</p>
       </article><article class="concept-card" data-subtopic="protected mode">
         <span>04</span>
         <h3>protected mode</h3>
-        <p><strong>What it means:</strong> protected mode is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Protected mode restricts unsafe default exposure in supported configurations; it is not a replacement for network and identity controls.</p>
       </article><article class="concept-card" data-subtopic="command controls">
         <span>05</span>
         <h3>command controls</h3>
-        <p><strong>What it means:</strong> command controls is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Command controls restrict dangerous or unnecessary operations according to application and operator roles.</p>
       </article><article class="concept-card" data-subtopic="observability">
         <span>06</span>
         <h3>observability</h3>
-        <p><strong>What it means:</strong> observability is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Observability is the ability to investigate system behavior using its outputs, such as metrics, logs, traces, and profiles. Collect signals that can distinguish competing explanations for a failure.</p>
       </article><article class="concept-card" data-subtopic="latency">
         <span>07</span>
         <h3>latency</h3>
-        <p><strong>What it means:</strong> latency is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Latency is elapsed time between a defined start and completion boundary. Specify that boundary and report a distribution; an average can hide slow requests.</p>
       </article><article class="concept-card" data-subtopic="memory diagnostics">
         <span>08</span>
         <h3>memory diagnostics</h3>
-        <p><strong>What it means:</strong> memory diagnostics is one part of the data model, execution engine, concurrency rules, durability path, or operational boundary. Ask which state and invariant enter, how PostgreSQL or Redis transforms and coordinates them, which failure can violate the assumption, and which query, metric, log, or recovery test proves the result.</p>
+        <p><strong>What it means:</strong> Memory diagnostics distinguish dataset size, encodings, fragmentation, buffers, and persistence overhead before changing eviction policy.</p>
       </article>
     </div>
   </section>
@@ -96,24 +92,20 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · SQL</span>
-        <h3>Application submits a query</h3>
-        <p>Parameters and transaction context define the request.</p>
+        <span>01 · IDENTITY</span>
+        <h3>Provision a separate lab user</h3>
+        <p>Administrator credentials and application credentials have different responsibilities.</p>
       </article><article>
-        <span>02 · PLAN</span>
-        <h3>Optimizer chooses operations</h3>
-        <p>Statistics and indexes shape scans, joins, and order.</p>
+        <span>02 · AUTHORIZE</span>
+        <h3>Check command and key permissions</h3>
+        <p>An allowed GET still fails for a key outside the permitted tenant prefix.</p>
       </article><article>
-        <span>03 · EXECUTE</span>
-        <h3>Engine reads and transforms rows</h3>
-        <p>Buffers, locks, and I/O determine actual cost.</p>
-      </article><article>
-        <span>04 · RESULT</span>
-        <h3>Rows and metrics return</h3>
-        <p>The plan and timing reveal whether the model was correct.</p>
+        <span>03 · VERIFY</span>
+        <h3>Test both allowed and denied requests</h3>
+        <p>DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one index or predicate and compare estimated versus actual work.</p><p><strong>Then inspect:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Keep the command unchanged and switch only the tenant in the key; then try an administrative command.</p><p><strong>Then inspect:</strong> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</p></div>
   </section>
 
   
@@ -121,16 +113,29 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Create least-privilege users, enable secure transport, block unsafe administration paths, and diagnose a latency or memory incident from native evidence.</p>
+
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>ACL SETUSER app reset on &#039;&gt;replace-through-secret-manager&#039;   &#039;~cache:project:*&#039; &#039;+get&#039; &#039;+set&#039; &#039;+del&#039; &#039;+pttl&#039; &#039;-@dangerous&#039;
-ACL GETUSER app
-ACL DRYRUN app GET cache:project:42
-ACL DRYRUN app CONFIG GET &#039;*&#039;
+    <pre aria-label="Starter code"><code># Interactive redis-cli commands as a lab administrator; Redis 7+ for DRYRUN.
+# Isolated fixture only. Use a NEW lesson_cache_probe user: reset replaces its
+# permissions/passwords. The visible password below is synthetic, not a secret
+# provision mechanism. Production credentials must not enter command history.
+ACL SETUSER lesson_cache_probe reset on &gt;synthetic-lab-password ~cache:tenant42:project:* +get +set +del +pttl -@dangerous
+ACL GETUSER lesson_cache_probe
+ACL DRYRUN lesson_cache_probe GET cache:tenant42:project:7
+ACL DRYRUN lesson_cache_probe GET cache:tenant99:project:7
+ACL DRYRUN lesson_cache_probe CONFIG GET &#039;*&#039;
+# Expected: allowed, denied by key scope, denied by command permission.
+# DRYRUN does not execute the command or test authentication/TLS. Next connect
+# separately as the lab user and repeat allowed/denied operations against test
+# keys. Monitor/admin commands below are for the ADMIN connection, not this user.
 
 CONFIG GET protected-mode
 CONFIG GET tls-port
@@ -143,12 +148,13 @@ LATENCY LATEST
 MEMORY DOCTOR
 # Keep Redis private, authenticate every client, use TLS across untrusted links,
 # rotate credentials, restrict admin commands, and alert on persistence failure.
-
-// Lesson focus: Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+# Cleanup: disable/remove only this lab user and the exact keys created by the
+# exercise. ACL persistence across restart is a separate configuration decision.
+# https://redis.io/docs/latest/commands/acl-setuser/</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -157,16 +163,16 @@ MEMORY DOCTOR
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Application submits a query → Optimizer chooses operations → Engine reads and transforms rows → Rows and metrics return.</p>
+    <p><strong>Conceptual mechanism:</strong> Provision a separate lab user → Check command and key permissions → Test both allowed and denied requests. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one index or predicate and compare estimated versus actual work.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Keep the command unchanged and switch only the tenant in the key; then try an administrative command.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</p></article>
     </div>
   </section>
 
@@ -181,11 +187,23 @@ MEMORY DOCTOR
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="data-systems">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Follow client identity through encrypted transport and ACL categories while tracking slow commands, latency events, command statistics, clients, memory fragmentation, key sampling, and persistence health.</p>
+        <p><strong>Evidence to explain:</strong> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Memorize terminology and skip verification</span></label>
@@ -214,12 +232,12 @@ MEMORY DOCTOR
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"data-systems--redis-security-acls-tls-protected-mode-command-controls-observability-la","title":"Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics","correctIndex":1,"evidenceSummary":"Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"data-systems--redis-security-acls-tls-protected-mode-command-controls-observability-la","title":"Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics","correctIndex":1,"evidenceSummary":"Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -246,7 +264,7 @@ MEMORY DOCTOR
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -259,7 +277,7 @@ MEMORY DOCTOR
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

@@ -11,6 +11,7 @@
     h1{font-size:clamp(22px,2.8vw,34px)}
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
   </style>
 </head>
 <body>
@@ -21,14 +22,9 @@
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Beginner foundation</span>
+    <span class="section-label">01 · Core foundation</span>
     <p>This topic belongs to large language models. A large language model processes tokens and estimates a probability for possible next tokens.</p>
-    <dl class="foundation-grid">
-      <div><dt>Input → output</dt><dd>Something starts the operation. The system returns a value, effect, message, or error.</dd></div>
-      <div><dt>Boundary and state</dt><dd>A boundary separates system parts. State is information a part keeps or changes.</dd></div>
-      <div><dt>Mechanism and evidence</dt><dd>The mechanism does the work. A test, log, trace, or state change shows what happened.</dd></div>
-      <div><dt>Failure and tradeoff</dt><dd>A failure mode describes how it can break. A tradeoff is the cost of choosing one solution over another.</dd></div>
-    </dl>
+    <p><a href="../reference/senior-interview-practice.html#llm-internals">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
@@ -41,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a token sequence</h2>
-      <ol class="trace-flow" data-flow="llm-computation" aria-label="Mechanism trace: Input becomes token IDs then Embeddings carry token and position then Attention and MLP layers mix information then A token is selected and appended. Experiment: Change tokenization or decoding settings while holding the prompt fixed.">
-        <li class="trace-stage"><span>01 · TEXT</span><strong>Input becomes token IDs</strong><small>Tokenizer choices define the model&#039;s discrete symbols.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPRESENT</span><strong>Embeddings carry token and position</strong><small>Vectors enter repeated transformer blocks.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRANSFORM</span><strong>Attention and MLP layers mix information</strong><small>Weights and activations produce next-token logits.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECODE</span><strong>A token is selected and appended</strong><small>Sampling settings turn logits into observable output.</small></li>
+      <ol class="trace-flow" data-flow="numerical-0582" aria-label="Mechanism trace: Mask future positions then Normalize visible scores then Mix values. Experiment: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.">
+        <li class="trace-stage"><span>01 · TRACE</span><strong>Mask future positions</strong><small>Position zero can only attend to the first value.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><strong>Normalize visible scores</strong><small>Exponentials turn the visible scores into weights summing to one.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><strong>Mix values</strong><small>The later position is a weighted average; changing a future value leaves the earlier output unchanged.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change tokenization or decoding settings while holding the prompt fixed.</strong>
-        <small><b>Inspect:</b> Token IDs, attention or logits where available, selected token, latency, and output variance.</small>
+        <strong>Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</strong>
+        <small><b>Inspect:</b> Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +80,20 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · TEXT</span>
-        <h3>Input becomes token IDs</h3>
-        <p>Tokenizer choices define the model&#039;s discrete symbols.</p>
+        <span>01 · TRACE</span>
+        <h3>Mask future positions</h3>
+        <p>Position zero can only attend to the first value.</p>
       </article><article>
-        <span>02 · REPRESENT</span>
-        <h3>Embeddings carry token and position</h3>
-        <p>Vectors enter repeated transformer blocks.</p>
+        <span>02 · TRACE</span>
+        <h3>Normalize visible scores</h3>
+        <p>Exponentials turn the visible scores into weights summing to one.</p>
       </article><article>
-        <span>03 · TRANSFORM</span>
-        <h3>Attention and MLP layers mix information</h3>
-        <p>Weights and activations produce next-token logits.</p>
-      </article><article>
-        <span>04 · DECODE</span>
-        <h3>A token is selected and appended</h3>
-        <p>Sampling settings turn logits into observable output.</p>
+        <span>03 · TRACE</span>
+        <h3>Mix values</h3>
+        <p>The later position is a weighted average; changing a future value leaves the earlier output unchanged.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change tokenization or decoding settings while holding the prompt fixed.</p><p><strong>Then inspect:</strong> Token IDs, attention or logits where available, selected token, latency, and output variance.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p><p><strong>Then inspect:</strong> Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></div>
   </section>
 
   
@@ -109,26 +101,37 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement and visualize scaled dot-product attention on a tiny example.</p>
+
+
+
+
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example and save the result.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>function softmax(logits) {
-  const max = Math.max(...logits);
-  const weights = logits.map(x =&gt; Math.exp(x - max));
-  const total = weights.reduce((a, b) =&gt; a + b, 0);
-  return weights.map(x =&gt; x / total);
-}
+    <pre aria-label="Starter code"><code># Python 3.10+. One scalar attention head with a causal mask; not a whole block.
+from math import exp, isclose
+queries, keys, values = [1, 1], [0, 1], [10, 20]
+def attend(position, values):
+    scores = [queries[position] * key for key in keys[:position + 1]]
+    weights = [exp(score - max(scores)) for score in scores]
+    weights = [weight / sum(weights) for weight in weights]
+    return sum(weight * value for weight, value in zip(weights, values))
 
-console.log(softmax([2.1, 1.2, -0.3]));
-
-// Lesson focus: Attention, transformer blocks, residual streams, normalization, and feed-forward layers
-// Prediction: ______________________________________________
-// Observation: _____________________________________________
-// Revised model: ___________________________________________</code></pre>
+assert attend(0, values) == 10
+assert isclose(attend(1, values), (10 + exp(1)*20) / (1 + exp(1)))
+assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
+# Predict the weighted average before running; then remove the mask and explain
+# how next-token training would leak future information.
+# With key width d, scaled dot-product attention divides scores by sqrt(d).
+# This scalar fixture has d=1. Real blocks also use learned projections, multiple
+# heads, residual paths, normalization and an MLP; this is not their implementation.</code></pre>
+    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
+
+
 
   <section class="card code-guide">
     <span class="section-label">07 · Code reading guide</span>
@@ -137,16 +140,16 @@ console.log(softmax([2.1, 1.2, -0.3]));
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Expected flow:</strong> Input becomes token IDs → Embeddings carry token and position → Attention and MLP layers mix information → A token is selected and appended.</p>
+    <p><strong>Conceptual mechanism:</strong> Mask future positions → Normalize visible scores → Mix values. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a token sequence from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change tokenization or decoding settings while holding the prompt fixed.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Token IDs, attention or logits where available, selected token, latency, and output variance.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></article>
     </div>
   </section>
 
@@ -161,11 +164,23 @@ console.log(softmax([2.1, 1.2, -0.3]));
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="llm-internals">
+      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p><strong>Mechanism checkpoint:</strong> Follow tensor shapes and information flow through a simplified transformer.</p>
+        <p><strong>Evidence to explain:</strong> Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p>
+        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#llm-internals">Worked track case: A larger context window reduces quality ↗</a></p>
+      </details>
+    </div>
   </section>
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
-    <h2>Which approach best demonstrates mastery of Attention, transformer blocks, residual streams, normalization, and feed-forward layers?</h2>
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
         <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Memorize terminology and skip verification</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Trace mechanisms and verify evidence</span></label>
@@ -194,12 +209,12 @@ console.log(softmax([2.1, 1.2, -0.3]));
     
     
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
-    <small class="followup">Follow-up: revisit this mechanism in 48 hours and reproduce the explanation without notes.</small>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
 </main>
 <script>
 (() => {
-  const lesson = {"id":"llm-internals--attention-transformer-blocks-residual-streams-normalization-and-feed-for","title":"Attention, transformer blocks, residual streams, normalization, and feed-forward layers","correctIndex":2,"evidenceSummary":"Attention, transformer blocks, residual streams, normalization, and feed-forward layers: traced the mechanism, completed the practical lab, and passed retrieval practice."};
+  const lesson = {"id":"llm-internals--attention-transformer-blocks-residual-streams-normalization-and-feed-for","title":"Attention, transformer blocks, residual streams, normalization, and feed-forward layers","correctIndex":2,"evidenceSummary":"Attention, transformer blocks, residual streams, normalization, and feed-forward layers: completed the orientation check; practical work and senior interview understanding are not verified."};
   const feedback = document.querySelector("#feedback");
   const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
 
@@ -226,7 +241,7 @@ console.log(softmax([2.1, 1.2, -0.3]));
       reportHeight();
       return;
     }
-    feedback.textContent = "Mastered. You connected the mechanism to observable evidence.";
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
     feedback.className = "feedback success";
     messageParent("teach:mastery", {
       passed: true,
@@ -239,7 +254,7 @@ console.log(softmax([2.1, 1.2, -0.3]));
 
   document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
     const teachback = document.querySelector("#teachback").value.trim();
-    const prompt = "I studied “" + lesson.title + "” in the Full Stack AI Engineer roadmap. My teach-back: " + (teachback || "I will explain the boundary, mechanism, failure mode, and evidence.") + " Ask me one deeper follow-up question. If my explanation demonstrates mastery, create a concise learning record.";
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
     try {
       await navigator.clipboard.writeText(prompt);
       event.currentTarget.textContent = "copied ✓";

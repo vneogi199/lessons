@@ -16,7 +16,9 @@ The focus-mode variant is the currently preferred direction. It uses a dark, ter
 
 Focus mode loads the generated `lessons/manifest.json` catalog. Every lesson is a standalone HTML file with a compact beginner foundation, term guide, mental model, blackboard, mechanism walkthrough, practical lab, code-reading guide, common mistakes, interview preparation, a primary source, and a retrieval check. Passing the check updates track and overall progress in the shell.
 
-All lessons define every title-level subtopic for a beginner, then connect those terms through one mechanism explanation. Generic headings, agenda, outcome, and repeated template prose are intentionally omitted. The prose applies core ASD-STE100 Simplified Technical English rules.
+The curriculum targets senior interviews for a learner with around ten years of experience, while retaining clear entry explanations for unfamiliar subjects. Every lesson includes written senior rehearsal and links to a worked track case with reasoning, a changed constraint, and feedback criteria. Open the [senior practice reference](reference/senior-interview-practice.html) or the [content review of all 644 lessons](CONTENT-REVIEW.md).
+
+The review identifies remaining generic definitions and reused starter code. The catalog is not yet a fully verified senior course. The existing automatic check records orientation progress only; it does not prove knowledge or lab completion. Reading estimates exclude implementation and interview practice.
 
 Focus mode uses the complete generated curriculum and its own versioned `localStorage` key. Its dashboard summarizes overall and per-track progress and links to each track's next unfinished lesson. Progress can be exported to or restored from a validated JSON backup. A mastered active lesson can be marked incomplete without resetting other progress by tabbing to `mark_incomplete()` or pressing Alt+U.
 
@@ -34,7 +36,12 @@ Validate the complete generated set with:
 
 ```bash
 node scripts/validate-lessons.mjs
+node scripts/review-lessons.mjs
 ```
+
+The review requires Python 3.12+ (set `LESSON_PYTHON=python3.13` if your default is older). It audits all 644 lessons and runs selected local examples across foundations, computer science, JavaScript, Node.js, low-level design and ML/LLM fundamentals. No fallback definitions or unexplained starter reuse remain: 83 lessons retain shared mechanisms with distinct exercises. See `CONTENT-REVIEW.md` for exact execution coverage and limitations; browser, database, cloud and framework integrations are not all executed.
+
+The [TypeScript content review](TYPESCRIPT-CONTENT-REVIEW.md) covers all 45 lessons, including their senior reasoning and lab prerequisites. Run `node scripts/check-typescript-lessons.mjs` with `tsc` on PATH to compile and execute 26 selected snippets and their assertions/probes. The other 19 are explicitly scoped counterexamples, configuration/tooling recipes, integration sketches, or project assignments, not end-to-end-tested applications.
 
 ## What to compare
 
