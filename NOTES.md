@@ -1,5 +1,9 @@
 # Teaching and Product Notes
 
+- API boundary follow-up 2026-09-11: 0416/0418 now execute denied tenant/scope/action/classification and writable-field cases without missing helpers. 0419 uses synthetic observations and bounded metric labels; 0420 uses real node:test assertions for frozen keyset traversal and a tie-breaker counterexample. Live authentication, SSRF, audit and database behavior remain outside these local checks. The later follow-up below replaces leaderless/discovery sketches with executable local models, not full integrations. Retain these limits when reporting completion; do not repeat already completed starter batches.
+
+- API continuation 2026-09-11: completed the paused CAP/poison/event-replay documentation and continued into 0407/0408/0410/0440/0442/0444/0446. Removed unsupplied helpers from filter construction, compatibility testing, prepared-decision dispatch, version reconciliation, consistency counterexample and ring movement. Added bounded fixtures and regression checks, including stale/invalid outcomes; JSON hypermedia is directly parseable. Primary sources are now topic-specific for CAP, linearizability, Dynamo-style versioning, prepared transactions and CQRS. No database, broker or provider integration ran. Preserved the GitHub Pages path fix and rechecked all deployment prefixes.
+
 - GitHub Pages fix 2026-09-10: the manifest retained prototype-relative ../../lessons paths, causing the root lesson viewer and several reference links to escape the repository URL prefix. The generator now emits site-root-relative lessons paths; updated the senior reference link and validator consumers. Regenerated manifest/reference pages and added scripts/check-pages-links.mjs, which verifies 9,372 local targets at three deployment prefixes. No deployment, commit, push or installation performed.
 
 - API review paused for the Pages report: 0437/0445/0452 now have runnable offline poison-message, CAP-history and event-replay checks, replacing undefined helpers. Four routing regressions prevent SSE substring, retry/latency and CQRS topic collisions. Local review/validation passed before the deployment-path fix. Complete any remaining report/source documentation when resuming content work; do not claim full database/broker/consensus integration.
@@ -97,3 +101,27 @@
 - Allow a mastered lesson to be marked incomplete individually so progress can be corrected without resetting the curriculum; keep it keyboard and screen-reader accessible with native button behavior, a visible focus ring, a status announcement, and Alt+U.
 - Keep a separate focus-mode dashboard for a concise summary of overall and per-track progress, with JSON backup and restore for local progress.
 - The learner can study approximately 6–8 hours per week. Prioritize the core from demonstrated gaps rather than requiring every deep extension in 24 weeks.
+
+# Review follow-up — 2026-09-11
+
+- Retrieval/agent definition follow-up: corrected exact-search versus exhaustive-scan terminology, ANN versus relevance recall, rewrite/rerank limits, citation support, checkpoint/interrupt replay guarantees and StateGraph versus create_agent schema support. Eight effective-definition regression checks added; the LangGraph starter now specifies replay of code before interrupt within its node. No retrieval service or LangGraph runtime invoked.
+- Retrieval evaluation 0597 now runs precision/recall arithmetic, perfect-ANN/zero-relevance and reranking-candidate counterexamples. Explicitly documents empty-denominator, ties, duplicates and chunk/document conventions to settle before real evaluation; no model outputs are graded.
+
+- ML foundations 0577–0580 follow-up: inspected definitions and numerical starters. Clarified 0579's deployment-dependent entity overlap, fitted-preprocessing leakage and metric limitations; added executable training-only mean checks and three definition regressions. This does not train or evaluate a real model.
+- LLM internals 0581–0585 follow-up: inspected numerical starters; added a two-band counterexample in 0585 showing zero aggregate confidence gap despite miscalibration in both bands. Numerical checks execute; no model/provider behavior is certified.
+
+- Quality/security glossary follow-up: corrected webhook algorithm scope, freshness versus atomic duplicate-effect protection, presigned URL reuse/early expiry and hash-chain trust assumptions. Four effective-definition regressions preserve these boundaries; external security integrations remain unexecuted.
+
+- Service architecture/Kafka definition follow-up: inspected the 0456–0464 glossary and corrected nine guarantee boundaries (event durability, atomic deduplication, key placement, compaction, follower reads, ISR, transaction isolation, stale consumers and retry ordering). Added nine effective-definition regression checks. Version-pinned Kafka documentation reviewed; no broker ran.
+- Starter follow-up 0460–0464: fan-out invokes later subscribers even after a synchronous throw; Kafka command/property/stdin boundaries are explicit; batch metadata and offset order are checked before effects; effect and schema-validator dependencies are explicit arguments. Schema defaults, format settings and old/new compatibility limits are explained. Local checks cover fan-out, invalid/gapped offsets and quarantine failure, not broker behavior or real schema validation.
+- Aggregate 0458 now freezes its USD-only Money value, rejects invalid amounts/identity and checks repeated placement. Explicitly distinguishes an in-memory invariant from concurrent persistence and warns that draining events is not durable publication.
+
+- Reliability 0469 now supplies a runnable event-budget exercise with exact threshold comparisons, no-data/invalid-input checks and an unequal-traffic aggregation counterexample. Replaced its unrelated ASVS primary link with the SRE SLO chapter. Counts are synthetic; no monitoring or incident integration is claimed.
+- Testing/security 0465–0468 now have topic-specific primary sources, enforced along with 0469 by source-routing checks. Their existing bounded integration assignments remain assignments, not executed systems.
+
+- Replaced generic request diagrams in 0321/0322 with execution-boundary and cancellation-ownership traces. Added regression checks; explicitly distinguish directly called helpers, cooperative cancellation, remote side effects and server-specific disconnect behavior.
+- Inspected foundation, service-architecture and quality/security diagram routing. Reused the behavior-test trace for 0465/0466 and gave 0469 a user-outcome/error-budget/incident-learning trace, with regression checks. This is diagram review, not live reliability or security verification.
+
+- Replaced leaderless-replication and service-discovery helper sketches with runnable quorum-set and endpoint-selection exercises, including counterexamples and explicit integration limits.
+- Corrected Python sequence, Python testing, FastAPI response and FastAPI testing diagram routing. Reused the existing behavior-test trace; added regression checks for all five affected lessons.
+- Response semantics checked against https://fastapi.tiangolo.com/advanced/custom-response/. No dependencies installed or live services invoked.

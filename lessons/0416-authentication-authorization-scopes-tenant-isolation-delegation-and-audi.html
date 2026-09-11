@@ -119,15 +119,36 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>function authorize(principal, action, resource, context) {
+    <pre aria-label="Starter code"><code>// One project-read policy. principal must come from VERIFIED authentication,
+// never from request JSON; resource must come from the authoritative data store.
+function authorize(principal, action, resource) {
+  if (!principal || !resource || typeof principal.tenantId !== &quot;string&quot; || !principal.tenantId ||
+      typeof resource.tenantId !== &quot;string&quot; || !Array.isArray(principal.scopes) || !Array.isArray(principal.roles)) {
+    return { allow: false, reason: &quot;INVALID_CONTEXT&quot; };
+  }
+  if (action !== &quot;project:read&quot; || ![&quot;ordinary&quot;, &quot;restricted&quot;].includes(resource.classification)) {
+    return { allow: false, reason: &quot;UNSUPPORTED_POLICY&quot; };
+  }
   if (principal.tenantId !== resource.tenantId) return { allow: false, reason: &quot;TENANT_BOUNDARY&quot; };
   if (!principal.scopes.includes(action)) return { allow: false, reason: &quot;MISSING_SCOPE&quot; };
   if (resource.classification === &quot;restricted&quot; &amp;&amp; !principal.roles.includes(&quot;reviewer&quot;)) {
     return { allow: false, reason: &quot;RESOURCE_POLICY&quot; };
   }
-  return { allow: true, obligations: { audit: true, fields: allowedFields(principal, resource) } };
+  return { allow: true, obligations: { audit: true, fields: [&quot;id&quot;, &quot;name&quot;] } };
 }
 
+const principal = {tenantId: &quot;tenant-a&quot;, scopes: [&quot;project:read&quot;], roles: []};
+const resource = {tenantId: &quot;tenant-a&quot;, classification: &quot;ordinary&quot;};
+console.assert(authorize(principal, &quot;project:read&quot;, resource).allow);
+console.assert(!authorize(principal, &quot;project:read&quot;, {...resource, tenantId: &quot;tenant-b&quot;}).allow);
+console.assert(!authorize({...principal, scopes: []}, &quot;project:read&quot;, resource).allow);
+console.assert(!authorize(principal, &quot;project:read&quot;, {...resource, classification: &quot;restricted&quot;}).allow);
+console.assert(authorize({...principal, roles: [&quot;reviewer&quot;]}, &quot;project:read&quot;, {...resource, classification: &quot;restricted&quot;}).allow);
+console.assert(!authorize(null, &quot;project:read&quot;, resource).allow);
+console.assert(!authorize(principal, &quot;project:delete&quot;, resource).allow);
+console.assert(!authorize(principal, &quot;project:read&quot;, {...resource, classification: &quot;unknown&quot;}).allow);
+// The caller MUST enforce allow and project the listed fields; returning an
+// obligations object does not filter a response or persist an audit event.
 // Record subject, actor/delegation chain, tenant, action, resource, decision,
 // policy version, request/trace IDs, and outcome without logging credentials.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -192,7 +213,7 @@
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.rfc-editor.org/rfc/rfc9700.html" target="_blank" rel="noreferrer">RFC 9700 OAuth 2.0 Security Best Current Practice ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/" target="_blank" rel="noreferrer">OWASP: object-level authorization ↗</a></div>
     
     
     

@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="Kafka replication">
         <span>01</span>
         <h3>Kafka replication</h3>
-        <p><strong>What it means:</strong> Kafka replication keeps partition copies on multiple brokers while one leader handles reads and writes for the partition.</p>
+        <p><strong>What it means:</strong> Kafka replicates each partition across brokers. Writes go to its leader; configured consumers can read from suitable followers as well as the leader.</p>
       </article><article class="concept-card" data-subtopic="leaders">
         <span>02</span>
         <h3>leaders</h3>
@@ -75,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="min.insync.replicas">
         <span>06</span>
         <h3>min.insync.replicas</h3>
-        <p><strong>What it means:</strong> min.insync.replicas is the minimum number of in-sync copies required for writes using all-replica acknowledgement.</p>
+        <p><strong>What it means:</strong> With acks=all, min.insync.replicas sets the minimum eligible ISR size for a successful write. It is not a request to wait for exactly that many replicas: acks=all waits for the full current ISR.</p>
       </article><article class="concept-card" data-subtopic="controllers">
         <span>07</span>
         <h3>controllers</h3>
@@ -137,10 +137,12 @@ kafka-configs.sh --bootstrap-server localhost:9092 --alter \
   --entity-type topics --entity-name order-events \
   --add-config min.insync.replicas=2,unclean.leader.election.enable=false
 
-# Producer side must request the matching acknowledgement strength.
-acks=all
-enable.idempotence=true
-delivery.timeout.ms=120000
+# Producer properties file entries (not shell commands):
+# acks=all
+# enable.idempotence=true
+# delivery.timeout.ms=120000
+# Configure the producer with these properties using its own supported API.
+# acks=all waits for the full current ISR, not exactly min.insync.replicas.
 
 # Observe ISR shrink and leadership during controlled broker loss.
 kafka-topics.sh --bootstrap-server localhost:9092 \

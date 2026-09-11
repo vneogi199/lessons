@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="transactions">
         <span>05</span>
         <h3>transactions</h3>
-        <p><strong>What it means:</strong> Kafka transactions atomically publish records and consumed-offset updates across supported Kafka partitions.</p>
+        <p><strong>What it means:</strong> Kafka transactions commit output records and included consumed-offset updates together. Consumers need read_committed to hide aborted transactional records. An external database write or payment is not automatically part of that transaction.</p>
       </article><article class="concept-card" data-subtopic="consumers">
         <span>06</span>
         <h3>consumers</h3>
@@ -79,7 +79,7 @@
       </article><article class="concept-card" data-subtopic="consumer groups">
         <span>07</span>
         <h3>consumer groups</h3>
-        <p><strong>What it means:</strong> A consumer group divides topic partitions between active members so one member owns a partition at a time within that group.</p>
+        <p><strong>What it means:</strong> A traditional Kafka consumer group assigns each partition to one member at a time. Assignment does not stop a stale worker&#039;s external effects; safe handoff and effect protection still matter. Share groups use different assignment semantics.</p>
       </article><article class="concept-card" data-subtopic="rebalancing">
         <span>08</span>
         <h3>rebalancing</h3>
@@ -143,10 +143,25 @@
   batchSize: 64 * 1024,
 };
 
-async function handleBatch(consumer, database, records) {
+async function handleBatch(consumer, database, records, applyBusinessEffect) {
+  if (!Array.isArray(records)) throw new TypeError(&quot;records must be an array&quot;);
   if (records.length === 0) return;
-  // Adapter supplies a single assigned topic/partition, ordered decimal offsets.
-  // Disable auto-commit; reject mixed partitions before performing effects.
+  if (typeof applyBusinessEffect !== &quot;function&quot;) throw new TypeError(&quot;effect adapter required&quot;);
+  // Validate the entire batch before effects, preserving decimal offset precision.
+  let previous = -1n;
+  for (const record of records) {
+    if (!record || typeof record.topic !== &quot;string&quot; || !record.topic ||
+        !Number.isSafeInteger(record.partition) || record.partition &lt; 0 ||
+        typeof record.offset !== &quot;string&quot; || !/^(0|[1-9][0-9]{0,18})$/.test(record.offset)) {
+      throw new TypeError(&quot;invalid record metadata&quot;);
+    }
+    const offset = BigInt(record.offset);
+    if (offset &lt;= previous || offset &gt;= 9223372036854775807n) {
+      throw new RangeError(&quot;offset order or next-offset range&quot;);
+    }
+    previous = offset;
+  }
+  // Disable auto-commit; consumer adapter owns this assigned topic/partition.
   if (records.some(record =&gt; record.topic !== records[0].topic || record.partition !== records[0].partition)) {
     throw new Error(&quot;one partition per batch required&quot;);
   }
@@ -162,7 +177,12 @@ async function handleBatch(consumer, database, records) {
 // Crash before commit: records repeat, so the inbox protects business effects.
 // Crash after commit but before an external effect: that effect can be lost.
 // Kafka transactions atomically cover Kafka output records and consumed offsets,
-// not an unrelated database or third-party API.</code></pre>
+// not an unrelated database or third-party API.
+// Adapters are supplied by the caller. The effect must use tx for its local writes;
+// the inbox must be scoped to cluster/topic identity and consumer purpose.
+// Offset gaps are valid after compaction; duplicate/decreasing offsets are not.
+// Ownership loss must stop admission and prevent stale external effects. The
+// local fake tests do not prove rollback, durable deduplication or rebalance safety.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 

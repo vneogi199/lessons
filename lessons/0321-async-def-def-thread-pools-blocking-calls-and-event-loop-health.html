@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a concurrent task</h2>
-      <ol class="trace-flow" data-flow="fastapi-request" aria-label="Mechanism trace: HTTP bytes reach Uvicorn then Events enter the application then Dependencies and business logic run then ASGI send emits wire events. Experiment: Trace one valid request and one failure while recording every ASGI event.">
-        <li class="trace-stage"><span>01 · SOCKET</span><strong>HTTP bytes reach Uvicorn</strong><small>The server parses protocol data and creates an ASGI scope.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><strong>Events enter the application</strong><small>Middleware wraps receive, routing, and endpoint handling.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><strong>Dependencies and business logic run</strong><small>Typed inputs become a return value or exception.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>ASGI send emits wire events</strong><small>Status, headers, and body become observable to the client.</small></li>
+      <ol class="trace-flow" data-flow="fastapi-execution" aria-label="Mechanism trace: Identify who calls the function then Trace the actual work inside then Choose the execution boundary then Check interference under load. Experiment: Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.">
+        <li class="trace-stage"><span>01 · DISPATCH</span><strong>Identify who calls the function</strong><small>FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CALL</span><strong>Trace the actual work inside</strong><small>A def helper called directly from async code still runs on the loop thread. Its spelling does not trigger offloading.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · WAIT</span><strong>Choose the execution boundary</strong><small>Await asynchronous I/O; explicitly offload blocking I/O. Thread capacity is finite, and CPU work needs a separately justified execution strategy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Check interference under load</strong><small>Record loop delay, pool queueing and request latency; a fast isolated request does not prove healthy concurrency.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Trace one valid request and one failure while recording every ASGI event.</strong>
-        <small><b>Inspect:</b> Scope fields, middleware order, dependency calls, send events, and client response.</small>
+        <strong>Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.</strong>
+        <small><b>Inspect:</b> Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · SOCKET</span>
-        <h3>HTTP bytes reach Uvicorn</h3>
-        <p>The server parses protocol data and creates an ASGI scope.</p>
+        <span>01 · DISPATCH</span>
+        <h3>Identify who calls the function</h3>
+        <p>FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop.</p>
       </article><article>
-        <span>02 · ASGI</span>
-        <h3>Events enter the application</h3>
-        <p>Middleware wraps receive, routing, and endpoint handling.</p>
+        <span>02 · CALL</span>
+        <h3>Trace the actual work inside</h3>
+        <p>A def helper called directly from async code still runs on the loop thread. Its spelling does not trigger offloading.</p>
       </article><article>
-        <span>03 · ENDPOINT</span>
-        <h3>Dependencies and business logic run</h3>
-        <p>Typed inputs become a return value or exception.</p>
+        <span>03 · WAIT</span>
+        <h3>Choose the execution boundary</h3>
+        <p>Await asynchronous I/O; explicitly offload blocking I/O. Thread capacity is finite, and CPU work needs a separately justified execution strategy.</p>
       </article><article>
-        <span>04 · RESPONSE</span>
-        <h3>ASGI send emits wire events</h3>
-        <p>Status, headers, and body become observable to the client.</p>
+        <span>04 · MEASURE</span>
+        <h3>Check interference under load</h3>
+        <p>Record loop delay, pool queueing and request latency; a fast isolated request does not prove healthy concurrency.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Trace one valid request and one failure while recording every ASGI event.</p><p><strong>Then inspect:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.</p><p><strong>Then inspect:</strong> Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</p></div>
   </section>
 
   
@@ -144,16 +144,16 @@ async def broken():
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> HTTP bytes reach Uvicorn → Events enter the application → Dependencies and business logic run → ASGI send emits wire events. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Identify who calls the function → Trace the actual work inside → Choose the execution boundary → Check interference under load. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Trace one valid request and one failure while recording every ASGI event.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Scope fields, middleware order, dependency calls, send events, and client response.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</p></article>
     </div>
   </section>
 
@@ -174,7 +174,7 @@ async def broken():
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand coroutine execution, AnyIO thread-pool offloading for synchronous dependencies or endpoints, capacity limits, the GIL, and event-loop starvation.</p>
-        <p><strong>Evidence to explain:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p>
+        <p><strong>Evidence to explain:</strong> Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>

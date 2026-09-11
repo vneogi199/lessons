@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an object&#039;s lifetime</h2>
-      <ol class="trace-flow" data-flow="python-object-lifetime" aria-label="Mechanism trace: Objects and references appear then Aliases preserve reachability then Strong references disappear then Object remains or is reclaimed. Experiment: Create an alias or cycle, delete roots, and predict which objects remain reachable.">
-        <li class="trace-stage"><span>01 · CREATE</span><strong>Objects and references appear</strong><small>Names and containers form an object graph.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SHARE</span><strong>Aliases preserve reachability</strong><small>Shallow copies may still point to the same children.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RELEASE</span><strong>Strong references disappear</strong><small>CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Object remains or is reclaimed</strong><small>Weak references and memory traces expose the outcome.</small></li>
+      <ol class="trace-flow" data-flow="python-sequence" aria-label="Mechanism trace: Select a sequence for its operations then Index, slice or unpack then Track references across copies then Account for the operation&#039;s cost. Experiment: Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.">
+        <li class="trace-stage"><span>01 · CHOOSE</span><strong>Select a sequence for its operations</strong><small>Lists are mutable, tuples are immutable containers and range represents an arithmetic sequence compactly.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ACCESS</span><strong>Index, slice or unpack</strong><small>Bounds, slice steps and unpacking arity determine the values or exceptions produced.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SHARE</span><strong>Track references across copies</strong><small>A list slice creates a shallow outer copy; nested mutable objects remain shared. Tuple immutability does not freeze its children.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Account for the operation&#039;s cost</strong><small>Copying a list slice costs space and time proportional to its result; constructing a range does not materialize every element.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Create an alias or cycle, delete roots, and predict which objects remain reachable.</strong>
-        <small><b>Inspect:</b> Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</small>
+        <strong>Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.</strong>
+        <small><b>Inspect:</b> Outer and child identities, resulting values, unpacking errors and measured allocation; avoid generalizing list-copy costs to every sequence type.</small>
       </div>
     </aside>
   </div>
@@ -88,24 +88,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CREATE</span>
-        <h3>Objects and references appear</h3>
-        <p>Names and containers form an object graph.</p>
+        <span>01 · CHOOSE</span>
+        <h3>Select a sequence for its operations</h3>
+        <p>Lists are mutable, tuples are immutable containers and range represents an arithmetic sequence compactly.</p>
       </article><article>
-        <span>02 · SHARE</span>
-        <h3>Aliases preserve reachability</h3>
-        <p>Shallow copies may still point to the same children.</p>
+        <span>02 · ACCESS</span>
+        <h3>Index, slice or unpack</h3>
+        <p>Bounds, slice steps and unpacking arity determine the values or exceptions produced.</p>
       </article><article>
-        <span>03 · RELEASE</span>
-        <h3>Strong references disappear</h3>
-        <p>CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise.</p>
+        <span>03 · SHARE</span>
+        <h3>Track references across copies</h3>
+        <p>A list slice creates a shallow outer copy; nested mutable objects remain shared. Tuple immutability does not freeze its children.</p>
       </article><article>
-        <span>04 · OBSERVE</span>
-        <h3>Object remains or is reclaimed</h3>
-        <p>Weak references and memory traces expose the outcome.</p>
+        <span>04 · MEASURE</span>
+        <h3>Account for the operation&#039;s cost</h3>
+        <p>Copying a list slice costs space and time proportional to its result; constructing a range does not materialize every element.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Create an alias or cycle, delete roots, and predict which objects remain reachable.</p><p><strong>Then inspect:</strong> Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.</p><p><strong>Then inspect:</strong> Outer and child identities, resulting values, unpacking errors and measured allocation; avoid generalizing list-copy costs to every sequence type.</p></div>
   </section>
 
   
@@ -153,16 +153,16 @@ print(&quot;front insert:&quot;, timeit(&quot;x.insert(0, 1)&quot;, setup=&quot;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Objects and references appear → Aliases preserve reachability → Strong references disappear → Object remains or is reclaimed. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Select a sequence for its operations → Index, slice or unpack → Track references across copies → Account for the operation&#039;s cost. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Create an alias or cycle, delete roots, and predict which objects remain reachable.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Outer and child identities, resulting values, unpacking errors and measured allocation; avoid generalizing list-copy costs to every sequence type.</p></article>
     </div>
   </section>
 
@@ -183,7 +183,7 @@ print(&quot;front insert:&quot;, timeit(&quot;x.insert(0, 1)&quot;, setup=&quot;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Study dynamic-array growth, immutable tuple structure, slice allocation, extended unpacking, reference copying, and operation complexity.</p>
-        <p><strong>Evidence to explain:</strong> Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</p>
+        <p><strong>Evidence to explain:</strong> Outer and child identities, resulting values, unpacking errors and measured allocation; avoid generalizing list-copy costs to every sequence type.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>

@@ -20,6 +20,24 @@ const machineCodingChecks = [];
 const numericalChecks = [];
 const javascriptChecks = [];
 const pythonTrackChecks = [];
+for (const [term, expected] of [["exact search", /not ground-truth semantic relevance/], ["recall", /Relevance recall/], ["query rewriting", /change intent/], ["reranking", /cannot recover/], ["citations", /does not prove/]]) {
+  assert.match(simpleConceptExplanation(term, { trackId: "retrieval-rag", title: "Retrieval" }), expected);
+}
+for (const [term, expected] of [["interrupts", /restarts its node/], ["checkpoints", /in-memory saver/], ["pydantic state schemas", /create_agent does not support/]]) {
+  assert.match(simpleConceptExplanation(term, { trackId: "agents", title: "Workflow recovery" }), expected);
+}
+for (const [term, expected] of [["data splits", /each training fold/], ["leakage", /model building or selection/], ["metrics", /minority-class/]]) {
+  assert.match(simpleConceptExplanation(term, { trackId: "ml-foundations", title: "Evaluation" }), expected);
+}
+for (const [term, expected] of [["signatures", /public-key/], ["replay defense", /atomically/], ["presigned urls", /not a single-use/], ["tamper evidence", /independent checkpoints/]]) {
+  assert.match(simpleConceptExplanation(term, { trackId: "quality-security", title: "Production boundaries" }), expected);
+}
+for (const [term, expected] of [["compaction", /multiple versions/], ["kafka replication", /followers/], ["min.insync.replicas", /full current ISR/], ["transactions", /read_committed/], ["consumer groups", /stale worker/], ["retry topics", /overtake/], ["idempotent consumers", /atomic boundary/], ["event-driven architecture", /style alone/], ["keys", /partition counts/]]) {
+  assert.match(simpleConceptExplanation(term, { trackId: "service-architecture-events", title: "Kafka and event delivery" }), expected);
+}
+for (const [number, fragment] of [["0465", "unittest.mock"], ["0466", "hypothesis.readthedocs.io"], ["0467", "Threat_Modeling_Cheat_Sheet"], ["0468", "Software_Supply_Chain_Security_Cheat_Sheet"], ["0469", "implementing-slos"]]) {
+  assert.ok(manifest.lessons.find(lesson => lesson.number === number).sourceUrl.includes(fragment), `${number}: unrelated primary source`);
+}
 for (const [term, expected] of [["https redirects", /already unencrypted/], ["origin policy", /not CSRF protection/], ["async def", /async generator/], ["def", /not every helper/]]) {
   assert.match(simpleConceptExplanation(term, {trackId:"fastapi", title:"Security and execution boundaries"}), expected);
 }
@@ -41,6 +59,10 @@ for (const [number, key] of Object.entries({
   "0571":"operations-diagnosis", "0572":"operations-diagnosis",
   "0595":"rag-ingestion", "0615":"ai-authority-boundary",
   "0122":"behavior-test", "0200":"behavior-test",
+  "0295":"behavior-test", "0338":"behavior-test", "0339":"behavior-test",
+  "0265":"python-sequence", "0312":"fastapi-response",
+  "0321":"fastapi-execution", "0322":"fastapi-cancellation",
+  "0465":"behavior-test", "0466":"behavior-test", "0469":"reliability-feedback",
   "0192":"react-input-ownership", "0209":"react-output-boundary",
   "0422":"distributed-message", "0437":"message-delivery",
   "0445":"replicated-operation", "0452":"event-history-projection"
@@ -108,9 +130,14 @@ for (const lesson of manifest.lessons) {
     }
   }
   assert.equal(missing.length, 0, `${lesson.id}: placeholder definitions must be replaced before publishing`);
-  if (["0437", "0445", "0452"].includes(lesson.number)) {
+  if (["0407", "0408", "0416", "0418", "0419", "0420", "0437", "0440", "0442", "0443", "0444", "0445", "0446", "0449", "0452", "0469", "0597"].includes(lesson.number)) {
     const prelude = 'import { ok as check } from "node:assert/strict"; console.assert = check;\n';
     execFileSync(process.execPath, ["--input-type=module", "-e", prelude + decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
+  if (lesson.number === "0410") {
+    const representation = JSON.parse(decode(code));
+    assert.equal(representation.links.approve.method, "PUT");
+    assert.equal(representation.state, "awaiting_approval");
   }
   if (lesson.number === "0614") {
     execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
@@ -286,11 +313,22 @@ async def check():
 asyncio.run(check())
 `], { timeout: 10000, stdio: "pipe" });
   }
+  if (lesson.number === "0464") {
+    const processEvent = runInNewContext(decode(code) + "\nprocess");
+    const calls = [];
+    const operations = { quarantine: async () => calls.push("quarantine"), consumeIdempotently: async () => calls.push("consume") };
+    await processEvent({}, operations, () => ({ ok: false, errors: ["fixture"] }));
+    await processEvent({}, operations, () => ({ ok: true, value: {} }));
+    assert.deepEqual(calls, ["quarantine", "consume"]);
+    await assert.rejects(processEvent({}, { ...operations, quarantine: async () => { throw new Error("storage unavailable"); } }, () => ({ ok: false, errors: [] })), /storage unavailable/);
+    assert.match(decode(code), /default is an annotation/);
+    assert.match(decode(code), /old\/new writers/);
+  }
   if (lesson.title.startsWith("Kafka producers")) {
     const effects = [], commits = [];
-    const handleBatch = runInNewContext(decode(code) + "\nhandleBatch", {
-      applyBusinessEffect: async (_tx, value) => { if (value === "fail") throw new Error("effect failed"); effects.push(value); }
-    });
+    const batch = runInNewContext(decode(code) + "\nhandleBatch");
+    const effect = async (_tx, value) => { if (value === "fail") throw new Error("effect failed"); effects.push(value); };
+    const handleBatch = (consumer, database, records) => batch(consumer, database, records, effect);
     const database = { transaction: async fn => fn({ inbox: { insertIfAbsent: async () => true } }) };
     const consumer = { commitOffset: async offset => commits.push(offset) };
     const record = { topic: "jobs", partition: 0, offset: "9007199254740993", value: "ok" };
@@ -298,10 +336,19 @@ asyncio.run(check())
     assert.equal(commits.length, 0);
     await handleBatch(consumer, database, [record]);
     assert.deepEqual(commits, ["9007199254740994"]);
-    await assert.rejects(handleBatch(consumer, database, [record, { ...record, partition: 1 }]), /one partition/);
+    await assert.rejects(handleBatch(consumer, database, [record, { ...record, partition: 1, offset: "9007199254740994" }]), /one partition/);
     assert.deepEqual(effects, ["ok"]);
     await assert.rejects(handleBatch(consumer, database, [{ ...record, value: "fail" }]), /effect failed/);
     assert.equal(commits.length, 1);
+    for (const invalid of [null, [null], [{ ...record, offset: "01" }],
+      [{ ...record, offset: "9223372036854775807" }], [record, record],
+      [record, { ...record, offset: "2" }], [{ ...record, partition: -1 }]]) {
+      await assert.rejects(handleBatch(consumer, database, invalid));
+    }
+    assert.deepEqual(effects, ["ok"]);
+    assert.equal(commits.length, 1);
+    await handleBatch(consumer, database, [{ ...record, offset: "1" }, { ...record, offset: "3" }]);
+    assert.equal(commits.at(-1), "4");
   }
   if (lesson.number === "0439") {
     const order = [];
@@ -853,7 +900,7 @@ assert.equal(unresolvedReuse.length, 0, "Every reused starter needs a reviewed, 
 const lines = [
   "# Curriculum content review — senior full-stack AI engineering",
   "",
-  "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-10.",
+  "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-11.",
   "",
   "## Verdict",
   "",
@@ -868,12 +915,15 @@ const lines = [
   "1. **Assessment does not establish knowledge.** All 644 lessons originally used the same three orientation answers and claimed mastery after the obvious choice. The current progress interaction is explicitly labelled as orientation only, and the handoff no longer claims practical work was completed. Written rehearsal, a reasoning checkpoint, and 28 authored track cases now add feedback and changed constraints. Replacing the progress mechanism with written self-assessment remains a learner choice.",
   `2. **Placeholder definitions replaced throughout the catalog.** The initial complete audit found 1,892 generic fallback definitions in 458 lessons. Exact corrections and shared vocabulary now leave ${missingCount} fallback definitions in ${missingLessons} lessons. The audit prevents their reintroduction across all 644 lessons. Concrete wording is not itself proof of factual correctness or sufficient depth; contextual review still matters.`,
   "3. **Loose matching selected the wrong subject.** A term such as TypeScript's `in` could match unrelated catalog text. Exact definitions now take priority, and fallback matching uses the longest whole phrase. All 46 JavaScript lessons now have concrete definitions for their title-level terms. Primitive values and async functions have dedicated mechanism traces rather than inheriting property-lookup or lexical-binding traces. Broader diagram routing still deserves lesson-specific review.",
+  "Quality/reliability follow-up: 0465–0469 now link to topic-specific testing, threat-modeling, supply-chain and SLO sources instead of a single ASVS landing page. 0469 executes synthetic event-budget threshold, invalid/no-data and unequal-traffic aggregation checks. It distinguishes whole-window consumption from burn-rate alerting and does not verify production telemetry or incident response.",
   `4. **Starter reuse is now intentional and scoped.** Initially 230 lessons shared an identical starter. Currently ${sharedLessons} retain shared mechanisms, each with reviewed lesson-specific practice and limits; ${unresolvedReuse.length} reuse cases remain unexplained. Infrastructure, advanced React, AI and capstone placeholders now give concrete setup, a changed condition and expected evidence where a ready-made implementation is not supplied. These assignments still require the learner's implementation and appropriate environment.`,
   "5. **Senior reasoning needed a worked example.** Every track now has a concrete scenario, a reasoned answer, a changed constraint, feedback criteria, and a primary-source link. Lessons link to their track's case rather than repeating the full case in 644 pages. These cases supplement the topic-specific exercises; they are not 644 individually authored interview answers.",
   "6. **Repeated introductory prose added reading cost.** Removed the four generic input/state/mechanism/tradeoff cards from every lesson. Retained a short entry explanation, the term guide, and the underlying code. Reading estimates now explicitly exclude implementation and interview practice.",
   "7. **The schedule cannot represent exhaustive mastery.** At 6–8 hours/week, 24 weeks provides 144–192 hours. Even 644 readings of 15 minutes consume 161 hours before labs and projects. The senior reference recommends a diagnostic-led core with deep extensions. Selecting a numbered core sequence still needs target-role emphasis and evidence of the learner's actual gaps.",
   "",
   "## Executed examples",
+  "API authorization/verification follow-up: 0416/0418 execute allow/deny and writable-field cases; 0419 checks bounded metric labels; 0420 executes frozen-dataset pagination and a missing-tie-breaker counterexample with node:test. These checks do not verify token authentication, SSRF transport controls, audit durability, live cursor security or API compatibility. 0443 executes fixed-set quorum intersection and a sloppy-placement counterexample; 0449 executes validated local endpoint selection and unavailable/invalid snapshot cases. Neither implements a replication protocol or live service discovery.",
+  "API follow-up: 0407/0408/0437/0440/0442/0444/0445/0446/0452 execute local assertions for parameterized filter construction, scripted compatibility, quarantine classification, prepared-decision dispatch, vector-clock reconciliation, a two-operation consistency counterexample, CAP history, tiny-ring movement and event replay. Lesson 0410 parses as JSON. These are narrowly scoped checks, not a full query engine, linearizability checker, event store, replication protocol or live API. Exact primary sources now accompany consistency, CAP, prepared transactions, Dynamo-style versioning and CQRS.",
   "LLM benchmark 0614 executes deterministic fixture assertions for per-slice failures, failed calls, unknown costs, malformed costs and repetition limits. Retained records distinguish independent cases from repeated attempts; score standard deviation is not presented as statistical confidence. No model provider was called. AI ingestion/security and frontend testing/input/security diagrams have dedicated routing checks; browser behavior remains unexecuted.",
   "PostgreSQL follow-up: the deadlock/serialization retry adapter executes offline success, retry exhaustion, nonretryable-error and bound checks. SQL starters received execution-context, generated-expression, snapshot-session, invariant-recheck, replication-slot and hybrid-ranking corrections. The SQL text guard rejects shell/INI contamination; it is not a SQL parser or PostgreSQL integration test. No database server or extension was installed or run.",
   "Node follow-up: both gzip starters execute owned-staging success/failure/cancellation/concurrent-replacement checks. HTTP/2 session tracking, normal drain, forced deadline and late-session rejection use event adapters, not TLS. Fetch checks cover split UTF-8, object-only JSON, size limits, errors, cancellation and body disposal without network requests. TCP framing checks pause after a false write result and drain buffered frames before resuming; they use a socket fake. The local queue deliberately demonstrates two failures with assertions; it is not a deployable queue. The Node test-runner cancellation fixture executes. A cross-track diagram regression matrix includes PostgreSQL EXPLAIN, pooling, access, diagnostics and infrastructure troubleshooting; these checks do not establish every diagram's factual completeness.",

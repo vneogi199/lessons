@@ -298,13 +298,18 @@ console.assert(contexts[0].language.Order !== contexts[1].language.Order);
   if (title.startsWith("Tactical domain-driven design")) return `class Money {
   constructor(readonly cents: number, readonly currency: string) {
     if (!Number.isSafeInteger(cents) || cents < 0) throw new RangeError("cents");
+    // This exercise supports USD only, whose amounts use two decimal places.
+    if (currency !== "USD") throw new RangeError("unsupported fixture currency");
+    Object.freeze(this); // readonly alone is only a TypeScript restriction.
   }
 }
 
 class Order {
   #status = "draft";
   #events: { type: "OrderPlaced"; orderId: string; totalCents: number; currency: string }[] = [];
-  constructor(readonly id: string, readonly total: Money) {}
+  constructor(readonly id: string, readonly total: Money) {
+    if (typeof id !== "string" || !id.trim() || !(total instanceof Money)) throw new TypeError("order identity and Money required");
+  }
   place() {
     if (this.#status !== "draft") throw new Error("only a draft order can be placed");
     this.#status = "placed";
@@ -317,7 +322,20 @@ class Order {
 const order = new Order("A-42", new Money(2500, "USD"));
 order.place();
 console.assert(order.status === "placed" && order.pullEvents()[0].type === "OrderPlaced");
-// Order is the aggregate root and protects the immediate consistency boundary.`;
+console.assert(order.pullEvents().length === 0 && Object.isFrozen(order.total));
+let repeated = false;
+try { order.place(); } catch { repeated = true; }
+console.assert(repeated && order.status === "placed" && order.pullEvents().length === 0);
+for (const cents of [-1, 0.5, NaN, Infinity]) {
+  let rejected = false;
+  try { new Money(cents, "USD"); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Order is the aggregate root for this in-memory transition, not a concurrency
+// mechanism. Persistence needs version checks or locks and an atomic outbox.
+// pullEvents drains volatile state: persist the captured events with the order;
+// a failed transaction must not silently discard the only publication intent.
+// Currency conversion, refunds and line-item pricing are outside this fixture.`;
 
   if (title.startsWith("Commands,")) return `async function placeOrder(command, database) {
   return database.transaction(async tx => {
@@ -360,7 +378,8 @@ class InMemoryBroker {
     return () => handlers.delete(handler);
   }
   async publish(event: Event) {
-    const results = await Promise.allSettled([...this.#handlers.get(event.type) ?? []].map(fn => fn(event)));
+    const results = await Promise.allSettled([...this.#handlers.get(event.type) ?? []]
+      .map(fn => Promise.resolve().then(() => fn(event))));
     if (results.some(result => result.status === "rejected")) throw new Error("partial fan-out failure");
   }
 }
@@ -370,6 +389,20 @@ const observed: string[] = [];
 broker.subscribe("OrderPlaced", async event => { observed.push(event.orderId); });
 await broker.publish({ id: "e-1", type: "OrderPlaced", orderId: "A-42" });
 console.assert(observed[0] === "A-42");
+const unsubscribe = broker.subscribe("Failure", () => { throw new Error("synchronous failure"); });
+broker.subscribe("Failure", async event => { observed.push(event.orderId); });
+let rejected = false;
+try { await broker.publish({ id: "e-2", type: "Failure", orderId: "B-43" }); }
+catch { rejected = true; }
+console.assert(rejected && observed.includes("B-43"));
+unsubscribe();
+await broker.publish({ id: "e-3", type: "Failure", orderId: "C-44" });
+console.assert(observed.includes("C-44"));
+// Deferring each invocation turns a synchronous throw into a rejected promise,
+// so it cannot prevent later subscribers from being invoked. Fan-out is not
+// atomic: a successful subscriber's effect remains when another fails.
+// This unbounded in-memory fixture has no persistence, cancellation or timeout;
+// use bounded admission and explicit handler deadlines for an actual service.
 // Production subscriptions need durable position, retries, idempotency, and traces.`;
 
   if (title.startsWith("Kafka architecture")) return `# Create an ordered, replayable topic split across six partitions.
@@ -382,13 +415,16 @@ kafka-topics.sh --bootstrap-server localhost:9092 --create \\
 kafka-topics.sh --bootstrap-server localhost:9092 \\
   --describe --topic order-events
 
-# Key every order event by order_id so one order stays in one ordered partition.
+# With stable partition count and partitioner, key order events by order_id.
 kafka-console-producer.sh --bootstrap-server localhost:9092 \\
   --topic order-events --property parse.key=true --property key.separator=:
-A-42:{"type":"OrderPlaced.v1","order_id":"A-42"}
+# Type this into the producer's standard input, not into your shell:
+# A-42:{"type":"OrderPlaced.v1","order_id":"A-42"}
 
-# Retention removes old log data by time or size. Compaction retains the latest
-# value per key plus delete tombstones; neither provides global ordering.`;
+# Compaction is asynchronous; old versions can remain until cleaning.
+# This topic uses delete retention, not compaction. Neither gives global order.
+# These commands require an existing disposable three-broker lab; nothing here
+# installs or starts Kafka. Changing partition count can change key placement.`;
 
   if (title.startsWith("Kafka replication")) return `# Topic durability policy: a leader accepts an all-replicas acknowledgement
 # only while at least two in-sync replicas are available.
@@ -396,10 +432,12 @@ kafka-configs.sh --bootstrap-server localhost:9092 --alter \\
   --entity-type topics --entity-name order-events \\
   --add-config min.insync.replicas=2,unclean.leader.election.enable=false
 
-# Producer side must request the matching acknowledgement strength.
-acks=all
-enable.idempotence=true
-delivery.timeout.ms=120000
+# Producer properties file entries (not shell commands):
+# acks=all
+# enable.idempotence=true
+# delivery.timeout.ms=120000
+# Configure the producer with these properties using its own supported API.
+# acks=all waits for the full current ISR, not exactly min.insync.replicas.
 
 # Observe ISR shrink and leadership during controlled broker loss.
 kafka-topics.sh --bootstrap-server localhost:9092 \\
@@ -416,10 +454,25 @@ kafka-topics.sh --bootstrap-server localhost:9092 \\
   batchSize: 64 * 1024,
 };
 
-async function handleBatch(consumer, database, records) {
+async function handleBatch(consumer, database, records, applyBusinessEffect) {
+  if (!Array.isArray(records)) throw new TypeError("records must be an array");
   if (records.length === 0) return;
-  // Adapter supplies a single assigned topic/partition, ordered decimal offsets.
-  // Disable auto-commit; reject mixed partitions before performing effects.
+  if (typeof applyBusinessEffect !== "function") throw new TypeError("effect adapter required");
+  // Validate the entire batch before effects, preserving decimal offset precision.
+  let previous = -1n;
+  for (const record of records) {
+    if (!record || typeof record.topic !== "string" || !record.topic ||
+        !Number.isSafeInteger(record.partition) || record.partition < 0 ||
+        typeof record.offset !== "string" || !/^(0|[1-9][0-9]{0,18})$/.test(record.offset)) {
+      throw new TypeError("invalid record metadata");
+    }
+    const offset = BigInt(record.offset);
+    if (offset <= previous || offset >= 9223372036854775807n) {
+      throw new RangeError("offset order or next-offset range");
+    }
+    previous = offset;
+  }
+  // Disable auto-commit; consumer adapter owns this assigned topic/partition.
   if (records.some(record => record.topic !== records[0].topic || record.partition !== records[0].partition)) {
     throw new Error("one partition per batch required");
   }
@@ -435,9 +488,15 @@ async function handleBatch(consumer, database, records) {
 // Crash before commit: records repeat, so the inbox protects business effects.
 // Crash after commit but before an external effect: that effect can be lost.
 // Kafka transactions atomically cover Kafka output records and consumed offsets,
-// not an unrelated database or third-party API.`;
+// not an unrelated database or third-party API.
+// Adapters are supplied by the caller. The effect must use tx for its local writes;
+// the inbox must be scoped to cluster/topic identity and consumer purpose.
+// Offset gaps are valid after compaction; duplicate/decreasing offsets are not.
+// Ownership loss must stop admission and prevent stale external effects. The
+// local fake tests do not prove rollback, durable deduplication or rebalance safety.`;
 
   if (title.startsWith("Event schemas")) return `const schemaV2 = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
   type: "object",
   required: ["event_id", "type", "order_id", "occurred_at"],
   properties: {
@@ -450,12 +509,21 @@ async function handleBatch(consumer, database, records) {
   additionalProperties: false,
 };
 
-async function process(event, operations) {
+async function process(event, operations, validate) {
+  // Caller supplies a synchronous validator adapter returning {ok, value/errors}.
+  // Pin its dialect and format-assertion settings; bound decoded input first.
   const parsed = validate(schemaV2, event);
   if (!parsed.ok) return operations.quarantine(event, parsed.errors);
   return operations.consumeIdempotently(parsed.value);
 }
 
+// default is an annotation: validation alone does not insert channel="web".
+// format may also be annotation-only unless assertion support is enabled.
+// v2's changed type constant rejects a v1 event; additionalProperties=false can
+// make an old consumer reject newly added fields. "Optional" is not a proof of
+// bidirectional compatibility. Test old/new writers against old/new readers.
+// Quarantine must persist before acknowledging input; a storage failure must
+// propagate. This adapter sketch supplies neither a validator nor a broker.
 // CI checks compatibility against registered old versions. Operations track
 // publish errors, bytes, partition skew, consumer lag, rebalance time, retries,
 // quarantine age, end-to-end latency, and the final business outcome.`;
@@ -8404,25 +8472,63 @@ const cursor = sign({
 };
 
 function compile(filter) {
-  if (!filter || !Object.hasOwn(fields, filter.field)) throw problem("UNSUPPORTED_FILTER");
+  if (!filter || !Object.hasOwn(fields, filter.field)) throw new TypeError("unsupported filter");
   const definition = fields[filter.field];
-  if (!definition || !definition.operators.has(filter.operator)) throw problem("UNSUPPORTED_FILTER");
-  const parameter = validateValue(filter.field, filter.value);
-  return { sql: operatorSql(definition.sql, filter.operator), parameters: [parameter], cost: 1 };
+  if (!definition.operators.has(filter.operator)) throw new TypeError("unsupported operator");
+  const parameter = filter.value;
+  if (filter.field === "status") {
+    const values = filter.operator === "in" ? parameter : [parameter];
+    if (!Array.isArray(values) || !values.length || values.length > 20 ||
+        !values.every(value => ["queued", "running", "done", "failed"].includes(value))) throw new TypeError("invalid status");
+  } else if (filter.field === "duration_ms") {
+    if (!Number.isSafeInteger(parameter) || parameter < 0) throw new TypeError("invalid duration");
+  } else {
+    // Deliberately narrow contract: canonical UTC ISO strings with milliseconds.
+    if (typeof parameter !== "string" || parameter.length !== 24 ||
+        !Number.isFinite(Date.parse(parameter)) || new Date(parameter).toISOString() !== parameter) throw new TypeError("invalid timestamp");
+  }
+  const operator = {eq: "=", gte: ">=", lte: "<=", lt: "<"}[filter.operator];
+  const predicate = filter.operator === "in" ? "= ANY($1::text[])" : operator + " $1";
+  return { sql: definition.sql + " " + predicate, parameters: [parameter] };
 }
 
-// Reject unknown fields, unbounded includes, non-indexable sort, excess clauses,
-// and queries whose estimated budget exceeds the endpoint policy.`;
+console.assert(compile({field: "status", operator: "eq", value: "queued"}).sql === "j.status = $1");
+console.assert(compile({field: "status", operator: "in", value: ["done"]}).sql === "j.status = ANY($1::text[])");
+console.assert(compile({field: "duration_ms", operator: "gte", value: 10}).parameters[0] === 10);
+console.assert(compile({field: "created_at", operator: "lt", value: "2026-09-11T00:00:00.000Z"}).sql === "j.created_at < $1");
+for (const filter of [null, {field: "__proto__"}, {field: "status", operator: "eq", value: "done' OR true--"},
+  {field: "status", operator: "in", value: []}, {field: "duration_ms", operator: "gte", value: -1},
+  {field: "created_at", operator: "lt", value: "not-a-date"}]) {
+  let rejected = false;
+  try { compile(filter); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// One-predicate PostgreSQL fixture: pass parameters separately to the driver.
+// Columns/operators come only from this allowlist, never from raw request text.
+// Multi-clause composition must renumber parameters and bound overall query size.
+// Authorization, sort/include policy and real query-plan cost remain separate;
+// assigning every predicate cost=1 would not estimate database execution cost.`;
 
   if (title.startsWith("API versioning")) return `const compatibilityCases = [
   { client: "v1", request: { name: "A" }, accepts: response => typeof response.id === "string" },
   { client: "v2", request: { name: "A", priority: "normal" }, accepts: response => response.priority != null }
 ];
 
-for (const test of compatibilityCases) {
-  const response = await candidateServer.createProject(test.request, { clientVersion: test.client });
-  console.assert(test.accepts(response), test.client + " contract broke");
+async function checkCompatibility(candidateServer) {
+  for (const test of compatibilityCases) {
+    const response = await candidateServer.createProject(test.request, { clientVersion: test.client });
+    if (!test.accepts(response)) throw new Error(test.client + " contract broke");
+  }
 }
+// Scripted adapter only; run the same contract against an actual server separately.
+await checkCompatibility({createProject: async request => ({id: "fixture-1", priority: request.priority ?? "normal"})});
+let rejected = false;
+try { await checkCompatibility({createProject: async () => ({id: "fixture-1"})}); }
+catch { rejected = true; }
+console.assert(rejected);
+// These two checks are intentionally incomplete: validate response types, enum
+// evolution, errors and old-client behavior, not only field presence. Unknown
+// additive fields can still break a strict client, so test actual consumers.
 
 // Deprecation: @1790812800
 // Structured Field date: 2026-10-01T00:00:00Z, not a boolean.
@@ -8455,10 +8561,7 @@ Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=30
     "approve": { "href": "/jobs/job_42/approval", "method": "PUT" },
     "cancel": { "href": "/jobs/job_42/cancellation", "method": "PUT" }
   }
-}
-
-# The request carries all server-required context; links expose valid next
-# transitions. A client may still bind to documented relations and semantics.`;
+}`;
 
   if (title.startsWith("OpenAPI,")) return `openapi: 3.1.0
 info: {title: Job API, version: 2.3.0}
@@ -8608,15 +8711,36 @@ Last-Event-ID: 8472
 // heartbeat, bound each outbound queue, close slow consumers explicitly,
 // resume from durable sequence where required, and drain on server shutdown.`;
 
-  if (title.startsWith("Authentication,")) return `function authorize(principal, action, resource, context) {
+  if (title.startsWith("Authentication,")) return `// One project-read policy. principal must come from VERIFIED authentication,
+// never from request JSON; resource must come from the authoritative data store.
+function authorize(principal, action, resource) {
+  if (!principal || !resource || typeof principal.tenantId !== "string" || !principal.tenantId ||
+      typeof resource.tenantId !== "string" || !Array.isArray(principal.scopes) || !Array.isArray(principal.roles)) {
+    return { allow: false, reason: "INVALID_CONTEXT" };
+  }
+  if (action !== "project:read" || !["ordinary", "restricted"].includes(resource.classification)) {
+    return { allow: false, reason: "UNSUPPORTED_POLICY" };
+  }
   if (principal.tenantId !== resource.tenantId) return { allow: false, reason: "TENANT_BOUNDARY" };
   if (!principal.scopes.includes(action)) return { allow: false, reason: "MISSING_SCOPE" };
   if (resource.classification === "restricted" && !principal.roles.includes("reviewer")) {
     return { allow: false, reason: "RESOURCE_POLICY" };
   }
-  return { allow: true, obligations: { audit: true, fields: allowedFields(principal, resource) } };
+  return { allow: true, obligations: { audit: true, fields: ["id", "name"] } };
 }
 
+const principal = {tenantId: "tenant-a", scopes: ["project:read"], roles: []};
+const resource = {tenantId: "tenant-a", classification: "ordinary"};
+console.assert(authorize(principal, "project:read", resource).allow);
+console.assert(!authorize(principal, "project:read", {...resource, tenantId: "tenant-b"}).allow);
+console.assert(!authorize({...principal, scopes: []}, "project:read", resource).allow);
+console.assert(!authorize(principal, "project:read", {...resource, classification: "restricted"}).allow);
+console.assert(authorize({...principal, roles: ["reviewer"]}, "project:read", {...resource, classification: "restricted"}).allow);
+console.assert(!authorize(null, "project:read", resource).allow);
+console.assert(!authorize(principal, "project:delete", resource).allow);
+console.assert(!authorize(principal, "project:read", {...resource, classification: "unknown"}).allow);
+// The caller MUST enforce allow and project the listed fields; returning an
+// obligations object does not filter a response or persist an audit event.
 // Record subject, actor/delegation chain, tenant, action, resource, decision,
 // policy version, request/trace IDs, and outcome without logging credentials.`;
 
@@ -8643,47 +8767,89 @@ trustedForwarders: [10.40.0.0/16]
 };
 
 function writableProjectFields(input) {
-  return { name: validatedName(input.name), visibility: validatedVisibility(input.visibility) };
+  if (!input || typeof input !== "object" || Array.isArray(input) ||
+      Object.keys(input).some(key => !["name", "visibility"].includes(key)) ||
+      typeof input.name !== "string" || !input.name.trim() || input.name.trim().length > 120 ||
+      !["private", "public"].includes(input.visibility)) throw new TypeError("invalid project fields");
+  return Object.freeze({ name: input.name.trim(), visibility: input.visibility });
 }
 
+console.assert(writableProjectFields({name: " Example ", visibility: "private"}).name === "Example");
+for (const input of [null, [], {name: "", visibility: "private"}, {name: "A", visibility: "admin"},
+  {name: "A", visibility: "private", ownerId: "attacker"}]) {
+  let rejected = false;
+  try { writableProjectFields(input); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Bounded parsed JSON fixture; ownership/tenant fields never become writable.
+// Authorization to change visibility is still required. outboundPolicy is only
+// configuration: enforce it at URL parsing, DNS resolution, connection and body
+// reading. An allowlisted hostname alone does not prevent DNS rebinding or redirects.
 // Tests: another tenant's ID, private IP and DNS rebinding, duplicate parser
 // keys, SQL/shell/template payloads, excess fields, oversized decompression,
 // expensive filters, credential stuffing, quota bypass, and secret redaction.`;
 
-  if (title.startsWith("API observability")) return `const observation = {
-  requestId,
-  traceId: span.spanContext().traceId,
+  if (title.startsWith("API observability")) return `// Synthetic fixture; no telemetry SDK or actual request is running here.
+const observation = {
+  requestId: "fixture-request-1",
+  traceId: "4bf92f3577b34da6a3ce929d0e0e4736",
   route: "/projects/{projectId}/jobs",
   method: "POST",
   statusCode: 202,
-  durationMs,
-  retryAttempt,
-  deadlineRemainingMs,
+  durationMs: 42,
+  retryAttempt: 0,
+  deadlineRemainingMs: 958,
   tenantClass: "paid", // bounded label, never raw tenant ID in metrics
   outcome: "accepted"
 };
 
-metrics.histogram("http.server.duration", durationMs, boundedLabels(observation));
-logger.info(observation);
-span.setAttributes(traceAttributes(observation));
-audit.append(securityEvent(observation));`;
+const metricLabels = {route: observation.route, method: observation.method,
+  statusCode: String(observation.statusCode), tenantClass: observation.tenantClass};
+console.assert(!("requestId" in metricLabels) && !("traceId" in metricLabels));
+console.assert(metricLabels.route === "/projects/{projectId}/jobs");
+console.log({metricLabels, durationMs: observation.durationMs});
+// Wire these into the selected SDK with its metric name and unit conventions.
+// Put correlation IDs in protected logs/traces, not metric dimensions. Never
+// substitute a raw request path for the route template or log credentials/bodies.
+// A sampled diagnostic trace is not a complete audit trail; audit persistence,
+// access control, retention and failure handling need an explicit separate policy.
+// Verify cross-service context and metric cardinality in the real deployment.`;
 
   if (title.startsWith("API testing")) return `import test from "node:test";
 import assert from "node:assert/strict";
 
 test("cursor traversal preserves a stable total order", async () => {
-  const inserted = await seedJobsWithTies(250);
-  const traversed = await readAllPages({ pageSize: 17 });
-  assert.deepEqual(traversed.map(x => x.id), expectedOrder(inserted).map(x => x.id));
+  // Frozen in-memory dataset; this does not verify a database or signed cursor.
+  const inserted = Array.from({length: 250}, (_, id) => ({id, createdAt: Math.floor(id / 5)}));
+  const ordered = inserted.toSorted((a, b) => b.createdAt - a.createdAt || b.id - a.id);
+  const traversed = [];
+  let after = null;
+  for (let page = 0; page < 100; page++) {
+    const batch = ordered.filter(row => after === null || row.createdAt < after.createdAt ||
+      (row.createdAt === after.createdAt && row.id < after.id)).slice(0, 17);
+    if (!batch.length) break;
+    traversed.push(...batch);
+    after = batch.at(-1);
+  }
+  assert.deepEqual(traversed.map(x => x.id), Array.from({length: 250}, (_, i) => 249 - i));
   assert.equal(new Set(traversed.map(x => x.id)).size, inserted.length);
 });
 
-test("released consumer accepts candidate provider", async () => {
-  await assertContract({ consumer: "sdk-v2.3", provider: candidate });
+test("ties need a unique ordering field", () => {
+  const rows = [{id: 2, createdAt: 10}, {id: 1, createdAt: 10}];
+  const first = rows[0];
+  const brokenNextPage = rows.filter(row => row.createdAt < first.createdAt);
+  assert.equal(brokenNextPage.length, 0); // It silently skips id 1.
+  const correctNextPage = rows.filter(row => row.createdAt < first.createdAt ||
+    (row.createdAt === first.createdAt && row.id < first.id));
+  assert.deepEqual(correctNextPage.map(row => row.id), [1]);
 });
 
-// Add schema-generated invalid inputs, authorization matrix, concurrency,
-// retry/idempotency, unknown fields, and deployed conformance smoke tests.`;
+// Replace the in-memory page operation with the real API adapter for integration:
+// seed ties, traverse signed cursors, reject another tenant's cursor and change
+// rows between pages under the documented snapshot policy. Then run a released
+// SDK against the candidate server. Passing this arithmetic fixture proves none
+// of authentication, database isolation or deployed contract compatibility.`;
 
   if (title.startsWith("Developer experience")) return `# Integration specification, NOT installed tools or a published starter package.
 # Replace these illustrative CLI names with your team's actual release tooling.
@@ -9184,22 +9350,35 @@ async function advance(instance, result) {
 // before committing next state; this sketch does not implement that concurrency
 // control. Reconcile an unknown payment outcome before attempting compensation.`;
 
-  if (title.startsWith("Distributed transactions")) return `// Coordinator durable log
-PREPARING tx-42 participants=A,B
-PREPARED  tx-42 participant=A
-PREPARED  tx-42 participant=B
-COMMIT    tx-42
+  if (title.startsWith("Distributed transactions")) return `// Example coordinator log, not executable statements:
+// PREPARING tx-42 participants=A,B
+// PREPARED  tx-42 participant=A
+// PREPARED  tx-42 participant=B
+// COMMIT    tx-42
 
 // Participant state machine:
-ACTIVE -> PREPARED -> COMMITTED
-                 \\-> ABORTED
+// ACTIVE -> PREPARED -> COMMITTED or ABORTED
 
-async function recover(inDoubt) {
+async function recover(inDoubt, coordinator, participant) {
   const decision = await coordinator.readDurableDecision(inDoubt.transactionId);
   if (decision === "COMMIT") await participant.commitPrepared(inDoubt);
   else if (decision === "ABORT") await participant.rollbackPrepared(inDoubt);
-  else await keepLocksAndEscalate(); // blocking preserves atomicity
-}`;
+  else return "in-doubt"; // No unilateral timeout-based decision after preparing.
+  return decision;
+}
+for (const decision of ["COMMIT", "ABORT", null]) {
+  const calls = [];
+  const result = await recover({transactionId: "tx-42"},
+    {readDurableDecision: async () => decision},
+    {commitPrepared: async () => calls.push("COMMIT"), rollbackPrepared: async () => calls.push("ABORT")});
+  console.assert(result === (decision ?? "in-doubt"));
+  console.assert(calls.join() === (decision ?? ""));
+}
+// Adapter exercise only: use an authenticated authoritative durable decision and
+// idempotent participant completion. Unknown decisions preserve prepared state
+// and locks; an operator must investigate. RPC failure must not imply rollback.
+// Real prepared transactions can retain locks/resources through coordinator
+// failure; monitor their age and use a tested transaction manager.`;
 
   if (title.startsWith("Single-leader replication")) return `// Serialized, integration-only write-path sketch, NOT a consensus algorithm.
 const cluster = {
@@ -9227,49 +9406,84 @@ async function write(command) {
   if (title.startsWith("Multi-leader replication")) return `const left = { value: "Ada", clock: { eu: 5, us: 2 } };
 const right = { value: "Grace", clock: { eu: 4, us: 3 } };
 
+function dominates(a, b) {
+  // Fixed two-writer fixture; membership changes and counter overflow need a protocol.
+  for (const clock of [a, b]) {
+    if (!clock || Object.keys(clock).sort().join() !== "eu,us" ||
+        ![clock.eu, clock.us].every(x => Number.isSafeInteger(x) && x >= 0)) throw new Error("invalid clock");
+  }
+  return a.eu >= b.eu && a.us >= b.us && (a.eu > b.eu || a.us > b.us);
+}
 function reconcile(a, b) {
   if (dominates(a.clock, b.clock)) return a;
   if (dominates(b.clock, a.clock)) return b;
+  if (a.clock.eu === b.clock.eu && a.clock.us === b.clock.us) {
+    if (a.value !== b.value) throw new Error("same version has inconsistent payloads");
+    return a;
+  }
   return { conflict: true, siblings: [a, b] }; // application decides
 }
 
-console.log(reconcile(left, right));
+console.assert(reconcile(left, right).siblings.length === 2);
+console.assert(reconcile(left, {value: "old", clock: {eu: 4, us: 2}}) === left);
+console.assert(reconcile({value: "old", clock: {eu: 4, us: 2}}, left) === left);
+console.assert(reconcile(left, {...left, clock: {...left.clock}}) === left);
+for (const other of [{value: "wrong", clock: left.clock}, {value: "bad", clock: {eu: -1, us: 0}}]) {
+  let rejected = false;
+  try { reconcile(left, other); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Validated string payloads and fixed writers only; vector comparison does not
+// implement transport, storage, conflict merging or safe clock truncation.
 // Last-write-wins would silently discard one concurrent update based on clocks
 // that may not represent causality. Prefer single ownership where possible.`;
 
-  if (title.startsWith("Leaderless replication")) return `const N = 3, W = 2, R = 2;
+  if (title.startsWith("Leaderless replication")) return `// Offline quorum-set exercise, not a replica protocol.
+const N = 3, W = 2, R = 2;
 
-async function quorumWrite(key, versionedValue) {
-  const results = await Promise.allSettled(replicasFor(key).map(node => node.put(key, versionedValue)));
-  if (results.filter(x => x.status === "fulfilled").length < W) throw new Error("write quorum unavailable");
+const replicaPairs = [["A", "B"], ["A", "C"], ["B", "C"]];
+const overlap = (writeNodes, readNodes) => writeNodes.filter(node => readNodes.includes(node));
+console.assert(R + W > N);
+for (const writeNodes of replicaPairs) {
+  for (const readNodes of replicaPairs) console.assert(overlap(writeNodes, readNodes).length >= 1);
 }
-
-async function quorumRead(key) {
-  const versions = await firstSuccessful(replicasFor(key).map(node => node.get(key)), R);
-  const resolved = resolveVersions(versions);
-  repairStaleReplicas(key, resolved).catch(report);
-  return resolved;
-}
-
-// Sloppy quorum and hinted handoff change which nodes count; concurrent versions
-// and failures still require explicit resolution and anti-entropy.
-// All replica calls require bounded deadlines. allSettled waits for EVERY replica,
-// so this simple write path is not a return-at-W latency implementation. R+W>N
-// establishes overlap for a fixed replica set, not linearizability by itself.`;
+// Sloppy placement can count fallback nodes outside the original replica set.
+const quorumWrite = ["A", "D"], quorumRead = ["B", "C"];
+console.assert(quorumWrite.length === W && quorumRead.length === R);
+console.assert(overlap(quorumWrite, quorumRead).length === 0);
+// Counts alone now cannot establish that the read sees the acknowledged write.
+// Even fixed-set intersection is NOT linearizability: concurrent/incomplete
+// writes, version selection and read repair require a defined protocol.
+// For a real adapter, count distinct eligible replicas and durable acknowledgments,
+// not merely fulfilled promises. Bound every call; stop waiting at the intended
+// quorum without leaking unfinished requests. Test conflicting versions, failed
+// writes later becoming visible, hinted handoff and anti-entropy after recovery.
+// Predict these histories before selecting consistency settings.`;
 
   if (title.startsWith("Consistency models")) return `const history = [
   { process: "A", op: "write", value: 1, start: 0, end: 5 },
   { process: "B", op: "read",  value: 0, start: 6, end: 7 }
 ];
 
-function checkReadYourWrites(session, response) {
-  if (response.appliedPosition < session.minimumPosition) {
-    return routeToAuthority({ minimumPosition: session.minimumPosition });
-  }
-  return response;
+function violatesSingleWriteRead(history) {
+  // Only two completed, non-overlapping operations on ONE register, initially 0.
+  // This is a counterexample check, not a general linearizability checker.
+  if (!Array.isArray(history) || history.length !== 2) throw new Error("two operations required");
+  const [write, read] = history;
+  if (write.op !== "write" || read.op !== "read" ||
+      ![write.start, write.end, read.start, read.end, write.value, read.value].every(Number.isFinite) ||
+      write.start > write.end || write.end >= read.start || read.start > read.end) throw new Error("unsupported history");
+  return read.value !== write.value;
 }
 
-console.assert(!isLinearizable(history)); // read began after completed write yet returned old value
+console.assert(violatesSingleWriteRead(history));
+console.assert(!violatesSingleWriteRead([history[0], {...history[1], value: 1}]));
+let rejected = false;
+try { violatesSingleWriteRead([history[0], {...history[1], start: 2}]); } catch { rejected = true; }
+console.assert(rejected); // Overlap requires reasoning not supplied by this checker.
+// Read-your-writes is a SESSION guarantee; it does not prove this cross-client
+// real-time guarantee. A replica position token must include stream/epoch identity
+// and freshness semantics; an arbitrary integer comparison is not sufficient.
 // Serializability constrains transaction equivalence; linearizability adds
 // real-time order for operations. They solve different questions.`;
 
@@ -9298,20 +9512,32 @@ console.assert(rejected);
 // PACELC additionally asks about latency/consistency choices without a partition.
 // State guarantees per operation; quorum arithmetic alone is not a protocol.`;
 
-  if (title.startsWith("Sharding,")) return `function owner(key, ring) {
-  const point = hash(key);
+  if (title.startsWith("Sharding,")) return `// Already-hashed integer points in a tiny [0, 99] ring; no hash library needed.
+function owner(point, ring) {
+  if (!Number.isInteger(point) || point < 0 || point >= 100 || !Array.isArray(ring) || !ring.length ||
+      ring.some((node, i) => !Number.isInteger(node.token) || node.token < 0 || node.token >= 100 ||
+        typeof node.id !== "string" || !node.id || (i > 0 && ring[i-1].token >= node.token))) {
+    throw new Error("point and nonempty sorted unique-token ring required");
+  }
   return ring.find(node => node.token >= point) ?? ring[0];
 }
 
-const shardKey = event => event.tenantId + ":" + bucket(event.createdAt);
-const workload = sampleRequests(1_000_000);
-const distribution = groupCount(workload, request => owner(shardKey(request), ring).id);
-
-console.table(distribution);
-assertSkewBelow(distribution, 1.5);
-
-// Measure hot keys, virtual-node movement, routing-cache propagation, cross-shard
-// requests, scatter width, slowest-shard tail, and migration double-read/write windows.`;
+const ring = [{token: 20, id: "A"}, {token: 60, id: "B"}, {token: 90, id: "C"}];
+const expanded = [ring[0], {token: 40, id: "D"}, ...ring.slice(1)];
+console.assert(owner(20, ring).id === "A" && owner(99, ring).id === "A");
+const moved = Array.from({length: 100}, (_, point) => point).filter(point => owner(point, ring).id !== owner(point, expanded).id);
+console.assert(moved.length === 20 && moved[0] === 21 && moved.at(-1) === 40);
+const hotRequests = Array(1000).fill(21);
+console.assert(hotRequests.every(point => owner(point, expanded).id === "D"));
+for (const [point, nodes] of [[-1, ring], [0, []], [0, [...ring].reverse()]]) {
+  let rejected = false;
+  try { owner(point, nodes); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Adding a token limits key movement but does not split a hot key's traffic.
+// This O(number-of-tokens) scan is a tiny fixture; use binary search at large scale.
+// Real placement also needs a stable hash, virtual nodes, migration ownership,
+// stale-routing handling and measured request skew. No migration occurs here.`;
 
   if (title.startsWith("Consensus,")) return `import assert from "node:assert/strict";
 // Focused AppendEntries PRECHECK, not a Raft implementation. Trusted RPC fixture,
@@ -9381,22 +9607,37 @@ WHERE id = $3 AND last_fence < $2;
 -- authority require quorum; time-bounded leases require clock assumptions.
 -- https://www.postgresql.org/docs/current/functions-sequence.html`;
 
-  if (title.startsWith("Service discovery")) return `const resolver = watchService("job-service");
-const balancer = leastOutstanding({ localityPreference: "same-zone" });
-
-resolver.on("update", endpoints => {
-  balancer.replace(endpoints.filter(x => x.ready && !x.draining));
-});
-
-async function call(request, signal) {
-  const endpoint = balancer.pick();
-  balancer.started(endpoint);
-  try { return await endpoint.call(request, { signal }); }
-  finally { balancer.finished(endpoint); }
+  if (title.startsWith("Service discovery")) return `// Pure selection over a validated local discovery snapshot; no DNS/watch SDK.
+function leastOutstanding(endpoints) {
+  if (!Array.isArray(endpoints) || endpoints.some(endpoint => !endpoint ||
+      typeof endpoint.id !== "string" || !endpoint.id ||
+      typeof endpoint.ready !== "boolean" || typeof endpoint.draining !== "boolean" ||
+      !Number.isSafeInteger(endpoint.outstanding) || endpoint.outstanding < 0) ||
+      new Set(endpoints.map(endpoint => endpoint.id)).size !== endpoints.length) throw new Error("invalid endpoints");
+  const eligible = endpoints.filter(endpoint => endpoint.ready && !endpoint.draining);
+  if (!eligible.length) throw new Error("no eligible endpoint");
+  return eligible.reduce((best, endpoint) => endpoint.outstanding < best.outstanding ? endpoint : best);
 }
-
-// Observe DNS/watch freshness, endpoint health, subchannel state, connection
-// reuse, outstanding work, zone choice, ejection, retry, and churn.`;
+const endpoints = [
+  {id: "A", ready: true, draining: false, outstanding: 2},
+  {id: "B", ready: true, draining: false, outstanding: 0},
+  {id: "C", ready: true, draining: true, outstanding: 0}
+];
+console.assert(leastOutstanding(endpoints).id === "B");
+endpoints[1].ready = false;
+console.assert(leastOutstanding(endpoints).id === "A");
+for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]], [endpoints[0], endpoints[0]]]) {
+  let rejected = false;
+  try { leastOutstanding(invalid); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Ties choose the first eligible entry; locality/weights and random tie-breaking
+// are omitted. Outstanding count is not queue time or a prediction of work cost.
+// The real caller must reserve a slot before yielding and release it in finally
+// on success, failure or cancellation. Discovery updates must not erase counters
+// for in-flight calls to removed endpoints. Define snapshot freshness and identity
+// reuse, bounded calls, watch shutdown, connection draining and no-endpoint errors.
+// Selection arithmetic does not prove health, delivery or service availability.`;
 
   if (title.startsWith("Multi-region architecture")) return `regions:
   primary:
@@ -10704,12 +10945,93 @@ function apiDistributedDiagramFor(lesson, title, flow) {
 }
 
 function teachingProfileFor(lesson, profile) {
+  if (lesson.number === "0597") return {
+    ...profile, commentPrefix: "//",
+    sourceLabel: "Introduction to Information Retrieval: evaluation",
+    sourceUrl: "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-unranked-retrieval-sets-1.html",
+    code: `// Offline binary-relevance fixture. IDs are unique, human-judged documents.
+// No retriever, embedding provider or answer model is invoked.
+const relevant = new Set(["a", "b"]);
+const topThree = ["a", "c", "d"];
+const hits = topThree.filter(id => relevant.has(id)).length;
+const precisionAt3 = hits / 3;
+const relevanceRecallAt3 = hits / relevant.size;
+console.assert(precisionAt3 === 1 / 3 && relevanceRecallAt3 === 1 / 2);
+
+// Perfect ANN recall can coexist with zero semantic relevance recall.
+const exactNeighbors = new Set(["c", "d"]); // Fixed metric/filter/tie policy.
+const approximateNeighbors = ["c", "d"];
+const annRecallAt2 = approximateNeighbors.filter(id => exactNeighbors.has(id)).length / 2;
+const semanticRecallAt2 = approximateNeighbors.filter(id => relevant.has(id)).length / relevant.size;
+console.assert(annRecallAt2 === 1 && semanticRecallAt2 === 0);
+
+// Reranking can reorder only supplied candidates: it cannot retrieve missing b.
+const reranked = ["d", "a", "c"];
+console.assert(reranked.filter(id => relevant.has(id)).length / relevant.size === 1 / 2);
+console.assert(!reranked.includes("b"));
+// Full-set recall is unchanged here, but top-one precision changed from 1 to 0.
+console.assert(relevant.has(topThree[0]) && !relevant.has(reranked[0]));
+
+// Before aggregating real queries, define: document versus chunk identity,
+// duplicate treatment, fewer-than-k results, ties and no-relevant-document cases.
+// Recall has a zero denominator when no documents are relevant; specify exclusion
+// or another explicit policy instead of silently reporting zero or perfect recall.
+// Grade answer support separately: a valid citation ID does not prove entailment.
+// Next day: derive all four ratios without looking, then explain which stage you
+// would change when ANN recall is 1 but relevance recall is 0.`
+  };
+  if (lesson.number === "0469") return {
+    ...profile,
+    sourceLabel: "Google SRE: Implementing SLOs",
+    sourceUrl: "https://sre.google/workbook/implementing-slos/",
+    commentPrefix: "//",
+    code: `// Offline event-based SLO exercise: synthetic counts for one fixed window.
+// Predict the result before running. No monitoring service is contacted.
+function budget(total, bad, targetPerThousand = 999) {
+  if (!Number.isSafeInteger(total) || total < 0 || total > 1_000_000 ||
+      !Number.isSafeInteger(bad) || bad < 0 || bad > total ||
+      !Number.isInteger(targetPerThousand) || targetPerThousand < 1 ||
+      targetPerThousand >= 1000) throw new TypeError("invalid fixture counts or target");
+  if (total === 0) return { status: "no-data" };
+  // Compare scaled integers so a floating-point rounding error cannot decide
+  // whether an exactly exhausted budget is inside or outside the target.
+  const allowance = total * (1000 - targetPerThousand);
+  const consumed = bad * 1000;
+  return {
+    status: consumed <= allowance ? "within-target" : "outside-target",
+    goodRatio: (total - bad) / total,
+    allowedBad: allowance / 1000,
+    budgetConsumed: consumed / allowance
+  };
+}
+console.assert(budget(10_000, 5).budgetConsumed === 0.5);
+console.assert(budget(10_000, 10).status === "within-target");
+console.assert(budget(10_000, 11).status === "outside-target");
+console.assert(budget(0, 0).status === "no-data");
+for (const args of [[-1, 0], [10, 11], [NaN, 0], [1.5, 0], [10, 0, 1000]]) {
+  let rejected = false;
+  try { budget(...args); } catch (error) { rejected = error instanceof TypeError; }
+  console.assert(rejected);
+}
+// Unequal traffic: averaging per-instance percentages misrepresents users.
+const small = { total: 10, bad: 1 }, large = { total: 990, bad: 0 };
+const fleet = budget(small.total + large.total, small.bad + large.bad);
+const unweighted = (budget(10, 1).goodRatio + budget(990, 0).goodRatio) / 2;
+console.assert(fleet.goodRatio === 0.999 && unweighted === 0.95);
+console.log({ fleet, unweighted });
+// Scope: complete, disjoint counts with the same eligibility rule and window.
+// Missing telemetry is not evidence of zero failures. Define how timeouts and
+// abandoned requests enter the denominator; a green process is not a good search.
+// This is window budget consumption, not a short-window burn-rate alert.
+// Explain mitigation ownership, rollback criteria and how user recovery will be
+// verified. A postmortem should turn contributing conditions into owned checks.
+// The next day, recompute the unequal-traffic example without looking here.`
+  };
   const crossTrackExercises = {
     "0465": ["Place tests at real boundaries", "Use a checkout operation with a pure price rule, a uniqueness constraint and a payment adapter. Define one test for each boundary.", "Make the fake payment adapter accept a field the real contract rejects, then compare unit and contract-test evidence.", "A passing fake proves behavior against the fake only. Keep fast local feedback while testing the integration assumptions that can invalidate it."],
     "0466": ["Properties, schedules and load", "For a bounded transfer fixture, define conservation of funds and at-most-one effect per operation ID. Generate small valid inputs and explicit interleavings.", "Repeat a request and reorder two competing operations, then run a bounded load test with arrival and service rates recorded.", "Separate logical invariant failures from overload. Random tests need reproducible seeds and minimized failures; chaos experiments need bounded blast radius and abort criteria."],
     "0467": ["Threat model one tenant boundary", "Draw browser, API, database and secret store for a document-read operation. Identify attacker-controlled IDs, authenticated identity and authorization checks.", "Request another tenant's document using a valid identity, then remove the identity entirely in separate fixtures.", "Authentication is not object authorization. Deny before exposing fields, keep secrets out of responses/logs and record the trust boundary where each decision occurs."],
     "0468": ["Trace a compromised dependency", "Inventory one deployed artifact's dependency source, resolved version, build identity and runtime permissions. Include browser and server exposure.", "Use a harmless fixture representing an unexpected lifecycle script and an altered artifact digest.", "A package allowlist or scanner is one control, not proof of safe behavior. Explain install isolation, artifact verification, least privilege and response ownership."],
-    "0469": ["User-focused reliability review", "Define a successful document-search request and an SLI denominator, time window and target. Record a small synthetic success/failure dataset.", "Introduce a dependency timeout and compare user failure with infrastructure health. Draft a short incident update from facts only.", "A healthy process can deliver failed user journeys. Tie alerts to actionable impact, use error-budget policy explicitly and verify recovery before closing the incident."],
     "0586": ["Provider adapter contract", "Define a provider-independent request/response contract with required capabilities, cancellation, usage accounting and explicit errors. Implement two deterministic mock adapters before choosing a real SDK.", "Return a partial stream, malformed usage and an unsupported modality from separate fixtures.", "Normalize only semantics the adapters actually share. Do not hide differences in tool calls, finish reasons, retries or streaming behind an interface that promises more than either provider supports."],
     "0587": ["Prompt change as an experiment", "Version the task instruction, input template and evaluation cases. Keep trusted instructions separate from quoted external content and label synthetic examples.", "Compare a candidate prompt with a baseline on held-out cases, including irrelevant and instruction-like text inside retrieved data.", "Delimiters help structure context but are not a security boundary. Explain improvements per failure category, token cost and regressions rather than selecting one pleasing answer."],
     "0588": ["Shape is not business validity", "Define a small JSON output schema and a separate validator for allowed entity IDs, authorization and business constraints. Bound input/output size before parsing.", "Supply invalid JSON, valid JSON of the wrong shape and schema-valid content referencing an unauthorized entity.", "Reject each at its owning boundary. Repair attempts need a strict budget and must never turn model-generated fields into authority; schema compliance does not prove truth or permission."],
@@ -10717,7 +11039,6 @@ function teachingProfileFor(lesson, profile) {
     "0594": ["Compare retrieval signals", "Use a small labelled corpus with exact identifiers, paraphrases and ambiguous terms. Build a lexical baseline and compare supplied dense scores on the same queries.", "Use a query containing a rare exact identifier, then a synonym with little lexical overlap.", "Explain which failure each retrieval signal addresses. If combining ranks, record the fusion rule and tie policy; similarity score scales from different systems are not automatically comparable."],
     "0595": ["Re-ingestion identity and provenance", "Give each source a stable ID, content version, permission metadata and deterministic chunk IDs. Preserve source offsets for citations.", "Ingest the same version twice, then update and delete it. Trace stale chunks and interrupted indexing.", "Repeated ingestion must not silently duplicate the corpus. Chunk size trades context against retrieval granularity; prove cleanup and provenance rather than treating successful embedding calls as completion."],
     "0596": ["Context assembly under a budget", "Provide ranked candidate chunks with source IDs, token costs and authorization decisions. Assemble a bounded context while retaining citation provenance.", "Include duplicate chunks, one unauthorized high-score candidate and a query rewrite that changes the original intent.", "Reject unauthorized data before model exposure. Reranking cannot recover documents never retrieved; citations must refer to actual supplied evidence and support the associated claims."],
-    "0597": ["Separate retrieval and answer evaluation", "For a query with relevant IDs a and b, let top-three results be a, c, d. Compute recall@3=1/2 and precision@3=1/3 before grading an answer.", "Give the answer generator perfect evidence and separately give it an empty context. Compare the resulting failures with the retrieval metric.", "Define relevance labels and denominator conventions, including no-relevant-document queries. Retrieval recall, factual support and task success measure different stages; freeze regression cases and report slice counts."],
     "0598": ["Permission and freshness regression", "Use two synthetic tenants and a versioned document. Define when permission revocation and source deletion must stop retrieval and cached answers.", "Revoke access after indexing, then query through lexical, vector, reranking and cache paths.", "Every path must enforce current authorization before exposure. Tombstones and index lag need explicit freshness semantics; answer caching cannot bypass revocation."],
     "0602": ["Evaluated knowledge-product capstone", "Build ingestion, authorized retrieval, context assembly, answer citations and a versioned evaluation set. Label all mocked components.", "Re-ingest a changed document, revoke one user's access, remove relevant evidence and simulate a provider timeout.", "Submit stage-level metrics, failure traces and recovery instructions. A fluent demo answer is not proof of groundedness, freshness, security or production readiness."],
     "0609": ["Replay after an external effect", "Model a workflow with a durable checkpoint, approved action identity and a fake external service that accepts an idempotency key.", "Crash after the external effect but before recording completion, then replay the checkpoint.", "The same action identity must recover the same result without a second effect. Approval must bind to the exact action; a checkpoint alone cannot make an external side effect exactly once."],
@@ -10734,7 +11055,13 @@ function teachingProfileFor(lesson, profile) {
     "0621": ["Defend honest engineering evidence", "Prepare a concise demo plus a case study showing personal scope, alternatives, decisions, measured outcomes and remaining limits.", "Rehearse a skeptical question about cost, a failed design choice and what was not actually deployed.", "Distinguish measured facts from synthetic exercises. Strong senior evidence includes tradeoffs and reflection; never present a local fixture as production experience."]
   };
   const crossTrackExercise = crossTrackExercises[lesson.number];
-  if (crossTrackExercise) return { ...profile, commentPrefix: "//",
+  const exerciseSource = {
+    "0465": { sourceLabel: "Python test doubles and autospec", sourceUrl: "https://docs.python.org/3/library/unittest.mock.html" },
+    "0466": { sourceLabel: "Hypothesis: property-based testing", sourceUrl: "https://hypothesis.readthedocs.io/en/latest/quickstart.html" },
+    "0467": { sourceLabel: "OWASP threat modeling", sourceUrl: "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html" },
+    "0468": { sourceLabel: "OWASP software supply-chain security", sourceUrl: "https://cheatsheetseries.owasp.org/cheatsheets/Software_Supply_Chain_Security_Cheat_Sheet.html" }
+  }[lesson.number];
+  if (crossTrackExercise) return { ...profile, ...exerciseSource, commentPrefix: "//",
     code: crossTrackExercise.map((text, index) => `// ${["Exercise specification (requires the described fixture; not executed here)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n// ${text}`).join("\n\n") };
   if (lesson.trackId === "web-platform") {
     const code = {
@@ -10888,8 +11215,18 @@ accuracy = sum(a == b for a, b in zip(labels, predictions)) / len(labels)
 true_positive = sum(a == b == 1 for a, b in zip(labels, predictions))
 recall = true_positive / sum(labels)
 assert accuracy == 0.99 and recall == 0
+# Even unsupervised preprocessing can leak held-out information.
+training_features, held_out_features = [0, 2], [100]
+training_mean = sum(training_features) / len(training_features)
+leaked_mean = sum(training_features + held_out_features) / 3
+assert training_mean == 1 and leaked_mean == 34
+# Transform held-out values with the TRAINING mean; do not fit again on them.
+assert held_out_features[0] - training_mean == 99
 # Expected: impressive accuracy can hide complete failure on the rare positive.
-# This tiny fixture demonstrates leakage and metric arithmetic, not a usable split.
+# This tiny fixture demonstrates overlap risk and metric arithmetic, not a usable split.
+# User overlap is not automatically leakage: separate users when evaluating new
+# users; for future behavior of existing users, temporal and feature availability
+# constraints may be the relevant boundary. State the deployment claim first.
 # Senior checkpoint: choose entity/time/random splitting from deployment use.
 # Fit preprocessing only on training data; tune thresholds on validation data;
 # reserve test data for a release estimate with slice counts and uncertainty.`,
@@ -10910,8 +11247,8 @@ assert scaled == "B"
 # unsupervised clustering, candidate retrieval, and final ranking objectives.`
     }[lesson.number];
     return { ...profile, code, commentPrefix: "#",
-      sourceLabel: "Google Machine Learning Crash Course",
-      sourceUrl: "https://developers.google.com/machine-learning/crash-course" };
+      sourceLabel: lesson.number === "0579" ? "scikit-learn: leakage and preprocessing" : "Google Machine Learning Crash Course",
+      sourceUrl: lesson.number === "0579" ? "https://scikit-learn.org/stable/common_pitfalls.html" : "https://developers.google.com/machine-learning/crash-course" };
   }
   if (lesson.trackId === "llm-internals") {
     const code = {
@@ -11000,6 +11337,20 @@ mean_confidence = sum(confidence) / len(confidence)
 accuracy = sum(correct) / len(correct)
 gap = abs(mean_confidence - accuracy)
 assert round(gap, 6) == 0.4
+# A global average can also hide opposing errors in different confidence bands.
+confidence = [0.9] * 10 + [0.1] * 10
+correct = ([True] * 5 + [False] * 5) * 2
+global_gap = abs(sum(confidence) / 20 - sum(correct) / 20)
+assert global_gap < 1e-12
+bin_gaps = []
+for start in [0, 10]:
+    reported = sum(confidence[start:start+10]) / 10
+    observed = sum(correct[start:start+10]) / 10
+    bin_gaps.append(abs(reported - observed))
+assert all(round(value, 6) == 0.4 for value in bin_gaps)
+# Zero global gap is not calibration: these two equal-sized bands each miss by
+# 0.4. Real reliability diagrams need bin counts and uncertainty; binning choices
+# affect summaries. This tiny constructed example estimates no deployment rate.
 # Expected: a system reporting 90% confidence is right only 50% in this fixture.
 # Token probability and a model's verbal confidence are not automatically the
 # probability that its factual claim is correct. Calibrate against labelled outcomes.
@@ -11008,7 +11359,11 @@ assert round(gap, 6) == 0.4
 # Senior checkpoint: an articulate reasoning trace is not a correctness proof;
 # require verifiable answers, abstention criteria and measured coverage/error cost.`
     }[lesson.number];
-    return { ...profile, code, commentPrefix: "#" };
+    return { ...profile, code, commentPrefix: "#",
+      ...(lesson.number === "0585" ? {
+        sourceLabel: "scikit-learn: probability calibration",
+        sourceUrl: "https://scikit-learn.org/stable/modules/calibration.html"
+      } : {}) };
   }
   if (lesson.trackId === "engineering-foundations") {
     const reviewed = {
@@ -11338,7 +11693,10 @@ console.assert(leastOutstanding(targets, "az-1").id === "b");
     } else if (/Commands|Event-driven architecture/.test(lesson.title)) {
       sourceLabel = "Microsoft event-driven architecture guidance";
       sourceUrl = "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven";
-    } else if (/Kafka/.test(lesson.title) || lesson.title.startsWith("Event schemas")) {
+    } else if (lesson.title.startsWith("Event schemas")) {
+      sourceLabel = "JSON Schema annotations and defaults";
+      sourceUrl = "https://json-schema.org/understanding-json-schema/reference/annotations";
+    } else if (/Kafka/.test(lesson.title)) {
       sourceLabel = "Apache Kafka documentation";
       sourceUrl = lesson.title.startsWith("Kafka architecture")
         ? "https://kafka.apache.org/documentation/"
@@ -12236,8 +12594,8 @@ print(resumed["status"])
 # Pydantic validates graph input, not every later node update or final output.
 # Replace InMemorySaver with a durable checkpointer before deployment.
 # Bind authenticated approval to tenant, actor, exact action/arguments/version and
-# expiry. A public thread ID or truthy resume value is not authorization. Nodes
-# before an interrupt may replay: keep irreversible effects after approval and
+# expiry. A public thread ID or truthy resume value is not authorization. Code
+# before interrupt() in its node runs again on resume: keep effects after approval and
 # use a stable effect identity plus intent checking in the owning service.`
     };
   }
@@ -12420,6 +12778,28 @@ print({key: value for key, value in candidate_result.items() if key != "records"
     } else if (/replication|Consistency models|CAP theorem|Sharding/.test(lesson.title)) {
       sourceUrl = "https://research.google/pubs/pub45855/";
       sourceLabel = "Google Spanner paper";
+    }
+    if (lesson.title.startsWith("Authentication,")) {
+      sourceUrl = "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/";
+      sourceLabel = "OWASP: object-level authorization";
+    } else if (lesson.title.startsWith("API security")) {
+      sourceUrl = "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html";
+      sourceLabel = "OWASP: SSRF prevention and trust boundaries";
+    } else if (lesson.title.startsWith("CAP theorem")) {
+      sourceUrl = "https://www.cs.princeton.edu/courses/archive/spr22/cos418/papers/cap.pdf";
+      sourceLabel = "Gilbert and Lynch: CAP impossibility result";
+    } else if (lesson.title.startsWith("Consistency models")) {
+      sourceUrl = "https://www.cs.cmu.edu/~wing/publications/HerlihyWing90.pdf";
+      sourceLabel = "Herlihy and Wing: Linearizability";
+    } else if (/^(Multi-leader replication|Leaderless replication|Sharding,)/.test(lesson.title)) {
+      sourceUrl = "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf";
+      sourceLabel = "Dynamo: version reconciliation, quorum-like replication and partitioning";
+    } else if (lesson.title.startsWith("CQRS,")) {
+      sourceUrl = "https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs";
+      sourceLabel = "Microsoft: CQRS and its relationship to event sourcing";
+    } else if (lesson.title.startsWith("Distributed transactions")) {
+      sourceUrl = "https://www.postgresql.org/docs/current/sql-prepare-transaction.html";
+      sourceLabel = "PostgreSQL prepared transactions and recovery responsibilities";
     }
     return { ...profile, code: apiDistributedCodeFor(lesson.title, profile.code), sourceUrl, sourceLabel };
   }
@@ -13129,7 +13509,10 @@ function diagramFor(lesson) {
   }
 
   if ((lesson.trackId === "javascript" && title.startsWith("testing,")) ||
-      (lesson.trackId === "react" && title.startsWith("component tests,"))) {
+      (lesson.trackId === "react" && title.startsWith("component tests,")) ||
+      (lesson.trackId === "python" && title.startsWith("testing,")) ||
+      (lesson.trackId === "fastapi" && /^(testclient,|async integration tests,)/.test(title)) ||
+      (lesson.trackId === "quality-security" && /^(test strategy,|property-based,)/.test(title))) {
     return flow("behavior-test", [
       ["01 · CONTRACT", "State one observable requirement", "Specify inputs, expected behavior and the failure the test must detect."],
       ["02 · CONTROL", "Arrange the relevant environment", "Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove."],
@@ -13186,6 +13569,22 @@ function diagramFor(lesson) {
     ], "Change one input or key and predict which component state is preserved.", "React DevTools, render count, DOM mutations, focus, and displayed state.");
   }
 
+  if (lesson.trackId === "fastapi" && title.startsWith("async def,")) {
+    return flow("fastapi-execution", [
+      ["01 · DISPATCH", "Identify who calls the function", "FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop."],
+      ["02 · CALL", "Trace the actual work inside", "A def helper called directly from async code still runs on the loop thread. Its spelling does not trigger offloading."],
+      ["03 · WAIT", "Choose the execution boundary", "Await asynchronous I/O; explicitly offload blocking I/O. Thread capacity is finite, and CPU work needs a separately justified execution strategy."],
+      ["04 · MEASURE", "Check interference under load", "Record loop delay, pool queueing and request latency; a fast isolated request does not prove healthy concurrency."]
+    ], "Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.", "Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.");
+  }
+  if (lesson.trackId === "fastapi" && title.startsWith("cancellation,")) {
+    return flow("fastapi-cancellation", [
+      ["01 · OWN", "Keep child work inside a bounded scope", "Define a deadline and whether partial results are acceptable before starting upstream calls."],
+      ["02 · SIGNAL", "Connect timeout and abandonment policy", "A client disconnect is not a universal automatic cancellation guarantee; verify the server path and explicitly own any disconnect watcher."],
+      ["03 · UNWIND", "Let cancellation reach cooperative waits", "Use finally for cleanup and normally propagate cancellation. Cancelling an await does not forcibly stop a running thread or undo a remote write."],
+      ["04 · JOIN", "Wait for children and account for outcomes", "Task groups own child completion and failures. Cleanup can exceed the nominal timeout, and remote effects may require reconciliation."]
+    ], "Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.", "Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.");
+  }
   if (lesson.trackId === "fastapi" && /^(depends|yield dependencies|callable dependencies|dependency injection)/.test(title)) {
     return flow("fastapi-dependencies", [
       ["01 · SIGNATURE", "Endpoint declares requirements", "Annotated parameters identify dependency callables."],
@@ -13209,6 +13608,14 @@ function diagramFor(lesson) {
       ["03 · DATABASE", "Statements enforce invariants", "Locks, constraints, and the pool shape behavior."],
       ["04 · OUTCOME", "Commit or rollback completes", "Only then should the API publish success or failure."]
     ], "Force the second database operation to fail and verify nothing partially commits.", "SQL log, transaction boundaries, pool checkout, persisted rows, and response.");
+  }
+  if (lesson.trackId === "fastapi" && title.startsWith("response classes,")) {
+    return flow("fastapi-response", [
+      ["01 · CONTRACT", "Choose the response representation", "Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering."],
+      ["02 · PRODUCE", "Create the body or stream", "JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements."],
+      ["03 · SEND", "Start the response, then send body events", "Set cookies and headers before response start; a later stream failure cannot replace an already-sent status."],
+      ["04 · FINISH", "Release resources on completion or failure", "Close owned files and generators and test client disconnects with the actual server stack."]
+    ], "Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.", "Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.");
   }
   if (lesson.trackId === "fastapi" && /oauth|security scope|authorization|cookie|cors|trusted host|security hardening/.test(title)) {
     return flow("fastapi-security", [
@@ -13282,6 +13689,14 @@ function diagramFor(lesson) {
       ["03 · SUSPEND / RUN", "Work waits or consumes CPU", "Cancellation and synchronization shape interleaving."],
       ["04 · JOIN", "Result, error, or cancellation returns", "The owner waits for cleanup before continuing."]
     ], "Run the workload once normally and once with blocking, cancellation, or worker failure.", "Timeline, task/thread/process identity, queue depth, exception, and elapsed time.");
+  }
+  if (lesson.trackId === "python" && title.startsWith("lists,")) {
+    return flow("python-sequence", [
+      ["01 · CHOOSE", "Select a sequence for its operations", "Lists are mutable, tuples are immutable containers and range represents an arithmetic sequence compactly."],
+      ["02 · ACCESS", "Index, slice or unpack", "Bounds, slice steps and unpacking arity determine the values or exceptions produced."],
+      ["03 · SHARE", "Track references across copies", "A list slice creates a shallow outer copy; nested mutable objects remain shared. Tuple immutability does not freeze its children."],
+      ["04 · MEASURE", "Account for the operation's cost", "Copying a list slice costs space and time proportional to its result; constructing a range does not materialize every element."]
+    ], "Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.", "Outer and child identities, resulting values, unpacking errors and measured allocation; avoid generalizing list-copy costs to every sequence type.");
   }
   if (lesson.trackId === "python" && /memory|garbage|reference count|weak reference|copying|serialization|pickle/.test(title)) {
     return flow("python-object-lifetime", [
@@ -13986,6 +14401,14 @@ function diagramFor(lesson) {
       ["03 · RECONCILE", "Controller or node agent acts", "Observed state is moved toward the declared spec."],
       ["04 · STATUS", "Reality is reported through the API", "Conditions, events, resources, and data-plane behavior show progress."]
     ], "Change one spec field and watch API, controller, scheduler, and node evidence.", "Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.");
+  }
+  if (lesson.trackId === "quality-security" && title.startsWith("reliability targets,")) {
+    return flow("reliability-feedback", [
+      ["01 · DEFINE", "Measure a user-visible outcome", "Specify eligible events, what counts as good, a time window and a target; process uptime alone may miss failed journeys."],
+      ["02 · COMPARE", "Account for the allowed failure budget", "For an event-based SLO, compare bad eligible events with the allowance implied by the target; keep missing telemetry explicit."],
+      ["03 · RESPOND", "Use actionable evidence to limit impact", "Alert on meaningful budget consumption, assign incident ownership and choose a bounded mitigation with rollback criteria."],
+      ["04 · LEARN", "Verify recovery and prevent recurrence", "Confirm the same user outcome recovered; record contributing conditions and assign follow-up actions with validation evidence."]
+    ], "Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.", "Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.");
   }
   if (lesson.trackId === "quality-security" && title.startsWith("production webhooks")) {
     return flow("webhook-delivery", [
@@ -15525,10 +15948,10 @@ const BEGINNER_GLOSSARY = {
     "domain events": "A domain event records a business fact that already occurred inside one bounded context.",
     "integration events": "An integration event is a stable published contract that informs other contexts about a completed change.",
     "transactional outbox": "A transactional outbox stores the business change and an event record in the same local database transaction.",
-    "idempotent consumers": "An idempotent consumer records event identity or applies a naturally repeatable operation so redelivery does not duplicate the effect.",
+    "idempotent consumers": "An idempotent consumer prevents repeated delivery from duplicating an effect. Deduplication and a local state change need one atomic boundary; external effects need their own idempotency or reconciliation contract.",
     "eventual consistency": "Eventual consistency allows observers to temporarily see older state while delivery and processing converge under stated conditions.",
     "process managers": "A process manager keeps durable state for a multi-step business process and sends the next command after each event.",
-    "event-driven architecture": "Event-driven architecture connects components through durable facts about completed changes rather than direct knowledge of every downstream action.",
+    "event-driven architecture": "Event-driven architecture connects producers and consumers through events about occurrences or changes. Durability, ordering and replay depend on the chosen transport and application contracts; the architectural style alone does not provide them.",
     "producers": "A producer creates and publishes a message under a declared schema, key, identity, and delivery policy.",
     "consumers": "A consumer reads messages, validates them, applies local work, records progress, and handles retries and duplicates.",
     "brokers": "A broker stores or routes messages between producers and consumers and applies retention and delivery rules.",
@@ -15540,18 +15963,18 @@ const BEGINNER_GLOSSARY = {
     "kafka architecture": "Kafka is a distributed event log whose brokers store topic partitions and whose clients produce records or consume ordered partition positions.",
     "topics": "A Kafka topic is a named record stream divided into partitions.",
     "partitions": "A partition is an ordered append-only sequence that is the unit of Kafka storage, replication, and consumer-group assignment.",
-    "keys": "A Kafka record key commonly selects the partition so related records can keep partition order.",
+    "keys": "A Kafka record key commonly selects a partition. Same-key ordering depends on stable partition selection; changing partition counts or partitioner behavior can move later records to another partition.",
     "append-only logs": "An append-only log writes new records at increasing positions and does not update earlier records in place.",
     "segments": "Kafka stores a partition as bounded segment files so retention, lookup, and compaction can operate incrementally.",
     "indexes": "Kafka indexes map approximate offsets or timestamps to positions in segment files, then scans locally to the requested record.",
     "retention": "Retention removes old log segments by time or size according to topic policy.",
-    "compaction": "Log compaction retains the latest record for each key while preserving record order and tombstone rules.",
-    "kafka replication": "Kafka replication keeps partition copies on multiple brokers while one leader handles reads and writes for the partition.",
+    "compaction": "Compaction eventually removes superseded key versions; multiple versions can coexist before cleaning. Surviving records retain their offsets and order. Tombstone retention bounds how long a lagging consumer can observe deletes.",
+    "kafka replication": "Kafka replicates each partition across brokers. Writes go to its leader; configured consumers can read from suitable followers as well as the leader.",
     "leaders": "A partition leader receives client operations and defines the ordered log that followers copy.",
     "followers": "Followers fetch the leader's records and may become leader after a valid election.",
     "in-sync replicas": "In-sync replicas are copies that meet Kafka's configured lag requirements and may participate in durable acknowledgement and safe election.",
     "acknowledgements": "Producer acknowledgements define how many replication conditions must be met before a send reports success.",
-    "min.insync.replicas": "min.insync.replicas is the minimum number of in-sync copies required for writes using all-replica acknowledgement.",
+    "min.insync.replicas": "With acks=all, min.insync.replicas sets the minimum eligible ISR size for a successful write. It is not a request to wait for exactly that many replicas: acks=all waits for the full current ISR.",
     "controllers": "Kafka controllers coordinate cluster metadata, broker state, and partition leadership.",
     "elections": "A leader election selects a replica to serve a partition after assignment or failure.",
     "failure recovery": "Failure recovery elects leaders, catches replicas up, restarts processing, and verifies durability and consumer progress after faults.",
@@ -15559,8 +15982,8 @@ const BEGINNER_GLOSSARY = {
     "batching": "Batching groups records into fewer network requests to improve throughput at the cost of bounded waiting and memory.",
     "compression": "Compression reduces network and storage bytes for a record batch while using producer and consumer CPU.",
     "idempotence": "Kafka producer idempotence uses producer identity and sequence numbers to prevent retry duplicates within its supported session guarantees.",
-    "transactions": "Kafka transactions atomically publish records and consumed-offset updates across supported Kafka partitions.",
-    "consumer groups": "A consumer group divides topic partitions between active members so one member owns a partition at a time within that group.",
+    "transactions": "Kafka transactions commit output records and included consumed-offset updates together. Consumers need read_committed to hide aborted transactional records. An external database write or payment is not automatically part of that transaction.",
+    "consumer groups": "A traditional Kafka consumer group assigns each partition to one member at a time. Assignment does not stop a stale worker's external effects; safe handoff and effect protection still matter. Share groups use different assignment semantics.",
     "rebalancing": "Rebalancing changes partition ownership when membership or subscription changes and requires safe pause, handoff, and offset behavior.",
     "offsets": "An offset is a record position in one Kafka partition; a committed offset records where a consumer group plans to resume.",
     "ordering": "Kafka guarantees record order inside one partition, not one global order across all partitions.",
@@ -15568,7 +15991,7 @@ const BEGINNER_GLOSSARY = {
     "compatibility": "Schema compatibility states whether old and new producers and consumers can safely exchange evolved records.",
     "schema registries": "A schema registry stores versioned schemas and can enforce compatibility before a producer publishes a new version.",
     "poison events": "A poison event repeatedly fails normal processing because its data, schema, or business state is invalid for the consumer.",
-    "retry topics": "Retry topics delay and isolate failed events between bounded attempts instead of blocking a main partition indefinitely.",
+    "retry topics": "Retry topics move failed events onto a separate retry path. Applications implement delay and attempt limits; later main-topic events can overtake retried events, so per-key ordering needs an explicit policy.",
     "replay": "Replay starts reading retained events from an earlier offset to rebuild state, recover work, or test changed logic.",
     "observability": "Event observability connects producer, broker record, consumer attempt, offset, lag, result, and retry without exposing sensitive payloads.",
     "testing": "Event-system testing verifies schemas, handlers, duplicates, ordering assumptions, retries, replay, failure recovery, and representative broker integration.",
@@ -15624,16 +16047,16 @@ const BEGINNER_GLOSSARY = {
     "postmortems": "A postmortem records an incident's impact, timeline, causes, response, and corrective actions without personal blame.",
     "production webhooks": "A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.",
     "event contracts": "An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.",
-    "signatures": "A webhook signature is a cryptographic authenticator calculated over the exact request bytes and trusted context. The consumer recomputes it with a secret and compares it in constant time.",
+    "signatures": "Webhook verification checks the provider's signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key signatures. Use the provider's verifier and preserve the original bytes.",
     "timestamps": "A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.",
-    "replay defense": "Replay defense combines a signed timestamp, a freshness limit, and durable event-ID deduplication so an old valid request cannot repeat an effect.",
+    "replay defense": "A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.",
     "idempotency": "Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.",
     "retries": "Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.",
     "ordering": "Ordering describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.",
     "secret rotation": "Secret rotation replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.",
     "application file storage": "Application file storage keeps user-supplied bytes in an object store and stores ownership, state, policy, and display metadata separately in a database.",
     "direct uploads": "A direct upload sends file bytes from the client to object storage using a narrowly scoped temporary grant, so the application server does not relay the large body.",
-    "presigned urls": "A presigned URL is a time-limited capability to perform a specific storage request. Anyone holding it can use its allowed operation until expiry, so scope and lifetime must be narrow.",
+    "presigned urls": "A presigned URL is a bearer capability for a specific storage request, not a single-use token. S3 also checks credential validity and access policy, so it can fail before its stated expiry. An accepted download may continue after expiry.",
     "multipart transfer": "Multipart transfer divides a large object into independently retriable parts and completes them as one object. Abandoned part sets require lifecycle cleanup.",
     "validation": "File validation checks declared size and type, actual magic bytes, parser limits, checksums, ownership, and policy before the application trusts or serves content.",
     "malware scanning": "Malware scanning examines quarantined bytes with current detection tools before promotion. A clean result reduces risk but does not replace safe parsing and isolation.",
@@ -15653,7 +16076,7 @@ const BEGINNER_GLOSSARY = {
     "targets": "An audit target identifies the resource type and stable identifier affected or inspected by an action.",
     "outcomes": "An audit outcome records whether an attempt was allowed, denied, failed, or partially completed; denied attempts are important evidence too.",
     "correlation": "Correlation links audit events with the request, trace, job, approval, or provider event that caused them so an investigation can reconstruct one chain of work.",
-    "tamper evidence": "Tamper evidence makes unauthorized changes detectable through append-only controls, hash links, signatures, or separately controlled immutable copies. It is not the same as making tampering impossible.",
+    "tamper evidence": "Tamper evidence helps detect changed or missing records relative to a trusted reference. A hash chain alone can be rewritten or truncated by an attacker controlling the log; protect independent checkpoints and access. Detection is not prevention.",
     "retention": "Retention policy defines how long evidence remains searchable or archived, when it is deleted, and which legal, security, privacy, and cost rules govern that time.",
     "privacy": "Audit privacy minimizes or redacts secrets and personal data, restricts readers, logs access to evidence, and applies approved retention and deletion rules.",
     "investigation": "An investigation uses filtered, time-ordered, correlated evidence to answer which identity attempted which changes and what system state resulted.",
@@ -15677,10 +16100,10 @@ const BEGINNER_GLOSSARY = {
     "loss functions": "A loss function converts prediction error into a number that training tries to reduce.",
     "regularization": "Regularization adds constraints or penalties that reduce overfitting and limit model complexity.",
     "generalization": "Generalization is a model's ability to perform well on relevant examples that it did not see during training.",
-    "data splits": "Data splits separate examples into training, validation, and test sets with distinct purposes.",
-    "leakage": "Data leakage occurs when training uses information that would not be available for a real future prediction.",
+    "data splits": "Training fits parameters, validation selects models or thresholds, and a held-out test estimates the chosen system. Split by time, entity or rows according to deployment; fit preprocessing inside each training fold.",
+    "leakage": "Leakage lets unavailable or held-out information influence model building or selection, producing misleading evaluation. Examples include fitting preprocessing before splitting, future-derived features and repeatedly tuning against the test set.",
     "imbalance": "Class imbalance occurs when some outcomes have far fewer examples than other outcomes.",
-    "metrics": "A metric is a defined numerical measure of model behavior for a dataset or data slice.",
+    "metrics": "A metric quantifies one aspect of predictions, not overall usefulness. Accuracy can hide minority-class failure; choose thresholds and precision/recall tradeoffs from error costs, and report denominators and slice counts.",
     "experiment design": "Experiment design defines the hypothesis, controlled variables, data, baseline, metric, and decision rule before evaluation.",
     "classical ml": "Classical machine learning includes statistical models and algorithms such as regression, trees, nearest neighbors, and clustering.",
     "embeddings": "An embedding is a learned numeric vector that represents an item so useful relationships become measurable.",
@@ -15776,11 +16199,11 @@ const BEGINNER_GLOSSARY = {
     "deletes": "A vector delete makes a point unavailable to queries and later reclaims its storage through maintenance; distributed replicas may observe the change under stated consistency rules.",
     "query execution": "Vector query execution validates the query, plans filters, obtains candidates from exact or approximate search, computes distances, keeps top-k, and fetches current payloads.",
     "vector index internals": "Vector index internals are the data structures and search procedures that reduce distance calculations while accepting measurable build, memory, update, or recall costs.",
-    "exact search": "Exact search calculates the selected distance to every eligible vector and returns the true top-k for that stored data. It provides the ground truth used to measure approximate recall.",
+    "exact search": "Exact search returns the true nearest results for the chosen metric, eligible data and tie policy. Exhaustive scanning is one implementation, not the definition. Exact vector neighbors are a baseline for ANN recall, not ground-truth semantic relevance.",
     "hnsw graphs": "HNSW stores proximity links in multiple graph layers. Search descends from sparse upper layers and explores a bounded candidate set in the dense bottom layer.",
     "ivf lists": "IVF trains centroids, assigns each vector to a nearby inverted list, and searches only a selected number of query-nearest lists called probes.",
     "product quantization": "Product quantization splits vectors into subvectors and stores a short centroid code for each part. Approximate table lookups save memory and compute but add distance error.",
-    "recall": "Recall@k is the fraction of exact top-k neighbors that an approximate top-k result returns on representative queries.",
+    "recall": "ANN recall@k measures overlap with exact neighbors under the same metric, filters and tie policy. Relevance recall instead uses judged relevant documents as its denominator; these answer different questions. State how fewer than k eligible points are handled.",
     "memory": "Vector-index memory includes vector bytes, graph links or list entries, quantization codes, payload indexes, working candidate sets, and process overhead.",
     "build cost": "Build cost is the time, CPU, memory, I/O, training, and temporary storage needed to construct or rebuild an index.",
     "vector database storage internals": "Vector database storage internals turn accepted mutations into recoverable vector, payload, ID, and index state while reads and background maintenance continue.",
@@ -15802,11 +16225,11 @@ const BEGINNER_GLOSSARY = {
     "metadata": "Metadata is structured information about content, such as its source, owner, date, language, or access policy.",
     "chunking": "Chunking divides content into retrieval units that have useful meaning and manageable size.",
     "indexing": "Indexing builds data structures that let a search system find candidate content efficiently.",
-    "query rewriting": "Query rewriting changes or expands a user query to improve retrieval while preserving the user's information need.",
+    "query rewriting": "Query rewriting changes or expands a query to improve retrieval. It can also change intent or lose exact identifiers, so compare against the original query and retain regression cases.",
     "filtering": "Filtering removes candidates that fail required metadata, permission, date, or product conditions.",
-    "reranking": "Reranking applies a more expensive relevance model to a small candidate set and produces a better order.",
+    "reranking": "Reranking scores an existing candidate set with another relevance model. It may improve or worsen order and cannot recover a document absent from that set. Measure quality and added latency on held-out queries.",
     "context assembly": "Context assembly selects, orders, labels, and limits retrieved content before a model request.",
-    "citations": "Citations connect generated statements to exact source locations that a user can inspect.",
+    "citations": "Citations point readers to evidence for a statement. A valid source ID does not prove that the source supports the claim; check support, location, source version and the reader's access separately.",
     "rag evaluation": "RAG evaluation measures retrieval and answer behavior with representative questions and expected evidence.",
     "golden sets": "A golden set is a reviewed collection of evaluation inputs, expected evidence, and acceptable outcomes.",
     "retrieval metrics": "Retrieval metrics measure whether relevant items appear and where they appear in ranked results.",
@@ -15848,12 +16271,12 @@ const BEGINNER_GLOSSARY = {
     "streaming": "Streaming exposes model tokens, agent steps, tool activity, or custom updates before the complete run finishes.",
     "tracing": "Tracing records the nested model, tool, and workflow operations with their inputs, outputs, timing, errors, and metadata.",
     "langgraph stategraph": "LangGraph StateGraph is a builder for a directed workflow whose nodes read shared typed state and return state updates.",
-    "pydantic state schemas": "A Pydantic state schema gives LangGraph runtime validation for graph input and nested values, with more overhead and narrower validation guarantees than many learners initially expect.",
+    "pydantic state schemas": "LangGraph StateGraph can use a Pydantic model for runtime state-input validation. Do not assume every node update or final output is validated; validate important output boundaries explicitly. LangChain create_agent does not support Pydantic state schemas.",
     "typed state": "Typed state declares the fields that graph nodes may read or update. It makes the workflow contract visible to tools, reviewers, and static checkers.",
     "nodes": "Nodes are functions or subgraphs that perform one bounded operation and return an update instead of mutating hidden shared state.",
     "edges": "Edges connect nodes and determine which operation can run next. Conditional edges and Command values can choose a route from current state.",
     "reducers": "Reducers define how multiple updates to one state field combine, such as replacing a value or appending messages.",
-    "interrupts": "An interrupt pauses graph execution, saves state through a checkpointer, exposes a request to the caller, and waits for a later resume value.",
+    "interrupts": "A LangGraph interrupt pauses for external input using a checkpointer and thread identity. Resuming restarts its node from the beginning, so code before the interrupt can run again. Protect side effects and authorize who may resume.",
     "durable execution": "Durable execution stores progress outside the worker process so a workflow can resume after waiting, failure, restart, or redeployment.",
     "workflows": "A workflow follows a predefined sequence of steps and branches that application code controls.",
     "agents": "An agent uses model output to select actions while the application controls authority, state, limits, and stopping.",
@@ -15866,7 +16289,7 @@ const BEGINNER_GLOSSARY = {
     "state": "Agent state describes current progress, decisions, results, and pending work. It is durable only if the application persists it with a defined recovery contract.",
     "memory": "Agent memory is selected information from earlier work that the system makes available for later decisions.",
     "context management": "Context management selects which instructions, state, history, evidence, and tool results enter each model call.",
-    "checkpoints": "A checkpoint stores durable progress so execution can resume after interruption or failure.",
+    "checkpoints": "A checkpoint records workflow progress for resumption. Durability depends on its backing store; an in-memory saver does not survive process loss. Restoring state does not undo or deduplicate external effects by itself.",
     "retries": "A retry repeats a failed operation under a defined limit and delay policy.",
     "idempotency": "Idempotency ensures that a repeated logical action does not create unintended duplicate effects.",
     "human-in-the-loop": "Human-in-the-loop control pauses automation so a person can review, edit, approve, or reject an action.",

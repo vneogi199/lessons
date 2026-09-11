@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a build and installation</h2>
-      <ol class="trace-flow" data-flow="fastapi-process" aria-label="Mechanism trace: Process imports the application then Shared resources are acquired then Readiness admits requests then Shutdown stops and cleans up. Experiment: Send a termination signal during a slow request and observe the drain sequence.">
-        <li class="trace-stage"><span>01 · START</span><strong>Process imports the application</strong><small>Configuration and route registration happen per worker.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LIFESPAN</span><strong>Shared resources are acquired</strong><small>Pools and clients become owned by this process.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVE</span><strong>Readiness admits requests</strong><small>The worker handles bounded concurrent traffic.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DRAIN</span><strong>Shutdown stops and cleans up</strong><small>Readiness drops, requests finish, then resources close.</small></li>
+      <ol class="trace-flow" data-flow="behavior-test" aria-label="Mechanism trace: State one observable requirement then Arrange the relevant environment then Exercise the real boundary under test then Compare outcomes and clean up. Experiment: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>State one observable requirement</strong><small>Specify inputs, expected behavior and the failure the test must detect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROL</span><strong>Arrange the relevant environment</strong><small>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ACT</span><strong>Exercise the real boundary under test</strong><small>Trigger the operation or user interaction and await its observable completion.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ASSERT</span><strong>Compare outcomes and clean up</strong><small>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Send a termination signal during a slow request and observe the drain sequence.</strong>
-        <small><b>Inspect:</b> Process log, readiness state, in-flight count, exit code, and resource cleanup.</small>
+        <strong>Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</strong>
+        <small><b>Inspect:</b> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · START</span>
-        <h3>Process imports the application</h3>
-        <p>Configuration and route registration happen per worker.</p>
+        <span>01 · CONTRACT</span>
+        <h3>State one observable requirement</h3>
+        <p>Specify inputs, expected behavior and the failure the test must detect.</p>
       </article><article>
-        <span>02 · LIFESPAN</span>
-        <h3>Shared resources are acquired</h3>
-        <p>Pools and clients become owned by this process.</p>
+        <span>02 · CONTROL</span>
+        <h3>Arrange the relevant environment</h3>
+        <p>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</p>
       </article><article>
-        <span>03 · SERVE</span>
-        <h3>Readiness admits requests</h3>
-        <p>The worker handles bounded concurrent traffic.</p>
+        <span>03 · ACT</span>
+        <h3>Exercise the real boundary under test</h3>
+        <p>Trigger the operation or user interaction and await its observable completion.</p>
       </article><article>
-        <span>04 · DRAIN</span>
-        <h3>Shutdown stops and cleans up</h3>
-        <p>Readiness drops, requests finish, then resources close.</p>
+        <span>04 · ASSERT</span>
+        <h3>Compare outcomes and clean up</h3>
+        <p>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Send a termination signal during a slow request and observe the drain sequence.</p><p><strong>Then inspect:</strong> Process log, readiness state, in-flight count, exit code, and resource cleanup.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p><p><strong>Then inspect:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></div>
   </section>
 
   
@@ -145,16 +145,16 @@ def test_project_requires_permission(app):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Process imports the application → Shared resources are acquired → Readiness admits requests → Shutdown stops and cleans up. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> State one observable requirement → Arrange the relevant environment → Exercise the real boundary under test → Compare outcomes and clean up. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a build and installation from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Send a termination signal during a slow request and observe the drain sequence.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Process log, readiness state, in-flight count, exit code, and resource cleanup.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></article>
     </div>
   </section>
 
@@ -175,7 +175,7 @@ def test_project_requires_permission(app):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand the in-process ASGI transport, event-loop portal, lifespan context, dependency override lookup, application state, and exception propagation.</p>
-        <p><strong>Evidence to explain:</strong> Process log, readiness state, in-flight count, exit code, and resource cleanup.</p>
+        <p><strong>Evidence to explain:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>

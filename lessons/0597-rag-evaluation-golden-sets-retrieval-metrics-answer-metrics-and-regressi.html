@@ -111,21 +111,40 @@
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>// Exercise specification (requires the described fixture; not executed here)
-// Separate retrieval and answer evaluation
+    <pre aria-label="Starter code"><code>// Offline binary-relevance fixture. IDs are unique, human-judged documents.
+// No retriever, embedding provider or answer model is invoked.
+const relevant = new Set([&quot;a&quot;, &quot;b&quot;]);
+const topThree = [&quot;a&quot;, &quot;c&quot;, &quot;d&quot;];
+const hits = topThree.filter(id =&gt; relevant.has(id)).length;
+const precisionAt3 = hits / 3;
+const relevanceRecallAt3 = hits / relevant.size;
+console.assert(precisionAt3 === 1 / 3 &amp;&amp; relevanceRecallAt3 === 1 / 2);
 
-// Setup
-// For a query with relevant IDs a and b, let top-three results be a, c, d. Compute recall@3=1/2 and precision@3=1/3 before grading an answer.
+// Perfect ANN recall can coexist with zero semantic relevance recall.
+const exactNeighbors = new Set([&quot;c&quot;, &quot;d&quot;]); // Fixed metric/filter/tie policy.
+const approximateNeighbors = [&quot;c&quot;, &quot;d&quot;];
+const annRecallAt2 = approximateNeighbors.filter(id =&gt; exactNeighbors.has(id)).length / 2;
+const semanticRecallAt2 = approximateNeighbors.filter(id =&gt; relevant.has(id)).length / relevant.size;
+console.assert(annRecallAt2 === 1 &amp;&amp; semanticRecallAt2 === 0);
 
-// Change one condition
-// Give the answer generator perfect evidence and separately give it an empty context. Compare the resulting failures with the retrieval metric.
+// Reranking can reorder only supplied candidates: it cannot retrieve missing b.
+const reranked = [&quot;d&quot;, &quot;a&quot;, &quot;c&quot;];
+console.assert(reranked.filter(id =&gt; relevant.has(id)).length / relevant.size === 1 / 2);
+console.assert(!reranked.includes(&quot;b&quot;));
+// Full-set recall is unchanged here, but top-one precision changed from 1 to 0.
+console.assert(relevant.has(topThree[0]) &amp;&amp; !relevant.has(reranked[0]));
 
-// Expected reasoning / evidence
-// Define relevance labels and denominator conventions, including no-relevant-document queries. Retrieval recall, factual support and task success measure different stages; freeze regression cases and report slice counts.</code></pre>
+// Before aggregating real queries, define: document versus chunk identity,
+// duplicate treatment, fewer-than-k results, ties and no-relevant-document cases.
+// Recall has a zero denominator when no documents are relevant; specify exclusion
+// or another explicit policy instead of silently reporting zero or perfect recall.
+// Grade answer support separately: a valid citation ID does not prove entailment.
+// Next day: derive all four ratios without looking, then explain which stage you
+// would change when ANN recall is 1 but relevance recall is 0.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -188,7 +207,7 @@
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noreferrer">Retrieval-Augmented Generation paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-unranked-retrieval-sets-1.html" target="_blank" rel="noreferrer">Introduction to Information Retrieval: evaluation ↗</a></div>
     
     
     

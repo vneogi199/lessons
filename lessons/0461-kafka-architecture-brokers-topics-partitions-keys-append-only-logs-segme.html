@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="keys">
         <span>05</span>
         <h3>keys</h3>
-        <p><strong>What it means:</strong> A Kafka record key commonly selects the partition so related records can keep partition order.</p>
+        <p><strong>What it means:</strong> A Kafka record key commonly selects a partition. Same-key ordering depends on stable partition selection; changing partition counts or partitioner behavior can move later records to another partition.</p>
       </article><article class="concept-card" data-subtopic="append-only logs">
         <span>06</span>
         <h3>append-only logs</h3>
@@ -91,7 +91,7 @@
       </article><article class="concept-card" data-subtopic="compaction">
         <span>10</span>
         <h3>compaction</h3>
-        <p><strong>What it means:</strong> Log compaction retains the latest record for each key while preserving record order and tombstone rules.</p>
+        <p><strong>What it means:</strong> Compaction eventually removes superseded key versions; multiple versions can coexist before cleaning. Surviving records retain their offsets and order. Tombstone retention bounds how long a lagging consumer can observe deletes.</p>
       </article>
     </div>
   </section>
@@ -145,13 +145,16 @@ kafka-topics.sh --bootstrap-server localhost:9092 --create \
 kafka-topics.sh --bootstrap-server localhost:9092 \
   --describe --topic order-events
 
-# Key every order event by order_id so one order stays in one ordered partition.
+# With stable partition count and partitioner, key order events by order_id.
 kafka-console-producer.sh --bootstrap-server localhost:9092 \
   --topic order-events --property parse.key=true --property key.separator=:
-A-42:{&quot;type&quot;:&quot;OrderPlaced.v1&quot;,&quot;order_id&quot;:&quot;A-42&quot;}
+# Type this into the producer&#039;s standard input, not into your shell:
+# A-42:{&quot;type&quot;:&quot;OrderPlaced.v1&quot;,&quot;order_id&quot;:&quot;A-42&quot;}
 
-# Retention removes old log data by time or size. Compaction retains the latest
-# value per key plus delete tombstones; neither provides global ordering.</code></pre>
+# Compaction is asynchronous; old versions can remain until cleaning.
+# This topic uses delete retention, not compaction. Neither gives global order.
+# These commands require an existing disposable three-broker lab; nothing here
+# installs or starts Kafka. Changing partition count can change key placement.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 

@@ -119,23 +119,31 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>const observation = {
-  requestId,
-  traceId: span.spanContext().traceId,
+    <pre aria-label="Starter code"><code>// Synthetic fixture; no telemetry SDK or actual request is running here.
+const observation = {
+  requestId: &quot;fixture-request-1&quot;,
+  traceId: &quot;4bf92f3577b34da6a3ce929d0e0e4736&quot;,
   route: &quot;/projects/{projectId}/jobs&quot;,
   method: &quot;POST&quot;,
   statusCode: 202,
-  durationMs,
-  retryAttempt,
-  deadlineRemainingMs,
+  durationMs: 42,
+  retryAttempt: 0,
+  deadlineRemainingMs: 958,
   tenantClass: &quot;paid&quot;, // bounded label, never raw tenant ID in metrics
   outcome: &quot;accepted&quot;
 };
 
-metrics.histogram(&quot;http.server.duration&quot;, durationMs, boundedLabels(observation));
-logger.info(observation);
-span.setAttributes(traceAttributes(observation));
-audit.append(securityEvent(observation));</code></pre>
+const metricLabels = {route: observation.route, method: observation.method,
+  statusCode: String(observation.statusCode), tenantClass: observation.tenantClass};
+console.assert(!(&quot;requestId&quot; in metricLabels) &amp;&amp; !(&quot;traceId&quot; in metricLabels));
+console.assert(metricLabels.route === &quot;/projects/{projectId}/jobs&quot;);
+console.log({metricLabels, durationMs: observation.durationMs});
+// Wire these into the selected SDK with its metric name and unit conventions.
+// Put correlation IDs in protected logs/traces, not metric dimensions. Never
+// substitute a raw request path for the route template or log credentials/bodies.
+// A sampled diagnostic trace is not a complete audit trail; audit persistence,
+// access control, retention and failure handling need an explicit separate policy.
+// Verify cross-service context and metric cardinality in the real deployment.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 

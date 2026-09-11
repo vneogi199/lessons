@@ -123,18 +123,37 @@
 import assert from &quot;node:assert/strict&quot;;
 
 test(&quot;cursor traversal preserves a stable total order&quot;, async () =&gt; {
-  const inserted = await seedJobsWithTies(250);
-  const traversed = await readAllPages({ pageSize: 17 });
-  assert.deepEqual(traversed.map(x =&gt; x.id), expectedOrder(inserted).map(x =&gt; x.id));
+  // Frozen in-memory dataset; this does not verify a database or signed cursor.
+  const inserted = Array.from({length: 250}, (_, id) =&gt; ({id, createdAt: Math.floor(id / 5)}));
+  const ordered = inserted.toSorted((a, b) =&gt; b.createdAt - a.createdAt || b.id - a.id);
+  const traversed = [];
+  let after = null;
+  for (let page = 0; page &lt; 100; page++) {
+    const batch = ordered.filter(row =&gt; after === null || row.createdAt &lt; after.createdAt ||
+      (row.createdAt === after.createdAt &amp;&amp; row.id &lt; after.id)).slice(0, 17);
+    if (!batch.length) break;
+    traversed.push(...batch);
+    after = batch.at(-1);
+  }
+  assert.deepEqual(traversed.map(x =&gt; x.id), Array.from({length: 250}, (_, i) =&gt; 249 - i));
   assert.equal(new Set(traversed.map(x =&gt; x.id)).size, inserted.length);
 });
 
-test(&quot;released consumer accepts candidate provider&quot;, async () =&gt; {
-  await assertContract({ consumer: &quot;sdk-v2.3&quot;, provider: candidate });
+test(&quot;ties need a unique ordering field&quot;, () =&gt; {
+  const rows = [{id: 2, createdAt: 10}, {id: 1, createdAt: 10}];
+  const first = rows[0];
+  const brokenNextPage = rows.filter(row =&gt; row.createdAt &lt; first.createdAt);
+  assert.equal(brokenNextPage.length, 0); // It silently skips id 1.
+  const correctNextPage = rows.filter(row =&gt; row.createdAt &lt; first.createdAt ||
+    (row.createdAt === first.createdAt &amp;&amp; row.id &lt; first.id));
+  assert.deepEqual(correctNextPage.map(row =&gt; row.id), [1]);
 });
 
-// Add schema-generated invalid inputs, authorization matrix, concurrency,
-// retry/idempotency, unknown fields, and deployed conformance smoke tests.</code></pre>
+// Replace the in-memory page operation with the real API adapter for integration:
+// seed ties, traverse signed cursors, reject another tenant&#039;s cursor and change
+// rows between pages under the documented snapshot policy. Then run a released
+// SDK against the candidate server. Passing this arithmetic fixture proves none
+// of authentication, database isolation or deployed contract compatibility.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
