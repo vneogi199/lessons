@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="resilience-budget" aria-label="Mechanism trace: Request enters with finite value then Work consumes time and capacity then System cancels, retries, isolates, or sheds then Outcome closes every resource. Experiment: Slow one dependency past its budget while increasing arrival rate beyond service capacity.">
-        <li class="trace-stage"><span>01 · BUDGET</span><strong>Request enters with finite value</strong><small>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DEPENDENCY</span><strong>Work consumes time and capacity</strong><small>Latency distribution, fan-out, saturation, and partial failure shape progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><strong>System cancels, retries, isolates, or sheds</strong><small>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Outcome closes every resource</strong><small>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</small></li>
+      <ol class="trace-flow" data-flow="replicated-operation" aria-label="Mechanism trace: Operation targets replicated state then Leaders or quorums coordinate versions then Lag, conflict, or partition intervenes then Read, repair, failover, or merge completes. Experiment: Partition one replica group immediately after a write acknowledgement, then read from every side.">
+        <li class="trace-stage"><span>01 · CLIENT</span><strong>Operation targets replicated state</strong><small>Required consistency, session token, version, and deadline define acceptable outcomes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICAS</span><strong>Leaders or quorums coordinate versions</strong><small>Log position, acknowledgements, causal metadata, and topology govern visibility.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE</span><strong>Lag, conflict, or partition intervenes</strong><small>Some nodes respond, reject, diverge, or remain uncertain according to policy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONVERGE</span><strong>Read, repair, failover, or merge completes</strong><small>History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Slow one dependency past its budget while increasing arrival rate beyond service capacity.</strong>
-        <small><b>Inspect:</b> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</small>
+        <strong>Partition one replica group immediately after a write acknowledgement, then read from every side.</strong>
+        <small><b>Inspect:</b> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · BUDGET</span>
-        <h3>Request enters with finite value</h3>
-        <p>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</p>
+        <span>01 · CLIENT</span>
+        <h3>Operation targets replicated state</h3>
+        <p>Required consistency, session token, version, and deadline define acceptable outcomes.</p>
       </article><article>
-        <span>02 · DEPENDENCY</span>
-        <h3>Work consumes time and capacity</h3>
-        <p>Latency distribution, fan-out, saturation, and partial failure shape progress.</p>
+        <span>02 · REPLICAS</span>
+        <h3>Leaders or quorums coordinate versions</h3>
+        <p>Log position, acknowledgements, causal metadata, and topology govern visibility.</p>
       </article><article>
-        <span>03 · CONTROL</span>
-        <h3>System cancels, retries, isolates, or sheds</h3>
-        <p>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</p>
+        <span>03 · FAILURE</span>
+        <h3>Lag, conflict, or partition intervenes</h3>
+        <p>Some nodes respond, reject, diverge, or remain uncertain according to policy.</p>
       </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Outcome closes every resource</h3>
-        <p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p>
+        <span>04 · CONVERGE</span>
+        <h3>Read, repair, failover, or merge completes</h3>
+        <p>History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p><p><strong>Then inspect:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Partition one replica group immediately after a write acknowledgement, then read from every side.</p><p><strong>Then inspect:</strong> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p></div>
   </section>
 
   
@@ -115,25 +115,30 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>function handleDuringPartition(policy, request) {
-  if (policy === &quot;linearizable&quot;) {
-    if (!hasQuorum(request.partition)) return { status: 503, guarantee: &quot;no stale success&quot; };
-    return quorumOperation(request);
-  }
-  if (policy === &quot;available-eventual&quot;) {
-    return localReplicaOperation(request); // may be stale or conflict later
-  }
+    <pre aria-label="Starter code"><code>// Offline history, NOT a replication protocol or proof of the full theorem.
+function simulatePartition(policy) {
+  if (![&quot;linearizable&quot;, &quot;available-eventual&quot;].includes(policy)) throw new Error(&quot;unknown policy&quot;);
+  // Initially A and B contain 0. A completes write(1), but no message crosses to B.
+  // Only AFTER that write completes, a client requests read() at isolated B.
+  const completedWrite = 1, isolatedReplica = 0;
+  return policy === &quot;linearizable&quot;
+    ? { completedWrite, read: { status: &quot;unavailable&quot; } }
+    : { completedWrite, read: { status: &quot;ok&quot;, value: isolatedReplica } };
 }
-
-for (const policy of [&quot;linearizable&quot;, &quot;available-eventual&quot;]) {
-  console.table(simulatePartition({ policy, groups: [[&quot;A&quot;], [&quot;B&quot;, &quot;C&quot;]] }));
-}
-
-// PACELC asks about normal-operation latency/consistency choices as well as the
-// partition branch. State the guarantee per operation, not per product logo.
-// hasQuorum is only a precondition: quorumOperation must implement a protocol
-// preserving linearizability. CAP availability is a response guarantee at each
-// non-failing node, not an uptime percentage or the existence of one healthy side.</code></pre>
+const consistent = simulatePartition(&quot;linearizable&quot;);
+const responsive = simulatePartition(&quot;available-eventual&quot;);
+console.assert(consistent.read.status === &quot;unavailable&quot;);
+console.assert(responsive.read.status === &quot;ok&quot; &amp;&amp; responsive.read.value !== responsive.completedWrite);
+let rejected = false;
+try { simulatePartition(&quot;magic&quot;); } catch { rejected = true; }
+console.assert(rejected);
+// Returning 0 violates linearizability for this non-overlapping write/read history.
+// Refusing/waiting at B sacrifices CAP availability there; an error response is
+// not a successful read. B cannot learn an arbitrary new value without a message.
+// The available branch illustrates stale reads, not an implemented convergence rule.
+// CAP availability is not an uptime percentage or one healthy replica group.
+// PACELC additionally asks about latency/consistency choices without a partition.
+// State guarantees per operation; quorum arithmetic alone is not a protocol.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -146,16 +151,16 @@ for (const policy of [&quot;linearizable&quot;, &quot;available-eventual&quot;])
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Operation targets replicated state → Leaders or quorums coordinate versions → Lag, conflict, or partition intervenes → Read, repair, failover, or merge completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Partition one replica group immediately after a write acknowledgement, then read from every side.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p></article>
     </div>
   </section>
 
@@ -176,7 +181,7 @@ for (const policy of [&quot;linearizable&quot;, &quot;available-eventual&quot;])
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> During communication partitions choose which requests may complete without violating the required consistency, and during normal operation account for replication latency choices.</p>
-        <p><strong>Evidence to explain:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
+        <p><strong>Evidence to explain:</strong> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>

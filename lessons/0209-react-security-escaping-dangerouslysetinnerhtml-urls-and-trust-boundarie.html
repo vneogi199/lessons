@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace untrusted input crossing a boundary</h2>
-      <ol class="trace-flow" data-flow="react-render" aria-label="Mechanism trace: Props, state, and context then Components return elements then Fiber work compares trees then React updates the host UI. Experiment: Change one input or key and predict which component state is preserved.">
-        <li class="trace-stage"><span>01 · INPUT</span><strong>Props, state, and context</strong><small>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RENDER</span><strong>Components return elements</strong><small>Pure functions describe the next interface tree.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Fiber work compares trees</strong><small>Type, position, and key decide preservation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>React updates the host UI</strong><small>DOM changes, refs, and commit effects become visible.</small></li>
+      <ol class="trace-flow" data-flow="react-output-boundary" aria-label="Mechanism trace: Untrusted values reach a component then Identify the output context then Apply the policy for that context then Inspect behavior without granting extra access. Experiment: Render a harmless HTML-looking string as text, then inspect why raw HTML and navigation require separate controls.">
+        <li class="trace-stage"><span>01 · RECEIVE</span><strong>Untrusted values reach a component</strong><small>API fields, URL parameters and user content do not gain trust by becoming props.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHOOSE</span><strong>Identify the output context</strong><small>Text children, links and raw HTML have different safety requirements.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENFORCE</span><strong>Apply the policy for that context</strong><small>Prefer ordinary text rendering; raw HTML needs trusted sanitization and URLs need an allowed-destination policy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Inspect behavior without granting extra access</strong><small>Check rendered content and rejected values; server authorization still protects data and mutations.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one input or key and predict which component state is preserved.</strong>
-        <small><b>Inspect:</b> React DevTools, render count, DOM mutations, focus, and displayed state.</small>
+        <strong>Render a harmless HTML-looking string as text, then inspect why raw HTML and navigation require separate controls.</strong>
+        <small><b>Inspect:</b> Data origin, selected rendering path, URL policy, sanitized output where needed and server-side access decisions.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · INPUT</span>
-        <h3>Props, state, and context</h3>
-        <p>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</p>
+        <span>01 · RECEIVE</span>
+        <h3>Untrusted values reach a component</h3>
+        <p>API fields, URL parameters and user content do not gain trust by becoming props.</p>
       </article><article>
-        <span>02 · RENDER</span>
-        <h3>Components return elements</h3>
-        <p>Pure functions describe the next interface tree.</p>
+        <span>02 · CHOOSE</span>
+        <h3>Identify the output context</h3>
+        <p>Text children, links and raw HTML have different safety requirements.</p>
       </article><article>
-        <span>03 · RECONCILE</span>
-        <h3>Fiber work compares trees</h3>
-        <p>Type, position, and key decide preservation.</p>
+        <span>03 · ENFORCE</span>
+        <h3>Apply the policy for that context</h3>
+        <p>Prefer ordinary text rendering; raw HTML needs trusted sanitization and URLs need an allowed-destination policy.</p>
       </article><article>
-        <span>04 · COMMIT</span>
-        <h3>React updates the host UI</h3>
-        <p>DOM changes, refs, and commit effects become visible.</p>
+        <span>04 · VERIFY</span>
+        <h3>Inspect behavior without granting extra access</h3>
+        <p>Check rendered content and rejected values; server authorization still protects data and mutations.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one input or key and predict which component state is preserved.</p><p><strong>Then inspect:</strong> React DevTools, render count, DOM mutations, focus, and displayed state.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Render a harmless HTML-looking string as text, then inspect why raw HTML and navigation require separate controls.</p><p><strong>Then inspect:</strong> Data origin, selected rendering path, URL policy, sanitized output where needed and server-side access decisions.</p></div>
   </section>
 
   
@@ -139,16 +139,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Props, state, and context → Components return elements → Fiber work compares trees → React updates the host UI. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Untrusted values reach a component → Identify the output context → Apply the policy for that context → Inspect behavior without granting extra access. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace untrusted input crossing a boundary from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one input or key and predict which component state is preserved.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Render a harmless HTML-looking string as text, then inspect why raw HTML and navigation require separate controls.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: React DevTools, render count, DOM mutations, focus, and displayed state.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Data origin, selected rendering path, URL policy, sanitized output where needed and server-side access decisions.</p></article>
     </div>
   </section>
 
@@ -169,7 +169,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Study default text escaping, attribute and URL sinks, raw HTML injection, hydration data, third-party scripts, client-side authorization limits, and dependency risk.</p>
-        <p><strong>Evidence to explain:</strong> React DevTools, render count, DOM mutations, focus, and displayed state.</p>
+        <p><strong>Evidence to explain:</strong> Data origin, selected rendering path, URL policy, sanitized output where needed and server-side access decisions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
       </details>

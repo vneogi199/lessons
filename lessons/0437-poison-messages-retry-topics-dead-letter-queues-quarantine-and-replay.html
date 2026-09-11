@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="resilience-budget" aria-label="Mechanism trace: Request enters with finite value then Work consumes time and capacity then System cancels, retries, isolates, or sheds then Outcome closes every resource. Experiment: Slow one dependency past its budget while increasing arrival rate beyond service capacity.">
-        <li class="trace-stage"><span>01 · BUDGET</span><strong>Request enters with finite value</strong><small>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DEPENDENCY</span><strong>Work consumes time and capacity</strong><small>Latency distribution, fan-out, saturation, and partial failure shape progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><strong>System cancels, retries, isolates, or sheds</strong><small>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Outcome closes every resource</strong><small>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</small></li>
+      <ol class="trace-flow" data-flow="message-delivery" aria-label="Mechanism trace: Producer emits identified intent or fact then Durable channel stores and assigns then Consumer creates a local effect then Ack, commit, retry, quarantine, or replay. Experiment: Crash at every boundary before and after the side effect and acknowledgement.">
+        <li class="trace-stage"><span>01 · PUBLISH</span><strong>Producer emits identified intent or fact</strong><small>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and assigns</strong><small>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Consumer creates a local effect</strong><small>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Ack, commit, retry, quarantine, or replay</strong><small>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Slow one dependency past its budget while increasing arrival rate beyond service capacity.</strong>
-        <small><b>Inspect:</b> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</small>
+        <strong>Crash at every boundary before and after the side effect and acknowledgement.</strong>
+        <small><b>Inspect:</b> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · BUDGET</span>
-        <h3>Request enters with finite value</h3>
-        <p>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</p>
+        <span>01 · PUBLISH</span>
+        <h3>Producer emits identified intent or fact</h3>
+        <p>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</p>
       </article><article>
-        <span>02 · DEPENDENCY</span>
-        <h3>Work consumes time and capacity</h3>
-        <p>Latency distribution, fan-out, saturation, and partial failure shape progress.</p>
+        <span>02 · BROKER</span>
+        <h3>Durable channel stores and assigns</h3>
+        <p>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</p>
       </article><article>
-        <span>03 · CONTROL</span>
-        <h3>System cancels, retries, isolates, or sheds</h3>
-        <p>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</p>
+        <span>03 · PROCESS</span>
+        <h3>Consumer creates a local effect</h3>
+        <p>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</p>
       </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Outcome closes every resource</h3>
-        <p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p>
+        <span>04 · SETTLE</span>
+        <h3>Ack, commit, retry, quarantine, or replay</h3>
+        <p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p><p><strong>Then inspect:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash at every boundary before and after the side effect and acknowledgement.</p><p><strong>Then inspect:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
   </section>
 
   
@@ -116,23 +116,32 @@
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>function classify(error) {
-  if (error.code === &quot;SCHEMA_INVALID&quot;) return { route: &quot;quarantine&quot;, retry: false };
-  if (error.code === &quot;DEPENDENCY_UNAVAILABLE&quot;) return { route: &quot;retry&quot;, retry: true };
+  if (error?.code === &quot;SCHEMA_INVALID&quot;) return { route: &quot;quarantine&quot;, retry: false };
+  if (error?.code === &quot;DEPENDENCY_UNAVAILABLE&quot;) return { route: &quot;retry&quot;, retry: true };
   return { route: &quot;investigate&quot;, retry: false };
 }
 
 const quarantineRecord = {
-  originalEnvelope,
-  failureCode,
-  failedAt,
-  consumerVersion,
-  attempts,
-  traceId,
+  eventId: &quot;synthetic-event-1&quot;,
+  protectedPayloadRef: &quot;fixture-only/no-real-payload&quot;,
+  failureCode: &quot;SCHEMA_INVALID&quot;,
+  failedAt: &quot;2026-09-10T00:00:00Z&quot;,
+  consumerVersion: &quot;fixture-v1&quot;,
+  attempts: 1,
+  traceId: &quot;synthetic-trace-1&quot;,
   replayStatus: &quot;not-reviewed&quot;
 };
 
-// Retry topics delay bounded attempts without blocking the source partition.
-// Replay is an owned, audited change with idempotency and rate limits.</code></pre>
+console.assert(classify({code: &quot;SCHEMA_INVALID&quot;}).route === &quot;quarantine&quot;);
+console.assert(classify({code: &quot;DEPENDENCY_UNAVAILABLE&quot;}).retry);
+console.assert(!classify(null).retry &amp;&amp; classify({code: &quot;UNKNOWN&quot;}).route === &quot;investigate&quot;);
+console.assert(quarantineRecord.replayStatus === &quot;not-reviewed&quot;);
+// This classifies failures; it does not implement broker delivery or retry budgets.
+// Separate retry topics can let later records overtake the failed record. Decide
+// whether that violates per-key order before unblocking the source partition.
+// Persist a protected quarantine record before acknowledging its source message.
+// Replay is an authorized, audited change with idempotency, rate limits and a
+// reviewed fix. Never dump private payloads into ordinary error logs.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -145,16 +154,16 @@ const quarantineRecord = {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Crash at every boundary before and after the side effect and acknowledgement.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></article>
     </div>
   </section>
 
@@ -175,7 +184,7 @@ const quarantineRecord = {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Classify transient from permanent failure, prevent one record from blocking a partition forever, preserve context, control retries, and repair or replay without surprising duplicates.</p>
-        <p><strong>Evidence to explain:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
+        <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>

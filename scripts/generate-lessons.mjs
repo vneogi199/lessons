@@ -9095,23 +9095,32 @@ async function handlePartition(records, ownershipSignal) {
 // More consumers than partitions add no consumer-group parallelism.`;
 
   if (title.startsWith("Poison messages")) return `function classify(error) {
-  if (error.code === "SCHEMA_INVALID") return { route: "quarantine", retry: false };
-  if (error.code === "DEPENDENCY_UNAVAILABLE") return { route: "retry", retry: true };
+  if (error?.code === "SCHEMA_INVALID") return { route: "quarantine", retry: false };
+  if (error?.code === "DEPENDENCY_UNAVAILABLE") return { route: "retry", retry: true };
   return { route: "investigate", retry: false };
 }
 
 const quarantineRecord = {
-  originalEnvelope,
-  failureCode,
-  failedAt,
-  consumerVersion,
-  attempts,
-  traceId,
+  eventId: "synthetic-event-1",
+  protectedPayloadRef: "fixture-only/no-real-payload",
+  failureCode: "SCHEMA_INVALID",
+  failedAt: "2026-09-10T00:00:00Z",
+  consumerVersion: "fixture-v1",
+  attempts: 1,
+  traceId: "synthetic-trace-1",
   replayStatus: "not-reviewed"
 };
 
-// Retry topics delay bounded attempts without blocking the source partition.
-// Replay is an owned, audited change with idempotency and rate limits.`;
+console.assert(classify({code: "SCHEMA_INVALID"}).route === "quarantine");
+console.assert(classify({code: "DEPENDENCY_UNAVAILABLE"}).retry);
+console.assert(!classify(null).retry && classify({code: "UNKNOWN"}).route === "investigate");
+console.assert(quarantineRecord.replayStatus === "not-reviewed");
+// This classifies failures; it does not implement broker delivery or retry budgets.
+// Separate retry topics can let later records overtake the failed record. Decide
+// whether that violates per-key order before unblocking the source partition.
+// Persist a protected quarantine record before acknowledging its source message.
+// Replay is an authorized, audited change with idempotency, rate limits and a
+// reviewed fix. Never dump private payloads into ordinary error logs.`;
 
   if (title.startsWith("Transactional outbox")) return `-- SQL fragments; supply schema, parameter binding and transaction adapter.
 -- Producer: emit only for the actual running -> completed transition.
@@ -9264,25 +9273,30 @@ console.assert(!isLinearizable(history)); // read began after completed write ye
 // Serializability constrains transaction equivalence; linearizability adds
 // real-time order for operations. They solve different questions.`;
 
-  if (title.startsWith("CAP theorem")) return `function handleDuringPartition(policy, request) {
-  if (policy === "linearizable") {
-    if (!hasQuorum(request.partition)) return { status: 503, guarantee: "no stale success" };
-    return quorumOperation(request);
-  }
-  if (policy === "available-eventual") {
-    return localReplicaOperation(request); // may be stale or conflict later
-  }
+  if (title.startsWith("CAP theorem")) return `// Offline history, NOT a replication protocol or proof of the full theorem.
+function simulatePartition(policy) {
+  if (!["linearizable", "available-eventual"].includes(policy)) throw new Error("unknown policy");
+  // Initially A and B contain 0. A completes write(1), but no message crosses to B.
+  // Only AFTER that write completes, a client requests read() at isolated B.
+  const completedWrite = 1, isolatedReplica = 0;
+  return policy === "linearizable"
+    ? { completedWrite, read: { status: "unavailable" } }
+    : { completedWrite, read: { status: "ok", value: isolatedReplica } };
 }
-
-for (const policy of ["linearizable", "available-eventual"]) {
-  console.table(simulatePartition({ policy, groups: [["A"], ["B", "C"]] }));
-}
-
-// PACELC asks about normal-operation latency/consistency choices as well as the
-// partition branch. State the guarantee per operation, not per product logo.
-// hasQuorum is only a precondition: quorumOperation must implement a protocol
-// preserving linearizability. CAP availability is a response guarantee at each
-// non-failing node, not an uptime percentage or the existence of one healthy side.`;
+const consistent = simulatePartition("linearizable");
+const responsive = simulatePartition("available-eventual");
+console.assert(consistent.read.status === "unavailable");
+console.assert(responsive.read.status === "ok" && responsive.read.value !== responsive.completedWrite);
+let rejected = false;
+try { simulatePartition("magic"); } catch { rejected = true; }
+console.assert(rejected);
+// Returning 0 violates linearizability for this non-overlapping write/read history.
+// Refusing/waiting at B sacrifices CAP availability there; an error response is
+// not a successful read. B cannot learn an arbitrary new value without a message.
+// The available branch illustrates stale reads, not an implemented convergence rule.
+// CAP availability is not an uptime percentage or one healthy replica group.
+// PACELC additionally asks about latency/consistency choices without a partition.
+// State guarantees per operation; quorum arithmetic alone is not a protocol.`;
 
   if (title.startsWith("Sharding,")) return `function owner(key, ring) {
   const point = hash(key);
@@ -9408,17 +9422,44 @@ routing:
   if (title.startsWith("CQRS,")) return `class JobAggregate {
   constructor() { this.version = 0; this.state = "missing"; }
   decide(command) {
-    if (command.type === "Submit" && this.state === "missing") return [{ type: "JobSubmitted", jobId: command.jobId }];
-    if (command.type === "Complete" && this.state === "running") return [{ type: "JobCompleted", result: command.result }];
+    if (command === "Submit" && this.state === "missing") return ["JobSubmitted"];
+    if (command === "Start" && this.state === "queued") return ["JobStarted"];
+    if (command === "Complete" && this.state === "running") return ["JobCompleted"];
     throw new Error("invalid transition");
   }
-  apply(event) { this.state = transition(this.state, event); this.version += 1; }
+  apply(event) {
+    const next = this.state === "missing" && event === "JobSubmitted" ? "queued"
+      : this.state === "queued" && event === "JobStarted" ? "running"
+      : this.state === "running" && event === "JobCompleted" ? "done" : null;
+    if (next === null) throw new Error("invalid event history");
+    this.state = next;
+    this.version += 1;
+  }
 }
 
-await eventStore.append(streamId, expectedVersion, events);
-await projections.rebuild("job-list-v2", { fromPosition: 0 });
-// Upcast old event versions, deduplicate projection input, and verify snapshot
-// plus tail replay equals full replay.`;
+const live = new JobAggregate(), history = [];
+for (const command of ["Submit", "Start", "Complete"]) {
+  const events = live.decide(command); // Decision alone does not mutate state.
+  console.assert(live.version === history.length);
+  history.push(...events); // In-memory fixture; NOT a durable append.
+  for (const event of events) live.apply(event);
+}
+const rebuilt = new JobAggregate();
+for (const event of history) rebuilt.apply(event);
+console.assert(rebuilt.state === "done" && rebuilt.version === 3);
+console.assert(rebuilt.state === live.state);
+for (const action of [() => rebuilt.decide("Complete"), () => rebuilt.apply("JobStarted")]) {
+  let rejected = false;
+  try { action(); } catch { rejected = true; }
+  console.assert(rejected && rebuilt.state === "done" && rebuilt.version === 3);
+}
+// Single-job, tiny-history fixture with trusted string events. A durable store
+// must atomically compare expected stream version and append validated events.
+// Only apply them locally after successful append; reload on a version conflict.
+// A projection needs durable progress plus duplicate handling, schema evolution
+// and a safe rebuild/promotion process. Snapshots must match stream/version.
+// CQRS separates read/write models; it does not require event sourcing, separate
+// databases or microservices. This demonstrates replay, not those integrations.`;
 
   if (title.startsWith("System design method")) return `import assert from "node:assert/strict";
 const estimate = {
@@ -10579,7 +10620,7 @@ function apiDistributedDiagramFor(lesson, title, flow) {
       ["04 · CONTRACT", "Stable response returns", "Status, representation, error type, cache metadata, telemetry, and compatibility become evidence."]
     ], "Repeat or condition the same request through one intermediary and predict every observable difference.", "Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.");
   }
-  if (lesson.trackId === "api-distributed-systems" && /webhook|sse|websocket|bidirectional stream/.test(title)) {
+  if (lesson.trackId === "api-distributed-systems" && /^(webhooks,|sse,|websockets,|bidirectional streams,)/.test(title)) {
     return flow("api-stream-delivery", [
       ["01 · EVENT", "Producer creates identified data", "Schema version, sequence, signature input, authorization, and resume position enter."],
       ["02 · CONNECTION", "Long-lived or retried transport carries it", "Framing, intermediaries, buffers, heartbeat, timeout, and reconnect apply."],
@@ -10595,7 +10636,7 @@ function apiDistributedDiagramFor(lesson, title, flow) {
       ["04 · RELATE", "System decides order or concurrency", "Causal relation, conflict, duration, lease check, or arbitrary tie-break becomes explicit."]
     ], "Move one wall clock backward and deliver two independent messages in opposite orders.", "Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.");
   }
-  if (lesson.trackId === "api-distributed-systems" && /latency|timeout|deadline|retr|overload|backpressure|admission|load shedding|circuit breaker|bulkhead/.test(title)) {
+  if (lesson.trackId === "api-distributed-systems" && /^(latency distributions|timeouts,|retries,|overload control|circuit breakers)/.test(title)) {
     return flow("resilience-budget", [
       ["01 · BUDGET", "Request enters with finite value", "Deadline, attempt, concurrency, queue, priority, and retry budgets state limits."],
       ["02 · DEPENDENCY", "Work consumes time and capacity", "Latency distribution, fan-out, saturation, and partial failure shape progress."],
@@ -10635,7 +10676,15 @@ function apiDistributedDiagramFor(lesson, title, flow) {
       ["04 · RECOVER", "Stale and failed nodes rejoin safely", "Terms, committed prefix, membership transition, rejected stale write, and state match prove safety."]
     ], "Partition the leader into a minority, elect a new leader, then let the old leader send a late write.", "Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.");
   }
-  if (lesson.trackId === "api-distributed-systems" && /sharding|service discovery|load balancing|multi-region|cqrs|event sourcing|materialized view/.test(title)) {
+  if (lesson.trackId === "api-distributed-systems" && title.startsWith("cqrs,")) {
+    return flow("event-history-projection", [
+      ["01 · DECIDE", "Command is checked against current state", "Replayed history supplies the state and expected version used to evaluate the business rule."],
+      ["02 · APPEND", "Events become authoritative history", "A real event store must atomically reject version conflicts or durably append the new events."],
+      ["03 · PROJECT", "Read model consumes committed events", "Projection progress, duplicate handling and schema interpretation govern the query view."],
+      ["04 · REBUILD", "Replay verifies the derived state", "Compare full replay with a versioned snapshot plus tail; promote rebuilt views without mixing versions."]
+    ], "Decide two commands from the same version and specify which append must fail; then replay the accepted history.", "Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.");
+  }
+  if (lesson.trackId === "api-distributed-systems" && /sharding|service discovery|load balancing|multi-region/.test(title)) {
     return flow("distributed-placement", [
       ["01 · ROUTE", "Key or request maps to an owner", "Partition key, ring, region, discovery view, locality, and consistency need guide placement."],
       ["02 · SERVE", "Selected node executes local work", "Capacity, connection state, authoritative data, projection, and replication position apply."],
@@ -13079,6 +13128,31 @@ function diagramFor(lesson) {
     ], "Log before calling, inside the function before and after await, and after calling; predict the order with an already-fulfilled Promise.", "The before-await log precedes the caller's after-call log; the after-await log runs later. Check the returned Promise and rejection path.");
   }
 
+  if ((lesson.trackId === "javascript" && title.startsWith("testing,")) ||
+      (lesson.trackId === "react" && title.startsWith("component tests,"))) {
+    return flow("behavior-test", [
+      ["01 · CONTRACT", "State one observable requirement", "Specify inputs, expected behavior and the failure the test must detect."],
+      ["02 · CONTROL", "Arrange the relevant environment", "Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove."],
+      ["03 · ACT", "Exercise the real boundary under test", "Trigger the operation or user interaction and await its observable completion."],
+      ["04 · ASSERT", "Compare outcomes and clean up", "Check success and failure behavior, restore modified state and verify the test fails for a broken implementation."]
+    ], "Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.", "Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.");
+  }
+  if (lesson.trackId === "react" && title.startsWith("react security,")) {
+    return flow("react-output-boundary", [
+      ["01 · RECEIVE", "Untrusted values reach a component", "API fields, URL parameters and user content do not gain trust by becoming props."],
+      ["02 · CHOOSE", "Identify the output context", "Text children, links and raw HTML have different safety requirements."],
+      ["03 · ENFORCE", "Apply the policy for that context", "Prefer ordinary text rendering; raw HTML needs trusted sanitization and URLs need an allowed-destination policy."],
+      ["04 · VERIFY", "Inspect behavior without granting extra access", "Check rendered content and rejected values; server authorization still protects data and mutations."]
+    ], "Render a harmless HTML-looking string as text, then inspect why raw HTML and navigation require separate controls.", "Data origin, selected rendering path, URL policy, sanitized output where needed and server-side access decisions.");
+  }
+  if (lesson.trackId === "react" && title.startsWith("controlled and uncontrolled inputs,")) {
+    return flow("react-input-ownership", [
+      ["01 · OWNER", "Choose where the current value lives", "Controlled text inputs receive a string value from React; uncontrolled inputs keep their current value in the DOM."],
+      ["02 · EDIT", "User changes the input", "A controlled input's onChange updates its owning state synchronously; defaultValue initializes an uncontrolled input."],
+      ["03 · RENDER", "The chosen owner supplies the displayed value", "Keep controlled/uncontrolled mode stable through the input's lifetime."],
+      ["04 · SUBMIT", "Read and validate the intended fields", "Use labels and names, show usable errors and validate again at the server boundary."]
+    ], "Type into each fixture, change its initial/default value and compare with a controlled-state update.", "DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.");
+  }
   if (lesson.trackId === "react" && /effect|external synchronization/.test(title)) {
     return flow("react-effect", [
       ["01 · COMMIT", "New UI state is committed", "The DOM now represents the latest render."],
@@ -13639,6 +13713,14 @@ function diagramFor(lesson) {
     ], "Publish one valid event twice, one incompatible event, and one out-of-order event while a consumer is unavailable.", "Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.");
   }
 
+  if (lesson.trackId === "retrieval-rag" && title.startsWith("ingestion,")) {
+    return flow("rag-ingestion", [
+      ["01 · SOURCE", "Identify an authorized source version", "Record stable identity, permissions and provenance before parsing untrusted content."],
+      ["02 · CHUNK", "Produce traceable retrieval units", "Chunk boundaries and source offsets preserve enough context to interpret and cite a result."],
+      ["03 · INDEX", "Write a bounded, repeatable batch", "Deterministic IDs, embedding version and failure checkpoints make retries inspectable."],
+      ["04 · RECONCILE", "Handle publication, replacement and deletion", "Define when a version becomes queryable and how obsolete chunks disappear; recheck access when serving results."]
+    ], "Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.", "Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.");
+  }
   if (lesson.trackId === "retrieval-rag" && title.startsWith("vector database data model")) {
     return flow("vector-query", [
       ["01 · WRITE", "Vector and payload enter", "Dimension, model identity, point ID, metadata, and durability rules are validated."],
@@ -13718,6 +13800,14 @@ function diagramFor(lesson) {
       ["03 · REPEAT", "Trials collect quality and operations data", "Repetitions expose output variance, latency, tokens, errors, and cost."],
       ["04 · COMPARE", "Evidence is compared with the baseline", "Slice regressions, uncertainty, and practical thresholds decide the result."]
     ], "Repeat both candidates on the same cases, then change the dataset order and concurrency without changing the scoring rules.", "Dataset and code versions, per-case scores, slice means, variance, latency percentiles, token use, cost, errors, and baseline deltas.");
+  }
+  if (lesson.trackId === "ai-quality-safety" && title.startsWith("prompt injection,")) {
+    return flow("ai-authority-boundary", [
+      ["01 · UNTRUSTED", "External content enters the context", "A retrieved page or tool response may contain instructions that conflict with the user's authorized task."],
+      ["02 · PROPOSE", "Model output requests an action", "A plausible tool call is a proposal, not evidence of permission or safe arguments."],
+      ["03 · ENFORCE", "Executor checks identity, scope and exact intent", "Validate arguments, enforce resource access and bind any approval to the intended effect."],
+      ["04 · CONTAIN", "Reject or execute with bounded exposure", "Limit reachable data and destinations, inspect the result and retain privacy-safe evidence."]
+    ], "Put an instruction-like string in a harmless retrieved fixture and request an unauthorized fake-tool action; verify rejection at the executor.", "Content origin, proposed call, authenticated scope, argument checks, approval binding and absence of unauthorized effects or disclosure.");
   }
   if (lesson.trackId === "ai-quality-safety") {
     return flow("ai-evaluation", [
@@ -16367,7 +16457,7 @@ function seniorReferenceHtml(lessons) {
       <details><summary>Worked reasoning — reveal after your attempt</summary><p>${escapeHtml(item.reasoning)}</p></details>
       <h3>Change the constraint</h3><p>${escapeHtml(item.followup)}</p>
       <details><summary>What a strong follow-up answer covers</summary><p>${escapeHtml(item.signals)}</p></details>
-      <p class="links"><a href="${escapeHtml(item.source[1])}" rel="noreferrer">${escapeHtml(item.source[0])} ↗</a> · <a href="${escapeHtml(first.path.replace("../../lessons/", "../lessons/"))}">Open track lessons</a> · <a href="#rubric">Self-review rubric</a></p>
+      <p class="links"><a href="${escapeHtml(item.source[1])}" rel="noreferrer">${escapeHtml(item.source[0])} ↗</a> · <a href="${escapeHtml(first.path.replace("lessons/", "../lessons/"))}">Open track lessons</a> · <a href="#rubric">Self-review rubric</a></p>
     </section>`;
   }).join("\n");
   return `<!doctype html>
@@ -16527,7 +16617,7 @@ async function generate() {
         tier: track.tier,
         goal: track.goal,
         duration: Math.min(35, 12 + lessonSubtopics(topic.title).length * 3),
-        path: `../../lessons/${filename}`
+        path: `lessons/${filename}`
       };
       const profile = teachingProfileFor(lesson, TRACK_PROFILES[track.id]);
       const html = lessonHtml(lesson, profile);

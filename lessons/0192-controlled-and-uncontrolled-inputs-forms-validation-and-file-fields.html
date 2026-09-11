@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a render and commit cycle</h2>
-      <ol class="trace-flow" data-flow="react-render" aria-label="Mechanism trace: Props, state, and context then Components return elements then Fiber work compares trees then React updates the host UI. Experiment: Change one input or key and predict which component state is preserved.">
-        <li class="trace-stage"><span>01 · INPUT</span><strong>Props, state, and context</strong><small>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RENDER</span><strong>Components return elements</strong><small>Pure functions describe the next interface tree.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Fiber work compares trees</strong><small>Type, position, and key decide preservation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>React updates the host UI</strong><small>DOM changes, refs, and commit effects become visible.</small></li>
+      <ol class="trace-flow" data-flow="react-input-ownership" aria-label="Mechanism trace: Choose where the current value lives then User changes the input then The chosen owner supplies the displayed value then Read and validate the intended fields. Experiment: Type into each fixture, change its initial/default value and compare with a controlled-state update.">
+        <li class="trace-stage"><span>01 · OWNER</span><strong>Choose where the current value lives</strong><small>Controlled text inputs receive a string value from React; uncontrolled inputs keep their current value in the DOM.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EDIT</span><strong>User changes the input</strong><small>A controlled input&#039;s onChange updates its owning state synchronously; defaultValue initializes an uncontrolled input.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RENDER</span><strong>The chosen owner supplies the displayed value</strong><small>Keep controlled/uncontrolled mode stable through the input&#039;s lifetime.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SUBMIT</span><strong>Read and validate the intended fields</strong><small>Use labels and names, show usable errors and validate again at the server boundary.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one input or key and predict which component state is preserved.</strong>
-        <small><b>Inspect:</b> React DevTools, render count, DOM mutations, focus, and displayed state.</small>
+        <strong>Type into each fixture, change its initial/default value and compare with a controlled-state update.</strong>
+        <small><b>Inspect:</b> DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · INPUT</span>
-        <h3>Props, state, and context</h3>
-        <p>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</p>
+        <span>01 · OWNER</span>
+        <h3>Choose where the current value lives</h3>
+        <p>Controlled text inputs receive a string value from React; uncontrolled inputs keep their current value in the DOM.</p>
       </article><article>
-        <span>02 · RENDER</span>
-        <h3>Components return elements</h3>
-        <p>Pure functions describe the next interface tree.</p>
+        <span>02 · EDIT</span>
+        <h3>User changes the input</h3>
+        <p>A controlled input&#039;s onChange updates its owning state synchronously; defaultValue initializes an uncontrolled input.</p>
       </article><article>
-        <span>03 · RECONCILE</span>
-        <h3>Fiber work compares trees</h3>
-        <p>Type, position, and key decide preservation.</p>
+        <span>03 · RENDER</span>
+        <h3>The chosen owner supplies the displayed value</h3>
+        <p>Keep controlled/uncontrolled mode stable through the input&#039;s lifetime.</p>
       </article><article>
-        <span>04 · COMMIT</span>
-        <h3>React updates the host UI</h3>
-        <p>DOM changes, refs, and commit effects become visible.</p>
+        <span>04 · SUBMIT</span>
+        <h3>Read and validate the intended fields</h3>
+        <p>Use labels and names, show usable errors and validate again at the server boundary.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one input or key and predict which component state is preserved.</p><p><strong>Then inspect:</strong> React DevTools, render count, DOM mutations, focus, and displayed state.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Type into each fixture, change its initial/default value and compare with a controlled-state update.</p><p><strong>Then inspect:</strong> DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.</p></div>
   </section>
 
   
@@ -142,16 +142,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Props, state, and context → Components return elements → Fiber work compares trees → React updates the host UI. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Choose where the current value lives → User changes the input → The chosen owner supplies the displayed value → Read and validate the intended fields. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a render and commit cycle from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one input or key and predict which component state is preserved.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Type into each fixture, change its initial/default value and compare with a controlled-state update.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: React DevTools, render count, DOM mutations, focus, and displayed state.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.</p></article>
     </div>
   </section>
 
@@ -172,7 +172,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect DOM input state, React props, default values, event updates, form serialization, constraint validation, and controlled-mode invariants.</p>
-        <p><strong>Evidence to explain:</strong> React DevTools, render count, DOM mutations, focus, and displayed state.</p>
+        <p><strong>Evidence to explain:</strong> DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
       </details>
