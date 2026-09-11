@@ -120,10 +120,21 @@
   { client: &quot;v2&quot;, request: { name: &quot;A&quot;, priority: &quot;normal&quot; }, accepts: response =&gt; response.priority != null }
 ];
 
-for (const test of compatibilityCases) {
-  const response = await candidateServer.createProject(test.request, { clientVersion: test.client });
-  console.assert(test.accepts(response), test.client + &quot; contract broke&quot;);
+async function checkCompatibility(candidateServer) {
+  for (const test of compatibilityCases) {
+    const response = await candidateServer.createProject(test.request, { clientVersion: test.client });
+    if (!test.accepts(response)) throw new Error(test.client + &quot; contract broke&quot;);
+  }
 }
+// Scripted adapter only; run the same contract against an actual server separately.
+await checkCompatibility({createProject: async request =&gt; ({id: &quot;fixture-1&quot;, priority: request.priority ?? &quot;normal&quot;})});
+let rejected = false;
+try { await checkCompatibility({createProject: async () =&gt; ({id: &quot;fixture-1&quot;})}); }
+catch { rejected = true; }
+console.assert(rejected);
+// These two checks are intentionally incomplete: validate response types, enum
+// evolution, errors and old-client behavior, not only field presence. Unknown
+// additive fields can still break a strict client, so test actual consumers.
 
 // Deprecation: @1790812800
 // Structured Field date: 2026-10-01T00:00:00Z, not a boolean.

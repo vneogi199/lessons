@@ -134,13 +134,18 @@
     <pre aria-label="Starter code"><code>class Money {
   constructor(readonly cents: number, readonly currency: string) {
     if (!Number.isSafeInteger(cents) || cents &lt; 0) throw new RangeError(&quot;cents&quot;);
+    // This exercise supports USD only, whose amounts use two decimal places.
+    if (currency !== &quot;USD&quot;) throw new RangeError(&quot;unsupported fixture currency&quot;);
+    Object.freeze(this); // readonly alone is only a TypeScript restriction.
   }
 }
 
 class Order {
   #status = &quot;draft&quot;;
   #events: { type: &quot;OrderPlaced&quot;; orderId: string; totalCents: number; currency: string }[] = [];
-  constructor(readonly id: string, readonly total: Money) {}
+  constructor(readonly id: string, readonly total: Money) {
+    if (typeof id !== &quot;string&quot; || !id.trim() || !(total instanceof Money)) throw new TypeError(&quot;order identity and Money required&quot;);
+  }
   place() {
     if (this.#status !== &quot;draft&quot;) throw new Error(&quot;only a draft order can be placed&quot;);
     this.#status = &quot;placed&quot;;
@@ -153,7 +158,20 @@ class Order {
 const order = new Order(&quot;A-42&quot;, new Money(2500, &quot;USD&quot;));
 order.place();
 console.assert(order.status === &quot;placed&quot; &amp;&amp; order.pullEvents()[0].type === &quot;OrderPlaced&quot;);
-// Order is the aggregate root and protects the immediate consistency boundary.</code></pre>
+console.assert(order.pullEvents().length === 0 &amp;&amp; Object.isFrozen(order.total));
+let repeated = false;
+try { order.place(); } catch { repeated = true; }
+console.assert(repeated &amp;&amp; order.status === &quot;placed&quot; &amp;&amp; order.pullEvents().length === 0);
+for (const cents of [-1, 0.5, NaN, Infinity]) {
+  let rejected = false;
+  try { new Money(cents, &quot;USD&quot;); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Order is the aggregate root for this in-memory transition, not a concurrency
+// mechanism. Persistence needs version checks or locks and an atomic outbox.
+// pullEvents drains volatile state: persist the captured events with the order;
+// a failed transaction must not silently discard the only publication intent.
+// Currency conversion, refunds and line-item pricing are outside this fixture.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 

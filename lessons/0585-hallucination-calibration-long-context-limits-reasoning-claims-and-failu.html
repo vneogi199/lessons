@@ -118,6 +118,20 @@ mean_confidence = sum(confidence) / len(confidence)
 accuracy = sum(correct) / len(correct)
 gap = abs(mean_confidence - accuracy)
 assert round(gap, 6) == 0.4
+# A global average can also hide opposing errors in different confidence bands.
+confidence = [0.9] * 10 + [0.1] * 10
+correct = ([True] * 5 + [False] * 5) * 2
+global_gap = abs(sum(confidence) / 20 - sum(correct) / 20)
+assert global_gap &lt; 1e-12
+bin_gaps = []
+for start in [0, 10]:
+    reported = sum(confidence[start:start+10]) / 10
+    observed = sum(correct[start:start+10]) / 10
+    bin_gaps.append(abs(reported - observed))
+assert all(round(value, 6) == 0.4 for value in bin_gaps)
+# Zero global gap is not calibration: these two equal-sized bands each miss by
+# 0.4. Real reliability diagrams need bin counts and uncertainty; binning choices
+# affect summaries. This tiny constructed example estimates no deployment rate.
 # Expected: a system reporting 90% confidence is right only 50% in this fixture.
 # Token probability and a model&#039;s verbal confidence are not automatically the
 # probability that its factual claim is correct. Calibrate against labelled outcomes.
@@ -187,7 +201,7 @@ assert round(gap, 6) == 0.4
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Attention Is All You Need ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://scikit-learn.org/stable/modules/calibration.html" target="_blank" rel="noreferrer">scikit-learn: probability calibration ↗</a></div>
     
     
     

@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="Event-driven architecture">
         <span>01</span>
         <h3>Event-driven architecture</h3>
-        <p><strong>What it means:</strong> Event-driven architecture connects components through durable facts about completed changes rather than direct knowledge of every downstream action.</p>
+        <p><strong>What it means:</strong> Event-driven architecture connects producers and consumers through events about occurrences or changes. Durability, ordering and replay depend on the chosen transport and application contracts; the architectural style alone does not provide them.</p>
       </article><article class="concept-card" data-subtopic="producers">
         <span>02</span>
         <h3>producers</h3>
@@ -142,7 +142,8 @@ class InMemoryBroker {
     return () =&gt; handlers.delete(handler);
   }
   async publish(event: Event) {
-    const results = await Promise.allSettled([...this.#handlers.get(event.type) ?? []].map(fn =&gt; fn(event)));
+    const results = await Promise.allSettled([...this.#handlers.get(event.type) ?? []]
+      .map(fn =&gt; Promise.resolve().then(() =&gt; fn(event))));
     if (results.some(result =&gt; result.status === &quot;rejected&quot;)) throw new Error(&quot;partial fan-out failure&quot;);
   }
 }
@@ -152,6 +153,20 @@ const observed: string[] = [];
 broker.subscribe(&quot;OrderPlaced&quot;, async event =&gt; { observed.push(event.orderId); });
 await broker.publish({ id: &quot;e-1&quot;, type: &quot;OrderPlaced&quot;, orderId: &quot;A-42&quot; });
 console.assert(observed[0] === &quot;A-42&quot;);
+const unsubscribe = broker.subscribe(&quot;Failure&quot;, () =&gt; { throw new Error(&quot;synchronous failure&quot;); });
+broker.subscribe(&quot;Failure&quot;, async event =&gt; { observed.push(event.orderId); });
+let rejected = false;
+try { await broker.publish({ id: &quot;e-2&quot;, type: &quot;Failure&quot;, orderId: &quot;B-43&quot; }); }
+catch { rejected = true; }
+console.assert(rejected &amp;&amp; observed.includes(&quot;B-43&quot;));
+unsubscribe();
+await broker.publish({ id: &quot;e-3&quot;, type: &quot;Failure&quot;, orderId: &quot;C-44&quot; });
+console.assert(observed.includes(&quot;C-44&quot;));
+// Deferring each invocation turns a synchronous throw into a rejected promise,
+// so it cannot prevent later subscribers from being invoked. Fan-out is not
+// atomic: a successful subscriber&#039;s effect remains when another fails.
+// This unbounded in-memory fixture has no persistence, cancellation or timeout;
+// use bounded admission and explicit handler deadlines for an actual service.
 // Production subscriptions need durable position, retries, idempotency, and traces.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>

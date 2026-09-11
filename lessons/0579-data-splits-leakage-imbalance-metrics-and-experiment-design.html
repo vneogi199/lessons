@@ -55,11 +55,11 @@
       <article class="concept-card" data-subtopic="Data splits">
         <span>01</span>
         <h3>Data splits</h3>
-        <p><strong>What it means:</strong> Data splits separate examples into training, validation, and test sets with distinct purposes.</p>
+        <p><strong>What it means:</strong> Training fits parameters, validation selects models or thresholds, and a held-out test estimates the chosen system. Split by time, entity or rows according to deployment; fit preprocessing inside each training fold.</p>
       </article><article class="concept-card" data-subtopic="leakage">
         <span>02</span>
         <h3>leakage</h3>
-        <p><strong>What it means:</strong> Data leakage occurs when training uses information that would not be available for a real future prediction.</p>
+        <p><strong>What it means:</strong> Leakage lets unavailable or held-out information influence model building or selection, producing misleading evaluation. Examples include fitting preprocessing before splitting, future-derived features and repeatedly tuning against the test set.</p>
       </article><article class="concept-card" data-subtopic="imbalance">
         <span>03</span>
         <h3>imbalance</h3>
@@ -67,7 +67,7 @@
       </article><article class="concept-card" data-subtopic="metrics">
         <span>04</span>
         <h3>metrics</h3>
-        <p><strong>What it means:</strong> A metric is a defined numerical measure of model behavior for a dataset or data slice.</p>
+        <p><strong>What it means:</strong> A metric quantifies one aspect of predictions, not overall usefulness. Accuracy can hide minority-class failure; choose thresholds and precision/recall tradeoffs from error costs, and report denominators and slice counts.</p>
       </article><article class="concept-card" data-subtopic="experiment design">
         <span>05</span>
         <h3>experiment design</h3>
@@ -124,8 +124,18 @@ accuracy = sum(a == b for a, b in zip(labels, predictions)) / len(labels)
 true_positive = sum(a == b == 1 for a, b in zip(labels, predictions))
 recall = true_positive / sum(labels)
 assert accuracy == 0.99 and recall == 0
+# Even unsupervised preprocessing can leak held-out information.
+training_features, held_out_features = [0, 2], [100]
+training_mean = sum(training_features) / len(training_features)
+leaked_mean = sum(training_features + held_out_features) / 3
+assert training_mean == 1 and leaked_mean == 34
+# Transform held-out values with the TRAINING mean; do not fit again on them.
+assert held_out_features[0] - training_mean == 99
 # Expected: impressive accuracy can hide complete failure on the rare positive.
-# This tiny fixture demonstrates leakage and metric arithmetic, not a usable split.
+# This tiny fixture demonstrates overlap risk and metric arithmetic, not a usable split.
+# User overlap is not automatically leakage: separate users when evaluating new
+# users; for future behavior of existing users, temporal and feature availability
+# constraints may be the relevant boundary. State the deployment claim first.
 # Senior checkpoint: choose entity/time/random splitting from deployment use.
 # Fit preprocessing only on training data; tune thresholds on validation data;
 # reserve test data for a release estimate with slice counts and uncertainty.</code></pre>
@@ -191,7 +201,7 @@ assert accuracy == 0.99 and recall == 0
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://developers.google.com/machine-learning/crash-course" target="_blank" rel="noreferrer">Google Machine Learning Crash Course ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://scikit-learn.org/stable/common_pitfalls.html" target="_blank" rel="noreferrer">scikit-learn: leakage and preprocessing ↗</a></div>
     
     
     

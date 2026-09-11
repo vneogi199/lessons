@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an HTTP request</h2>
-      <ol class="trace-flow" data-flow="fastapi-security" aria-label="Mechanism trace: Request presents identity evidence then Server verifies the principal then Policy evaluates this resource then Allow or reject safely. Experiment: Replay the request as another tenant and with an expired credential.">
-        <li class="trace-stage"><span>01 · CREDENTIAL</span><strong>Request presents identity evidence</strong><small>Token, cookie, certificate, or trusted proxy data arrives.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><strong>Server verifies the principal</strong><small>Check integrity, expiry, issuer, audience, and session state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><strong>Policy evaluates this resource</strong><small>Tenant, ownership, role, and scope rules decide access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECISION</span><strong>Allow or reject safely</strong><small>Return minimal data and a stable denial response.</small></li>
+      <ol class="trace-flow" data-flow="fastapi-response" aria-label="Mechanism trace: Choose the response representation then Create the body or stream then Start the response, then send body events then Release resources on completion or failure. Experiment: Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Choose the response representation</strong><small>Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PRODUCE</span><strong>Create the body or stream</strong><small>JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SEND</span><strong>Start the response, then send body events</strong><small>Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><strong>Release resources on completion or failure</strong><small>Close owned files and generators and test client disconnects with the actual server stack.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Replay the request as another tenant and with an expired credential.</strong>
-        <small><b>Inspect:</b> Principal fields, policy decision, audit event, response status, and leaked fields.</small>
+        <strong>Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</strong>
+        <small><b>Inspect:</b> Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CREDENTIAL</span>
-        <h3>Request presents identity evidence</h3>
-        <p>Token, cookie, certificate, or trusted proxy data arrives.</p>
+        <span>01 · CONTRACT</span>
+        <h3>Choose the response representation</h3>
+        <p>Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</p>
       </article><article>
-        <span>02 · AUTHENTICATE</span>
-        <h3>Server verifies the principal</h3>
-        <p>Check integrity, expiry, issuer, audience, and session state.</p>
+        <span>02 · PRODUCE</span>
+        <h3>Create the body or stream</h3>
+        <p>JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</p>
       </article><article>
-        <span>03 · AUTHORIZE</span>
-        <h3>Policy evaluates this resource</h3>
-        <p>Tenant, ownership, role, and scope rules decide access.</p>
+        <span>03 · SEND</span>
+        <h3>Start the response, then send body events</h3>
+        <p>Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</p>
       </article><article>
-        <span>04 · DECISION</span>
-        <h3>Allow or reject safely</h3>
-        <p>Return minimal data and a stable denial response.</p>
+        <span>04 · FINISH</span>
+        <h3>Release resources on completion or failure</h3>
+        <p>Close owned files and generators and test client disconnects with the actual server stack.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Replay the request as another tenant and with an expired credential.</p><p><strong>Then inspect:</strong> Principal fields, policy decision, audit event, response status, and leaked fields.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</p><p><strong>Then inspect:</strong> Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</p></div>
   </section>
 
   
@@ -156,16 +156,16 @@ async def latest(): return &quot;/reports/current&quot;</code></pre>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Request presents identity evidence → Server verifies the principal → Policy evaluates this resource → Allow or reject safely. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Choose the response representation → Create the body or stream → Start the response, then send body events → Release resources on completion or failure. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an HTTP request from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Replay the request as another tenant and with an expired credential.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Principal fields, policy decision, audit event, response status, and leaked fields.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</p></article>
     </div>
   </section>
 
@@ -186,7 +186,7 @@ async def latest(): return &quot;/reports/current&quot;</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand Response bypass paths, media types, content length, iterators and backpressure, file transfer, background cleanup, header mutation, and cookie attributes.</p>
-        <p><strong>Evidence to explain:</strong> Principal fields, policy decision, audit event, response status, and leaked fields.</p>
+        <p><strong>Evidence to explain:</strong> Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>

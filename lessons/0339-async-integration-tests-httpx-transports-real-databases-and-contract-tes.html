@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an HTTP request</h2>
-      <ol class="trace-flow" data-flow="fastapi-database" aria-label="Mechanism trace: Validated command enters then One unit owns DB conversation then Statements enforce invariants then Commit or rollback completes. Experiment: Force the second database operation to fail and verify nothing partially commits.">
-        <li class="trace-stage"><span>01 · REQUEST</span><strong>Validated command enters</strong><small>The endpoint hands business intent to the service.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SESSION</span><strong>One unit owns DB conversation</strong><small>Session and transaction state stay request-scoped.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DATABASE</span><strong>Statements enforce invariants</strong><small>Locks, constraints, and the pool shape behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Commit or rollback completes</strong><small>Only then should the API publish success or failure.</small></li>
+      <ol class="trace-flow" data-flow="behavior-test" aria-label="Mechanism trace: State one observable requirement then Arrange the relevant environment then Exercise the real boundary under test then Compare outcomes and clean up. Experiment: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>State one observable requirement</strong><small>Specify inputs, expected behavior and the failure the test must detect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROL</span><strong>Arrange the relevant environment</strong><small>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ACT</span><strong>Exercise the real boundary under test</strong><small>Trigger the operation or user interaction and await its observable completion.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ASSERT</span><strong>Compare outcomes and clean up</strong><small>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Force the second database operation to fail and verify nothing partially commits.</strong>
-        <small><b>Inspect:</b> SQL log, transaction boundaries, pool checkout, persisted rows, and response.</small>
+        <strong>Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</strong>
+        <small><b>Inspect:</b> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</small>
       </div>
     </aside>
   </div>
@@ -76,24 +76,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · REQUEST</span>
-        <h3>Validated command enters</h3>
-        <p>The endpoint hands business intent to the service.</p>
+        <span>01 · CONTRACT</span>
+        <h3>State one observable requirement</h3>
+        <p>Specify inputs, expected behavior and the failure the test must detect.</p>
       </article><article>
-        <span>02 · SESSION</span>
-        <h3>One unit owns DB conversation</h3>
-        <p>Session and transaction state stay request-scoped.</p>
+        <span>02 · CONTROL</span>
+        <h3>Arrange the relevant environment</h3>
+        <p>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</p>
       </article><article>
-        <span>03 · DATABASE</span>
-        <h3>Statements enforce invariants</h3>
-        <p>Locks, constraints, and the pool shape behavior.</p>
+        <span>03 · ACT</span>
+        <h3>Exercise the real boundary under test</h3>
+        <p>Trigger the operation or user interaction and await its observable completion.</p>
       </article><article>
-        <span>04 · OUTCOME</span>
-        <h3>Commit or rollback completes</h3>
-        <p>Only then should the API publish success or failure.</p>
+        <span>04 · ASSERT</span>
+        <h3>Compare outcomes and clean up</h3>
+        <p>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Force the second database operation to fail and verify nothing partially commits.</p><p><strong>Then inspect:</strong> SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p><p><strong>Then inspect:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></div>
   </section>
 
   
@@ -140,16 +140,16 @@ async def test_concurrent_idempotent_create(app, migrated_database):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Validated command enters → One unit owns DB conversation → Statements enforce invariants → Commit or rollback completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> State one observable requirement → Arrange the relevant environment → Exercise the real boundary under test → Compare outcomes and clean up. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an HTTP request from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Force the second database operation to fail and verify nothing partially commits.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></article>
     </div>
   </section>
 
@@ -170,7 +170,7 @@ async def test_concurrent_idempotent_create(app, migrated_database):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace async test execution through ASGITransport, lifespan management, database isolation, transaction visibility, migrations, external-service fakes, and schema assertions.</p>
-        <p><strong>Evidence to explain:</strong> SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p>
+        <p><strong>Evidence to explain:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>

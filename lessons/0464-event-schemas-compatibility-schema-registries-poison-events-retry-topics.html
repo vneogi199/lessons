@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="retry topics">
         <span>05</span>
         <h3>retry topics</h3>
-        <p><strong>What it means:</strong> Retry topics delay and isolate failed events between bounded attempts instead of blocking a main partition indefinitely.</p>
+        <p><strong>What it means:</strong> Retry topics move failed events onto a separate retry path. Applications implement delay and attempt limits; later main-topic events can overtake retried events, so per-key ordering needs an explicit policy.</p>
       </article><article class="concept-card" data-subtopic="replay">
         <span>06</span>
         <h3>replay</h3>
@@ -132,6 +132,7 @@
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>const schemaV2 = {
+  $schema: &quot;https://json-schema.org/draft/2020-12/schema&quot;,
   type: &quot;object&quot;,
   required: [&quot;event_id&quot;, &quot;type&quot;, &quot;order_id&quot;, &quot;occurred_at&quot;],
   properties: {
@@ -144,12 +145,21 @@
   additionalProperties: false,
 };
 
-async function process(event, operations) {
+async function process(event, operations, validate) {
+  // Caller supplies a synchronous validator adapter returning {ok, value/errors}.
+  // Pin its dialect and format-assertion settings; bound decoded input first.
   const parsed = validate(schemaV2, event);
   if (!parsed.ok) return operations.quarantine(event, parsed.errors);
   return operations.consumeIdempotently(parsed.value);
 }
 
+// default is an annotation: validation alone does not insert channel=&quot;web&quot;.
+// format may also be annotation-only unless assertion support is enabled.
+// v2&#039;s changed type constant rejects a v1 event; additionalProperties=false can
+// make an old consumer reject newly added fields. &quot;Optional&quot; is not a proof of
+// bidirectional compatibility. Test old/new writers against old/new readers.
+// Quarantine must persist before acknowledging input; a storage failure must
+// propagate. This adapter sketch supplies neither a validator nor a broker.
 // CI checks compatibility against registered old versions. Operations track
 // publish errors, bytes, partition skew, consumer lag, rebalance time, retries,
 // quarantine age, end-to-end latency, and the final business outcome.</code></pre>
@@ -215,7 +225,7 @@ async function process(event, operations) {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://kafka.apache.org/41/design/design/" target="_blank" rel="noreferrer">Apache Kafka documentation ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://json-schema.org/understanding-json-schema/reference/annotations" target="_blank" rel="noreferrer">JSON Schema annotations and defaults ↗</a></div>
     
     
     

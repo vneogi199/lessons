@@ -115,22 +115,35 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>// Coordinator durable log
-PREPARING tx-42 participants=A,B
-PREPARED  tx-42 participant=A
-PREPARED  tx-42 participant=B
-COMMIT    tx-42
+    <pre aria-label="Starter code"><code>// Example coordinator log, not executable statements:
+// PREPARING tx-42 participants=A,B
+// PREPARED  tx-42 participant=A
+// PREPARED  tx-42 participant=B
+// COMMIT    tx-42
 
 // Participant state machine:
-ACTIVE -&gt; PREPARED -&gt; COMMITTED
-                 \-&gt; ABORTED
+// ACTIVE -&gt; PREPARED -&gt; COMMITTED or ABORTED
 
-async function recover(inDoubt) {
+async function recover(inDoubt, coordinator, participant) {
   const decision = await coordinator.readDurableDecision(inDoubt.transactionId);
   if (decision === &quot;COMMIT&quot;) await participant.commitPrepared(inDoubt);
   else if (decision === &quot;ABORT&quot;) await participant.rollbackPrepared(inDoubt);
-  else await keepLocksAndEscalate(); // blocking preserves atomicity
-}</code></pre>
+  else return &quot;in-doubt&quot;; // No unilateral timeout-based decision after preparing.
+  return decision;
+}
+for (const decision of [&quot;COMMIT&quot;, &quot;ABORT&quot;, null]) {
+  const calls = [];
+  const result = await recover({transactionId: &quot;tx-42&quot;},
+    {readDurableDecision: async () =&gt; decision},
+    {commitPrepared: async () =&gt; calls.push(&quot;COMMIT&quot;), rollbackPrepared: async () =&gt; calls.push(&quot;ABORT&quot;)});
+  console.assert(result === (decision ?? &quot;in-doubt&quot;));
+  console.assert(calls.join() === (decision ?? &quot;&quot;));
+}
+// Adapter exercise only: use an authenticated authoritative durable decision and
+// idempotent participant completion. Unknown decisions preserve prepared state
+// and locks; an operator must investigate. RPC failure must not imply rollback.
+// Real prepared transactions can retain locks/resources through coordinator
+// failure; monitor their age and use a tested transaction manager.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -193,7 +206,7 @@ async function recover(inDoubt) {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.rfc-editor.org/rfc/rfc9110.html" target="_blank" rel="noreferrer">RFC 9110 HTTP Semantics ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/sql-prepare-transaction.html" target="_blank" rel="noreferrer">PostgreSQL prepared transactions and recovery responsibilities ↗</a></div>
     
     
     

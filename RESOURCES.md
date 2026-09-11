@@ -2,6 +2,42 @@
 
 ## Knowledge
 
+- [Retrieval precision and recall](https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-unranked-retrieval-sets-1.html) and [KD-tree nearest-neighbor queries](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.KDTree.query.html)
+  Use to separate judged document relevance from nearest-neighbor accuracy and exact results from a particular brute-force implementation. Lesson 0597 uses only synthetic IDs and arithmetic, not SciPy or a retrieval service.
+
+- [LangGraph interrupt resumption](https://docs.langchain.com/oss/python/langgraph/interrupts)
+  Use for node re-execution, durable versus in-memory checkpointers, thread identity and replay-safe side effects. A resume value is not proof that an authorized person approved the exact pending action.
+
+- [Probability calibration](https://scikit-learn.org/stable/modules/calibration.html)
+  Use for confidence-band reliability diagrams and the distinction between matching global averages and calibrated predictions. Small synthetic bins illustrate arithmetic, not a reliable deployment estimate.
+
+- [S3 presigned URL lifetime and restrictions](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
+  Use for bearer-token reuse, early expiry through credentials/policy, and the distinction between authorizing a request and terminating an already accepted download.
+
+- [JSON Schema annotations](https://json-schema.org/understanding-json-schema/reference/annotations) and [format behavior](https://json-schema.org/understanding-json-schema/reference/type)
+  Use for 0464: defaults do not fill missing values during validation, and format assertions depend on validator support/configuration. Test writer/reader compatibility independently of validating one schema version.
+
+- [Kafka 4.1 design](https://kafka.apache.org/41/design/design/), [producer configuration](https://kafka.apache.org/41/configuration/producer-configs/), and [consumer configuration](https://kafka.apache.org/41/configuration/consumer-configs/)
+  Use for ISR acknowledgements, follower reads, eventual compaction, transaction isolation and consumer ownership. These are version-pinned references, not a claim that 4.1 is the latest release. Kafka transactions do not automatically include external effects.
+
+- [Test doubles and autospec](https://docs.python.org/3/library/unittest.mock.html), [property-based testing](https://hypothesis.readthedocs.io/en/latest/quickstart.html), [threat modeling](https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html), and [software supply-chain security](https://cheatsheetseries.owasp.org/cheatsheets/Software_Supply_Chain_Security_Cheat_Sheet.html)
+  Use for the distinct testing/security exercises in 0465–0468. Test-double interface checks are not real dependency verification; generated examples are not exhaustive proofs. Documentation links do not require installing the illustrated tools.
+
+- [Google SRE: Implementing SLOs](https://sre.google/workbook/implementing-slos/)
+  Use for user-centered good/total event ratios, explicit windows and targets, error-budget decisions and the limits of any particular measurement implementation.
+
+- [FastAPI concurrency](https://fastapi.tiangolo.com/async/) and [Python task ownership and cancellation](https://docs.python.org/3/library/asyncio-task.html)
+  Use to distinguish framework-offloaded endpoints from directly called helpers, and cooperative cancellation from terminating threads or reversing remote effects. Verify disconnect behavior with the actual ASGI server stack.
+
+- [OWASP object authorization](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/) and [SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+  Use for per-resource decisions and enforcement across URL parsing, name resolution, connection and redirects. A returned policy object, verified identity or hostname allowlist is not sufficient by itself.
+
+- [Linearizability](https://www.cs.cmu.edu/~wing/publications/HerlihyWing90.pdf), [CAP impossibility](https://www.cs.princeton.edu/courses/archive/spr22/cos418/papers/cap.pdf), and [Dynamo](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+  Use for real-time histories, partition assumptions, version reconciliation and key placement. Small local counterexamples explain a guarantee; they do not implement or certify a distributed protocol. Dynamo here is the published system design, not a promise about every current DynamoDB configuration.
+
+- [Prepared transactions](https://www.postgresql.org/docs/current/sql-prepare-transaction.html) and [CQRS](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
+  Use for in-doubt recovery responsibilities and the distinction between separating read/write models and storing event history. Keep unavailable decisions explicit and do not introduce separate databases just to demonstrate CQRS.
+
 - [React input ownership](https://react.dev/reference/react-dom/components/input) and [raw HTML rendering](https://react.dev/reference/react-dom/components/common)
   Use for stable controlled/uncontrolled input modes and the distinction between ordinary text rendering and trusted, sanitized HTML. Neither client validation nor escaping substitutes for server authorization.
 

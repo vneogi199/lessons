@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="Pydantic state schemas">
         <span>02</span>
         <h3>Pydantic state schemas</h3>
-        <p><strong>What it means:</strong> A Pydantic state schema gives LangGraph runtime validation for graph input and nested values, with more overhead and narrower validation guarantees than many learners initially expect.</p>
+        <p><strong>What it means:</strong> LangGraph StateGraph can use a Pydantic model for runtime state-input validation. Do not assume every node update or final output is validated; validate important output boundaries explicitly. LangChain create_agent does not support Pydantic state schemas.</p>
       </article><article class="concept-card" data-subtopic="nodes">
         <span>03</span>
         <h3>nodes</h3>
@@ -75,11 +75,11 @@
       </article><article class="concept-card" data-subtopic="checkpoints">
         <span>06</span>
         <h3>checkpoints</h3>
-        <p><strong>What it means:</strong> A checkpoint stores durable progress so execution can resume after interruption or failure.</p>
+        <p><strong>What it means:</strong> A checkpoint records workflow progress for resumption. Durability depends on its backing store; an in-memory saver does not survive process loss. Restoring state does not undo or deduplicate external effects by itself.</p>
       </article><article class="concept-card" data-subtopic="interrupts">
         <span>07</span>
         <h3>interrupts</h3>
-        <p><strong>What it means:</strong> An interrupt pauses graph execution, saves state through a checkpointer, exposes a request to the caller, and waits for a later resume value.</p>
+        <p><strong>What it means:</strong> A LangGraph interrupt pauses for external input using a checkpointer and thread identity. Resuming restarts its node from the beginning, so code before the interrupt can run again. Protect side effects and authorize who may resume.</p>
       </article><article class="concept-card" data-subtopic="durable execution">
         <span>08</span>
         <h3>durable execution</h3>
@@ -173,8 +173,8 @@ print(resumed[&quot;status&quot;])
 # Pydantic validates graph input, not every later node update or final output.
 # Replace InMemorySaver with a durable checkpointer before deployment.
 # Bind authenticated approval to tenant, actor, exact action/arguments/version and
-# expiry. A public thread ID or truthy resume value is not authorization. Nodes
-# before an interrupt may replay: keep irreversible effects after approval and
+# expiry. A public thread ID or truthy resume value is not authorization. Code
+# before interrupt() in its node runs again on resume: keep effects after approval and
 # use a stable effect identity plus intent checking in the owning service.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>

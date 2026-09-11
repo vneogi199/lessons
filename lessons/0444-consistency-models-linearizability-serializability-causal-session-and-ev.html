@@ -124,14 +124,25 @@
   { process: &quot;B&quot;, op: &quot;read&quot;,  value: 0, start: 6, end: 7 }
 ];
 
-function checkReadYourWrites(session, response) {
-  if (response.appliedPosition &lt; session.minimumPosition) {
-    return routeToAuthority({ minimumPosition: session.minimumPosition });
-  }
-  return response;
+function violatesSingleWriteRead(history) {
+  // Only two completed, non-overlapping operations on ONE register, initially 0.
+  // This is a counterexample check, not a general linearizability checker.
+  if (!Array.isArray(history) || history.length !== 2) throw new Error(&quot;two operations required&quot;);
+  const [write, read] = history;
+  if (write.op !== &quot;write&quot; || read.op !== &quot;read&quot; ||
+      ![write.start, write.end, read.start, read.end, write.value, read.value].every(Number.isFinite) ||
+      write.start &gt; write.end || write.end &gt;= read.start || read.start &gt; read.end) throw new Error(&quot;unsupported history&quot;);
+  return read.value !== write.value;
 }
 
-console.assert(!isLinearizable(history)); // read began after completed write yet returned old value
+console.assert(violatesSingleWriteRead(history));
+console.assert(!violatesSingleWriteRead([history[0], {...history[1], value: 1}]));
+let rejected = false;
+try { violatesSingleWriteRead([history[0], {...history[1], start: 2}]); } catch { rejected = true; }
+console.assert(rejected); // Overlap requires reasoning not supplied by this checker.
+// Read-your-writes is a SESSION guarantee; it does not prove this cross-client
+// real-time guarantee. A replica position token must include stream/epoch identity
+// and freshness semantics; an arbitrary integer comparison is not sufficient.
 // Serializability constrains transaction equivalence; linearizability adds
 // real-time order for operations. They solve different questions.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -196,7 +207,7 @@ console.assert(!isLinearizable(history)); // read began after completed write ye
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Google Spanner paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.cs.cmu.edu/~wing/publications/HerlihyWing90.pdf" target="_blank" rel="noreferrer">Herlihy and Wing: Linearizability ↗</a></div>
     
     
     

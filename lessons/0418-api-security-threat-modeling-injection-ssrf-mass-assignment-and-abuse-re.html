@@ -129,9 +129,24 @@
 };
 
 function writableProjectFields(input) {
-  return { name: validatedName(input.name), visibility: validatedVisibility(input.visibility) };
+  if (!input || typeof input !== &quot;object&quot; || Array.isArray(input) ||
+      Object.keys(input).some(key =&gt; ![&quot;name&quot;, &quot;visibility&quot;].includes(key)) ||
+      typeof input.name !== &quot;string&quot; || !input.name.trim() || input.name.trim().length &gt; 120 ||
+      ![&quot;private&quot;, &quot;public&quot;].includes(input.visibility)) throw new TypeError(&quot;invalid project fields&quot;);
+  return Object.freeze({ name: input.name.trim(), visibility: input.visibility });
 }
 
+console.assert(writableProjectFields({name: &quot; Example &quot;, visibility: &quot;private&quot;}).name === &quot;Example&quot;);
+for (const input of [null, [], {name: &quot;&quot;, visibility: &quot;private&quot;}, {name: &quot;A&quot;, visibility: &quot;admin&quot;},
+  {name: &quot;A&quot;, visibility: &quot;private&quot;, ownerId: &quot;attacker&quot;}]) {
+  let rejected = false;
+  try { writableProjectFields(input); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Bounded parsed JSON fixture; ownership/tenant fields never become writable.
+// Authorization to change visibility is still required. outboundPolicy is only
+// configuration: enforce it at URL parsing, DNS resolution, connection and body
+// reading. An allowlisted hostname alone does not prevent DNS rebinding or redirects.
 // Tests: another tenant&#039;s ID, private IP and DNS rebinding, duplicate parser
 // keys, SQL/shell/template payloads, excess fields, oversized decompression,
 // expensive filters, credential stuffing, quota bypass, and secret redaction.</code></pre>
@@ -197,7 +212,7 @@ function writableProjectFields(input) {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.rfc-editor.org/rfc/rfc9700.html" target="_blank" rel="noreferrer">RFC 9700 OAuth 2.0 Security Best Current Practice ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html" target="_blank" rel="noreferrer">OWASP: SSRF prevention and trust boundaries ↗</a></div>
     
     
     

@@ -115,25 +115,27 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>const N = 3, W = 2, R = 2;
+    <pre aria-label="Starter code"><code>// Offline quorum-set exercise, not a replica protocol.
+const N = 3, W = 2, R = 2;
 
-async function quorumWrite(key, versionedValue) {
-  const results = await Promise.allSettled(replicasFor(key).map(node =&gt; node.put(key, versionedValue)));
-  if (results.filter(x =&gt; x.status === &quot;fulfilled&quot;).length &lt; W) throw new Error(&quot;write quorum unavailable&quot;);
+const replicaPairs = [[&quot;A&quot;, &quot;B&quot;], [&quot;A&quot;, &quot;C&quot;], [&quot;B&quot;, &quot;C&quot;]];
+const overlap = (writeNodes, readNodes) =&gt; writeNodes.filter(node =&gt; readNodes.includes(node));
+console.assert(R + W &gt; N);
+for (const writeNodes of replicaPairs) {
+  for (const readNodes of replicaPairs) console.assert(overlap(writeNodes, readNodes).length &gt;= 1);
 }
-
-async function quorumRead(key) {
-  const versions = await firstSuccessful(replicasFor(key).map(node =&gt; node.get(key)), R);
-  const resolved = resolveVersions(versions);
-  repairStaleReplicas(key, resolved).catch(report);
-  return resolved;
-}
-
-// Sloppy quorum and hinted handoff change which nodes count; concurrent versions
-// and failures still require explicit resolution and anti-entropy.
-// All replica calls require bounded deadlines. allSettled waits for EVERY replica,
-// so this simple write path is not a return-at-W latency implementation. R+W&gt;N
-// establishes overlap for a fixed replica set, not linearizability by itself.</code></pre>
+// Sloppy placement can count fallback nodes outside the original replica set.
+const quorumWrite = [&quot;A&quot;, &quot;D&quot;], quorumRead = [&quot;B&quot;, &quot;C&quot;];
+console.assert(quorumWrite.length === W &amp;&amp; quorumRead.length === R);
+console.assert(overlap(quorumWrite, quorumRead).length === 0);
+// Counts alone now cannot establish that the read sees the acknowledged write.
+// Even fixed-set intersection is NOT linearizability: concurrent/incomplete
+// writes, version selection and read repair require a defined protocol.
+// For a real adapter, count distinct eligible replicas and durable acknowledgments,
+// not merely fulfilled promises. Bound every call; stop waiting at the intended
+// quorum without leaking unfinished requests. Test conflicting versions, failed
+// writes later becoming visible, hinted handoff and anti-entropy after recovery.
+// Predict these histories before selecting consistency settings.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -196,7 +198,7 @@ async function quorumRead(key) {
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Google Spanner paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noreferrer">Dynamo: version reconciliation, quorum-like replication and partitioning ↗</a></div>
     
     
     

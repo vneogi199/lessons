@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a diagnostic experiment</h2>
-      <ol class="trace-flow" data-flow="quality-security" aria-label="Mechanism trace: Requirement or trust assumption then Test or attacker exercises boundary then Code and infrastructure respond then Result supports or rejects claim. Experiment: Construct the smallest adversarial case that could disprove the claim.">
-        <li class="trace-stage"><span>01 · CLAIM</span><strong>Requirement or trust assumption</strong><small>State the behavior or protection that must hold.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STIMULUS</span><strong>Test or attacker exercises boundary</strong><small>Valid, invalid, concurrent, and hostile inputs differ.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><strong>Code and infrastructure respond</strong><small>Validation, authorization, isolation, and recovery apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Result supports or rejects claim</strong><small>A reproducible failure is more useful than reassurance.</small></li>
+      <ol class="trace-flow" data-flow="reliability-feedback" aria-label="Mechanism trace: Measure a user-visible outcome then Account for the allowed failure budget then Use actionable evidence to limit impact then Verify recovery and prevent recurrence. Experiment: Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.">
+        <li class="trace-stage"><span>01 · DEFINE</span><strong>Measure a user-visible outcome</strong><small>Specify eligible events, what counts as good, a time window and a target; process uptime alone may miss failed journeys.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMPARE</span><strong>Account for the allowed failure budget</strong><small>For an event-based SLO, compare bad eligible events with the allowance implied by the target; keep missing telemetry explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RESPOND</span><strong>Use actionable evidence to limit impact</strong><small>Alert on meaningful budget consumption, assign incident ownership and choose a bounded mitigation with rollback criteria.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LEARN</span><strong>Verify recovery and prevent recurrence</strong><small>Confirm the same user outcome recovered; record contributing conditions and assign follow-up actions with validation evidence.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Construct the smallest adversarial case that could disprove the claim.</strong>
-        <small><b>Inspect:</b> Test result, security event, state before/after, error path, and reproducible steps.</small>
+        <strong>Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.</strong>
+        <small><b>Inspect:</b> Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</small>
       </div>
     </aside>
   </div>
@@ -76,24 +76,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CLAIM</span>
-        <h3>Requirement or trust assumption</h3>
-        <p>State the behavior or protection that must hold.</p>
+        <span>01 · DEFINE</span>
+        <h3>Measure a user-visible outcome</h3>
+        <p>Specify eligible events, what counts as good, a time window and a target; process uptime alone may miss failed journeys.</p>
       </article><article>
-        <span>02 · STIMULUS</span>
-        <h3>Test or attacker exercises boundary</h3>
-        <p>Valid, invalid, concurrent, and hostile inputs differ.</p>
+        <span>02 · COMPARE</span>
+        <h3>Account for the allowed failure budget</h3>
+        <p>For an event-based SLO, compare bad eligible events with the allowance implied by the target; keep missing telemetry explicit.</p>
       </article><article>
-        <span>03 · CONTROL</span>
-        <h3>Code and infrastructure respond</h3>
-        <p>Validation, authorization, isolation, and recovery apply.</p>
+        <span>03 · RESPOND</span>
+        <h3>Use actionable evidence to limit impact</h3>
+        <p>Alert on meaningful budget consumption, assign incident ownership and choose a bounded mitigation with rollback criteria.</p>
       </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Result supports or rejects claim</h3>
-        <p>A reproducible failure is more useful than reassurance.</p>
+        <span>04 · LEARN</span>
+        <h3>Verify recovery and prevent recurrence</h3>
+        <p>Confirm the same user outcome recovered; record contributing conditions and assign follow-up actions with validation evidence.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Construct the smallest adversarial case that could disprove the claim.</p><p><strong>Then inspect:</strong> Test result, security event, state before/after, error path, and reproducible steps.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.</p><p><strong>Then inspect:</strong> Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</p></div>
   </section>
 
   
@@ -107,21 +107,51 @@
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>// Exercise specification (requires the described fixture; not executed here)
-// User-focused reliability review
-
-// Setup
-// Define a successful document-search request and an SLI denominator, time window and target. Record a small synthetic success/failure dataset.
-
-// Change one condition
-// Introduce a dependency timeout and compare user failure with infrastructure health. Draft a short incident update from facts only.
-
-// Expected reasoning / evidence
-// A healthy process can deliver failed user journeys. Tie alerts to actionable impact, use error-budget policy explicitly and verify recovery before closing the incident.</code></pre>
+    <pre aria-label="Starter code"><code>// Offline event-based SLO exercise: synthetic counts for one fixed window.
+// Predict the result before running. No monitoring service is contacted.
+function budget(total, bad, targetPerThousand = 999) {
+  if (!Number.isSafeInteger(total) || total &lt; 0 || total &gt; 1_000_000 ||
+      !Number.isSafeInteger(bad) || bad &lt; 0 || bad &gt; total ||
+      !Number.isInteger(targetPerThousand) || targetPerThousand &lt; 1 ||
+      targetPerThousand &gt;= 1000) throw new TypeError(&quot;invalid fixture counts or target&quot;);
+  if (total === 0) return { status: &quot;no-data&quot; };
+  // Compare scaled integers so a floating-point rounding error cannot decide
+  // whether an exactly exhausted budget is inside or outside the target.
+  const allowance = total * (1000 - targetPerThousand);
+  const consumed = bad * 1000;
+  return {
+    status: consumed &lt;= allowance ? &quot;within-target&quot; : &quot;outside-target&quot;,
+    goodRatio: (total - bad) / total,
+    allowedBad: allowance / 1000,
+    budgetConsumed: consumed / allowance
+  };
+}
+console.assert(budget(10_000, 5).budgetConsumed === 0.5);
+console.assert(budget(10_000, 10).status === &quot;within-target&quot;);
+console.assert(budget(10_000, 11).status === &quot;outside-target&quot;);
+console.assert(budget(0, 0).status === &quot;no-data&quot;);
+for (const args of [[-1, 0], [10, 11], [NaN, 0], [1.5, 0], [10, 0, 1000]]) {
+  let rejected = false;
+  try { budget(...args); } catch (error) { rejected = error instanceof TypeError; }
+  console.assert(rejected);
+}
+// Unequal traffic: averaging per-instance percentages misrepresents users.
+const small = { total: 10, bad: 1 }, large = { total: 990, bad: 0 };
+const fleet = budget(small.total + large.total, small.bad + large.bad);
+const unweighted = (budget(10, 1).goodRatio + budget(990, 0).goodRatio) / 2;
+console.assert(fleet.goodRatio === 0.999 &amp;&amp; unweighted === 0.95);
+console.log({ fleet, unweighted });
+// Scope: complete, disjoint counts with the same eligibility rule and window.
+// Missing telemetry is not evidence of zero failures. Define how timeouts and
+// abandoned requests enter the denominator; a green process is not a good search.
+// This is window budget consumption, not a short-window burn-rate alert.
+// Explain mitigation ownership, rollback criteria and how user recovery will be
+// verified. A postmortem should turn contributing conditions into owned checks.
+// The next day, recompute the unequal-traffic example without looking here.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -134,16 +164,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Requirement or trust assumption → Test or attacker exercises boundary → Code and infrastructure respond → Result supports or rejects claim. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Measure a user-visible outcome → Account for the allowed failure budget → Use actionable evidence to limit impact → Verify recovery and prevent recurrence. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Construct the smallest adversarial case that could disprove the claim.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Test result, security event, state before/after, error path, and reproducible steps.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</p></article>
     </div>
   </section>
 
@@ -164,7 +194,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect SLIs, SLOs, error budgets, logs, metrics, traces, alerts, and human response.</p>
-        <p><strong>Evidence to explain:</strong> Test result, security event, state before/after, error path, and reproducible steps.</p>
+        <p><strong>Evidence to explain:</strong> Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
@@ -184,7 +214,7 @@
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://owasp.org/www-project-application-security-verification-standard/" target="_blank" rel="noreferrer">OWASP ASVS ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://sre.google/workbook/implementing-slos/" target="_blank" rel="noreferrer">Google SRE: Implementing SLOs ↗</a></div>
     
     
     

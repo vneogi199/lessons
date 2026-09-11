@@ -118,13 +118,35 @@
     <pre aria-label="Starter code"><code>const left = { value: &quot;Ada&quot;, clock: { eu: 5, us: 2 } };
 const right = { value: &quot;Grace&quot;, clock: { eu: 4, us: 3 } };
 
+function dominates(a, b) {
+  // Fixed two-writer fixture; membership changes and counter overflow need a protocol.
+  for (const clock of [a, b]) {
+    if (!clock || Object.keys(clock).sort().join() !== &quot;eu,us&quot; ||
+        ![clock.eu, clock.us].every(x =&gt; Number.isSafeInteger(x) &amp;&amp; x &gt;= 0)) throw new Error(&quot;invalid clock&quot;);
+  }
+  return a.eu &gt;= b.eu &amp;&amp; a.us &gt;= b.us &amp;&amp; (a.eu &gt; b.eu || a.us &gt; b.us);
+}
 function reconcile(a, b) {
   if (dominates(a.clock, b.clock)) return a;
   if (dominates(b.clock, a.clock)) return b;
+  if (a.clock.eu === b.clock.eu &amp;&amp; a.clock.us === b.clock.us) {
+    if (a.value !== b.value) throw new Error(&quot;same version has inconsistent payloads&quot;);
+    return a;
+  }
   return { conflict: true, siblings: [a, b] }; // application decides
 }
 
-console.log(reconcile(left, right));
+console.assert(reconcile(left, right).siblings.length === 2);
+console.assert(reconcile(left, {value: &quot;old&quot;, clock: {eu: 4, us: 2}}) === left);
+console.assert(reconcile({value: &quot;old&quot;, clock: {eu: 4, us: 2}}, left) === left);
+console.assert(reconcile(left, {...left, clock: {...left.clock}}) === left);
+for (const other of [{value: &quot;wrong&quot;, clock: left.clock}, {value: &quot;bad&quot;, clock: {eu: -1, us: 0}}]) {
+  let rejected = false;
+  try { reconcile(left, other); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Validated string payloads and fixed writers only; vector comparison does not
+// implement transport, storage, conflict merging or safe clock truncation.
 // Last-write-wins would silently discard one concurrent update based on clocks
 // that may not represent causality. Prefer single ownership where possible.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -189,7 +211,7 @@ console.log(reconcile(left, right));
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Google Spanner paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noreferrer">Dynamo: version reconciliation, quorum-like replication and partitioning ↗</a></div>
     
     
     

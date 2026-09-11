@@ -119,20 +119,32 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>function owner(key, ring) {
-  const point = hash(key);
+    <pre aria-label="Starter code"><code>// Already-hashed integer points in a tiny [0, 99] ring; no hash library needed.
+function owner(point, ring) {
+  if (!Number.isInteger(point) || point &lt; 0 || point &gt;= 100 || !Array.isArray(ring) || !ring.length ||
+      ring.some((node, i) =&gt; !Number.isInteger(node.token) || node.token &lt; 0 || node.token &gt;= 100 ||
+        typeof node.id !== &quot;string&quot; || !node.id || (i &gt; 0 &amp;&amp; ring[i-1].token &gt;= node.token))) {
+    throw new Error(&quot;point and nonempty sorted unique-token ring required&quot;);
+  }
   return ring.find(node =&gt; node.token &gt;= point) ?? ring[0];
 }
 
-const shardKey = event =&gt; event.tenantId + &quot;:&quot; + bucket(event.createdAt);
-const workload = sampleRequests(1_000_000);
-const distribution = groupCount(workload, request =&gt; owner(shardKey(request), ring).id);
-
-console.table(distribution);
-assertSkewBelow(distribution, 1.5);
-
-// Measure hot keys, virtual-node movement, routing-cache propagation, cross-shard
-// requests, scatter width, slowest-shard tail, and migration double-read/write windows.</code></pre>
+const ring = [{token: 20, id: &quot;A&quot;}, {token: 60, id: &quot;B&quot;}, {token: 90, id: &quot;C&quot;}];
+const expanded = [ring[0], {token: 40, id: &quot;D&quot;}, ...ring.slice(1)];
+console.assert(owner(20, ring).id === &quot;A&quot; &amp;&amp; owner(99, ring).id === &quot;A&quot;);
+const moved = Array.from({length: 100}, (_, point) =&gt; point).filter(point =&gt; owner(point, ring).id !== owner(point, expanded).id);
+console.assert(moved.length === 20 &amp;&amp; moved[0] === 21 &amp;&amp; moved.at(-1) === 40);
+const hotRequests = Array(1000).fill(21);
+console.assert(hotRequests.every(point =&gt; owner(point, expanded).id === &quot;D&quot;));
+for (const [point, nodes] of [[-1, ring], [0, []], [0, [...ring].reverse()]]) {
+  let rejected = false;
+  try { owner(point, nodes); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Adding a token limits key movement but does not split a hot key&#039;s traffic.
+// This O(number-of-tokens) scan is a tiny fixture; use binary search at large scale.
+// Real placement also needs a stable hash, virtual nodes, migration ownership,
+// stale-routing handling and measured request skew. No migration occurs here.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -195,7 +207,7 @@ assertSkewBelow(distribution, 1.5);
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Google Spanner paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noreferrer">Dynamo: version reconciliation, quorum-like replication and partitioning ↗</a></div>
     
     
     

@@ -126,15 +126,42 @@
 };
 
 function compile(filter) {
-  if (!filter || !Object.hasOwn(fields, filter.field)) throw problem(&quot;UNSUPPORTED_FILTER&quot;);
+  if (!filter || !Object.hasOwn(fields, filter.field)) throw new TypeError(&quot;unsupported filter&quot;);
   const definition = fields[filter.field];
-  if (!definition || !definition.operators.has(filter.operator)) throw problem(&quot;UNSUPPORTED_FILTER&quot;);
-  const parameter = validateValue(filter.field, filter.value);
-  return { sql: operatorSql(definition.sql, filter.operator), parameters: [parameter], cost: 1 };
+  if (!definition.operators.has(filter.operator)) throw new TypeError(&quot;unsupported operator&quot;);
+  const parameter = filter.value;
+  if (filter.field === &quot;status&quot;) {
+    const values = filter.operator === &quot;in&quot; ? parameter : [parameter];
+    if (!Array.isArray(values) || !values.length || values.length &gt; 20 ||
+        !values.every(value =&gt; [&quot;queued&quot;, &quot;running&quot;, &quot;done&quot;, &quot;failed&quot;].includes(value))) throw new TypeError(&quot;invalid status&quot;);
+  } else if (filter.field === &quot;duration_ms&quot;) {
+    if (!Number.isSafeInteger(parameter) || parameter &lt; 0) throw new TypeError(&quot;invalid duration&quot;);
+  } else {
+    // Deliberately narrow contract: canonical UTC ISO strings with milliseconds.
+    if (typeof parameter !== &quot;string&quot; || parameter.length !== 24 ||
+        !Number.isFinite(Date.parse(parameter)) || new Date(parameter).toISOString() !== parameter) throw new TypeError(&quot;invalid timestamp&quot;);
+  }
+  const operator = {eq: &quot;=&quot;, gte: &quot;&gt;=&quot;, lte: &quot;&lt;=&quot;, lt: &quot;&lt;&quot;}[filter.operator];
+  const predicate = filter.operator === &quot;in&quot; ? &quot;= ANY($1::text[])&quot; : operator + &quot; $1&quot;;
+  return { sql: definition.sql + &quot; &quot; + predicate, parameters: [parameter] };
 }
 
-// Reject unknown fields, unbounded includes, non-indexable sort, excess clauses,
-// and queries whose estimated budget exceeds the endpoint policy.</code></pre>
+console.assert(compile({field: &quot;status&quot;, operator: &quot;eq&quot;, value: &quot;queued&quot;}).sql === &quot;j.status = $1&quot;);
+console.assert(compile({field: &quot;status&quot;, operator: &quot;in&quot;, value: [&quot;done&quot;]}).sql === &quot;j.status = ANY($1::text[])&quot;);
+console.assert(compile({field: &quot;duration_ms&quot;, operator: &quot;gte&quot;, value: 10}).parameters[0] === 10);
+console.assert(compile({field: &quot;created_at&quot;, operator: &quot;lt&quot;, value: &quot;2026-09-11T00:00:00.000Z&quot;}).sql === &quot;j.created_at &lt; $1&quot;);
+for (const filter of [null, {field: &quot;__proto__&quot;}, {field: &quot;status&quot;, operator: &quot;eq&quot;, value: &quot;done&#039; OR true--&quot;},
+  {field: &quot;status&quot;, operator: &quot;in&quot;, value: []}, {field: &quot;duration_ms&quot;, operator: &quot;gte&quot;, value: -1},
+  {field: &quot;created_at&quot;, operator: &quot;lt&quot;, value: &quot;not-a-date&quot;}]) {
+  let rejected = false;
+  try { compile(filter); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// One-predicate PostgreSQL fixture: pass parameters separately to the driver.
+// Columns/operators come only from this allowlist, never from raw request text.
+// Multi-clause composition must renumber parameters and bound overall query size.
+// Authorization, sort/include policy and real query-plan cost remain separate;
+// assigning every predicate cost=1 would not estimate database execution cost.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 

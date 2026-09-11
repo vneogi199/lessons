@@ -119,22 +119,37 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>const resolver = watchService(&quot;job-service&quot;);
-const balancer = leastOutstanding({ localityPreference: &quot;same-zone&quot; });
-
-resolver.on(&quot;update&quot;, endpoints =&gt; {
-  balancer.replace(endpoints.filter(x =&gt; x.ready &amp;&amp; !x.draining));
-});
-
-async function call(request, signal) {
-  const endpoint = balancer.pick();
-  balancer.started(endpoint);
-  try { return await endpoint.call(request, { signal }); }
-  finally { balancer.finished(endpoint); }
+    <pre aria-label="Starter code"><code>// Pure selection over a validated local discovery snapshot; no DNS/watch SDK.
+function leastOutstanding(endpoints) {
+  if (!Array.isArray(endpoints) || endpoints.some(endpoint =&gt; !endpoint ||
+      typeof endpoint.id !== &quot;string&quot; || !endpoint.id ||
+      typeof endpoint.ready !== &quot;boolean&quot; || typeof endpoint.draining !== &quot;boolean&quot; ||
+      !Number.isSafeInteger(endpoint.outstanding) || endpoint.outstanding &lt; 0) ||
+      new Set(endpoints.map(endpoint =&gt; endpoint.id)).size !== endpoints.length) throw new Error(&quot;invalid endpoints&quot;);
+  const eligible = endpoints.filter(endpoint =&gt; endpoint.ready &amp;&amp; !endpoint.draining);
+  if (!eligible.length) throw new Error(&quot;no eligible endpoint&quot;);
+  return eligible.reduce((best, endpoint) =&gt; endpoint.outstanding &lt; best.outstanding ? endpoint : best);
 }
-
-// Observe DNS/watch freshness, endpoint health, subchannel state, connection
-// reuse, outstanding work, zone choice, ejection, retry, and churn.</code></pre>
+const endpoints = [
+  {id: &quot;A&quot;, ready: true, draining: false, outstanding: 2},
+  {id: &quot;B&quot;, ready: true, draining: false, outstanding: 0},
+  {id: &quot;C&quot;, ready: true, draining: true, outstanding: 0}
+];
+console.assert(leastOutstanding(endpoints).id === &quot;B&quot;);
+endpoints[1].ready = false;
+console.assert(leastOutstanding(endpoints).id === &quot;A&quot;);
+for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]], [endpoints[0], endpoints[0]]]) {
+  let rejected = false;
+  try { leastOutstanding(invalid); } catch { rejected = true; }
+  console.assert(rejected);
+}
+// Ties choose the first eligible entry; locality/weights and random tie-breaking
+// are omitted. Outstanding count is not queue time or a prediction of work cost.
+// The real caller must reserve a slot before yielding and release it in finally
+// on success, failure or cancellation. Discovery updates must not erase counters
+// for in-flight calls to removed endpoints. Define snapshot freshness and identity
+// reuse, bounded calls, watch shutdown, connection draining and no-endpoint errors.
+// Selection arithmetic does not prove health, delivery or service availability.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
