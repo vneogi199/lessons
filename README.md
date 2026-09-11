@@ -22,6 +22,20 @@ The review identifies remaining generic definitions and reused starter code. The
 
 Focus mode uses the complete generated curriculum and its own versioned `localStorage` key. Its dashboard summarizes overall and per-track progress and links to each track's next unfinished lesson. Progress can be exported to or restored from a validated JSON backup. A mastered active lesson can be marked incomplete without resetting other progress by tabbing to `mark_incomplete()` or pressing Alt+U.
 
+## GitHub Pages
+
+Publish the repository root, including `index.html`, `lesson.html`, the JavaScript/CSS files, `lessons/` and `reference/`. Generated content must be committed or included in the deployment artifact; GitHub Pages does not run the lesson generator automatically.
+
+Lesson manifest paths are relative to the site root (`lessons/…`), not the domain root. This preserves a project-site prefix such as `/lessons/`. After changing content or upgrading from the old `../../lessons/…` paths, regenerate and publish the manifest and reference pages together:
+
+```bash
+node scripts/generate-lessons.mjs
+node scripts/check-pages-links.mjs
+node scripts/validate-lessons.mjs
+```
+
+The link check verifies all lesson targets and local HTML links at `/`, `/lessons/` and `/nested/project/`. It does not deploy the site. For publishing-source problems, see [GitHub Pages 404 troubleshooting](https://docs.github.com/en/pages/getting-started-with-github-pages/troubleshooting-404-errors-for-github-pages-sites).
+
 ## Curriculum authoring
 
 The browser does not generate lesson content. After Codex changes `roadmap.yaml` or the lesson template, rebuild the checked-in lesson set explicitly:

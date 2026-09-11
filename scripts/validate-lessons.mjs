@@ -52,7 +52,7 @@ for (const [index, lesson] of manifest.lessons.entries()) {
   }
   if (lesson.duration < 15 || lesson.duration > 35) failures.push(`${lesson.id}: focused beginner duration is outside 15–35 minutes`);
 
-  const relativePath = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const relativePath = lesson.path.replace(/^lessons\//, "");
   const absolutePath = resolve(lessonsDirectory, relativePath);
   if (!absolutePath.startsWith(`${lessonsDirectory}/`)) {
     failures.push(`${lesson.id}: unsafe lesson path`);
@@ -137,7 +137,7 @@ for (const name of requiredReactSurface) {
     failures.push(`React coverage is missing ${name}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(name)) failures.push(`${lesson.id}: starter code is missing ${name}`);
@@ -145,7 +145,7 @@ for (const name of requiredReactSurface) {
 const useResourceLesson = reactLessons.find((lesson) => lesson.title.startsWith("use, promises"));
 if (!useResourceLesson) failures.push("React coverage is missing the use resource API");
 else {
-  const filename = useResourceLesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = useResourceLesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   if (!html.match(/<pre aria-label="Starter code"><code>[\s\S]*?\buse\(promise\)/)) {
     failures.push(`${useResourceLesson.id}: starter code is missing use(promise)`);
@@ -191,7 +191,7 @@ for (const [prefix, expectedCode] of requiredFastApiExamples) {
     failures.push(`FastAPI coverage is missing ${prefix}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -241,7 +241,7 @@ for (const [prefix, expectedCode] of requiredPythonExamples) {
     failures.push(`Python coverage is missing ${prefix}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -285,7 +285,7 @@ for (const [prefix, expectedCode] of requiredJavaScriptExamples) {
     failures.push(`JavaScript coverage is missing ${prefix}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -332,7 +332,7 @@ for (const [prefix, expectedCode] of requiredTypeScriptExamples) {
     failures.push(`TypeScript coverage is missing ${prefix}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -385,7 +385,7 @@ for (const [prefix, expectedCode] of requiredNodeExamples) {
     failures.push(`Node.js coverage is missing ${prefix}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
   if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -590,7 +590,7 @@ for (const [trackId, expectation] of Object.entries(infrastructureExpectations))
       failures.push(`${trackId} coverage is missing ${prefix}`);
       continue;
     }
-    const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+    const filename = lesson.path.replace(/^lessons\//, "");
     const html = await readFile(join(lessonsDirectory, filename), "utf8");
     const code = html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code><\/pre>/)?.[1] || "";
     if (!code.includes(expectedCode)) failures.push(`${lesson.id}: starter code is missing ${expectedCode}`);
@@ -598,7 +598,7 @@ for (const [trackId, expectation] of Object.entries(infrastructureExpectations))
 }
 
 for (const lesson of manifest.lessons) {
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   const hasBreakdown = html.includes("Detailed term guide");
   if (!hasBreakdown) failures.push(`${lesson.id}: detailed beginner subtopic breakdown is missing`);
@@ -641,7 +641,7 @@ for (const [titleStart, codeFragment, sourceFragment] of requiredSoftwareDesignL
     failures.push(`Software design coverage is missing ${titleStart}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   if (!html.includes(codeFragment)) failures.push(`${lesson.id}: starter code is missing ${codeFragment}`);
   if (!lesson.sourceUrl.includes(sourceFragment)) failures.push(`${lesson.id}: source is not the expected design reference`);
@@ -687,7 +687,7 @@ for (const [titleStart, codeFragment] of requiredDsaLessons) {
     failures.push(`DSA coverage is missing ${titleStart}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   if (!html.includes(codeFragment)) failures.push(`${lesson.id}: starter code is missing ${codeFragment}`);
   if (!html.includes('data-dsa-approach="true"')) failures.push(`${lesson.id}: approach ladder is missing`);
@@ -716,7 +716,7 @@ for (const [titleStart, codeFragment, sourceFragment] of requiredSystemsLessons)
     failures.push(`Systems foundations coverage is missing ${titleStart}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   if (!html.includes(codeFragment)) failures.push(`${lesson.id}: starter code is missing ${codeFragment}`);
   if (!lesson.sourceUrl.includes(sourceFragment)) failures.push(`${lesson.id}: primary source is not the expected official specification or kernel documentation`);
@@ -749,7 +749,7 @@ for (const [trackId, titleStart, codeFragment, sourceFragment] of requiredAiLess
     failures.push(`AI coverage is missing ${titleStart}`);
     continue;
   }
-  const filename = lesson.path.replace(/^\.\.\/\.\.\/lessons\//, "");
+  const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
   if (!html.includes(codeFragment)) failures.push(`${lesson.id}: starter code is missing ${codeFragment}`);
   if (!lesson.sourceUrl.includes(sourceFragment)) failures.push(`${lesson.id}: primary source is not the expected official documentation`);

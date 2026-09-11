@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="distributed-placement" aria-label="Mechanism trace: Key or request maps to an owner then Selected node executes local work then Membership, load, or region state shifts then Traffic and data settle safely. Experiment: Remove one owner during a hot-key spike and route traffic before every client refreshes membership.">
-        <li class="trace-stage"><span>01 · ROUTE</span><strong>Key or request maps to an owner</strong><small>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVE</span><strong>Selected node executes local work</strong><small>Capacity, connection state, authoritative data, projection, and replication position apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Membership, load, or region state shifts</strong><small>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Traffic and data settle safely</strong><small>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</small></li>
+      <ol class="trace-flow" data-flow="event-history-projection" aria-label="Mechanism trace: Command is checked against current state then Events become authoritative history then Read model consumes committed events then Replay verifies the derived state. Experiment: Decide two commands from the same version and specify which append must fail; then replay the accepted history.">
+        <li class="trace-stage"><span>01 · DECIDE</span><strong>Command is checked against current state</strong><small>Replayed history supplies the state and expected version used to evaluate the business rule.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><strong>Events become authoritative history</strong><small>A real event store must atomically reject version conflicts or durably append the new events.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROJECT</span><strong>Read model consumes committed events</strong><small>Projection progress, duplicate handling and schema interpretation govern the query view.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REBUILD</span><strong>Replay verifies the derived state</strong><small>Compare full replay with a versioned snapshot plus tail; promote rebuilt views without mixing versions.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</strong>
-        <small><b>Inspect:</b> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</small>
+        <strong>Decide two commands from the same version and specify which append must fail; then replay the accepted history.</strong>
+        <small><b>Inspect:</b> Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · ROUTE</span>
-        <h3>Key or request maps to an owner</h3>
-        <p>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</p>
+        <span>01 · DECIDE</span>
+        <h3>Command is checked against current state</h3>
+        <p>Replayed history supplies the state and expected version used to evaluate the business rule.</p>
       </article><article>
-        <span>02 · SERVE</span>
-        <h3>Selected node executes local work</h3>
-        <p>Capacity, connection state, authoritative data, projection, and replication position apply.</p>
+        <span>02 · APPEND</span>
+        <h3>Events become authoritative history</h3>
+        <p>A real event store must atomically reject version conflicts or durably append the new events.</p>
       </article><article>
-        <span>03 · CHANGE</span>
-        <h3>Membership, load, or region state shifts</h3>
-        <p>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</p>
+        <span>03 · PROJECT</span>
+        <h3>Read model consumes committed events</h3>
+        <p>Projection progress, duplicate handling and schema interpretation govern the query view.</p>
       </article><article>
-        <span>04 · VERIFY</span>
-        <h3>Traffic and data settle safely</h3>
-        <p>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</p>
+        <span>04 · REBUILD</span>
+        <h3>Replay verifies the derived state</h3>
+        <p>Compare full replay with a versioned snapshot plus tail; promote rebuilt views without mixing versions.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</p><p><strong>Then inspect:</strong> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Decide two commands from the same version and specify which append must fail; then replay the accepted history.</p><p><strong>Then inspect:</strong> Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</p></div>
   </section>
 
   
@@ -118,17 +118,44 @@
     <pre aria-label="Starter code"><code>class JobAggregate {
   constructor() { this.version = 0; this.state = &quot;missing&quot;; }
   decide(command) {
-    if (command.type === &quot;Submit&quot; &amp;&amp; this.state === &quot;missing&quot;) return [{ type: &quot;JobSubmitted&quot;, jobId: command.jobId }];
-    if (command.type === &quot;Complete&quot; &amp;&amp; this.state === &quot;running&quot;) return [{ type: &quot;JobCompleted&quot;, result: command.result }];
+    if (command === &quot;Submit&quot; &amp;&amp; this.state === &quot;missing&quot;) return [&quot;JobSubmitted&quot;];
+    if (command === &quot;Start&quot; &amp;&amp; this.state === &quot;queued&quot;) return [&quot;JobStarted&quot;];
+    if (command === &quot;Complete&quot; &amp;&amp; this.state === &quot;running&quot;) return [&quot;JobCompleted&quot;];
     throw new Error(&quot;invalid transition&quot;);
   }
-  apply(event) { this.state = transition(this.state, event); this.version += 1; }
+  apply(event) {
+    const next = this.state === &quot;missing&quot; &amp;&amp; event === &quot;JobSubmitted&quot; ? &quot;queued&quot;
+      : this.state === &quot;queued&quot; &amp;&amp; event === &quot;JobStarted&quot; ? &quot;running&quot;
+      : this.state === &quot;running&quot; &amp;&amp; event === &quot;JobCompleted&quot; ? &quot;done&quot; : null;
+    if (next === null) throw new Error(&quot;invalid event history&quot;);
+    this.state = next;
+    this.version += 1;
+  }
 }
 
-await eventStore.append(streamId, expectedVersion, events);
-await projections.rebuild(&quot;job-list-v2&quot;, { fromPosition: 0 });
-// Upcast old event versions, deduplicate projection input, and verify snapshot
-// plus tail replay equals full replay.</code></pre>
+const live = new JobAggregate(), history = [];
+for (const command of [&quot;Submit&quot;, &quot;Start&quot;, &quot;Complete&quot;]) {
+  const events = live.decide(command); // Decision alone does not mutate state.
+  console.assert(live.version === history.length);
+  history.push(...events); // In-memory fixture; NOT a durable append.
+  for (const event of events) live.apply(event);
+}
+const rebuilt = new JobAggregate();
+for (const event of history) rebuilt.apply(event);
+console.assert(rebuilt.state === &quot;done&quot; &amp;&amp; rebuilt.version === 3);
+console.assert(rebuilt.state === live.state);
+for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; rebuilt.apply(&quot;JobStarted&quot;)]) {
+  let rejected = false;
+  try { action(); } catch { rejected = true; }
+  console.assert(rejected &amp;&amp; rebuilt.state === &quot;done&quot; &amp;&amp; rebuilt.version === 3);
+}
+// Single-job, tiny-history fixture with trusted string events. A durable store
+// must atomically compare expected stream version and append validated events.
+// Only apply them locally after successful append; reload on a version conflict.
+// A projection needs durable progress plus duplicate handling, schema evolution
+// and a safe rebuild/promotion process. Snapshots must match stream/version.
+// CQRS separates read/write models; it does not require event sourcing, separate
+// databases or microservices. This demonstrates replay, not those integrations.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -141,16 +168,16 @@ await projections.rebuild(&quot;job-list-v2&quot;, { fromPosition: 0 });
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Key or request maps to an owner → Selected node executes local work → Membership, load, or region state shifts → Traffic and data settle safely. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Command is checked against current state → Events become authoritative history → Read model consumes committed events → Replay verifies the derived state. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Decide two commands from the same version and specify which append must fail; then replay the accepted history.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</p></article>
     </div>
   </section>
 
@@ -171,7 +198,7 @@ await projections.rebuild(&quot;job-list-v2&quot;, { fromPosition: 0 });
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate command validation from query models and optionally treat an append-only event history as authority while rebuilding projections, evolving events, and snapshotting long streams.</p>
-        <p><strong>Evidence to explain:</strong> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p>
+        <p><strong>Evidence to explain:</strong> Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>

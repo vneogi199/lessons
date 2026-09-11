@@ -38,7 +38,12 @@ for (const [number, key] of Object.entries({
   "0377":"postgres-diagnostics", "0378":"postgres-diagnostics",
   "0508":"operations-diagnosis", "0509":"operations-diagnosis",
   "0520":"operations-diagnosis", "0522":"operations-diagnosis",
-  "0571":"operations-diagnosis", "0572":"operations-diagnosis"
+  "0571":"operations-diagnosis", "0572":"operations-diagnosis",
+  "0595":"rag-ingestion", "0615":"ai-authority-boundary",
+  "0122":"behavior-test", "0200":"behavior-test",
+  "0192":"react-input-ownership", "0209":"react-output-boundary",
+  "0422":"distributed-message", "0437":"message-delivery",
+  "0445":"replicated-operation", "0452":"event-history-projection"
 })) {
   const lesson = manifest.lessons.find(item => item.number === number);
   assert.equal(diagramFor(lesson).key, key, `${number}: incorrect principal diagram`);
@@ -103,6 +108,10 @@ for (const lesson of manifest.lessons) {
     }
   }
   assert.equal(missing.length, 0, `${lesson.id}: placeholder definitions must be replaced before publishing`);
+  if (["0437", "0445", "0452"].includes(lesson.number)) {
+    const prelude = 'import { ok as check } from "node:assert/strict"; console.assert = check;\n';
+    execFileSync(process.execPath, ["--input-type=module", "-e", prelude + decode(code)], { timeout: 10000, stdio: "pipe" });
+  }
   if (lesson.number === "0614") {
     execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
   }
@@ -865,6 +874,7 @@ const lines = [
   "7. **The schedule cannot represent exhaustive mastery.** At 6–8 hours/week, 24 weeks provides 144–192 hours. Even 644 readings of 15 minutes consume 161 hours before labs and projects. The senior reference recommends a diagnostic-led core with deep extensions. Selecting a numbered core sequence still needs target-role emphasis and evidence of the learner's actual gaps.",
   "",
   "## Executed examples",
+  "LLM benchmark 0614 executes deterministic fixture assertions for per-slice failures, failed calls, unknown costs, malformed costs and repetition limits. Retained records distinguish independent cases from repeated attempts; score standard deviation is not presented as statistical confidence. No model provider was called. AI ingestion/security and frontend testing/input/security diagrams have dedicated routing checks; browser behavior remains unexecuted.",
   "PostgreSQL follow-up: the deadlock/serialization retry adapter executes offline success, retry exhaustion, nonretryable-error and bound checks. SQL starters received execution-context, generated-expression, snapshot-session, invariant-recheck, replication-slot and hybrid-ranking corrections. The SQL text guard rejects shell/INI contamination; it is not a SQL parser or PostgreSQL integration test. No database server or extension was installed or run.",
   "Node follow-up: both gzip starters execute owned-staging success/failure/cancellation/concurrent-replacement checks. HTTP/2 session tracking, normal drain, forced deadline and late-session rejection use event adapters, not TLS. Fetch checks cover split UTF-8, object-only JSON, size limits, errors, cancellation and body disposal without network requests. TCP framing checks pause after a false write result and drain buffered frames before resuming; they use a socket fake. The local queue deliberately demonstrates two failures with assertions; it is not a deployable queue. The Node test-runner cancellation fixture executes. A cross-track diagram regression matrix includes PostgreSQL EXPLAIN, pooling, access, diagnostics and infrastructure troubleshooting; these checks do not establish every diagram's factual completeness.",
   "AWS follow-up: 0497 parses its CloudFormation JSON and verifies the queue/redrive relationship locally. Lesson 0505 extracts and executes the text-only response validator against completed, partial, tool, guardrail and malformed fixtures; no boto3 import, credentials or model calls are used. S3 version-deletion and custom CloudWatch burn-metric assumptions were corrected. No AWS resources were created or changed.",

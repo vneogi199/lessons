@@ -2,6 +2,12 @@
 
 ## Knowledge
 
+- [React input ownership](https://react.dev/reference/react-dom/components/input) and [raw HTML rendering](https://react.dev/reference/react-dom/components/common)
+  Use for stable controlled/uncontrolled input modes and the distinction between ordinary text rendering and trusted, sanitized HTML. Neither client validation nor escaping substitutes for server authorization.
+
+- [Evaluation repetitions](https://docs.langchain.com/langsmith/repetition) and [evaluation concepts](https://docs.langchain.com/langsmith/evaluation-concepts)
+  Use for versioned test cases, repeated outputs and slice-level comparison. Repeating a case does not expand task coverage; retain individual outcomes and distinguish descriptive spread from uncertainty about deployment performance.
+
 - [Generated-column restrictions](https://www.postgresql.org/docs/current/ddl-generated-columns.html), [complete-transaction retry](https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html), and [logical replication limits](https://www.postgresql.org/docs/17/logical-replication-restrictions.html)
   Use for immutable generation expressions, fresh decisions after serialization failure and explicit schema/sequence migration. Retry helpers and text checks do not validate database isolation or replication.
 

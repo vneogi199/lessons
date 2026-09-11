@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a database query</h2>
-      <ol class="trace-flow" data-flow="rag-query" aria-label="Mechanism trace: User asks with implicit intent then Search selects candidate evidence then Reranking builds grounded context then Model responds from evidence. Experiment: Remove the best passage or change top-k and predict answer support.">
-        <li class="trace-stage"><span>01 · QUESTION</span><strong>User asks with implicit intent</strong><small>Rewrite and filters make the retrieval need explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RETRIEVE</span><strong>Search selects candidate evidence</strong><small>Lexical and vector signals trade recall and precision.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ASSEMBLE</span><strong>Reranking builds grounded context</strong><small>Relevant, diverse passages fit the context budget.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ANSWER</span><strong>Model responds from evidence</strong><small>Citations and evaluation reveal support or hallucination.</small></li>
+      <ol class="trace-flow" data-flow="rag-ingestion" aria-label="Mechanism trace: Identify an authorized source version then Produce traceable retrieval units then Write a bounded, repeatable batch then Handle publication, replacement and deletion. Experiment: Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.">
+        <li class="trace-stage"><span>01 · SOURCE</span><strong>Identify an authorized source version</strong><small>Record stable identity, permissions and provenance before parsing untrusted content.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHUNK</span><strong>Produce traceable retrieval units</strong><small>Chunk boundaries and source offsets preserve enough context to interpret and cite a result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · INDEX</span><strong>Write a bounded, repeatable batch</strong><small>Deterministic IDs, embedding version and failure checkpoints make retries inspectable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECONCILE</span><strong>Handle publication, replacement and deletion</strong><small>Define when a version becomes queryable and how obsolete chunks disappear; recheck access when serving results.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Remove the best passage or change top-k and predict answer support.</strong>
-        <small><b>Inspect:</b> Retrieved IDs, scores, context text, citations, answer metric, and latency.</small>
+        <strong>Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.</strong>
+        <small><b>Inspect:</b> Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · QUESTION</span>
-        <h3>User asks with implicit intent</h3>
-        <p>Rewrite and filters make the retrieval need explicit.</p>
+        <span>01 · SOURCE</span>
+        <h3>Identify an authorized source version</h3>
+        <p>Record stable identity, permissions and provenance before parsing untrusted content.</p>
       </article><article>
-        <span>02 · RETRIEVE</span>
-        <h3>Search selects candidate evidence</h3>
-        <p>Lexical and vector signals trade recall and precision.</p>
+        <span>02 · CHUNK</span>
+        <h3>Produce traceable retrieval units</h3>
+        <p>Chunk boundaries and source offsets preserve enough context to interpret and cite a result.</p>
       </article><article>
-        <span>03 · ASSEMBLE</span>
-        <h3>Reranking builds grounded context</h3>
-        <p>Relevant, diverse passages fit the context budget.</p>
+        <span>03 · INDEX</span>
+        <h3>Write a bounded, repeatable batch</h3>
+        <p>Deterministic IDs, embedding version and failure checkpoints make retries inspectable.</p>
       </article><article>
-        <span>04 · ANSWER</span>
-        <h3>Model responds from evidence</h3>
-        <p>Citations and evaluation reveal support or hallucination.</p>
+        <span>04 · RECONCILE</span>
+        <h3>Handle publication, replacement and deletion</h3>
+        <p>Define when a version becomes queryable and how obsolete chunks disappear; recheck access when serving results.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Remove the best passage or change top-k and predict answer support.</p><p><strong>Then inspect:</strong> Retrieved IDs, scores, context text, citations, answer metric, and latency.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.</p><p><strong>Then inspect:</strong> Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</p></div>
   </section>
 
   
@@ -142,16 +142,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> User asks with implicit intent → Search selects candidate evidence → Reranking builds grounded context → Model responds from evidence. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Identify an authorized source version → Produce traceable retrieval units → Write a bounded, repeatable batch → Handle publication, replacement and deletion. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database query from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Remove the best passage or change top-k and predict answer support.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Retrieved IDs, scores, context text, citations, answer metric, and latency.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</p></article>
     </div>
   </section>
 
@@ -172,7 +172,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand how document structure and chunk boundaries determine retrievable evidence.</p>
-        <p><strong>Evidence to explain:</strong> Retrieved IDs, scores, context text, citations, answer metric, and latency.</p>
+        <p><strong>Evidence to explain:</strong> Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#retrieval-rag">Worked track case: Relevant retrieval leaks another tenant&#039;s data ↗</a></p>
       </details>

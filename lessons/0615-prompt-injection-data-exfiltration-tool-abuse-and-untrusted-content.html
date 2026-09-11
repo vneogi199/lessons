@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace untrusted input crossing a boundary</h2>
-      <ol class="trace-flow" data-flow="ai-evaluation" aria-label="Mechanism trace: Versioned input and expectation then System produces an output then Checks apply a rubric then Evidence gates a change. Experiment: Change one system component and compare results on the same frozen cases.">
-        <li class="trace-stage"><span>01 · CASE</span><strong>Versioned input and expectation</strong><small>Dataset slices represent important users and failures.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUN</span><strong>System produces an output</strong><small>Model, prompt, tools, retrieval, and configuration are recorded.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SCORE</span><strong>Checks apply a rubric</strong><small>Deterministic rules, model graders, and humans cover different risks.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECIDE</span><strong>Evidence gates a change</strong><small>Regressions, uncertainty, cost, and safety shape release.</small></li>
+      <ol class="trace-flow" data-flow="ai-authority-boundary" aria-label="Mechanism trace: External content enters the context then Model output requests an action then Executor checks identity, scope and exact intent then Reject or execute with bounded exposure. Experiment: Put an instruction-like string in a harmless retrieved fixture and request an unauthorized fake-tool action; verify rejection at the executor.">
+        <li class="trace-stage"><span>01 · UNTRUSTED</span><strong>External content enters the context</strong><small>A retrieved page or tool response may contain instructions that conflict with the user&#039;s authorized task.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PROPOSE</span><strong>Model output requests an action</strong><small>A plausible tool call is a proposal, not evidence of permission or safe arguments.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENFORCE</span><strong>Executor checks identity, scope and exact intent</strong><small>Validate arguments, enforce resource access and bind any approval to the intended effect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONTAIN</span><strong>Reject or execute with bounded exposure</strong><small>Limit reachable data and destinations, inspect the result and retain privacy-safe evidence.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one system component and compare results on the same frozen cases.</strong>
-        <small><b>Inspect:</b> Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</small>
+        <strong>Put an instruction-like string in a harmless retrieved fixture and request an unauthorized fake-tool action; verify rejection at the executor.</strong>
+        <small><b>Inspect:</b> Content origin, proposed call, authenticated scope, argument checks, approval binding and absence of unauthorized effects or disclosure.</small>
       </div>
     </aside>
   </div>
@@ -76,24 +76,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CASE</span>
-        <h3>Versioned input and expectation</h3>
-        <p>Dataset slices represent important users and failures.</p>
+        <span>01 · UNTRUSTED</span>
+        <h3>External content enters the context</h3>
+        <p>A retrieved page or tool response may contain instructions that conflict with the user&#039;s authorized task.</p>
       </article><article>
-        <span>02 · RUN</span>
-        <h3>System produces an output</h3>
-        <p>Model, prompt, tools, retrieval, and configuration are recorded.</p>
+        <span>02 · PROPOSE</span>
+        <h3>Model output requests an action</h3>
+        <p>A plausible tool call is a proposal, not evidence of permission or safe arguments.</p>
       </article><article>
-        <span>03 · SCORE</span>
-        <h3>Checks apply a rubric</h3>
-        <p>Deterministic rules, model graders, and humans cover different risks.</p>
+        <span>03 · ENFORCE</span>
+        <h3>Executor checks identity, scope and exact intent</h3>
+        <p>Validate arguments, enforce resource access and bind any approval to the intended effect.</p>
       </article><article>
-        <span>04 · DECIDE</span>
-        <h3>Evidence gates a change</h3>
-        <p>Regressions, uncertainty, cost, and safety shape release.</p>
+        <span>04 · CONTAIN</span>
+        <h3>Reject or execute with bounded exposure</h3>
+        <p>Limit reachable data and destinations, inspect the result and retain privacy-safe evidence.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one system component and compare results on the same frozen cases.</p><p><strong>Then inspect:</strong> Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Put an instruction-like string in a harmless retrieved fixture and request an unauthorized fake-tool action; verify rejection at the executor.</p><p><strong>Then inspect:</strong> Content origin, proposed call, authenticated scope, argument checks, approval binding and absence of unauthorized effects or disclosure.</p></div>
   </section>
 
   
@@ -134,16 +134,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Versioned input and expectation → System produces an output → Checks apply a rubric → Evidence gates a change. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> External content enters the context → Model output requests an action → Executor checks identity, scope and exact intent → Reject or execute with bounded exposure. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace untrusted input crossing a boundary from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one system component and compare results on the same frozen cases.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Put an instruction-like string in a harmless retrieved fixture and request an unauthorized fake-tool action; verify rejection at the executor.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Content origin, proposed call, authenticated scope, argument checks, approval binding and absence of unauthorized effects or disclosure.</p></article>
     </div>
   </section>
 
@@ -164,7 +164,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Treat retrieved and user-provided text as data that can attempt to redirect control.</p>
-        <p><strong>Evidence to explain:</strong> Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</p>
+        <p><strong>Evidence to explain:</strong> Content origin, proposed call, authenticated scope, argument checks, approval binding and absence of unauthorized effects or disclosure.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#ai-quality-safety">Worked track case: The average improves while a critical slice regresses ↗</a></p>
       </details>

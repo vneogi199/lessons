@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="api-stream-delivery" aria-label="Mechanism trace: Producer creates identified data then Long-lived or retried transport carries it then Receiver authenticates and advances then Ack, resume, retry, or close follows. Experiment: Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.">
-        <li class="trace-stage"><span>01 · EVENT</span><strong>Producer creates identified data</strong><small>Schema version, sequence, signature input, authorization, and resume position enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONNECTION</span><strong>Long-lived or retried transport carries it</strong><small>Framing, intermediaries, buffers, heartbeat, timeout, and reconnect apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUMER</span><strong>Receiver authenticates and advances</strong><small>Bounds, deduplication, ordering, backpressure, and local transaction protect effects.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>Ack, resume, retry, or close follows</strong><small>Delivery identity, lag, queue depth, reconnection, duplicate effects, and cleanup prove behavior.</small></li>
+      <ol class="trace-flow" data-flow="distributed-message" aria-label="Mechanism trace: A client starts an operation then Message crosses an uncertain boundary then Receiver applies guarded state change then Caller sees success or uncertainty. Experiment: Drop the response after committing, then retry the same logical command.">
+        <li class="trace-stage"><span>01 · INTENT</span><strong>A client starts an operation</strong><small>Identity, deadline, and idempotency context are attached.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NETWORK</span><strong>Message crosses an uncertain boundary</strong><small>It may be delayed, duplicated, reordered, or lost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><strong>Receiver applies guarded state change</strong><small>Transactions, deduplication, and retries protect invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Caller sees success or uncertainty</strong><small>Logs and state must distinguish response loss from work loss.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.</strong>
-        <small><b>Inspect:</b> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</small>
+        <strong>Drop the response after committing, then retry the same logical command.</strong>
+        <small><b>Inspect:</b> Correlation ID, attempt count, idempotency record, state change, and final response.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · EVENT</span>
-        <h3>Producer creates identified data</h3>
-        <p>Schema version, sequence, signature input, authorization, and resume position enter.</p>
+        <span>01 · INTENT</span>
+        <h3>A client starts an operation</h3>
+        <p>Identity, deadline, and idempotency context are attached.</p>
       </article><article>
-        <span>02 · CONNECTION</span>
-        <h3>Long-lived or retried transport carries it</h3>
-        <p>Framing, intermediaries, buffers, heartbeat, timeout, and reconnect apply.</p>
+        <span>02 · NETWORK</span>
+        <h3>Message crosses an uncertain boundary</h3>
+        <p>It may be delayed, duplicated, reordered, or lost.</p>
       </article><article>
-        <span>03 · CONSUMER</span>
-        <h3>Receiver authenticates and advances</h3>
-        <p>Bounds, deduplication, ordering, backpressure, and local transaction protect effects.</p>
+        <span>03 · SERVICE</span>
+        <h3>Receiver applies guarded state change</h3>
+        <p>Transactions, deduplication, and retries protect invariants.</p>
       </article><article>
-        <span>04 · RECOVER</span>
-        <h3>Ack, resume, retry, or close follows</h3>
-        <p>Delivery identity, lag, queue depth, reconnection, duplicate effects, and cleanup prove behavior.</p>
+        <span>04 · OUTCOME</span>
+        <h3>Caller sees success or uncertainty</h3>
+        <p>Logs and state must distinguish response loss from work loss.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.</p><p><strong>Then inspect:</strong> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Drop the response after committing, then retry the same logical command.</p><p><strong>Then inspect:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p></div>
   </section>
 
   
@@ -144,16 +144,16 @@ console.dir(system, { depth: 4 });</code></pre>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer creates identified data → Long-lived or retried transport carries it → Receiver authenticates and advances → Ack, resume, retry, or close follows. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> A client starts an operation → Message crosses an uncertain boundary → Receiver applies guarded state change → Caller sees success or uncertainty. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Drop the response after committing, then retry the same logical command.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Correlation ID, attempt count, idempotency record, state change, and final response.</p></article>
     </div>
   </section>
 
@@ -174,7 +174,7 @@ console.dir(system, { depth: 4 });</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Define independent failure domains, local state machines, message channels, scheduling, timing, durability, trust, and the exact assumptions an algorithm needs to make progress.</p>
-        <p><strong>Evidence to explain:</strong> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p>
+        <p><strong>Evidence to explain:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
