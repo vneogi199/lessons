@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a token sequence</h2>
+      <h2>Trace logical replication</h2>
       <ol class="trace-flow" data-flow="postgres-durability" aria-label="Mechanism trace: Backend creates a database change then Log record reaches required durability then Recovery or replica reapplies history then Restored state serves invariants. Experiment: Stop the relevant process at one precise point and predict the last recoverable commit.">
         <li class="trace-stage"><span>01 · CHANGE</span><strong>Backend creates a database change</strong><small>Transaction identity and modified buffers define the candidate outcome.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · WAL</span><strong>Log record reaches required durability</strong><small>LSNs, flush policy, checkpoints, archive, and sender positions advance.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REPLAY</span><strong>Recovery or replica reapplies history</strong><small>Redo, timelines, slots, targets, and schema compatibility govern progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><strong>Restored state serves invariants</strong><small>Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Stream a table into a subscriber or local CDC consumer and prove duplicate-safe resume from a recorded position.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -155,7 +156,7 @@ SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a token sequence from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace logical replication from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Stop the relevant process at one precise point and predict the last recoverable commit.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p></article>
@@ -166,19 +167,20 @@ SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare physical replication, logical replication, and change-data capture for migration and event integration.</li>
-      <li>Trace a token sequence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace logical replication for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you stream a table into a subscriber or local CDC consumer and prove duplicate-safe resume from a recorded position, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace logical replication. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
+        <p><strong>Worked answer criteria:</strong> Publisher and subscriber commands run on separate configured databases. Replica identity FULL can increase traffic and apply cost; it does not replicate DDL or sequence state. The subscription owns its slot, and the slot diagnostic belongs on the publisher. Row-change replication is not an atomic external business-event consumer.</p>
         <p><strong>Evidence to explain:</strong> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a data operation</h2>
+      <h2>Trace a database query</h2>
       <ol class="trace-flow" data-flow="database-query" aria-label="Mechanism trace: Application submits a query then Optimizer chooses operations then Engine reads and transforms rows then Rows and metrics return. Experiment: Change one index or predicate and compare estimated versus actual work.">
         <li class="trace-stage"><span>01 · SQL</span><strong>Application submits a query</strong><small>Parameters and transaction context define the request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>Optimizer chooses operations</strong><small>Statistics and indexes shape scans, joins, and order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Engine reads and transforms rows</strong><small>Buffers, locks, and I/O determine actual cost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>Rows and metrics return</strong><small>The plan and timing reveal whether the model was correct.</small></li>
       </ol>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Write hierarchy traversal and dependency queries, inspect their plans, and bound recursive behavior on cyclic data.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -149,7 +150,7 @@ EXPLAIN (ANALYZE, BUFFERS, VERBOSE) WITH candidates AS NOT MATERIALIZED (
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a data operation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database query from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one index or predicate and compare estimated versus actual work.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p></article>
@@ -160,19 +161,20 @@ EXPLAIN (ANALYZE, BUFFERS, VERBOSE) WITH candidates AS NOT MATERIALIZED (
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain when a CTE is organizational syntax, an optimization boundary, or a recursive evaluation mechanism.</li>
-      <li>Trace a data operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a database query for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you write hierarchy traversal and dependency queries, inspect their plans, and bound recursive behavior on cyclic data, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow parameterized subplans, decorrelation opportunities, CTE folding or materialization, working tables, recursion termination, and cycle safety.</p>
+        <p><strong>Worked answer criteria:</strong> The path marks a repeated node and prevents further expansion from that cycle row; the flagged row still appears. That does not bound depth or total work on a large acyclic graph. NOT MATERIALIZED is not a universal speed switch; explain repeated work and predicate pushdown on the actual plan.</p>
         <p><strong>Evidence to explain:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

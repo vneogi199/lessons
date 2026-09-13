@@ -31,7 +31,8 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Learn observation boundaries, stack traces, breakpoints, logging, profiling, and binary search.</p>
-      <p class="analogy"><strong>Analogy:</strong> Treat the development environment like an airport: processes are flights, file descriptors are gates, signals are control messages, and logs are the flight recorder.</p>
+      <p>Separate the observation (two computations) from its proposed cause (zero treated as absence). First reproduce with controlled inputs. Predict what each competing cause would produce, change one relevant condition, and preserve a regression check that fails under the old behavior. A stack trace shows a call path, not necessarily the originating cause; logs show only what was instrumented. Use a breakpoint for local state and a profiler for where time or allocation is spent. Instrumentation can alter timing, so keep concurrency and production-only hypotheses separate from this deterministic example.</p>
+      <p class="analogy"><strong>Analogy:</strong> Treat a bug report like competing explanations for a failed experiment: choose the next measurement that separates the explanations, not the change that merely looks plausible.</p>
     </section>
 
     <aside class="card blackboard">
@@ -89,6 +90,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Diagnose seeded frontend, backend, database, and AI-pipeline defects from evidence.</p>
+    <p><strong>Core and extension:</strong> Core check: execute the synchronous zero-cache reproducer and counterexample below. Extension: apply the same observation/prediction/intervention table to one existing frontend, backend, database or AI defect; no seeded multi-service system is supplied. Record the first observation that would disprove your leading explanation.</p>
 
 
 
@@ -165,6 +167,7 @@ assert.equal(calls, 2);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Learn observation boundaries, stack traces, breakpoints, logging, profiling, and binary search.</p>
+        <p><strong>Worked answer criteria:</strong> The broken function computes twice because !0 is true; Map.has checks membership independently of the stored value. The second key protects the miss path from a fix that simply disables computation. Compare removing a cheap cache with preserving it using correct membership semantics. If computation becomes async, simultaneous misses may require sharing an in-flight promise, with explicit rejection and eviction rules; this test provides no concurrency evidence. During an incident, bound impact or roll back when safe while preserving evidence; mitigation is not proof of root cause.</p>
         <p><strong>Evidence to explain:</strong> The assertions reproduce two calls, then establish one call per distinct key in this synchronous example.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>

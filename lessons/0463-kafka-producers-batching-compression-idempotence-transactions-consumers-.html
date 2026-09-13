@@ -125,6 +125,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Tune batch and linger settings, force a retry, compare idempotent and transactional production, scale a consumer group, trigger rebalances, and crash before and after an offset commit.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
 
 
 
@@ -152,7 +153,7 @@ async function handleBatch(consumer, database, records, applyBusinessEffect) {
   for (const record of records) {
     if (!record || typeof record.topic !== &quot;string&quot; || !record.topic ||
         !Number.isSafeInteger(record.partition) || record.partition &lt; 0 ||
-        typeof record.offset !== &quot;string&quot; || !/^(0|[1-9][0-9]{0,18})$/.test(record.offset)) {
+        typeof record.offset !== &quot;string&quot; || /^(0|[1-9][0-9]{0,18})$/.exec(record.offset)?.[0] !== record.offset) {
       throw new TypeError(&quot;invalid record metadata&quot;);
     }
     const offset = BigInt(record.offset);
@@ -225,6 +226,7 @@ async function handleBatch(consumer, database, records, applyBusinessEffect) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Accumulate keyed records into compressed batches, retry with producer identity and sequence numbers, optionally commit output and consumed positions transactionally, assign partitions across a group, and recover from stored offsets after rebalancing.</p>
+        <p><strong>Worked answer criteria:</strong> The batch validates metadata before effects, accepts increasing offset gaps and commits the next offset without Number precision loss. Full-string validation rejects trailing newlines as noncanonical offsets. Inbox identity must include cluster/topic incarnation and logical consumer purpose; a rebalance still requires effect fencing. The producer config is illustrative and Kafka transactions do not include this database automatically.</p>
         <p><strong>Evidence to explain:</strong> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Worked track case: An event is published twice after a crash ↗</a></p>

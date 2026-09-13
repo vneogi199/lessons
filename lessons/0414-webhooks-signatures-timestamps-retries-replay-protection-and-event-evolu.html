@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement webhook signing and verification, rotate secrets, reject replays, queue accepted work, and simulate lost responses and out-of-order events.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
 
 
 
@@ -128,11 +129,11 @@ function verifyWebhook(rawBody, headers, secret, nowSeconds) {
   if (!Buffer.isBuffer(rawBody) || rawBody.length &gt; 16_384) throw new Error(&quot;body limit/type&quot;);
   if (!Number.isSafeInteger(nowSeconds) || nowSeconds &lt; 0) throw new Error(&quot;invalid clock&quot;);
   const stamp = headers[&quot;x-hook-timestamp&quot;];
-  if (typeof stamp !== &quot;string&quot; || !/^(0|[1-9][0-9]*)$/.test(stamp)) throw new Error(&quot;invalid timestamp&quot;);
+  if (typeof stamp !== &quot;string&quot; || /^(0|[1-9][0-9]*)$/.exec(stamp)?.[0] !== stamp) throw new Error(&quot;invalid timestamp&quot;);
   const timestamp = Number(stamp);
   if (!Number.isSafeInteger(timestamp) || Math.abs(nowSeconds - timestamp) &gt; 300) throw new Error(&quot;stale&quot;);
   const signature = headers[&quot;x-hook-signature&quot;];
-  if (typeof signature !== &quot;string&quot; || !/^[0-9a-f]{64}$/.test(signature)) throw new Error(&quot;bad signature format&quot;);
+  if (typeof signature !== &quot;string&quot; || /^[0-9a-f]{64}$/.exec(signature)?.[0] !== signature) throw new Error(&quot;bad signature format&quot;);
   const expected = createHmac(&quot;sha256&quot;, secret).update(stamp + &quot;.&quot;).update(rawBody).digest();
   const supplied = Buffer.from(signature, &quot;hex&quot;);
   if (!timingSafeEqual(supplied, expected)) throw new Error(&quot;bad signature&quot;);
@@ -149,6 +150,8 @@ assert.throws(() =&gt; verifyWebhook(body, headers, secret, NaN), /clock/);
 assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-signature&quot;: signature + &quot;zz&quot; }, secret, Number(stamp)), /format/);
 assert.throws(() =&gt; verifyWebhook(Buffer.from(&quot;{}&quot;), headers, secret, Number(stamp)), /signature/);
 assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-timestamp&quot;: &quot;&quot; }, secret, Number(stamp)), /timestamp/);
+assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-timestamp&quot;: stamp + &quot;\n&quot; }, secret, Number(stamp)), /timestamp/);
+assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-signature&quot;: signature + &quot;\n&quot; }, secret, Number(stamp)), /format/);
 // A valid signature authenticates bytes, not the event schema or tenant authority.
 // Validate both after verification. Timestamp tolerance does not stop replay
 // within the window: durable scoped inbox + work acceptance must precede 2xx.
@@ -196,6 +199,7 @@ assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-timestamp&
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
+        <p><strong>Worked answer criteria:</strong> Verification binds the timestamp string and original bytes before JSON decoding. Full-string checks now reject newline-suffixed timestamps and hex signatures. A valid signature and five-minute window do not prevent duplicate effects within that window; validate event schema and atomically persist scoped acceptance before acknowledgement.</p>
         <p><strong>Evidence to explain:</strong> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

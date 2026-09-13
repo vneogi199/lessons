@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="message-delivery" aria-label="Mechanism trace: Producer emits identified intent or fact then Durable channel stores and assigns then Consumer creates a local effect then Ack, commit, retry, quarantine, or replay. Experiment: Crash at every boundary before and after the side effect and acknowledgement.">
-        <li class="trace-stage"><span>01 · PUBLISH</span><strong>Producer emits identified intent or fact</strong><small>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and assigns</strong><small>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Consumer creates a local effect</strong><small>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Ack, commit, retry, quarantine, or replay</strong><small>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</small></li>
+      <ol class="trace-flow" data-flow="distributed-message" aria-label="Mechanism trace: A client starts an operation then Message crosses an uncertain boundary then Receiver applies guarded state change then Caller sees success or uncertainty. Experiment: Drop the response after committing, then retry the same logical command.">
+        <li class="trace-stage"><span>01 · INTENT</span><strong>A client starts an operation</strong><small>Identity, deadline, and idempotency context are attached.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NETWORK</span><strong>Message crosses an uncertain boundary</strong><small>It may be delayed, duplicated, reordered, or lost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><strong>Receiver applies guarded state change</strong><small>Transactions, deduplication, and retries protect invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Caller sees success or uncertainty</strong><small>Logs and state must distinguish response loss from work loss.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Crash at every boundary before and after the side effect and acknowledgement.</strong>
-        <small><b>Inspect:</b> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</small>
+        <strong>Drop the response after committing, then retry the same logical command.</strong>
+        <small><b>Inspect:</b> Correlation ID, attempt count, idempotency record, state change, and final response.</small>
       </div>
     </aside>
   </div>
@@ -88,24 +88,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · PUBLISH</span>
-        <h3>Producer emits identified intent or fact</h3>
-        <p>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</p>
+        <span>01 · INTENT</span>
+        <h3>A client starts an operation</h3>
+        <p>Identity, deadline, and idempotency context are attached.</p>
       </article><article>
-        <span>02 · BROKER</span>
-        <h3>Durable channel stores and assigns</h3>
-        <p>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</p>
+        <span>02 · NETWORK</span>
+        <h3>Message crosses an uncertain boundary</h3>
+        <p>It may be delayed, duplicated, reordered, or lost.</p>
       </article><article>
-        <span>03 · PROCESS</span>
-        <h3>Consumer creates a local effect</h3>
-        <p>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</p>
+        <span>03 · SERVICE</span>
+        <h3>Receiver applies guarded state change</h3>
+        <p>Transactions, deduplication, and retries protect invariants.</p>
       </article><article>
-        <span>04 · SETTLE</span>
-        <h3>Ack, commit, retry, quarantine, or replay</h3>
-        <p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p>
+        <span>04 · OUTCOME</span>
+        <h3>Caller sees success or uncertainty</h3>
+        <p>Logs and state must distinguish response loss from work loss.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash at every boundary before and after the side effect and acknowledgement.</p><p><strong>Then inspect:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Drop the response after committing, then retry the same logical command.</p><p><strong>Then inspect:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p></div>
   </section>
 
   
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Use a fault proxy to add delay, loss, reset, duplication, and partition behavior and verify bounded retries and idempotent state.</p>
+    <p><strong>Core and extension:</strong> Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
 <p><strong>Distinct exercise:</strong> Reuse the fault plan to separate delayed, lost, duplicated and reordered application messages. TCP&#039;s ordered byte stream does not give application-level exactly-once effects or a failure detector. Trace a successful write with a lost response and decide how retry learns the result.</p>
 
 
@@ -149,16 +150,16 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> A client starts an operation → Message crosses an uncertain boundary → Receiver applies guarded state change → Caller sees success or uncertainty. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Crash at every boundary before and after the side effect and acknowledgement.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Drop the response after committing, then retry the same logical command.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Correlation ID, attempt count, idempotency record, state change, and final response.</p></article>
     </div>
   </section>
 
@@ -179,7 +180,8 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
-        <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
+        <p><strong>Worked answer criteria:</strong> TCP hides packet duplication and reordering within a surviving connection; duplicate application operations arise through retries or another application-level delivery path. State which layer the fault proxy changes. A reset after commit and a reset before receipt can look identical, so reconcile stable operation identity at the authority. The missing injector is not a runnable network lab.</p>
+        <p><strong>Evidence to explain:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>

@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace a diagnostic experiment</h2>
-      <ol class="trace-flow" data-flow="fastapi-process" aria-label="Mechanism trace: Process imports the application then Shared resources are acquired then Readiness admits requests then Shutdown stops and cleans up. Experiment: Send a termination signal during a slow request and observe the drain sequence.">
-        <li class="trace-stage"><span>01 · START</span><strong>Process imports the application</strong><small>Configuration and route registration happen per worker.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LIFESPAN</span><strong>Shared resources are acquired</strong><small>Pools and clients become owned by this process.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVE</span><strong>Readiness admits requests</strong><small>The worker handles bounded concurrent traffic.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DRAIN</span><strong>Shutdown stops and cleans up</strong><small>Readiness drops, requests finish, then resources close.</small></li>
+      <ol class="trace-flow" data-flow="fastapi-diagnostics" aria-label="Mechanism trace: Define the measured boundary then Collect bounded, attributable signals then Test one bottleneck hypothesis then Check improvement and regressions. Experiment: Slow the database without changing CPU work and predict which timings and queues rise.">
+        <li class="trace-stage"><span>01 · QUESTION</span><strong>Define the measured boundary</strong><small>Separate response creation, full body delivery and admission wait.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · OBSERVE</span><strong>Collect bounded, attributable signals</strong><small>Record errors, representative latency, CPU and pool wait without secret or unbounded labels.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMPARE</span><strong>Test one bottleneck hypothesis</strong><small>Keep offered load and workload comparable; success-only closed-loop results have limits.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Check improvement and regressions</strong><small>Recheck correctness, memory, errors and tail behavior before accepting a change.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Send a termination signal during a slow request and observe the drain sequence.</strong>
-        <small><b>Inspect:</b> Process log, readiness state, in-flight count, exit code, and resource cleanup.</small>
+        <strong>Slow the database without changing CPU work and predict which timings and queues rise.</strong>
+        <small><b>Inspect:</b> Measurement definition, failures, queueing and before/after evidence; no production load test is supplied.</small>
       </div>
     </aside>
   </div>
@@ -80,24 +80,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · START</span>
-        <h3>Process imports the application</h3>
-        <p>Configuration and route registration happen per worker.</p>
+        <span>01 · QUESTION</span>
+        <h3>Define the measured boundary</h3>
+        <p>Separate response creation, full body delivery and admission wait.</p>
       </article><article>
-        <span>02 · LIFESPAN</span>
-        <h3>Shared resources are acquired</h3>
-        <p>Pools and clients become owned by this process.</p>
+        <span>02 · OBSERVE</span>
+        <h3>Collect bounded, attributable signals</h3>
+        <p>Record errors, representative latency, CPU and pool wait without secret or unbounded labels.</p>
       </article><article>
-        <span>03 · SERVE</span>
-        <h3>Readiness admits requests</h3>
-        <p>The worker handles bounded concurrent traffic.</p>
+        <span>03 · COMPARE</span>
+        <h3>Test one bottleneck hypothesis</h3>
+        <p>Keep offered load and workload comparable; success-only closed-loop results have limits.</p>
       </article><article>
-        <span>04 · DRAIN</span>
-        <h3>Shutdown stops and cleans up</h3>
-        <p>Readiness drops, requests finish, then resources close.</p>
+        <span>04 · VERIFY</span>
+        <h3>Check improvement and regressions</h3>
+        <p>Recheck correctness, memory, errors and tail behavior before accepting a change.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Send a termination signal during a slow request and observe the drain sequence.</p><p><strong>Then inspect:</strong> Process log, readiness state, in-flight count, exit code, and resource cleanup.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow the database without changing CPU work and predict which timings and queues rise.</p><p><strong>Then inspect:</strong> Measurement definition, failures, queueing and before/after evidence; no production load test is supplied.</p></div>
   </section>
 
   
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Load-test a representative endpoint, profile CPU and allocations, measure pool contention, change one bottleneck, and report before and after evidence.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -154,16 +155,16 @@ async def benchmark(client: AsyncClient, requests: int, concurrency: int):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Process imports the application → Shared resources are acquired → Readiness admits requests → Shutdown stops and cleans up. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Define the measured boundary → Collect bounded, attributable signals → Test one bottleneck hypothesis → Check improvement and regressions. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Send a termination signal during a slow request and observe the drain sequence.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slow the database without changing CPU work and predict which timings and queues rise.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Process log, readiness state, in-flight count, exit code, and resource cleanup.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Measurement definition, failures, queueing and before/after evidence; no production load test is supplied.</p></article>
     </div>
   </section>
 
@@ -184,7 +185,8 @@ async def benchmark(client: AsyncClient, requests: int, concurrency: int):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Decompose latency into queueing, validation, endpoint work, database or upstream waits, serialization, event-loop delay, worker scheduling, and memory duplication.</p>
-        <p><strong>Evidence to explain:</strong> Process log, readiness state, in-flight count, exit code, and resource cleanup.</p>
+        <p><strong>Worked answer criteria:</strong> The finite worker count bounds task creation, but latencies retains one sample per request. This is closed-loop success-only timing; errors abort the run and admission wait is excluded. Supply a percentile definition and representative client before comparing throughput or p99. More workers multiply memory and pools.</p>
+        <p><strong>Evidence to explain:</strong> Measurement definition, failures, queueing and before/after evidence; no production load test is supplied.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>

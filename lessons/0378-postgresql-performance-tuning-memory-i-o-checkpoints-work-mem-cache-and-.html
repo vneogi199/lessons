@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an object&#039;s lifetime</h2>
+      <h2>Trace a diagnostic experiment</h2>
       <ol class="trace-flow" data-flow="postgres-diagnostics" aria-label="Mechanism trace: Define the slow or failing workload then Locate waiting and repeated work then Test one bounded intervention then Check improvement and regressions. Experiment: A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.">
         <li class="trace-stage"><span>01 · SYMPTOM</span><strong>Define the slow or failing workload</strong><small>Record request shape, concurrency, time window and the affected service objective.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><strong>Locate waiting and repeated work</strong><small>Session waits, query statistics, plans and host metrics narrow the hypothesis.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Test one bounded intervention</strong><small>Use representative data and hold workload conditions steady enough for comparison.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Check improvement and regressions</strong><small>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</small></li>
       </ol>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Establish a reproducible baseline, change one setting, load-test to saturation, and retain latency, throughput, error, and resource evidence.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 <p><strong>Distinct exercise:</strong> Reuse observability queries as a baseline, then change one measured bottleneck under representative concurrency. Budget work_mem across concurrent operations rather than treating it as a single server-wide allocation. Keep throughput, latency and memory evidence together.</p>
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -155,7 +156,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p></article>
@@ -166,19 +167,20 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain why PostgreSQL tuning starts with workload and query evidence rather than a universal configuration template.</li>
-      <li>Trace an object&#039;s lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a diagnostic experiment for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you establish a reproducible baseline, change one setting, load-test to saturation, and retain latency, throughput, error, and resource evidence, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Relate workload concurrency to shared and per-operation memory, operating-system cache, storage latency, WAL pressure, checkpoint pacing, and saturation queues.</p>
+        <p><strong>Worked answer criteria:</strong> work_mem applies to individual operations and can multiply across workers and concurrent queries; hash memory may use an additional multiplier. Shared buffers and OS cache are different layers. The shared diagnostics script supplies no load generator or tuning change: establish matched baselines before modifying settings.</p>
         <p><strong>Evidence to explain:</strong> Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Draw scope chains for nested blocks and functions and inspect shadowing, accidental globals, and global object bindings.</p>
+    <p><strong>Core and extension:</strong> Core: predict and run the supplied bounded JavaScript fixture, then explain one changed input. Use a modern Node ES module unless the snippet explicitly requests a browser. Browser comparisons, debugger/heap inspection and broader lab variants are extensions, not results established by this starter.</p>
 <p><strong>Distinct exercise:</strong> Run as an ES module. Trace identifier resolution from the returned closure through block, function and module bindings; shadow one name and predict which binding is read.</p>
 
 
@@ -116,10 +117,10 @@
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>&quot;use strict&quot;;
-let globalLexical = &quot;module binding&quot;;
+let globalLexical = &quot;module binding&quot;; // Save as .mjs; this is not a globalThis property.
 
 function outer(parameter) {
-  var functionScoped = &quot;created during declaration instantiation&quot;;
+  var functionScoped = &quot;assigned when this statement executes&quot;;
   if (parameter) {
     let blockScoped = &quot;initialized when this declaration executes&quot;;
     return function inner() {
@@ -131,12 +132,15 @@ function outer(parameter) {
 const closure = outer(&quot;input&quot;);
 console.log(closure());
 
+let sawTemporalDeadZone = false;
 try {
   console.log(temporal);
   let temporal = 1;
 } catch (error) {
   console.assert(error instanceof ReferenceError);
+  sawTemporalDeadZone = true;
 }
+console.assert(sawTemporalDeadZone, &quot;expected access before initialization to fail&quot;);
 
 // Resolve identifiers through linked lexical environments—not by searching
 // debugger stack frames or moving declaration source text upward.</code></pre>
@@ -182,6 +186,7 @@ try {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace declarative, object, global, function, and module environment records linked by outer references during identifier resolution.</p>
+        <p><strong>Worked answer criteria:</strong> Resolve inner names through the defining block, function and module, not the caller&#039;s locals. Binding creation and assignment are different events. Run this fixture as an ES module before discussing globalThis; browser classic scripts and Node CommonJS have different top-level behavior. Shadowing changes lookup without changing the outer value.</p>
         <p><strong>Evidence to explain:</strong> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

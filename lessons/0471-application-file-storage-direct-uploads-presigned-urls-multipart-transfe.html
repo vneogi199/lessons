@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a direct-to-object-storage upload flow with short-lived authorization, size and type limits, checksum verification, quarantine scanning, durable metadata, private delivery, and deletion cleanup.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -220,6 +221,7 @@ def complete_upload(user, upload_id, s3, db, jobs):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate file bytes from database metadata while tracing authorization, temporary upload capability, multipart assembly, content validation, quarantine, object naming, versioning, lifecycle policy, and controlled download.</p>
+        <p><strong>Worked answer criteria:</strong> The flow uses a presigned POST, not a multipart implementation. The signed range allows up to MAX_BYTES; completion separately enforces the declared size and checksum. A reusable upload grant can replace the key, so bind scan and promotion to the accepted immutable VersionId. Missing database/job adapters must commit together; pending records, abandoned parts and rejected versions need cleanup ownership.</p>
         <p><strong>Evidence to explain:</strong> Grant conditions, object checksum and size, multipart state, scanner result, metadata transition, authorization decision, lifecycle action, and bytes removed.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>

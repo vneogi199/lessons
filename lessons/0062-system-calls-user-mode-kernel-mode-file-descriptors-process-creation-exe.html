@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Trace pipe descriptors through process creation and cleanup, observe signals and exit codes, and prove every descriptor has one owner and close path.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -142,7 +143,7 @@ finally:
         os.close(write_fd)
 
 # os.pipe/read/write/close cross through C-library wrappers to kernel objects.
-# fork creates a process; exec replaces its program; wait retains its exit status.</code></pre>
+# fork creates a process; exec replaces its program; wait collects child status.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -185,6 +186,7 @@ finally:
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Cross the user-kernel boundary through library wrappers and system calls, represent open resources with descriptors, create and replace processes, deliver signals, and retain exit status for a parent.</p>
+        <p><strong>Worked answer criteria:</strong> The local pipe crosses real OS wrappers and closes both descriptors even on failure. A five-byte fixture is not a general framing/read-exactly helper: larger or interrupted I/O needs explicit loops and error handling. fork creates another process; exec replaces the image; wait collects status and reaps a child. A descriptor number can be reused after close, so ownership must prevent stale users from acting on a different resource. No fork/exec or signal experiment is executed here.</p>
         <p><strong>Evidence to explain:</strong> Return values, errno, process state, scheduler events, memory counters, file metadata, and resource limits.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>

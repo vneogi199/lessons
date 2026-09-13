@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an iteration step</h2>
+      <h2>Trace a streamed event</h2>
       <ol class="trace-flow" data-flow="fastapi-stream" aria-label="Mechanism trace: Client opens a long-lived channel then Application owns connection state then Messages or chunks move then Resources are released. Experiment: Slow or disconnect the client mid-stream and predict which cleanup runs.">
         <li class="trace-stage"><span>01 · CONNECT</span><strong>Client opens a long-lived channel</strong><small>Handshake metadata establishes the connection.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ACCEPT</span><strong>Application owns connection state</strong><small>Authentication and resource limits must already be clear.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FLOW</span><strong>Messages or chunks move</strong><small>Backpressure and cancellation govern slow consumers.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DISCONNECT</span><strong>Resources are released</strong><small>Tasks, generators, subscriptions, and sockets stop.</small></li>
       </ol>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Stream typed server events with heartbeats, disconnect detection, proxy-safe headers, and a cancellation test.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -155,7 +156,7 @@ async def stream_events(request: Request, project_id: UUID):
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an iteration step from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a streamed event from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slow or disconnect the client mid-stream and predict which cleanup runs.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p></article>
@@ -166,19 +167,20 @@ async def stream_events(request: Request, project_id: UUID):
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Choose among SSE, WebSockets, polling, and ordinary streaming based on directionality and operational cost.</li>
-      <li>Trace an iteration step for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a streamed event for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you stream typed server events with heartbeats, disconnect detection, proxy-safe headers, and a cancellation test, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a streamed event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
+        <p><strong>Worked answer criteria:</strong> The timeout scope exits before each yield, and metadata rejects framing controls. Heartbeats aid idle connections but do not guarantee delivery or replay. Empty data may dispatch no event; define event JSON and size contracts. Last-Event-ID recovery and proxy buffering need separate server/client tests.</p>
         <p><strong>Evidence to explain:</strong> Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>

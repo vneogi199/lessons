@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Predict reads and writes before declarations across scripts, modules, functions, and blocks.</p>
+    <p><strong>Core and extension:</strong> Core: predict and run the supplied bounded JavaScript fixture, then explain one changed input. Use a modern Node ES module unless the snippet explicitly requests a browser. Browser comparisons, debugger/heap inspection and broader lab variants are extensions, not results established by this starter.</p>
 <p><strong>Distinct exercise:</strong> Predict the TDZ failure, then replace the local declaration with var in a disposable copy. Explain declaration instantiation separately from assignment; hoisting is not literal source-code movement.</p>
 
 
@@ -120,10 +121,10 @@
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>&quot;use strict&quot;;
-let globalLexical = &quot;module binding&quot;;
+let globalLexical = &quot;module binding&quot;; // Save as .mjs; this is not a globalThis property.
 
 function outer(parameter) {
-  var functionScoped = &quot;created during declaration instantiation&quot;;
+  var functionScoped = &quot;assigned when this statement executes&quot;;
   if (parameter) {
     let blockScoped = &quot;initialized when this declaration executes&quot;;
     return function inner() {
@@ -135,12 +136,15 @@ function outer(parameter) {
 const closure = outer(&quot;input&quot;);
 console.log(closure());
 
+let sawTemporalDeadZone = false;
 try {
   console.log(temporal);
   let temporal = 1;
 } catch (error) {
   console.assert(error instanceof ReferenceError);
+  sawTemporalDeadZone = true;
 }
+console.assert(sawTemporalDeadZone, &quot;expected access before initialization to fail&quot;);
 
 // Resolve identifiers through linked lexical environments—not by searching
 // debugger stack frames or moving declaration source text upward.</code></pre>
@@ -186,6 +190,7 @@ try {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare declaration instantiation, var and lexical environment placement, initialization timing, redeclaration rules, and top-level host behavior.</p>
+        <p><strong>Worked answer criteria:</strong> The lexical binding exists but is uninitialized before its declaration, so the read throws. Replacing let with var makes that early read undefined, not the later assigned value. const forbids reassignment, not object mutation. The expected-failure assertion must also fail if no exception occurs.</p>
         <p><strong>Evidence to explain:</strong> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

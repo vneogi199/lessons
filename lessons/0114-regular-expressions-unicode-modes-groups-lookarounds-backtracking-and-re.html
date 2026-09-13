@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="Unicode modes">
         <span>02</span>
         <h3>Unicode modes</h3>
-        <p><strong>What it means:</strong> Unicode assigns code points to text symbols, while JavaScript strings store UTF-16 code units. Encoding units, code points, and visible grapheme clusters are different counting boundaries.</p>
+        <p><strong>What it means:</strong> The u and v regular-expression flags enable Unicode-aware pattern semantics; v additionally supports Unicode set notation and properties of strings. They cannot be combined and neither makes matching equivalent to grapheme segmentation. Check target-runtime support.</p>
       </article><article class="concept-card" data-subtopic="groups">
         <span>03</span>
         <h3>groups</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build and test a bounded validation regex, then expose and repair a catastrophic-backtracking case.</p>
+    <p><strong>Core and extension:</strong> Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review.</p>
 
 
 
@@ -126,10 +127,11 @@ console.assert(match?.groups?.id === &quot;42&quot;);
 
 function validateIdentifier(value) {
   if (typeof value !== &quot;string&quot; || value.length &gt; 64) return false; // bound work before matching
-  return safeIdentifier.test(value);
+  return safeIdentifier.exec(value)?.[0] === value; // $ can match before a final line terminator.
 }
 
 console.assert(validateIdentifier(&quot;project-42&quot;));
+console.assert(!validateIdentifier(&quot;project-42\n&quot;));
 console.assert(!validateIdentifier(&quot;project-&quot; + &quot;9&quot;.repeat(1_000)));
 
 // Avoid nested ambiguous repetitions such as /^(a+)+$/ on untrusted input;
@@ -176,6 +178,7 @@ console.assert(!validateIdentifier(&quot;project-&quot; + &quot;9&quot;.repeat(1
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow pattern compilation and backtracking choices, Unicode-aware matching, capture state, lastIndex, and catastrophic ambiguity.</p>
+        <p><strong>Worked answer criteria:</strong> The 64-code-unit cap bounds matching input, and full-match comparison rejects a trailing newline that dollar anchoring alone can admit. The u flag changes Unicode pattern semantics but is not grapheme matching or a performance guarantee. Never run an unbounded catastrophic pattern to prove the risk; use a separately bounded experiment.</p>
         <p><strong>Evidence to explain:</strong> Validated representation, prototype state, regex timing, error, audit event, and dependency provenance.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

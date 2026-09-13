@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a dependency-ordered request trace, inspect DNS and certificate data with system tools, and compare connection setup, multiplexing, caching, and failure evidence.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -125,11 +126,14 @@ def request_plan(url: str) -&gt; list[str]:
     parsed = urlsplit(url)
     if parsed.scheme != &quot;https&quot; or not parsed.hostname:
         raise ValueError(&quot;absolute HTTPS URL required&quot;)
+    target = parsed.path or &quot;/&quot;
+    if parsed.query:
+        target += &quot;?&quot; + parsed.query
     return [
         f&quot;DNS resolve {parsed.hostname}&quot;,
         &quot;connect transport&quot;,
         f&quot;TLS authenticate {parsed.hostname}&quot;,
-        f&quot;HTTP GET {parsed.path or &#039;/&#039;}&quot;,
+        f&quot;HTTP GET {target}&quot;,
         &quot;validate response and cache policy&quot;,
     ]
 
@@ -137,6 +141,7 @@ plan = request_plan(&quot;https://example.com/health&quot;)
 assert plan[0] == &quot;DNS resolve example.com&quot;
 assert plan[2] == &quot;TLS authenticate example.com&quot;
 assert plan[-1].startswith(&quot;validate&quot;)
+assert request_plan(&quot;https://example.com/search?q=cache#section&quot;)[3] == &quot;HTTP GET /search?q=cache&quot;
 # HTTP semantics stay stable while HTTP/1.1, HTTP/2, and HTTP/3 frame and
 # multiplex messages differently over TCP or QUIC.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -181,6 +186,7 @@ assert plan[-1].startswith(&quot;validate&quot;)
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Resolve a name through caches and authoritative data, authenticate and encrypt a transport, exchange HTTP representations, and compare HTTP/1.1, HTTP/2, and HTTP/3 connection behavior.</p>
+        <p><strong>Worked answer criteria:</strong> The request target includes path and query, but not the fragment; the corrected planner checks that distinction. It is an explanatory cold-path plan, not DNS resolution, certificate validation, SSRF filtering or a client implementation. Cached names and reusable connections can skip setup; HTTP/3 uses QUIC rather than TCP. Compare connection reuse with independent connections under shared failure/capacity constraints, and verify hostname/trust policy before interpreting encrypted traffic as authenticated access.</p>
         <p><strong>Evidence to explain:</strong> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>

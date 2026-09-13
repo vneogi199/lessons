@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a module import</h2>
+      <h2>Trace a filesystem access decision</h2>
       <ol class="trace-flow" data-flow="node-boundary" aria-label="Mechanism trace: External text or authority enters then Parser establishes a narrow contract then Least-authority API performs work then Safe output or denial is recorded. Experiment: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.">
         <li class="trace-stage"><span>01 · UNTRUSTED</span><strong>External text or authority enters</strong><small>HTTP, environment, path, URL, command, package, or file input is unproven.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · VALIDATE</span><strong>Parser establishes a narrow contract</strong><small>Format, size, destination, permissions, and policy reject unsafe cases.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Least-authority API performs work</strong><small>Argument arrays, direct opens, AbortSignal, and permission controls constrain impact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUDIT</span><strong>Safe output or denial is recorded</strong><small>Redacted evidence proves both allowed and adversarial paths.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Resolve a user filename beneath an allowed root and reject traversal and encoded boundary escapes.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -157,7 +158,7 @@ console.assert(fileURLToPath(import.meta.url).endsWith(&quot;.mjs&quot;));
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a module import from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a filesystem access decision from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: parsed value, resolved path or address, permission decision, spawned argv, error, audit record, and changed resources.</p></article>
@@ -168,19 +169,20 @@ console.assert(fileURLToPath(import.meta.url).endsWith(&quot;.mjs&quot;));
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain why string concatenation and prefix checks are unsafe path controls.</li>
-      <li>Trace a module import for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a filesystem access decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you resolve a user filename beneath an allowed root and reject traversal and encoded boundary escapes, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a filesystem access decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate opaque filesystem paths from URL semantics, normalize without confusing authorization, and account for platform roots and separators.</p>
+        <p><strong>Worked answer criteria:</strong> relative checks lexical containment, not symlink-safe authority. The conservative startsWith(&#039;..&#039;) also rejects valid names beginning with two dots. Decode URL input once at the boundary before applying filesystem policy. A trusted directory and platform-aware open strategy remain required.</p>
         <p><strong>Evidence to explain:</strong> parsed value, resolved path or address, permission decision, spawned argv, error, audit record, and changed resources.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>

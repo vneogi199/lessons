@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build one request parser that rejects oversized, ambiguous, duplicate, unknown, malformed, and policy-invalid input before business effects.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
 
 
 
@@ -127,7 +128,7 @@ function parseJob(body) {
   const allowed = new Set([&quot;project_id&quot;, &quot;input_uri&quot;, &quot;priority&quot;]);
   if (!raw || typeof raw !== &quot;object&quot; || Array.isArray(raw) ||
       Object.keys(raw).some(key =&gt; !allowed.has(key))) throw new TypeError(&quot;invalid fields&quot;);
-  if (typeof raw.project_id !== &quot;string&quot; || !/^prj_[a-z0-9]{1,64}$/.test(raw.project_id)) {
+  if (typeof raw.project_id !== &quot;string&quot; || /^prj_[a-z0-9]{1,64}$/.exec(raw.project_id)?.[0] !== raw.project_id) {
     throw new TypeError(&quot;invalid project_id&quot;);
   }
   if (!Number.isInteger(raw.priority) || raw.priority &lt; 0 || raw.priority &gt; 9) {
@@ -145,6 +146,7 @@ const valid = { project_id: &quot;prj_42&quot;, input_uri: &quot;https://objects
 const encode = value =&gt; Buffer.from(JSON.stringify(value));
 assert.equal(parseJob(encode(valid)).priority, 2);
 for (const value of [null, [], { ...valid, extra: true }, { ...valid, priority: -1 },
+  { ...valid, project_id: &quot;prj_42\n&quot; },
   { ...valid, input_uri: 42 }, { ...valid, input_uri: &quot;file:///etc/passwd&quot; },
   { ...valid, input_uri: &quot;https://objects.example.test.evil.test/input&quot; }]) {
   assert.throws(() =&gt; parseJob(encode(value)));
@@ -198,6 +200,7 @@ assert.throws(() =&gt; parseJob(Buffer.from([255])), /UTF-8 JSON/);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Parse untrusted bytes into a bounded syntactic shape, normalize only explicitly equivalent forms, validate domain policy, and preserve useful multi-field diagnostics.</p>
+        <p><strong>Worked answer criteria:</strong> The parser fails fast and JSON.parse accepts duplicate names with last-value behavior, so it does not implement aggregated errors or duplicate rejection. The revised project-ID check rejects a final newline, which JavaScript&#039;s dollar anchor alone permits. UTF-8/byte/schema checks still do not authorize the project or make outbound connections SSRF-safe.</p>
         <p><strong>Evidence to explain:</strong> Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

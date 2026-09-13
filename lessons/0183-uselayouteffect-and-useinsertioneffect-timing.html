@@ -37,13 +37,13 @@
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
       <h2>Trace an external synchronization cycle</h2>
-      <ol class="trace-flow" data-flow="react-effect" aria-label="Mechanism trace: New UI state is committed then Previous synchronization stops then Effect synchronizes again then Outside system changes. Experiment: Change one dependency and verify cleanup happens before the new setup.">
-        <li class="trace-stage"><span>01 · COMMIT</span><strong>New UI state is committed</strong><small>The DOM now represents the latest render.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CLEANUP</span><strong>Previous synchronization stops</strong><small>Release the old timer, listener, or connection.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SETUP</span><strong>Effect synchronizes again</strong><small>Use the committed dependency values.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXTERNAL</span><strong>Outside system changes</strong><small>The browser or service exposes the result.</small></li>
+      <ol class="trace-flow" data-flow="react-layout-timing" aria-label="Mechanism trace: Compute the element description then Library styles become available then Measure committed DOM then The browser can display the result. Experiment: Change the tooltip content and compare a layout correction with passive measurement.">
+        <li class="trace-stage"><span>01 · RENDER</span><strong>Compute the element description</strong><small>Do not read layout or insert external styles during render.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INSERT</span><strong>Library styles become available</strong><small>Insertion Effects precede Layout Effects; do not assume refs or a particular DOM mutation order here.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · LAYOUT</span><strong>Measure committed DOM</strong><small>Layout Effects can measure and queue corrections before paint, blocking paint while they run.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PAINT</span><strong>The browser can display the result</strong><small>Later resizing, font loading or anchor movement requires its own synchronization.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one dependency and verify cleanup happens before the new setup.</strong>
-        <small><b>Inspect:</b> Effect log order, active handles, DOM state, and Strict Mode replay.</small>
+        <strong>Change the tooltip content and compare a layout correction with passive measurement.</strong>
+        <small><b>Inspect:</b> Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.</small>
       </div>
     </aside>
   </div>
@@ -68,24 +68,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · COMMIT</span>
-        <h3>New UI state is committed</h3>
-        <p>The DOM now represents the latest render.</p>
+        <span>01 · RENDER</span>
+        <h3>Compute the element description</h3>
+        <p>Do not read layout or insert external styles during render.</p>
       </article><article>
-        <span>02 · CLEANUP</span>
-        <h3>Previous synchronization stops</h3>
-        <p>Release the old timer, listener, or connection.</p>
+        <span>02 · INSERT</span>
+        <h3>Library styles become available</h3>
+        <p>Insertion Effects precede Layout Effects; do not assume refs or a particular DOM mutation order here.</p>
       </article><article>
-        <span>03 · SETUP</span>
-        <h3>Effect synchronizes again</h3>
-        <p>Use the committed dependency values.</p>
+        <span>03 · LAYOUT</span>
+        <h3>Measure committed DOM</h3>
+        <p>Layout Effects can measure and queue corrections before paint, blocking paint while they run.</p>
       </article><article>
-        <span>04 · EXTERNAL</span>
-        <h3>Outside system changes</h3>
-        <p>The browser or service exposes the result.</p>
+        <span>04 · PAINT</span>
+        <h3>The browser can display the result</h3>
+        <p>Later resizing, font loading or anchor movement requires its own synchronization.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one dependency and verify cleanup happens before the new setup.</p><p><strong>Then inspect:</strong> Effect log order, active handles, DOM state, and Strict Mode replay.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change the tooltip content and compare a layout correction with passive measurement.</p><p><strong>Then inspect:</strong> Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.</p></div>
   </section>
 
   
@@ -93,6 +93,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Remove tooltip flicker with measured layout and prototype style injection without blocking more work than necessary.</p>
+    <p><strong>Core and extension:</strong> Core: explain the supplied component or acceptance recipe and predict one changed-input result. Component snippets require the project&#039;s React imports, named collaborators and compatible runtime; they are not standalone files. Browser, framework, accessibility and deployment acceptance need separate execution evidence. No packages are installed by this review.</p>
 
 
 
@@ -116,7 +117,7 @@
     setHeight(ref.current.getBoundingClientRect().height);
   }, [children]);
 
-  return &lt;div ref={ref} style={{ top: anchorRect.top - height }}&gt;{children}&lt;/div&gt;;
+  return &lt;div ref={ref} style={{ position: &quot;fixed&quot;, left: anchorRect.left, top: anchorRect.top - height }}&gt;{children}&lt;/div&gt;;
 }</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
@@ -130,16 +131,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> New UI state is committed → Previous synchronization stops → Effect synchronizes again → Outside system changes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Compute the element description → Library styles become available → Measure committed DOM → The browser can display the result. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an external synchronization cycle from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one dependency and verify cleanup happens before the new setup.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change the tooltip content and compare a layout correction with passive measurement.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Effect log order, active handles, DOM state, and Strict Mode replay.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.</p></article>
     </div>
   </section>
 
@@ -160,7 +161,8 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare insertion, mutation, layout, paint, and passive-effect timing, including server-rendering constraints and why insertion effects target CSS-in-JS libraries.</p>
-        <p><strong>Evidence to explain:</strong> Effect log order, active handles, DOM state, and Strict Mode replay.</p>
+        <p><strong>Worked answer criteria:</strong> Fixed positioning now makes the viewport-relative anchor coordinates effective. Layout measurement blocks paint; it does not track later font, resize or scroll changes automatically. The style registry must return cleanup and belongs to the library integration. Do not use insertion effects for ordinary application synchronization.</p>
+        <p><strong>Evidence to explain:</strong> Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
       </details>

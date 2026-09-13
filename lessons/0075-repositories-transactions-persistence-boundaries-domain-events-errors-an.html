@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement an in-memory repository and transaction-shaped booking service that rolls back failed work and emits one event after commit.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -183,6 +184,7 @@ assert list(repository.items) == [&quot;b-1&quot;] and events == [{&quot;type&qu
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Keep domain policy separate from storage details, commit related changes atomically, publish facts after authoritative state changes, and retain enough evidence to retry or repair failures.</p>
+        <p><strong>Worked answer criteria:</strong> The repository write and event append are separate effects. Inject append failure and observe a stored booking with no event: an exception did not roll back state. Compare that demonstration with a real transaction writing booking plus outbox intent; relaying can still duplicate publication. The dictionary is not persistence, and retries currently hit duplicate rejection rather than replaying a known successful response. Define stable identity and recovery before claiming an atomic use case.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

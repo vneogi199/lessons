@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a data operation</h2>
+      <h2>Trace Redis recovery</h2>
       <ol class="trace-flow" data-flow="redis-durability" aria-label="Mechanism trace: Primary accepts a state change then Persistence or replication advances then Process or primary becomes unavailable then Recovered topology serves data. Experiment: Fail the primary immediately after an acknowledged write and inventory what survives where.">
         <li class="trace-stage"><span>01 · WRITE</span><strong>Primary accepts a state change</strong><small>Command atomicity finishes before durability and replica guarantees are assumed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RECORD / STREAM</span><strong>Persistence or replication advances</strong><small>RDB, AOF, offsets, backlog, and asynchronous delivery create explicit windows.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE</span><strong>Process or primary becomes unavailable</strong><small>Restart, resynchronization, quorum, promotion, and client routing decide progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Recovered topology serves data</strong><small>Acknowledged writes, offsets, files, slots, and client behavior prove the outcome.</small></li>
       </ol>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Test RDB and AOF configurations with writes, restarts, interrupted persistence, verification tools, and measured recovery time.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -162,7 +163,7 @@ redis-check-aof /validated/offline-copy/appendonlydir/appendonly.aof.manifest
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a data operation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace Redis recovery from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Fail the primary immediately after an acknowledged write and inventory what survives where.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: AOF or RDB state, replication IDs and offsets, slot owner, promoted node, client redirect, and key value.</p></article>
@@ -173,19 +174,20 @@ redis-check-aof /validated/offline-copy/appendonlydir/appendonly.aof.manifest
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare RDB and AOF and connect persistence policy to explicit RPO, latency, memory, and recovery requirements.</li>
-      <li>Trace a data operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace Redis recovery for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you test RDB and AOF configurations with writes, restarts, interrupted persistence, verification tools, and measured recovery time, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace Redis recovery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow snapshots and append-only commands through child processes, page copying, fsync policies, background rewrites, startup replay, corruption handling, and data-loss windows.</p>
+        <p><strong>Worked answer criteria:</strong> BGSAVE and BGREWRITEAOF may queue, defer or fail depending on active persistence and configuration; inspect replies and INFO rather than assuming both start immediately. Multipart AOF needs the manifest and referenced files. Check tools inspect offline copies, and repair can discard data; no crash or repair is run by this review.</p>
         <p><strong>Evidence to explain:</strong> AOF or RDB state, replication IDs and offsets, slot owner, promoted node, client redirect, and key value.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

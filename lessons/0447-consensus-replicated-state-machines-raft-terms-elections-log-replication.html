@@ -63,7 +63,7 @@
       </article><article class="concept-card" data-subtopic="Raft terms">
         <span>03</span>
         <h3>Raft terms</h3>
-        <p><strong>What it means:</strong> Raft uses terms, leader election, replicated logs, majority commit, and deterministic application to implement a replicated state machine.</p>
+        <p><strong>What it means:</strong> Raft terms are monotonically increasing logical election epochs. Nodes persist the current term and vote; a higher term invalidates older leadership. A term can have no elected leader, and a term number alone does not prove a log entry committed.</p>
       </article><article class="concept-card" data-subtopic="elections">
         <span>04</span>
         <h3>elections</h3>
@@ -75,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="safety">
         <span>06</span>
         <h3>safety</h3>
-        <p><strong>What it means:</strong> Distributed-systems safety means a forbidden outcome never occurs, regardless of timing, retries, failures, or how long the execution continues.</p>
+        <p><strong>What it means:</strong> Distributed-systems safety means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break safety, but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#039;s guarantees.</p>
       </article>
     </div>
   </section>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery.</p>
+    <p><strong>Core and extension:</strong> Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
 
 
 
@@ -200,6 +201,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Elect one leader per term, replicate ordered commands to a majority, commit safely, apply deterministically, and change membership without allowing conflicting committed logs.</p>
+        <p><strong>Worked answer criteria:</strong> A higher term is persisted even when the prefix check fails. The success-shaped outcome deliberately says readyForLogProcessing, not append success. Trusted RPCs, serialized dispatch and durable hard-state adapter behavior are assumptions; rejecting a failed persistence promise must also stop normal node processing. Elections, conflict repair, commit rules and membership remain outside this precheck.</p>
         <p><strong>Evidence to explain:</strong> Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

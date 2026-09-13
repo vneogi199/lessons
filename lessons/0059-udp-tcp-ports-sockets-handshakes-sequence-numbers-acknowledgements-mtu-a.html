@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Encode and decode a bounded UDP datagram, simulate a TCP handshake and acknowledgement trace, and test framing across arbitrary receive chunks.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -157,7 +158,8 @@ for invalid in (b&quot;short&quot;, packet[:-1]):
 # IPv6), and the field maximum is not a usable path-MTU payload budget.
 # IPv4&#039;s IP header further reduces the maximum UDP payload; avoid fragmentation.
 
-tcp_states = [&quot;CLOSED&quot;, &quot;SYN-SENT&quot;, &quot;ESTABLISHED&quot;, &quot;FIN-WAIT&quot;, &quot;CLOSED&quot;]
+# One possible active-close path, not a full state machine or packet trace.
+tcp_states = [&quot;CLOSED&quot;, &quot;SYN-SENT&quot;, &quot;ESTABLISHED&quot;, &quot;FIN-WAIT-1&quot;, &quot;FIN-WAIT-2&quot;, &quot;TIME-WAIT&quot;, &quot;CLOSED&quot;]
 assert tcp_states[2] == &quot;ESTABLISHED&quot;
 # TCP exposes an ordered byte stream; applications still need their own framing.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -202,6 +204,7 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare datagram and byte-stream contracts, demultiplex by endpoint tuples, establish TCP state, order bytes, retransmit loss, close directions independently, and fit segments to path limits.</p>
+        <p><strong>Worked answer criteria:</strong> UDP length includes its eight-byte header; this codec checks shape but omits pseudo-header checksum validation. The field maximum is not a path payload budget, especially with IP headers. The TCP list is one possible active-close sequence, not an implemented state machine; FIN closes one sending direction, and TIME-WAIT has a distinct purpose. TCP reliability does not make retrying an unknown business outcome safe. Choose framing and idempotency at the application boundary.</p>
         <p><strong>Evidence to explain:</strong> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>

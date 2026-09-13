@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="composition">
         <span>02</span>
         <h3>composition</h3>
-        <p><strong>What it means:</strong> Composition builds behavior from collaborating parts with explicit ownership and contracts, rather than inheriting all behavior from a base class.</p>
+        <p><strong>What it means:</strong> In UML, composite aggregation models whole-part ownership: a part belongs to at most one composite at a time, and deletion of the whole deletes its remaining object parts. Merely storing references in a Python list does not enforce that lifecycle contract.</p>
       </article><article class="concept-card" data-subtopic="aggregation">
         <span>03</span>
         <h3>aggregation</h3>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Translate a compact UML-style parking model into code and prove that spot, floor, ticket, and vehicle lifecycles have one clear owner.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -188,6 +189,7 @@ else: raise AssertionError(&quot;floor must own unique spots&quot;)</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Map domain relationships to references and collections while making creation, sharing, deletion, cardinality, and dependency direction explicit.</p>
+        <p><strong>Worked answer criteria:</strong> The list shows references and Floor.add rejects a repeated number, but two floors can still reference the same Spot and callers can bypass add. Do not call that enforced UML composition: exclusive part ownership and deletion semantics need an explicit policy. Compare shared aggregation with owning composition when a floor is removed or a spot transferred. Python garbage collection follows references, not UML diamonds; the diagram communicates a contract that code must actually enforce.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

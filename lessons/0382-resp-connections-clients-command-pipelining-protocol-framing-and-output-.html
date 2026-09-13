@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a data operation</h2>
+      <h2>Trace a Redis command</h2>
       <ol class="trace-flow" data-flow="resp-byte-framing" aria-label="Mechanism trace: Turn each argument into bytes then Prefix each payload with its byte length then Compare exact bytes, not printed appearance. Experiment: Replace ASCII with accented text and a payload containing CRLF; predict the length prefixes before running assertions.">
         <li class="trace-stage"><span>01 · ENCODE</span><strong>Turn each argument into bytes</strong><small>UTF-8 character count and byte count can differ; binary arguments need no text decoding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FRAME</span><strong>Prefix each payload with its byte length</strong><small>The array gives argument count. Each bulk string gives byte length, then payload and CRLF.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><strong>Compare exact bytes, not printed appearance</strong><small>Empty values, multibyte text and embedded CRLF exercise boundaries. Socket reads are not frames.</small></li>
       </ol>
@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="connections">
         <span>02</span>
         <h3>connections</h3>
-        <p><strong>What it means:</strong> A PostgreSQL connection normally owns a backend process and session state. A pool bounds that finite resource and queues excess demand instead of overwhelming the server.</p>
+        <p><strong>What it means:</strong> A Redis connection carries an ordered protocol stream and client state such as the selected database, authentication and WATCH/MULTI state. Redis does not allocate a PostgreSQL-style backend process per connection; buffers and blocked clients still consume resources.</p>
       </article><article class="concept-card" data-subtopic="clients">
         <span>03</span>
         <h3>clients</h3>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Send RESP manually over a socket, inspect replies, and compare sequential requests with a bounded pipeline.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -167,7 +168,7 @@ else:
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a data operation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a Redis command from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Replace ASCII with accented text and a payload containing CRLF; predict the length prefixes before running assertions.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Exact frame bytes and passing assertions. Incremental reply parsing and real socket backpressure remain integration work.</p></article>
@@ -178,19 +179,20 @@ else:
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Trace a Redis command at the protocol level and distinguish pipelining from transactions and batching inside Lua.</li>
-      <li>Trace a data operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a Redis command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you send RESP manually over a socket, inspect replies, and compare sequential requests with a bounded pipeline, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a Redis command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Encode commands and replies as RESP frames, preserve request order on persistent connections, and account for parser limits, client buffers, backpressure, and disconnect behavior.</p>
+        <p><strong>Worked answer criteria:</strong> Lengths count encoded bytes, including embedded CRLF and zero bytes. The offline encoder does not parse replies or bound a network pipeline. One TCP read is not one reply, and RESP3 pushes need separate handling. A connection retains WATCH/MULTI state; do not move those operations arbitrarily across pooled connections.</p>
         <p><strong>Evidence to explain:</strong> Exact frame bytes and passing assertions. Incremental reply parsing and real socket backpressure remain integration work.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

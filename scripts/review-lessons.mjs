@@ -11,6 +11,37 @@ import { simpleConceptExplanation, diagramFor } from "./generate-lessons.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const manifest = JSON.parse(await readFile(join(root, "lessons/manifest.json"), "utf8"));
+const reviewLedger = JSON.parse(await readFile(join(root, "lesson-review-status.json"), "utf8"));
+assert.equal(reviewLedger.version, 1, "Unsupported review ledger version");
+assert.ok(reviewLedger.lessons && typeof reviewLedger.lessons === "object" && !Array.isArray(reviewLedger.lessons));
+const reviewEvidence = new Map();
+const verificationTasks = {
+  browser: "Browser behavior and accessibility checks in an available browser environment.",
+  frameworkData: "FastAPI/framework and database/broker integration checks; current fakes and syntax checks remain documented in CONTENT-REVIEW.md.",
+  cloudProviders: "Cloud, container, orchestration and model-provider experiments in authorized disposable environments; no installation or resource creation is implied.",
+  githubPages: "Confirm GitHub Pages serves the current manifest and lesson files; local path checks are not live deployment verification."
+};
+assert.deepEqual(Object.keys(reviewLedger.verification).sort(), Object.keys(verificationTasks).sort());
+for (const evidence of Object.values(reviewLedger.verification)) {
+  if (evidence === null) continue;
+  assert.match(evidence, /^[a-zA-Z0-9_-]+\.md$/, "Verification completion requires a root Markdown evidence file");
+  await readFile(join(root, evidence), "utf8");
+}
+for (const [number, record] of Object.entries(reviewLedger.lessons)) {
+  assert.ok(manifest.lessons.some(lesson => lesson.number === number), `Unknown reviewed lesson ${number}`);
+  assert.match(record.revision, /^[a-f0-9]{12}$/, `${number}: revision required`);
+  assert.match(record.reviewedOn, /^\d{4}-\d{2}-\d{2}$/, `${number}: review date required`);
+  assert.match(record.evidence, /^[a-zA-Z0-9_-]+\.md$/, `${number}: evidence must be a root Markdown file`);
+  if (!reviewEvidence.has(record.evidence)) reviewEvidence.set(record.evidence, await readFile(join(root, record.evidence), "utf8"));
+  assert.match(reviewEvidence.get(record.evidence), new RegExp(`^## ${number}\\b`, "m"), `${number}: missing individual evidence heading`);
+}
+function reviewState(lesson, record) {
+  if (!record) return "Final review pending";
+  return record.revision === lesson.revision ? "Recorded pass" : "Recheck changed content";
+}
+assert.equal(reviewState({ revision: "a" }), "Final review pending");
+assert.equal(reviewState({ revision: "a" }, { revision: "a" }), "Recorded pass");
+assert.equal(reviewState({ revision: "b" }, { revision: "a" }), "Recheck changed content");
 const decode = text => text.replace(/&#039;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const cell = text => text.replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", " ");
 const codeGroups = new Map();
@@ -58,13 +89,17 @@ for (const [number, key] of Object.entries({
   "0520":"operations-diagnosis", "0522":"operations-diagnosis",
   "0571":"operations-diagnosis", "0572":"operations-diagnosis",
   "0595":"rag-ingestion", "0615":"ai-authority-boundary",
-  "0122":"behavior-test", "0200":"behavior-test",
+  "0122":"behavior-test", "0200":"behavior-test", "0251":"behavior-test",
   "0295":"behavior-test", "0338":"behavior-test", "0339":"behavior-test",
-  "0265":"python-sequence", "0312":"fastapi-response",
+  "0420":"behavior-test",
+  "0319":"fastapi-settings", "0325":"fastapi-delivery", "0333":"fastapi-delivery",
+  "0340":"fastapi-diagnostics", "0341":"fastapi-diagnostics",
+  "0265":"python-sequence", "0300":"python-use-case", "0302":"python-use-case", "0312":"fastapi-response",
   "0321":"fastapi-execution", "0322":"fastapi-cancellation",
   "0465":"behavior-test", "0466":"behavior-test", "0469":"reliability-feedback",
-  "0192":"react-input-ownership", "0209":"react-output-boundary",
-  "0422":"distributed-message", "0437":"message-delivery",
+  "0192":"react-input-ownership", "0209":"react-output-boundary", "0183":"react-layout-timing",
+  "0124":"javascript-command", "0125":"javascript-command",
+  "0422":"distributed-message", "0424":"distributed-message", "0437":"message-delivery",
   "0445":"replicated-operation", "0452":"event-history-projection"
 })) {
   const lesson = manifest.lessons.find(item => item.number === number);
@@ -173,6 +208,25 @@ for attempts in [0, -1, 11, True, 1.5]:
   if (lesson.trackId === "data-systems" && /^(?:--[^\n]*\n\s*)*(?:SELECT|CREATE|BEGIN|ALTER|EXPLAIN|WITH|REVOKE|SET)\b/.test(decode(code))) {
     assert.ok(!/^#|^psql |^ps |^hostssl /m.test(decode(code)), `${lesson.id}: SQL must not contain shell/INI syntax`);
   }
+  if (lesson.trackId === "fastapi") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing FastAPI checkpoint`);
+    assert.ok(html.includes("Core: trace the supplied FastAPI example"), `${lesson.id}: missing FastAPI scope`);
+  }
+  if (lesson.number === "0330") {
+    execFileSync(python, ["-I", "-c", `
+import ast
+from types import SimpleNamespace
+source = ${JSON.stringify(decode(code))}
+tree = ast.parse(source)
+assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)
+    and any(isinstance(target, ast.Name) and target.id in {"candidate", "request_id"} for target in node.targets)]
+compiled = compile(ast.Module(body=assignments, type_ignores=[]), "request-id-policy", "exec")
+for candidate, expected in [("trace-42_A", "trace-42_A"), ("", "generated"), ("a" * 65, "generated"), ("bad\\r\\nheader", "generated"), ("café", "generated")]:
+    namespace = {"headers": {"x-request-id": candidate}, "uuid4": lambda: SimpleNamespace(hex="generated")}
+    exec(compiled, namespace)
+    assert namespace["request_id"] == expected
+`], { timeout: 10000, stdio: "pipe" });
+  }
   if (lesson.trackId === "fastapi" && lesson.number !== "0342") {
     // Syntax only: framework imports and integration adapters are unavailable.
     execFileSync(python, ["-I", "-c", "import ast,sys; ast.parse(sys.stdin.read())"], { input: decode(code), timeout: 10000, stdio: "pipe" });
@@ -213,6 +267,11 @@ asyncio.run(check())
 `], { timeout: 10000, stdio: "pipe" });
   }
   if (lesson.trackId === "python") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing Python checkpoint`);
+    assert.ok(html.includes("Core: inspect the supplied Python fixture"), `${lesson.id}: missing Python scope`);
+    const definitions = { "0274": "Python containers hold objects", "0276": "Named tuples are tuple subclasses", "0290": "Multiprocessing start methods", "0295": "Testing properties are rules" };
+    if (definitions[lesson.number]) assert.ok(html.includes(definitions[lesson.number]), `${lesson.id}: incorrect contextual definition`);
+    if (lesson.number === "0286") assert.ok(decode(code).includes('"--no-ext-diff", "--no-textconv"'), "Git fixture must disable external helpers");
     if (!["0297", "0298"].includes(lesson.number)) {
       execFileSync(python, ["-I", "-c", "import ast,sys; ast.parse(sys.stdin.read())"], { input: decode(code), timeout: 10000, stdio: "pipe" });
     }
@@ -221,6 +280,33 @@ asyncio.run(check())
       execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
       pythonTrackChecks.push(lesson.number);
     }
+  }
+  if (Number(lesson.number) >= 397 && Number(lesson.number) <= 420) {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing API checkpoint`);
+    assert.ok(html.includes("Core: predict the supplied contract"), `${lesson.id}: missing API scope`);
+    if (lesson.number === "0419") assert.ok(html.includes("Diagnostic logs are timestamped event records"), "API logs must not inherit broker-log definition");
+  }
+  if (lesson.number === "0430") assert.ok(html.includes("Bounded queues cap waiting work"), "bounded queues must explain capacity, not only competing-consumer delivery");
+  if (lesson.number === "0434") assert.ok(html.includes("producer acknowledgement may confirm broker acceptance"), "acknowledgements must distinguish producer and consumer boundaries");
+  if (lesson.number === "0435") assert.ok(html.includes("durability, retention and eventual-recovery assumptions"), "at-least-once must retain fault/retention assumptions");
+  if (lesson.number === "0440") assert.ok(html.includes("a refusal can trigger abort"), "2PC abort does not require all participants to prepare");
+  if (lesson.number === "0446") assert.ok(html.includes("Shard rebalancing moves data"), "shard rebalancing must not inherit consumer-only ownership");
+  if (lesson.number === "0447") assert.ok(html.includes("logical election epochs") && html.includes("executions allowed by the stated fault model"), "Raft terms and safety must state protocol scope");
+  if (lesson.number === "0469") assert.ok(html.includes("Reliability observability uses metrics"), "reliability must not inherit admin-only observability");
+  if (Number(lesson.number) >= 475 && Number(lesson.number) <= 480) assert.ok(!html.includes("is one AWS or cloud responsibility"), "reviewed cloud definitions must explain their mechanism");
+  if (lesson.number === "0476") assert.ok(html.includes("independent IAM boundaries"), "AWS partitions must not mean network partitions");
+  if (lesson.number === "0431") assert.ok(html.includes("Trace dependency isolation and recovery"), "breaker trace must not describe installation");
+  if (Number(lesson.number) >= 381 && Number(lesson.number) <= 395) {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing Redis checkpoint`);
+    assert.ok(html.includes("Core: predict the explicitly stated Redis fixture"), `${lesson.id}: missing Redis scope`);
+    const terms = { "0381": "Redis logical databases are numbered keyspaces", "0382": "A Redis connection carries an ordered protocol stream", "0385": "not a guaranteed maximum error" };
+    if (terms[lesson.number]) assert.ok(html.includes(terms[lesson.number]), `${lesson.id}: incorrect Redis definition`);
+  }
+  if (Number(lesson.number) >= 346 && Number(lesson.number) <= 380) {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing database checkpoint`);
+    assert.ok(html.includes("Core: trace this independent database fixture"), `${lesson.id}: missing database scope`);
+    const terms = { "0360": "They do not block writers", "0361": "Atomicity of each attempt alone", "0362": "posting list of tuple locations", "0367": "A hash join builds a hash table", "0372": "Partition routing chooses a child relation", "0375": "A physical base backup copies" };
+    if (terms[lesson.number]) assert.ok(html.includes(terms[lesson.number]), `${lesson.id}: wrong contextual database definition`);
   }
   if (lesson.trackId === "systems-foundations") {
     // Twelve offline stdlib experiments; no packets, containers or kernel tuning.
@@ -340,7 +426,7 @@ asyncio.run(check())
     assert.deepEqual(effects, ["ok"]);
     await assert.rejects(handleBatch(consumer, database, [{ ...record, value: "fail" }]), /effect failed/);
     assert.equal(commits.length, 1);
-    for (const invalid of [null, [null], [{ ...record, offset: "01" }],
+    for (const invalid of [null, [null], [{ ...record, offset: "01" }], [{ ...record, offset: "1\n" }],
       [{ ...record, offset: "9223372036854775807" }], [record, record],
       [record, { ...record, offset: "2" }], [{ ...record, partition: -1 }]]) {
       await assert.rejects(handleBatch(consumer, database, invalid));
@@ -601,6 +687,31 @@ assert not run_one(db, "worker", NS(is_set=lambda: True))
     }
   }
   if (REUSE_PURPOSE[lesson.number]) assert.ok(decode(html).includes(REUSE_PURPOSE[lesson.number]), `${lesson.id}: missing distinct exercise`);
+  if (lesson.trackId === "web-platform") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing browser checkpoint`);
+    assert.ok(html.includes("Browser-only exercise:"), `${lesson.id}: missing browser scope`);
+    if (lesson.number === "0053") {
+      assert.match(decode(code), /\.back \{[^}]*height: 4rem/);
+      assert.match(decode(code), /\.child \{[^}]*top: 3rem; height: 2rem/);
+      assert.match(decode(code), /\.front \{[^}]*margin-top: -1rem; height: 2rem/);
+      // Fixture-shape checks only: this does not execute CSS layout or painting.
+    }
+  }
+  if (lesson.trackId === "systems-foundations") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing systems checkpoint`);
+    assert.ok(html.includes("Core: run the local Python standard-library fixture"), `${lesson.id}: missing systems scope`);
+  }
+  if (lesson.trackId === "software-design") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing design checkpoint`);
+    assert.ok(html.includes("Core and extension:"), `${lesson.id}: missing design scope`);
+    assert.ok(html.includes("Trace a requirement-driven code change</h2>"), `${lesson.id}: unrelated trace subject`);
+  }
+  if (Number(lesson.number) <= 5) {
+    assert.ok(html.includes("Core and extension:"), `${lesson.id}: missing bounded lab scope`);
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing specific interview feedback`);
+    assert.ok(!html.includes("Treat the development environment like an airport"), `${lesson.id}: generic analogy returned`);
+    if (["0003", "0005"].includes(lesson.number)) assert.ok(html.includes("The specification itself is not executable code."));
+  }
   if (["0001", "0002"].includes(lesson.number)) {
     // Reviewed read-only shell experiments; no installs or repository changes.
     execFileSync("bash", ["--noprofile", "--norc", "-c", decode(code)], { cwd: root, timeout: 10000, stdio: "pipe", env: { ...process.env, GIT_PAGER: "cat", GIT_EXTERNAL_DIFF: "" } });
@@ -775,6 +886,7 @@ assert.equal(destroyed, before + 1);
 import assert from "node:assert/strict";
 assert.ok((await inspectRevision(${JSON.stringify(revision)})).length > 0);
 await assert.rejects(inspectRevision("--help"), /invalid/);
+await assert.rejects(inspectRevision("abcdef0\\n"), /invalid/);
 await assert.rejects(inspectRevision("0".repeat(40)));
 await assert.rejects(inspectRevision(${JSON.stringify(revision)}, AbortSignal.abort()), {name:"AbortError"});
 `;
@@ -844,14 +956,60 @@ server.close();
   if (["0244", "0245"].includes(lesson.number)) {
     assert.throws(() => execFileSync(process.execPath, ["--unhandled-rejections=strict", "--input-type=module", "-e", decode(code)], { timeout: 10000, stdio: "pipe" }), error => error.status === 1 && /controlled fixture failure/.test(String(error.stderr)));
   }
-  if (["0080", "0081", "0083", "0084", "0085", "0086", "0087", "0088", "0089", "0090", "0091", "0092", "0093", "0094", "0095", "0096", "0097", "0098", "0099", "0100", "0101", "0102", "0106", "0107", "0108", "0109", "0112", "0114", "0115", "0122", "0123"].includes(lesson.number)) {
-    const prelude = 'import { ok as reviewAssert } from "node:assert/strict"; console.assert = reviewAssert;\n';
-    execFileSync(process.execPath, ["--input-type=module", "-e", prelude + decode(code)], { timeout: 10000, stdio: "pipe" });
+  if (["0111", "0113", "0117", "0118", "0119", "0120", "0121"].includes(lesson.number)) {
+    execFileSync(process.execPath, ["--input-type=module", "-e", 'import { ok } from "node:assert/strict"; console.assert = ok;\n' + decode(code)], { timeout: 10000, stdio: "pipe" });
     javascriptChecks.push(lesson.number);
   }
+  if (["0080", "0081", "0083", "0084", "0085", "0086", "0087", "0088", "0089", "0090", "0091", "0092", "0093", "0094", "0095", "0096", "0097", "0098", "0099", "0100", "0101", "0102", "0103", "0106", "0107", "0108", "0109", "0112", "0114", "0115", "0122", "0123"].includes(lesson.number)) {
+    const prelude = 'import { ok as reviewAssert } from "node:assert/strict"; console.assert = reviewAssert;\n';
+    const probe = {
+      "0091": `console.assert(account.read.length===0);console.assert(account.read(null)==="null:40");`,
+      "0092": `let failed=false;try{detached();}catch(e){failed=e instanceof TypeError;}console.assert(failed);const Bound=Account.bind({balance:0});console.assert(new Bound(7).balance===7);`,
+      "0095": `let failed=false;try{AuditedLedger.created;}catch(e){failed=e instanceof TypeError;}console.assert(failed);for(const n of [NaN,1.5,Number.MAX_SAFE_INTEGER]){let rejected=false;try{ledger.add(n);}catch{rejected=true;}console.assert(rejected && ledger.balance===4200);}`,
+      "0099": `let cleaned=0;function* owned(){try{yield 1;}finally{cleaned++;}}for(const x of owned()){break;}console.assert(cleaned===1);`,
+      "0100": `let entered=false;function* unopened(){try{entered=true;yield 1;}finally{entered=true;}}const u=unopened();console.assert(u.return(7).done && !entered);`
+    }[lesson.number] ?? "";
+    execFileSync(process.execPath, ["--input-type=module", "-e", prelude + decode(code) + "\n" + probe], { timeout: 10000, stdio: "pipe" });
+    javascriptChecks.push(lesson.number);
+  }
+  if (lesson.trackId === "react") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.number}: missing React feedback`);
+    assert.ok(html.includes("not standalone files"), `${lesson.number}: missing integration scope`);
+    if (lesson.number === "0177") runInNewContext(decode(code).split("function Wizard")[0] + `
+      const answered=reducer(initialState,{type:"answered",value:"yes"});
+      if(initialState.answers[0]!==undefined || answered.answers[0]!=="yes" || reducer(answered,{type:"undo"})!==initialState) throw new Error("reducer ownership/undo failed");
+    `);
+    if (lesson.number === "0178") assert.ok(decode(code).includes("selectedId={selected?.id ?? null}"));
+    if (lesson.number === "0183") assert.ok(decode(code).includes('position: "fixed", left: anchorRect.left'));
+    if (lesson.number === "0194") assert.ok(decode(code).includes('.catch(() => {})'));
+    if (lesson.number === "0203") assert.ok(html.includes("Trace a render and commit cycle</h2>"));
+  }
   if (lesson.trackId === "computer-science") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing algorithm checkpoint`);
+    assert.ok(html.includes("Trace an algorithm execution</h2>"), `${lesson.id}: unrelated algorithm trace`);
+    const probe = {
+      "0023": `console.assert(lowerBound([1,2,2,5],6)===4); const huge=new Proxy({length:2**31+2},{get:(target,key)=>key==="length"?target.length:Number(key)}); console.assert(lowerBound(huge,2**31)===2**31);`,
+      "0025": `console.assert(reverse(null)===null);const loop={next:null};loop.next=loop;console.assert(hasCycle(loop));const a={value:1,next:{value:2,next:null}};const b=reverse(a);console.assert(b.next===a && a.next===null);`,
+      "0026": `console.assert(!isValidBst({value:10,left:{value:5,right:{value:12}}}));console.assert(breadthFirst(null).length===0);`,
+      "0027": `console.assert(topologicalOrder(graph,new Map([["a",0],["b",1],["c",1]])).join()==="a,b,c");let failed=false;try{topologicalOrder(new Map([["a",["b"]],["b",["a"]]]),new Map([["a",1],["b",1]]));}catch{failed=true;}console.assert(failed);`,
+      "0028": `console.assert(JSON.stringify(uniquePermutations([]))==="[[]]");console.assert(uniquePermutations([2,2]).length===1);`,
+      "0029": `console.assert(minimumCoins([2],3)===undefined);console.assert(minimumCoins([],0).count===0);`,
+      "0031": `console.assert(countBits32(-1)===32);console.assert(countBits32(0)===0);console.assert((1<<32)===1);console.assert(hasFlag(addFlag(0,31),31));`,
+      "0032": `console.assert(targetPair([3],6)===undefined);console.assert(targetPair([3,3],6).join()==="0,1");`,
+      "0033": `console.assert(sortedPair([],1).indices===undefined);console.assert(sortedPair([3,3],6).indices.join()==="0,1");`,
+      "0034": `console.assert(longestDistinct("abba").best===2);console.assert(longestDistinct("").best===0);`,
+      "0035": `const n=10;const out=nextGreater(Array.from({length:n},(_,i)=>n-i));console.assert(out.trace.reduce((s,t)=>s+t.unresolved.length,0)===n*(n+1)/2);console.assert(nextGreater([2,2]).answer.join()==="-1,-1");`,
+      "0037": `for(const k of [0,-1,1.5,4,NaN]){let failed=false;try{kthLargest([1,2,3],k);}catch{failed=true;}console.assert(failed);}console.assert(kthLargest([3,3,1],2).value===3);`,
+      "0039": `console.assert(countRegions([]).regions===0);console.assert(countRegions([[0]]).regions===0);`,
+      "0044": `console.assert(spreadMinutes([]).minutes===0);console.assert(spreadMinutes([[1]]).minutes===-1);console.assert(spreadMinutes([[2,1,2]]).minutes===1);`,
+      "0045": `const t=new Trie();console.assert(!t.has(""));t.insert("");console.assert(t.has(""));`,
+      "0046": `console.assert(countTargetSubarrays([0,0],0).total===3);`,
+      "0047": `for(const [input,want] of [[[],""],[[[]],""],[[[1,2,3]],"1,2,3"],[[[1],[2],[3]],"1,2,3"]])console.assert(spiral(input).output.join()===want);`,
+      "0048": `console.assert(mergeIntervals([[1,2],[2,3]]).merged[0].join()==="1,3");const n=10;console.assert(mergeIntervals(Array.from({length:n},(_,i)=>[3*i,3*i+1])).trace.reduce((s,t)=>s+t.length,0)===n*(n+1)/2);`
+    };
+    for (const [target, source] of [["0038","0023"],["0036","0025"],["0042","0027"],["0043","0028"],["0041","0029"],["0049","0031"]]) probe[target] = probe[source];
     let checks = 0;
-    runInNewContext(decode(code), { console: {
+    runInNewContext(decode(code) + "\n{\n" + (probe[lesson.number] || "") + "\n}", { console: {
       assert(value) { checks += 1; assert.ok(value, `${lesson.number}: algorithm assertion failed`); },
       log() {}, table() {}
     } }, { timeout: 1000 });
@@ -859,8 +1017,64 @@ server.close();
     algorithmChecks.push({ number: lesson.number, checks });
   }
   if (lesson.trackId === "lld-machine-coding") {
+    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing machine-coding checkpoint`);
+    const probe = {
+      "0068": `
+for value in (True, 1.5, float("nan"), 0):
+    try: Capacity(value)
+    except ValueError: pass
+    else: raise AssertionError("invalid capacity")
+capacity.release()
+assert capacity.used == 0
+try: capacity.release()
+except RuntimeError: pass
+else: raise AssertionError("empty release")`,
+      "0071": `
+for value in (True, 1.5, float("nan"), -1):
+    try: checkout(value, fake)
+    except ValueError: pass
+    else: raise AssertionError("invalid cents")
+assert fake.charges == [2500]`,
+      "0072": `
+assert fee(0, 100) == 100 and fee(0, 100, first_hour_free) == 0
+for hours, rate in ((True, 100), (1.5, 100), (1, float("nan"))):
+    try: fee(hours, rate)
+    except ValueError: pass
+    else: raise AssertionError("invalid pricing units")`,
+      "0074": `
+for value in (None, "", " "):
+    fresh = Seat()
+    try: fresh.reserve(value)
+    except ValueError: pass
+    else: raise AssertionError("invalid owner")
+    assert fresh.owner is None`,
+      "0075": `
+class FailingEvents(list):
+    def append(self, event): raise RuntimeError("injected append failure")
+partial = BookingRepository()
+try: create_booking("partial", partial, FailingEvents())
+except RuntimeError: pass
+else: raise AssertionError("failure not propagated")
+assert "partial" in partial.items`,
+      "0077": `
+try: ParkingLot([Spot(1, "car"), Spot(1, "bike")])
+except ValueError: pass
+else: raise AssertionError("duplicate spot number")
+for vehicle in (None, "", " "):
+    try: lot.park(vehicle, "car")
+    except ValueError: pass
+    else: raise AssertionError("invalid vehicle")
+assert all(spot.vehicle is None for spot in lot.spots)`,
+      "0079": `
+for value in (True, 1.5, float("nan"), 0):
+    try: LRUCache(value)
+    except ValueError: pass
+    else: raise AssertionError("invalid cache capacity")
+history = deque([0.0, 1.0])
+assert allow(history, 10.0, 2, 10.0) and list(history) == [1.0, 10.0]`
+    }[lesson.number] || "";
     // These reviewed examples use only local in-memory stdlib operations.
-    execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
+    execFileSync(python, ["-I", "-c", decode(code) + "\n" + probe], { timeout: 10000, stdio: "pipe" });
     machineCodingChecks.push(lesson.number);
   }
   if (["ml-foundations", "llm-internals"].includes(lesson.trackId) || lesson.number === "0492") {
@@ -903,6 +1117,8 @@ const lines = [
   "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-11.",
   "",
   "## Verdict",
+  "",
+  "See [the per-lesson review checklist](REVIEW-CHECKLIST.md) for exact recorded-pass, pending and changed-content counts. The checklist separates content sign-off from integrations and live deployment; this report's structural audit does not automatically close a lesson.",
   "",
   "The curriculum-wide definition and shared-starter review pass is complete: generic title-term definitions are replaced, every retained reused starter has a distinct exercise, and unrelated generic starters have been replaced by concrete experiments or explicitly scoped integration assignments. This remains a depth library, not a fully executed or certified senior interview course. An experiment specification is not a supplied working application.",
   "",
@@ -985,4 +1201,45 @@ for (const row of rows) {
 lines.push("", "## Reproduce", "", "```sh", "node scripts/generate-lessons.mjs", "node scripts/validate-lessons.mjs", "node scripts/review-lessons.mjs", "```", "",
   "Requires Python 3.12+; for example, use `LESSON_PYTHON=python3.13 node scripts/review-lessons.mjs` if the default Python is older. The review checks semantic routing, all 644 lessons' definition coverage, senior case links, and the local examples described above. Run `node scripts/check-typescript-lessons.mjs` separately for TypeScript. Structural checks and selected executions do not substitute for reviewing and running the remaining technical labs.", "");
 await writeFile(join(root, "CONTENT-REVIEW.md"), lines.join("\n"));
+const reviewed = rows.filter(row => reviewState(row, reviewLedger.lessons[row.number]) === "Recorded pass");
+const changed = rows.filter(row => reviewState(row, reviewLedger.lessons[row.number]) === "Recheck changed content");
+const pending = rows.filter(row => reviewState(row, reviewLedger.lessons[row.number]) === "Final review pending");
+assert.equal(reviewed.length + changed.length + pending.length, rows.length);
+const checklist = [
+  "# Lesson review checklist", "",
+  `Content passes recorded: **${reviewed.length}/${rows.length}**. Final individual review pending: **${pending.length}**. Changed since the recorded revision: **${changed.length}**.`, "",
+  "These are documentation/sign-off counts, not a percentage of effort remaining. All lessons already received the baseline definition/reuse/senior-practice pass. Pending lessons may have substantial reviewed code, explanations and diagrams; consult NOTES.md and CONTENT-REVIEW.md before doing more work.", "",
+  "## Evidence and completion rule", "",
+  "The initial 45 records come from the explicit TypeScript completion report dated 2026-09-06. Their revision fingerprints were captured when this ledger was introduced on 2026-09-11 to detect subsequent changes; importing them is not a new line-by-line review. Other historical batch notes are retained as partial evidence, not silently upgraded to complete sign-offs.", "",
+  "For each pending lesson, review the existing work, resolve actual gaps, and record an individual evidence section covering:", "",
+  "- Clear, technically accurate explanation and topic-relevant primary sources; version-dependent guarantees identified.",
+  "- Diagram and walkthrough agree with the lesson's actual mechanism and example.",
+  "- Practice has setup, expected evidence and a failure/counterexample; runnable checks pass where the existing environment permits.",
+  "- Senior rehearsal has answer criteria, a credible alternative and a changed constraint—not only definitions.",
+  "- Remaining integration dependencies and deliberate scope limits are explicit; no learner mastery is inferred.", "",
+  "Then add/update that lesson in lesson-review-status.json with its manifest revision, review date and evidence filename. Evidence must contain a heading beginning `## NNNN`. Do not update a stale fingerprint without reviewing the change. Passing automated checks never promotes a pending lesson.", "",
+  "Content review is finished when every lesson has a recorded pass and no changed-content rechecks remain. It does not require building every exercise into a production application or executing integrations unavailable under the no-install constraint.", "",
+  "## Separate verification work", "",
+  ...Object.entries(verificationTasks).map(([key, task]) => `- [${reviewLedger.verification[key] ? "x" : " "}] ${task}${reviewLedger.verification[key] ? ` [Evidence](${reviewLedger.verification[key]})` : ""}`), "",
+  "Verification entries in the manual ledger stay null until the named scope is verified; then reference a Markdown evidence file with environment, date and observed results. Partial checks do not close a whole category.", "",
+  "Optional learner decisions—not content-review blockers: replacing orientation progress with written assessment and choosing a personalized interview-core sequence.", "",
+  "## Work order and track counts", "",
+  "Continue pending lessons in catalog order, reusing prior evidence rather than restarting completed batch work. Recheck changed recorded lessons before declaring completion.", "",
+  "| Track | Recorded pass | Final review pending | Changed |",
+  "| --- | ---: | ---: | ---: |"
+];
+for (const track of manifest.tracks) {
+  const count = group => group.filter(row => row.trackId === track.id).length;
+  checklist.push(`| ${cell(track.title)} | ${count(reviewed)} | ${count(pending)} | ${count(changed)} |`);
+}
+for (const track of manifest.tracks) {
+  checklist.push("", `## ${track.title}`, "", "| Lesson | Content status | Individual evidence |", "| --- | --- | --- |");
+  for (const row of rows.filter(row => row.trackId === track.id)) {
+    const record = reviewLedger.lessons[row.number];
+    checklist.push(`| [${row.number} · ${cell(row.title)}](${row.path}) | ${reviewState(row, record)} | ${record ? `[${record.reviewedOn}](${record.evidence})` : "Final sign-off not recorded; reuse prior batch notes"} |`);
+  }
+}
+checklist.push("", "Regenerate with `LESSON_PYTHON=python3.13 node scripts/review-lessons.mjs` (or another available Python 3.12+ interpreter). Edit the manual ledger/evidence, not this generated checklist.", "");
+await writeFile(join(root, "REVIEW-CHECKLIST.md"), checklist.join("\n"));
+console.log(`Content sign-offs: ${reviewed.length} recorded, ${pending.length} pending, ${changed.length} changed. Wrote REVIEW-CHECKLIST.md.`);
 console.log(`Reviewed ${rows.length} lessons / ${manifest.tracks.length} tracks; ${missingCount} fallback definitions in ${missingLessons} lessons; ${sharedLessons} lessons with a scoped shared starter; ${unresolvedReuse.length} unexplained reuse cases. Wrote CONTENT-REVIEW.md.`);

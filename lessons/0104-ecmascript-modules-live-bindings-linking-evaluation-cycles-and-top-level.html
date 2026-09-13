@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an evaluation case</h2>
+      <h2>Trace a module import</h2>
       <ol class="trace-flow" data-flow="javascript-modules" aria-label="Mechanism trace: Host identifies each module then The dependency graph connects then Modules execute in graph order then Importer observes live exports. Experiment: Create a two-module cycle and move one early read across initialization.">
         <li class="trace-stage"><span>01 · RESOLVE</span><strong>Host identifies each module</strong><small>Specifiers become module records under host rules.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><strong>The dependency graph connects</strong><small>Environments and live import bindings are initialized.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>Modules execute in graph order</strong><small>Cycles and top-level await can delay or expose early reads.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Importer observes live exports</strong><small>Loaded chunks, values, or failures prove the boundary.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a small cyclic module graph, observe a temporal-dead-zone failure, and refactor the dependency direction.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
 <p><strong>Distinct exercise:</strong> Split the labelled counter.mjs and feature.mjs sections into actual files. Trace live binding updates, then create a cycle with an early lexical read. This is a multi-file recipe, not one runnable pasted module.</p>
 
 
@@ -158,7 +159,7 @@ export async function loadAnalytics(enabled) {
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an evaluation case from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a module import from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Create a two-module cycle and move one early read across initialization.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p></article>
@@ -169,19 +170,20 @@ export async function loadAnalytics(enabled) {
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare ESM imports with copied object values and explain cycle and top-level-await risks.</li>
-      <li>Trace an evaluation case for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a module import for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you build a small cyclic module graph, observe a temporal-dead-zone failure, and refactor the dependency direction, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an evaluation case. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace module records through resolution, linking, environment initialization, dependency ordering, live bindings, cyclic graphs, and asynchronous evaluation.</p>
+        <p><strong>Worked answer criteria:</strong> Split the labelled blocks into their named files before running. The imported count observes increment without copying. This starter does not create a cycle: add two modules with an early lexical read to test TDZ, then defer the read or remove the dependency cycle. Top-level await delays dependants and is not a new thread.</p>
         <p><strong>Evidence to explain:</strong> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

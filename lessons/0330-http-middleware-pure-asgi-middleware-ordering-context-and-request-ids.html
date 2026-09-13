@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement pure ASGI request-ID and timing middleware that preserves streaming and exception behavior.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -122,7 +123,9 @@
         if scope[&quot;type&quot;] not in {&quot;http&quot;, &quot;websocket&quot;}:
             return await self.app(scope, receive, send)
         headers = Headers(scope=scope)
-        request_id = headers.get(&quot;x-request-id&quot;) or uuid4().hex
+        candidate = headers.get(&quot;x-request-id&quot;, &quot;&quot;)
+        request_id = candidate if (0 &lt; len(candidate) &lt;= 64 and candidate.isascii()
+            and all(c.isalnum() or c in &quot;-_&quot; for c in candidate)) else uuid4().hex
         token = request_id_var.set(request_id)
 
         async def send_with_id(message):
@@ -176,6 +179,7 @@ app.add_middleware(RequestContextMiddleware)</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow nested middleware call order, ServerError and Exception middleware, BaseHTTPMiddleware limitations, context-variable propagation, streaming, and response finalization.</p>
+        <p><strong>Worked answer criteria:</strong> The revised middleware accepts only bounded ASCII request IDs and resets ContextVar state on every exit. Correlation is not authentication. It emits an HTTP response header but no WebSocket accept header, and does not populate request.state. Supply imports/context initialization and decide how outer server-error responses receive correlation.</p>
         <p><strong>Evidence to explain:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>

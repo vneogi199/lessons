@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a database query</h2>
+      <h2>Trace a Redis command</h2>
       <ol class="trace-flow" data-flow="redis-command" aria-label="Mechanism trace: Client frames one or more commands then Redis parses and schedules work then Data structure changes atomically then Ordered evidence returns. Experiment: Increase one value or batch size and predict event-loop occupancy and buffer growth.">
         <li class="trace-stage"><span>01 · CLIENT</span><strong>Client frames one or more commands</strong><small>Connection, identity, key, arguments, and deadlines enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVENT LOOP</span><strong>Redis parses and schedules work</strong><small>Protocol, client buffers, expiration, and command complexity apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMAND</span><strong>Data structure changes atomically</strong><small>The selected encoding and algorithm determine CPU and memory work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REPLY</span><strong>Ordered evidence returns</strong><small>Reply, latency, memory, key state, and errors expose the result.</small></li>
       </ol>
@@ -63,7 +63,7 @@
       </article><article class="concept-card" data-subtopic="HyperLogLog">
         <span>03</span>
         <h3>HyperLogLog</h3>
-        <p><strong>What it means:</strong> HyperLogLog estimates distinct counts in fixed small memory. It deliberately accepts a bounded statistical error instead of storing every member exactly.</p>
+        <p><strong>What it means:</strong> HyperLogLog estimates distinct cardinality using compact probabilistic state instead of storing every member. Its advertised standard error describes a statistical distribution, not a guaranteed maximum error for an individual estimate; it cannot enumerate members.</p>
       </article><article class="concept-card" data-subtopic="geospatial indexes">
         <span>04</span>
         <h3>geospatial indexes</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Compare exact and approximate daily-active-user counts and implement a compact feature or attendance bitmap.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -160,7 +161,7 @@ MEMORY USAGE attendance:2026-09-01
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database query from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a Redis command from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Increase one value or batch size and predict event-loop occupancy and buffer growth.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p></article>
@@ -171,19 +172,20 @@ MEMORY USAGE attendance:2026-09-01
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain when approximation or bit packing is worthwhile and quantify the accuracy, range, and memory tradeoff.</li>
-      <li>Trace a database query for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a Redis command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you compare exact and approximate daily-active-user counts and implement a compact feature or attendance bitmap, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a Redis command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Pack boolean or integer state into bits, estimate cardinality with bounded error, and map coordinates into sorted-set representations and radius searches.</p>
+        <p><strong>Worked answer criteria:</strong> BITOP returns bytes allocated, while BITCOUNT counts set bits. Sparse large IDs create large strings, so map into bounded offsets. HyperLogLog&#039;s error is statistical, not a guaranteed maximum for one count; two IDs do not test representative accuracy. Longitude precedes latitude and geographic distance is not road travel time.</p>
         <p><strong>Evidence to explain:</strong> RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run an external tool with spawn or execFile, bounded output, timeout, AbortSignal, and no shell interpolation.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -132,7 +133,7 @@ import { promisify } from &quot;node:util&quot;;
 
 const executeFile = promisify(execFile);
 async function inspectRevision(revision, signal) {
-  if (typeof revision !== &quot;string&quot; || !/^[a-f0-9]{7,40}$/.test(revision)) throw new TypeError(&quot;invalid SHA-1 revision&quot;);
+  if (typeof revision !== &quot;string&quot; || /^[a-f0-9]{7,40}$/.exec(revision)?.[0] !== revision) throw new TypeError(&quot;invalid SHA-1 revision&quot;);
   const { stdout } = await executeFile(&quot;git&quot;, [&quot;--no-pager&quot;, &quot;show&quot;, &quot;--no-ext-diff&quot;, &quot;--no-textconv&quot;, &quot;--stat&quot;, &quot;--oneline&quot;, revision, &quot;--&quot;], {
     shell: false, signal, timeout: 5000, maxBuffer: 1_000_000,
     encoding: &quot;utf8&quot;, env: { PATH: process.env.PATH, LANG: &quot;C.UTF-8&quot; }
@@ -186,6 +187,7 @@ async function inspectRevision(revision, signal) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare process creation, shell parsing, buffered versus streaming output, file descriptors, IPC channels, termination, and orphan risk.</p>
+        <p><strong>Worked answer criteria:</strong> The full-match revision guard rejects suffixes including a final newline. Direct argv prevents shell interpretation, but trusted executable/PATH/repository and disabled external diff hooks still matter. Buffered output is capped; cancellation does not prove every descendant stopped or effects were undone.</p>
         <p><strong>Evidence to explain:</strong> parsed value, resolved path or address, permission decision, spawned argv, error, audit record, and changed resources.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>

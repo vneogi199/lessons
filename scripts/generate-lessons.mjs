@@ -463,7 +463,7 @@ async function handleBatch(consumer, database, records, applyBusinessEffect) {
   for (const record of records) {
     if (!record || typeof record.topic !== "string" || !record.topic ||
         !Number.isSafeInteger(record.partition) || record.partition < 0 ||
-        typeof record.offset !== "string" || !/^(0|[1-9][0-9]{0,18})$/.test(record.offset)) {
+        typeof record.offset !== "string" || /^(0|[1-9][0-9]{0,18})$/.exec(record.offset)?.[0] !== record.offset) {
       throw new TypeError("invalid record metadata");
     }
     const offset = BigInt(record.offset);
@@ -541,7 +541,7 @@ const DSA_APPROACHES = [
   ["Binary search", "Lower bound → rotated lookup → minimum capacity", "Linear candidate scan: O(n)", "Halve a monotonic range: O(log n)", "[lo,mid,hi): [0,3,7) → [4,5,7) → [4,4,5)"],
   ["Depth-first search", "Tree depth → constrained path → grid regions", "Repeat traversal per query: up to O(n²)", "One DFS: O(V+E) time", "stack/path: [A] → [A,B] → [A,B,D] → [A,C]"],
   ["Greedy algorithms", "Single trade → minimum jumps → compatible bookings", "Enumerate choice sequences: exponential", "Proven local choice: O(n) or O(n log n)", "finish/chosen: -∞/[] → 2/[B] → 4/[B,C]"],
-  ["Dynamic programming", "Stair counts → minimum coins → common subsequence", "Repeat subproblems: exponential", "Store each state once: polynomial time and space", "dp amount 0..6: 0,1,2,1,1,2,2"],
+  ["Dynamic programming", "Stair counts → minimum coins → common subsequence", "Repeat subproblems: exponential", "Count states × transition work; coin-amount DP is pseudopolynomial", "dp amount 0..6: 0,1,2,1,1,2,2"],
   ["Graphs", "Dependency order → minimum delivery cost → redundant link", "Re-scan all routes: exponential paths", "Adjacency algorithm: usually O(V+E) or O((V+E)log V)", "indegree/queue: {A:0,B:1} / [A] → {B:0} / [B]"],
   ["Backtracking", "Subsets → bounded totals → board placement", "Generate then filter every candidate", "Prune invalid partial states before descent", "path: [] → [2] → [2,3] → undo → [4]"],
   ["Breadth-first search", "Level sums → spread time → word transforms", "DFS all paths: exponential", "Layered BFS: O(V+E)", "queue by level: [A] → [B,C] → [D,E,F]"],
@@ -563,6 +563,7 @@ function dsaApproachMarkup(lesson) {
   if (!approach) return "";
   return `<section class="card mechanism-walkthrough" data-dsa-approach="true">
     <span class="section-label">05B · Approach ladder</span>
+    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
     <div class="walkthrough-grid">
       <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>${escapeHtml(approach.problems)}</p></article>
       <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>${escapeHtml(approach.baseline)}</p></article>
@@ -787,7 +788,9 @@ console.assert(answer.best === 5 && answer.trace.at(-1).left === 1);
 
 const result = nextGreater([4, 2, 7, 5]);
 console.assert(JSON.stringify(result.answer) === "[7,7,-1,-1]");
-// Each index is pushed and popped at most once: O(n), not O(n²), despite while.`;
+// Each index is pushed/popped at most once: O(n) algorithm work.
+// Full stack snapshots can add O(n²) time and storage on decreasing input.
+// Remove snapshots before claiming linear cost for the complete implementation.`;
 
   if (title.startsWith("Heaps,")) return `function pushHeap(heap, value) {
   heap.push(value);
@@ -816,6 +819,7 @@ function popHeap(heap) {
 }
 
 function kthLargest(values, k) {
+  if (!Number.isSafeInteger(k) || k < 1 || k > values.length) throw new RangeError("k");
   const heap = [], trace = [];
   for (const value of values) {
     pushHeap(heap, value);
@@ -826,7 +830,8 @@ function kthLargest(values, k) {
 }
 
 console.assert(kthLargest([8, 3, 10, 12, 5], 3).value === 8);
-// Keep only k candidates: O(n log k) time and O(k) space versus sorting all n.`;
+// Heap work: O(n log(k+1)) time, O(k) state. Retained snapshots add O(nk)
+// time and storage; omit them for a production streaming implementation.`;
 
   if (title.startsWith("Depth-first search")) return `function countRegions(grid) {
   const seen = new Set(), trace = [];
@@ -911,6 +916,7 @@ console.assert(answer.total === 2);
 
   if (title.startsWith("Matrices,")) return `function spiral(matrix) {
   const output = [], trace = [];
+  if (matrix.length === 0) return { output, trace };
   let top = 0, bottom = matrix.length - 1, left = 0, right = matrix[0].length - 1;
   while (top <= bottom && left <= right) {
     trace.push({ top, right, bottom, left });
@@ -924,7 +930,9 @@ console.assert(answer.total === 2);
 
 const result = spiral([[1,2,3],[4,5,6]]);
 console.assert(result.output.join() === "1,2,3,6,5,4");
-// Each cell is emitted once: O(rows × columns), O(1) traversal state.`;
+// Rectangular input required; empty and zero-width matrices emit nothing.
+// O(rows × columns) work and output; four boundary variables are O(1),
+// but retained boundary traces add O(min(rows, columns)) storage.`;
 
   if (title.startsWith("Intervals,")) return `function mergeIntervals(intervals) {
   const ordered = [...intervals].sort((a, b) => a[0] - b[0]), merged = [], trace = [];
@@ -939,7 +947,9 @@ console.assert(result.output.join() === "1,2,3,6,5,4");
 
 const result = mergeIntervals([[8,10],[1,3],[2,6]]);
 console.assert(JSON.stringify(result.merged) === "[[1,6],[8,10]]");
-// Sorting exposes all possible overlaps locally: O(n log n), versus O(n²) pairs.`;
+// Closed intervals: touching endpoints merge. Sorting/sweeping is O(n log n),
+// but copying every merged prefix for the trace adds O(n²) time and storage
+// for disjoint intervals. Remove snapshots when measuring algorithm-only cost.`;
 
   if (title.startsWith("Sorting,")) return `function mergeSort(values) {
   if (values.length < 2) return [...values];
@@ -982,7 +992,7 @@ for (const values of [[1], [2, 1], [1, 2, 3], [3, 2, 1], [2, 2, 1, 2], [-1, 0, -
   if (title.startsWith("Binary search")) return `function lowerBound(values, target) {
   let lo = 0, hi = values.length; // answer is always inside [lo, hi]
   while (lo < hi) {
-    const middle = lo + ((hi - lo) >> 1);
+    const middle = lo + Math.floor((hi - lo) / 2);
     if (values[middle] < target) lo = middle + 1;
     else hi = middle;
   }
@@ -990,6 +1000,7 @@ for (const values of [[1], [2, 1], [1, 2, 3], [3, 2, 1], [2, 2, 1, 2], [-1, 0, -
 }
 
 function firstFeasible(lo, hi, feasible) {
+  // Inclusive integer bounds, false-to-true predicate, and feasible(hi) required.
   while (lo < hi) {
     const middle = lo + Math.floor((hi - lo) / 2);
     if (feasible(middle)) hi = middle;
@@ -1175,7 +1186,9 @@ console.assert(hasFlag(permissions, 2));
 permissions = removeFlag(permissions, 2);
 console.assert(!hasFlag(permissions, 2));
 console.assert(countBits32(0b101101) === 4);
-// JavaScript bitwise operators use signed 32-bit integers; use BigInt beyond that.`;
+// Number operands are coerced to 32 bits; >>> returns an unsigned result.
+// Flag helpers require integer bit positions 0..31: shift counts wrap modulo 32.
+// Use BigInt operators for wider masks (no >>>); do not mix Number and BigInt.`;
 
   return fallback;
 }
@@ -1229,7 +1242,7 @@ def next_hop(destination: str) -> str:
     matches = [(network.prefixlen, gateway) for network, gateway in routes if address in network]
     if not matches:
         raise LookupError("no route")
-    return max(matches)[1]
+    return max(matches, key=lambda route: route[0])[1]
 
 nat: dict[tuple[str, int], tuple[str, int]] = {}
 nat[("203.0.113.5", 40001)] = ("10.42.0.9", 53000)
@@ -1264,7 +1277,8 @@ for invalid in (b"short", packet[:-1]):
 # IPv6), and the field maximum is not a usable path-MTU payload budget.
 # IPv4's IP header further reduces the maximum UDP payload; avoid fragmentation.
 
-tcp_states = ["CLOSED", "SYN-SENT", "ESTABLISHED", "FIN-WAIT", "CLOSED"]
+# One possible active-close path, not a full state machine or packet trace.
+tcp_states = ["CLOSED", "SYN-SENT", "ESTABLISHED", "FIN-WAIT-1", "FIN-WAIT-2", "TIME-WAIT", "CLOSED"]
 assert tcp_states[2] == "ESTABLISHED"
 # TCP exposes an ordered byte stream; applications still need their own framing.`;
 
@@ -1287,8 +1301,11 @@ assert trace[:5] == [1, 2, 4, 8, 9]
 assert trace[6] == 1
 
 receiver_window = 6
-sendable = min(trace[4], receiver_window)
-assert sendable == 6
+window_limit = min(trace[4], receiver_window)
+assert window_limit == 6
+in_flight = 3  # same toy units as the windows, not measured bytes
+new_data_allowance = max(0, window_limit - in_flight)
+assert new_data_allowance == 3
 # Flow control protects the receiver; congestion control protects the path.
 # This reset models a timeout, not fast recovery after duplicate ACKs. Real
 # slow start grows with acknowledgments (roughly doubling per RTT), and modern
@@ -1301,11 +1318,14 @@ def request_plan(url: str) -> list[str]:
     parsed = urlsplit(url)
     if parsed.scheme != "https" or not parsed.hostname:
         raise ValueError("absolute HTTPS URL required")
+    target = parsed.path or "/"
+    if parsed.query:
+        target += "?" + parsed.query
     return [
         f"DNS resolve {parsed.hostname}",
         "connect transport",
         f"TLS authenticate {parsed.hostname}",
-        f"HTTP GET {parsed.path or '/'}",
+        f"HTTP GET {target}",
         "validate response and cache policy",
     ]
 
@@ -1313,6 +1333,7 @@ plan = request_plan("https://example.com/health")
 assert plan[0] == "DNS resolve example.com"
 assert plan[2] == "TLS authenticate example.com"
 assert plan[-1].startswith("validate")
+assert request_plan("https://example.com/search?q=cache#section")[3] == "HTTP GET /search?q=cache"
 # HTTP semantics stay stable while HTTP/1.1, HTTP/2, and HTTP/3 frame and
 # multiplex messages differently over TCP or QUIC.`;
 
@@ -1331,7 +1352,7 @@ finally:
         os.close(write_fd)
 
 # os.pipe/read/write/close cross through C-library wrappers to kernel objects.
-# fork creates a process; exec replaces its program; wait retains its exit status.`;
+# fork creates a process; exec replaces its program; wait collects child status.`;
 
   if (title.startsWith("Processes, threads")) return `from collections import deque
 
@@ -1480,7 +1501,8 @@ def snapshot() -> dict[str, object]:
     }
 
 evidence = snapshot()
-assert evidence["pid"] > 0 and evidence["open_file_limit"] > 0
+assert evidence["pid"] > 0
+assert evidence["open_file_limit"] == resource.RLIM_INFINITY or evidence["open_file_limit"] > 0
 # On Linux inspect /proc/PID/ns, /proc/PID/cgroup, mountinfo, capabilities,
 # pressure-stall data, sockets, faults, throttling, OOM events, and exit status.
 # Namespaces change views; cgroups account and limit resources.`;
@@ -1491,7 +1513,7 @@ assert evidence["pid"] > 0 and evidence["open_file_limit"] > 0
 function lldMachineCodingCodeFor(title, fallback) {
   if (title.startsWith("Requirement discovery")) return `class Capacity:
     def __init__(self, total: int) -> None:
-        if total < 1: raise ValueError("total")
+        if type(total) is not int or total < 1: raise ValueError("positive integer total required")
         self.total, self.used = total, 0
 
     def reserve(self) -> None:
@@ -1570,7 +1592,7 @@ class FakeGateway:
         return f"payment-{len(self.charges)}"
 
 def checkout(amount_cents: int, gateway: PaymentGateway) -> str:
-    if amount_cents < 0: raise ValueError("amount")
+    if type(amount_cents) is not int or amount_cents < 0: raise ValueError("nonnegative integer cents required")
     return gateway.charge(amount_cents)
 
 fake = FakeGateway()
@@ -1588,7 +1610,8 @@ def first_hour_free(hours: int, rate: int) -> int:
     return max(0, hours - 1) * rate
 
 def fee(hours: int, rate: int, rule: PriceRule = hourly) -> int:
-    if hours < 0 or rate < 0: raise ValueError("negative input")
+    if type(hours) is not int or type(rate) is not int or hours < 0 or rate < 0:
+        raise ValueError("nonnegative integer hours and rate required")
     return rule(hours, rate)
 
 assert fee(3, 100) == 300
@@ -1623,6 +1646,7 @@ class Seat:
         self.owner: str | None = None
 
     def reserve(self, customer: str) -> bool:
+        if not isinstance(customer, str) or not customer.strip(): raise ValueError("customer")
         with self._lock:
             if self.owner is not None: return False
             self.owner = customer
@@ -1685,8 +1709,11 @@ class Spot:
     vehicle: str | None = None
 
 class ParkingLot:
-    def __init__(self, spots: list[Spot]) -> None: self.spots = spots
+    def __init__(self, spots: list[Spot]) -> None:
+        if len({spot.number for spot in spots}) != len(spots): raise ValueError("duplicate spot number")
+        self.spots = list(spots)
     def park(self, vehicle: str, kind: str) -> int:
+        if not isinstance(vehicle, str) or not vehicle.strip(): raise ValueError("vehicle")
         if any(spot.vehicle == vehicle for spot in self.spots): raise ValueError("already parked")
         spot = next((item for item in self.spots if item.vehicle is None and item.kind == kind), None)
         if spot is None: raise RuntimeError("full")
@@ -1728,7 +1755,7 @@ for invalid in (Decimal("NaN"), Decimal("Infinity"), Decimal("-1")):
 
 class LRUCache:
     def __init__(self, capacity: int) -> None:
-        if capacity < 1: raise ValueError("capacity")
+        if type(capacity) is not int or capacity < 1: raise ValueError("positive integer capacity required")
         self.capacity, self.data = capacity, OrderedDict()
     def get(self, key):
         if key not in self.data: return None
@@ -1771,6 +1798,7 @@ function discountFor(subtotal: number, isMember: boolean): number {
 
 export function orderTotal(lines: readonly Line[], isMember: boolean): number {
   const subtotal = lines.reduce((sum, line) => sum + lineTotal(line), 0);
+  if (!Number.isFinite(subtotal)) throw new RangeError("subtotal overflow");
   return subtotal - discountFor(subtotal, isMember);
 }
 
@@ -1799,9 +1827,7 @@ export const normalizeDisplayName = (value: string) => value.trim().replace(/\\s
 console.assert(shippingCents("domestic", 1200) === 900);
 console.assert(normalizeSearchQuery("  React  ") === "react");`;
 
-  if (title.startsWith("Cohesion,")) return `type Product = { id: string; available: number };
-
-interface Inventory {
+  if (title.startsWith("Cohesion,")) return `interface Inventory {
   reserveIfAvailable(productId: string, quantity: number): Promise<boolean>;
 }
 
@@ -1810,7 +1836,7 @@ export async function reserveAvailable(
   productId: string,
   quantity: number,
 ): Promise<void> {
-  if (!Number.isInteger(quantity) || quantity <= 0) throw new RangeError("quantity");
+  if (!Number.isSafeInteger(quantity) || quantity <= 0) throw new RangeError("quantity");
   if (!(await inventory.reserveIfAvailable(productId, quantity))) throw new Error("insufficient stock");
 }
 
@@ -1909,11 +1935,13 @@ const decision: PatternDecision = {
   evidence: "provider contract tests and import graph",
 };
 
-function isJustified(value: PatternDecision): boolean {
+function hasDecisionFields(value: PatternDecision): boolean {
   return Boolean(value.pattern && value.forces.length && value.evidence);
 }
 
-console.assert(isJustified(decision));
+console.assert(hasDecisionFields(decision));
+// Presence is not justification: a fabricated evidence string also passes.
+// Review the actual tests and change cost before accepting the decision.
 // Pattern names improve communication only after problem, forces, alternatives,
 // and consequences are clear. Otherwise the pattern is decorative complexity.`;
 
@@ -1961,7 +1989,11 @@ class TracedModel implements TextModel {
   async complete(prompt: string, signal: AbortSignal) {
     const started = performance.now();
     try { return await this.inner.complete(prompt, signal); }
-    finally { this.record({ operation: "model.complete", elapsedMs: performance.now() - started }); }
+    finally {
+      // Optional diagnostics must not replace the model result or original error.
+      try { this.record({ operation: "model.complete", elapsedMs: performance.now() - started }); }
+      catch { /* Best-effort synchronous diagnostics only, not a mandatory audit log. */ }
+    }
   }
 }
 
@@ -1995,6 +2027,8 @@ class Workflow {
     if (!next) throw new Error("invalid " + command.type + " from " + this.#status);
     const previous = this.#status;
     this.#status = next;
+    // Synchronous, fail-fast listeners: a throw stops later listeners but does
+    // not undo the transition. Nested dispatch is not queued or isolated.
     for (const listener of [...this.#listeners]) listener(previous, next);
   }
   get status() { return this.#status; }
@@ -2047,7 +2081,8 @@ export class PlaceOrder {
       await work.orders.save({ ...order, status: "placed" });
       await work.commit();
     } catch (error) {
-      await work.rollback();
+      try { await work.rollback(); }
+      catch (rollbackError) { throw new AggregateError([error, rollbackError], "operation and rollback failed"); }
       throw error;
     }
   }
@@ -2187,7 +2222,7 @@ function Wizard() {
 
   return <List
     items={items}
-    selectedId={selectedId}
+    selectedId={selected?.id ?? null}
     summary={completed + "/" + items.length}
     onSelect={setSelectedId}
   />;
@@ -2287,7 +2322,7 @@ function RoomMessages({ roomId }) {
     setHeight(ref.current.getBoundingClientRect().height);
   }, [children]);
 
-  return <div ref={ref} style={{ top: anchorRect.top - height }}>{children}</div>;
+  return <div ref={ref} style={{ position: "fixed", left: anchorRect.left, top: anchorRect.top - height }}>{children}</div>;
 }`;
 
   if (title.startsWith("useEffectEvent")) return `function ChatRoom({ roomId, theme }) {
@@ -2442,7 +2477,10 @@ function Dashboard() {
 }
 
 // Start module work on intent, before the click commits navigation.
-button.addEventListener("pointerenter", () => import("./AnalyticsPanel.js"), { once: true });`;
+button.addEventListener("pointerenter", () => {
+  // Optional preload failure; the rendered error boundary owns recovery.
+  void import("./AnalyticsPanel.js").catch(() => {});
+}, { once: true });`;
 
   if (title.startsWith("Portals,")) return `function Modal({ title, onClose, children }) {
   const headingId = useId();
@@ -2628,7 +2666,7 @@ class ProjectFilter(BaseModel):
     limit: int = Field(50, gt=0, le=100)
     offset: int = Field(0, ge=0)
     order: Literal["created_at", "updated_at"] = "created_at"
-    tags: list[str] = []
+    tags: list[Annotated[str, Field(min_length=1, max_length=64)]] = Field(default_factory=list, max_length=10)
 
 @app.get("/projects")
 async def list_projects(
@@ -3080,7 +3118,9 @@ app.add_middleware(HTTPSRedirectMiddleware)
         if scope["type"] not in {"http", "websocket"}:
             return await self.app(scope, receive, send)
         headers = Headers(scope=scope)
-        request_id = headers.get("x-request-id") or uuid4().hex
+        candidate = headers.get("x-request-id", "")
+        request_id = candidate if (0 < len(candidate) <= 64 and candidate.isascii()
+            and all(c.isalnum() or c in "-_" for c in candidate)) else uuid4().hex
         token = request_id_var.set(request_id)
 
         async def send_with_id(message):
@@ -3691,7 +3731,7 @@ try:
         ValueError("project was malformed"),
     ])
 except* TimeoutError as timeouts:
-    print("retryable", timeouts.exceptions)
+    print("timeouts (retry policy still required)", timeouts.exceptions)
 except* ValueError as invalid:
     print("invalid", invalid.exceptions)`;
 
@@ -4097,7 +4137,7 @@ def inspect_revision(revision: str) -> str:
     if not SAFE_ID.fullmatch(revision):
         raise ValueError("invalid revision")
     completed = subprocess.run(
-        ["git", "show", "--stat", "--oneline", "--end-of-options", revision, "--"],
+        ["git", "show", "--no-ext-diff", "--no-textconv", "--stat", "--oneline", "--end-of-options", revision, "--"],
         text=True,
         capture_output=True,
         timeout=3,
@@ -4109,6 +4149,7 @@ def inspect_revision(revision: str) -> str:
 assert SAFE_ID.fullmatch("abc123")
 assert not SAFE_ID.fullmatch("--help")
 assert not SAFE_ID.fullmatch("main;echo injected")
+assert not SAFE_ID.fullmatch("abc123\\n")
 # Argument arrays avoid shell parsing, but do not themselves prevent option
 # injection. The conservative token policy and option delimiter address that.
 # This exercise only defines the Git call; run it in a trusted disposable repo.
@@ -4681,10 +4722,10 @@ console.assert(new Set([-0, 0]).size === 1);
 console.assert(Object.is(-0, 0) === false);`;
 
   if (/^(Declarations|Execution contexts|Hoisting)/.test(title)) return `"use strict";
-let globalLexical = "module binding";
+let globalLexical = "module binding"; // Save as .mjs; this is not a globalThis property.
 
 function outer(parameter) {
-  var functionScoped = "created during declaration instantiation";
+  var functionScoped = "assigned when this statement executes";
   if (parameter) {
     let blockScoped = "initialized when this declaration executes";
     return function inner() {
@@ -4696,12 +4737,15 @@ function outer(parameter) {
 const closure = outer("input");
 console.log(closure());
 
+let sawTemporalDeadZone = false;
 try {
   console.log(temporal);
   let temporal = 1;
 } catch (error) {
   console.assert(error instanceof ReferenceError);
+  sawTemporalDeadZone = true;
 }
+console.assert(sawTemporalDeadZone, "expected access before initialization to fail");
 
 // Resolve identifiers through linked lexical environments—not by searching
 // debugger stack frames or moving declaration source text upward.`;
@@ -4762,7 +4806,7 @@ Object.defineProperty(project, "name", {
   configurable: false,
   get() { return this._name; },
   set(value) {
-    if (!value.trim()) throw new TypeError("name required");
+    if (typeof value !== "string" || !value.trim()) throw new TypeError("name required");
     this._name = value.trim();
   }
 });
@@ -4771,6 +4815,11 @@ project.name = " Evidence ";
 console.assert(project.name === "Evidence");
 console.assert(Object.hasOwn(project, "name"));
 console.assert(!Object.hasOwn(project, "kind"));
+for (const invalid of [null, 42, " "]) {
+  try { project.name = invalid; throw new Error("accepted invalid name"); }
+  catch (error) { console.assert(error instanceof TypeError); }
+  console.assert(project.name === "Evidence");
+}
 console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project));
 
 // Lookup checks own descriptors first, then follows [[Prototype]]. Assignment
@@ -4820,6 +4869,10 @@ console.assert(next !== state);
 console.assert(next.project !== state.project);
 console.assert(next.tags !== state.tags);
 console.assert(state.project.name === "Draft");
+const renamed = { ...state, project: { ...state.project, name: "Renamed" } };
+console.assert(renamed.tags === state.tags); // Unchanged branch is shared.
+const emptySlots = new Array(5);
+console.assert(emptySlots.length === 5 && Object.keys(emptySlots).length === 0);
 
 const sparse = [, undefined, 3];
 console.table({
@@ -4889,9 +4942,16 @@ const { proxy, revoke } = Proxy.revocable(target, {
 console.assert(proxy.value === 42);
 console.log(proxy[inspect]());
 revoke();
-try { proxy.value; } catch (error) { console.assert(error instanceof TypeError); }`;
+let revokedReadFailed = false;
+try { proxy.value; } catch (error) { revokedReadFailed = error instanceof TypeError; }
+console.assert(revokedReadFailed);`;
 
-  if (title.startsWith("Errors,")) return `class DependencyError extends Error {
+  if (title.startsWith("Errors,")) return `// Offline failure fixture; no external gateway or telemetry service.
+const original = new Error("synthetic connection failure");
+const gateway = { async read() { throw original; } };
+const telemetry = { increment() { throw new Error("synthetic metric failure"); } };
+
+class DependencyError extends Error {
   constructor(service, options) {
     super("dependency unavailable", options);
     this.name = "DependencyError";
@@ -4905,13 +4965,19 @@ async function loadProject(id) {
   } catch (cause) {
     throw new DependencyError("projects", { cause });
   } finally {
-    telemetry.increment("project.load.finished");
+    // Optional metrics must not replace the operation's result or cause.
+    // Mandatory audit persistence needs a separate explicit failure contract.
+    try { telemetry.increment("project.load.finished"); } catch {}
   }
 }
 
 const failures = await Promise.allSettled([loadProject("a"), loadProject("b")]);
 const errors = failures.filter(item => item.status === "rejected").map(item => item.reason);
-if (errors.length) throw new AggregateError(errors, "project batch failed");`;
+const batchError = new AggregateError(errors, "project batch failed");
+console.assert(batchError.errors.length === 2);
+console.assert(batchError.errors.every(error => error instanceof DependencyError && error.cause === original));
+// At the application boundary, throw batchError or map it to a safe public result.
+// Never serialize the full cause chain to an untrusted caller by default.`;
 
   if (/^(ECMAScript modules|Dynamic import)/.test(title)) return `// counter.mjs — imports are live read-only views of exporter bindings.
 export let count = 0;
@@ -5108,10 +5174,11 @@ console.assert(match?.groups?.id === "42");
 
 function validateIdentifier(value) {
   if (typeof value !== "string" || value.length > 64) return false; // bound work before matching
-  return safeIdentifier.test(value);
+  return safeIdentifier.exec(value)?.[0] === value; // $ can match before a final line terminator.
 }
 
 console.assert(validateIdentifier("project-42"));
+console.assert(!validateIdentifier("project-42\\n"));
 console.assert(!validateIdentifier("project-" + "9".repeat(1_000)));
 
 // Avoid nested ambiguous repetitions such as /^(a+)+$/ on untrusted input;
@@ -5218,8 +5285,21 @@ function safeRecord(input) {
   return output;
 }
 
-const url = new URL(userSuppliedUrl, location.origin);
-if (url.origin !== location.origin || url.protocol !== "https:") throw new TypeError("unsafe URL");
+// Offline same-origin URL policy; this does not fetch or follow redirects.
+function sameOriginUrl(input, origin = "https://app.example") {
+  const url = new URL(input, origin);
+  if (url.origin !== origin || url.protocol !== "https:" || url.username || url.password) throw new TypeError("unsafe URL");
+  return url;
+}
+console.assert(sameOriginUrl("/projects").pathname === "/projects");
+console.assert(Object.getPrototypeOf(safeRecord({ name: "Ada" })) === null);
+for (const input of ["https://evil.example", "javascript:alert(1)", "https://user@app.example"]) {
+  let rejected = false;
+  try { sameOriginUrl(input); } catch { rejected = true; }
+  console.assert(rejected);
+}
+try { safeRecord(JSON.parse('{"__proto__":"blocked"}')); throw new Error("accepted unsafe key"); }
+catch (error) { console.assert(error instanceof TypeError); }
 
 // Never pass untrusted text to eval, Function, shell interpreters, HTML sinks,
 // SQL, template compilers, or module specifiers without a boundary-specific design.`;
@@ -7018,7 +7098,7 @@ import { promisify } from "node:util";
 
 const executeFile = promisify(execFile);
 async function inspectRevision(revision, signal) {
-  if (typeof revision !== "string" || !/^[a-f0-9]{7,40}$/.test(revision)) throw new TypeError("invalid SHA-1 revision");
+  if (typeof revision !== "string" || /^[a-f0-9]{7,40}$/.exec(revision)?.[0] !== revision) throw new TypeError("invalid SHA-1 revision");
   const { stdout } = await executeFile("git", ["--no-pager", "show", "--no-ext-diff", "--no-textconv", "--stat", "--oneline", revision, "--"], {
     shell: false, signal, timeout: 5000, maxBuffer: 1_000_000,
     encoding: "utf8", env: { PATH: process.env.PATH, LANG: "C.UTF-8" }
@@ -8348,7 +8428,7 @@ function parseJob(body) {
   const allowed = new Set(["project_id", "input_uri", "priority"]);
   if (!raw || typeof raw !== "object" || Array.isArray(raw) ||
       Object.keys(raw).some(key => !allowed.has(key))) throw new TypeError("invalid fields");
-  if (typeof raw.project_id !== "string" || !/^prj_[a-z0-9]{1,64}$/.test(raw.project_id)) {
+  if (typeof raw.project_id !== "string" || /^prj_[a-z0-9]{1,64}$/.exec(raw.project_id)?.[0] !== raw.project_id) {
     throw new TypeError("invalid project_id");
   }
   if (!Number.isInteger(raw.priority) || raw.priority < 0 || raw.priority > 9) {
@@ -8366,6 +8446,7 @@ const valid = { project_id: "prj_42", input_uri: "https://objects.example.test/i
 const encode = value => Buffer.from(JSON.stringify(value));
 assert.equal(parseJob(encode(valid)).priority, 2);
 for (const value of [null, [], { ...valid, extra: true }, { ...valid, priority: -1 },
+  { ...valid, project_id: "prj_42\\n" },
   { ...valid, input_uri: 42 }, { ...valid, input_uri: "file:///etc/passwd" },
   { ...valid, input_uri: "https://objects.example.test.evil.test/input" }]) {
   assert.throws(() => parseJob(encode(value)));
@@ -8409,8 +8490,8 @@ const strongEtag = bytes => '"' + createHash("sha256").update(bytes).digest("bas
 // Parse bounded If-Match, including lists, weak tags and commas INSIDE a tag.
 // A real server must combine field lines according to HTTP rules before this.
 function ifMatch(header, currentEtag) {
-  if (typeof header !== "string" || header.length > 8192) throw new TypeError("invalid If-Match");
-  const value = header.trim();
+  if (typeof header !== "string" || header.length > 8192 || /[\\r\\n]/.test(header)) throw new TypeError("invalid If-Match");
+  const value = header.replace(/^[ \\t]+|[ \\t]+$/g, "");
   if (value === "*") return currentEtag !== null;
   const tags = [...value.matchAll(/(?:W\\/)?"[\\x21\\x23-\\x7e\\x80-\\xff]*"/g)];
   let end = 0;
@@ -8433,6 +8514,8 @@ assert.equal(ifMatch("*", '"b"'), true);
 assert.equal(ifMatch(', "b",', '"b"'), true); // Empty list elements ignored.
 assert.throws(() => ifMatch('"a" "b"', '"b"'));
 assert.throws(() => ifMatch('"a", junk', '"a"'));
+assert.throws(() => ifMatch('"a"\\n', '"a"'));
+assert.throws(() => ifMatch('\\u00a0"a"', '"a"'));
 assert.notEqual(strongEtag(Buffer.from("A")), strongEtag(Buffer.from("B")));
 // Endpoint policy may require If-Match (428 if absent). Malformed syntax => 400;
 // a valid but false condition => 412. Do not compare the whole header literally.
@@ -8669,11 +8752,11 @@ function verifyWebhook(rawBody, headers, secret, nowSeconds) {
   if (!Buffer.isBuffer(rawBody) || rawBody.length > 16_384) throw new Error("body limit/type");
   if (!Number.isSafeInteger(nowSeconds) || nowSeconds < 0) throw new Error("invalid clock");
   const stamp = headers["x-hook-timestamp"];
-  if (typeof stamp !== "string" || !/^(0|[1-9][0-9]*)$/.test(stamp)) throw new Error("invalid timestamp");
+  if (typeof stamp !== "string" || /^(0|[1-9][0-9]*)$/.exec(stamp)?.[0] !== stamp) throw new Error("invalid timestamp");
   const timestamp = Number(stamp);
   if (!Number.isSafeInteger(timestamp) || Math.abs(nowSeconds - timestamp) > 300) throw new Error("stale");
   const signature = headers["x-hook-signature"];
-  if (typeof signature !== "string" || !/^[0-9a-f]{64}$/.test(signature)) throw new Error("bad signature format");
+  if (typeof signature !== "string" || /^[0-9a-f]{64}$/.exec(signature)?.[0] !== signature) throw new Error("bad signature format");
   const expected = createHmac("sha256", secret).update(stamp + ".").update(rawBody).digest();
   const supplied = Buffer.from(signature, "hex");
   if (!timingSafeEqual(supplied, expected)) throw new Error("bad signature");
@@ -8690,6 +8773,8 @@ assert.throws(() => verifyWebhook(body, headers, secret, NaN), /clock/);
 assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-signature": signature + "zz" }, secret, Number(stamp)), /format/);
 assert.throws(() => verifyWebhook(Buffer.from("{}"), headers, secret, Number(stamp)), /signature/);
 assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-timestamp": "" }, secret, Number(stamp)), /timestamp/);
+assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-timestamp": stamp + "\\n" }, secret, Number(stamp)), /timestamp/);
+assert.throws(() => verifyWebhook(body, { ...headers, "x-hook-signature": signature + "\\n" }, secret, Number(stamp)), /format/);
 // A valid signature authenticates bytes, not the event schema or tenant authority.
 // Validate both after verification. Timestamp tolerance does not stop replay
 // within the window: durable scoped inbox + work acceptance must precede 2xx.
@@ -10851,6 +10936,7 @@ kubectl get pod POD -o jsonpath='{.status.conditions}'
 }
 
 function apiDistributedDiagramFor(lesson, title, flow) {
+  if (lesson.number === "0420") return undefined; // Use the shared contract-test trace.
   // The dedicated L4/L7 trace below must win over the secondary word "HTTP".
   if (title.startsWith("layer 4 and layer 7 load balancing")) return undefined;
   if (lesson.trackId === "api-distributed-systems" && /http|resource|representation|status code|validation|idempotency key|etag|pagination|filtering|versioning|rest|openapi|grpc|graphql|authentication|gateway|api security|api observability|api testing|developer experience/.test(title)) {
@@ -10885,7 +10971,7 @@ function apiDistributedDiagramFor(lesson, title, flow) {
       ["04 · EVIDENCE", "Outcome closes every resource", "Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control."]
     ], "Slow one dependency past its budget while increasing arrival rate beyond service capacity.", "Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.");
   }
-  if (lesson.trackId === "api-distributed-systems" && /queue|publish-subscribe|broker|delivery semantic|ordering|consumer group|poison|dead-letter|outbox|inbox|cdc/.test(title)) {
+  if (lesson.trackId === "api-distributed-systems" && /queue|publish-subscribe|broker|delivery semantic|\bordering\b|consumer group|poison|dead-letter|outbox|inbox|cdc/.test(title)) {
     return flow("message-delivery", [
       ["01 · PUBLISH", "Producer emits identified intent or fact", "Envelope, partition key, schema, transaction, and acknowledgement requirement enter."],
       ["02 · BROKER", "Durable channel stores and assigns", "Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply."],
@@ -10945,6 +11031,455 @@ function apiDistributedDiagramFor(lesson, title, flow) {
 }
 
 function teachingProfileFor(lesson, profile) {
+  if (Number(lesson.number) >= 475 && Number(lesson.number) <= 480) {
+    const checkpoint = {
+      "0475": "Managed hosting can maintain provider infrastructure but cannot infer tenant authorization or repair a missing application filter. Assign owners for schema, access, backup configuration and restore verification separately. Elastic capacity has quotas and delay; compare total operational cost and failure recovery, not just removed servers.",
+      "0476": "Two Availability Zones address zonal failure, not loss of their whole Region. AWS partitions are independent IAM/Region groupings, not interrupted links. Identify regional dependencies of globally named services and the capacity/data actually available after each failure. Region labels alone do not verify residency obligations.",
+      "0477": "An SCP deny overrides an identity allow for covered member-account principals; a permissive SCP grants nothing by itself. Management-account principals and service-linked roles are important exceptions. Test a narrow fictional OU policy and retain a separate break-glass owner before any authorized rollout; no organization changes occur in this lesson review.",
+      "0478": "Credential precedence depends on the exact tool and invocation, including explicit profile selection. Inspect source and caller identity without printing keys or tokens, and confirm account/Region before any mutation. A signature error, authorization denial, wrong endpoint and throttling need different evidence and retry decisions.",
+      "0479": "The JSON grants GetObject on one object prefix over secure transport; it grants neither ListBucket nor KMS decryption. Its conditional allow does not globally deny insecure access granted elsewhere. The trailing shell comment is not JSON. A simulator is partial evidence: actual access also depends on applicable policies and configured S3 data-event logging.",
+      "0480": "Trust authorizes obtaining a session; session permissions authorize its actions. Bind OIDC issuer, audience and the provider's exact subject shape to the protected deployment environment, not a broad repository wildcard. Expiry requires credential refresh and does not retrospectively undo effects. Federation and confused-deputy controls differ by caller type."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: solve the fictional policy/responsibility scenario and state the expected allow, deny or failure boundary. Extension: use an explicitly authorized isolated account to collect redacted API and audit evidence with cost and cleanup limits. This review invokes no cloud credentials or services and installs nothing." };
+  }
+  if (Number(lesson.number) >= 470 && Number(lesson.number) <= 474) {
+    const checkpoint = {
+      "0470": "The SDK verifies provider-specific original bytes; the local HMAC lesson is not a compatible replacement. Multiple signatures are not the same as configuring every active secret. Keep the clock/tolerance and account/live-mode checks explicit, return success only after durable acceptance, and define oversize-read failure handling. Timestamp freshness alone permits in-window replay; ordering and worker effects remain separate contracts.",
+      "0471": "The flow uses a presigned POST, not a multipart implementation. The signed range allows up to MAX_BYTES; completion separately enforces the declared size and checksum. A reusable upload grant can replace the key, so bind scan and promotion to the accepted immutable VersionId. Missing database/job adapters must commit together; pending records, abandoned parts and rejected versions need cleanup ownership.",
+      "0472": "The claim adapter must commit before work; now() is transaction time and long claim transactions consume the lease. A unique attempt token protects settling B's lease from stale A, not A's external I/O. The shown delay reaches 1,024 seconds, not 3,600, and supplies neither jitter nor a maximum attempt policy. Heartbeats, shutdown hooks and exception/receipt adapters are required extensions.",
+      "0473": "Hash the exact bounded payload string with its predecessor; full-string validation rejects malformed predecessor hashes including final newlines. This detects alteration only against trusted retained evidence, not whole-chain rewriting or unanchored tail deletion. lockTail must serialize an empty chain too. The digest fixture does not implement redaction, durable append, access control, retention or a complete chain verifier.",
+      "0474": "Preview is not approval or current authorization. The transaction must recheck actor and target scope, bind canonical intent and commit the receipt with local changes. Trusted auth time needs timezone, future-skew and session-revocation policy. External session/audit stores need durable delivery and disabled-user enforcement; returning complete cannot mean every remote effect finished unless that is verified. Impersonation and bulk approval are extensions."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing." };
+  }
+  if (Number(lesson.number) >= 465 && Number(lesson.number) <= 469) {
+    const checkpoint = {
+      "0465": "Test the pure price rule with direct inputs, uniqueness with concurrent transactions on the intended database, and payment serialization against a versioned provider contract. A fake accepting a forbidden field can make a unit test pass while the integration fails. Choose tests by risk and ownership rather than a fixed pyramid percentage; require a known broken implementation to fail the relevant check.",
+      "0466": "Conservation alone permits duplicate transfers that preserve totals; at-most-one effect alone permits losing every transfer. Check both plus valid accepted completion under recovery assumptions. Generated cases explore samples, not all possible schedules or a proof. Preserve seeds and minimize failures, record arrival/service distributions, and separate reproducible local schedules from authorized bounded chaos experiments.",
+      "0467": "A valid token with another tenant's document ID tests object authorization; a missing token tests a different boundary. Assert no protected fields, cache entry or side effect leaks before denial, and decide whether 403 or indistinguishable 404 fits the threat model. Include service identities, revocation, secret rotation and audit access; a diagram alone does not verify those controls.",
+      "0468": "A lockfile pins resolution but does not prove trustworthy source or build behavior. An artifact digest detects change only against an independently trusted expected digest. Use a harmless fixture rather than execute an unknown lifecycle script. Compare prevention, detection and containment across source, build credentials, artifacts and runtime permissions; scanning misses unknown or non-vulnerability compromise.",
+      "0469": "At 99.9 percent, ten bad events out of 10,000 exactly exhaust the allowance and eleven exceed it. Combining disjoint counts gives 99.9 percent for the unequal-traffic example, not the 95 percent unweighted average. This fixed-window budget is neither burn rate nor an alert policy. Define missing data, user-impact slices, mitigation ownership and a recovery signal before declaring an incident resolved."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the supplied fixture or write the smallest falsifying test plan, then compare the criteria. Extension: supply the described service and authorized test environment for integration, browser, security and load evidence. No installations, harmful payload execution or live fault injection are performed here." };
+  }
+  if (Number(lesson.number) >= 449 && Number(lesson.number) <= 464) {
+    const checkpoint = {
+      "0449": "The local snapshot selects B, then A after B becomes unready. It neither reserves a slot nor performs DNS/watch refresh. Tie bias, heterogeneous work cost, draining connections and stale endpoint incarnations can defeat apparently balanced counts. Reserve before yielding and retain in-flight accounting when discovery removes an endpoint.",
+      "0450": "The typed selector trusts its inputs and prefers any healthy local target even if a remote target has less work. Types do not validate runtime health counters. The route sends /api/ paths to API on any host, while /api without the slash remains static unless the hostname matches. This is classification, not a host authorization boundary or a running L4/L7 proxy.",
+      "0451": "The YAML states targets, not measured RPO/RTO or provider configuration. Asynchronous replication can lose acknowledged writes; DNS failover does not fence old writers or move existing connections. A write/read health probe needs isolated data and safe cleanup. Region choices alone do not establish residency compliance; inventory replicas, backups, logs, support access and dependencies separately.",
+      "0452": "The aggregate reaches done at version 3 and replay reconstructs that state. decide is pure relative to this object, but pushing into an array is not atomic durable append. Rejecting an invalid repeated event is not projection deduplication. Snapshots, two read models, schema migration and temporal queries are extensions requiring stream/version and event-time semantics.",
+      "0453": "The mean-load estimate gives 1,760 concurrent requests and the constant-latency peak scenario 7,040; neither comes from the 300 ms p99 target. Annual raw storage is 258,342,912,000,000 bytes only if each write creates a retained object. State decimal versus binary units, replicas and index overhead before selecting capacity, then vary the dominant uncertain assumption.",
+      "0454": "design is a missing workshop action, not an architecture generator. For each case choose one invariant and failure schedule: redirect abuse, chat ordering, feed privacy/skew, durable file acceptance or inference admission. Reuse mechanisms only after changing capacity and consistency assumptions. The case labels alone are not five completed designs.",
+      "0455": "The guarantee table and gameDay/verify calls are an integration specification. Scope queue 64 by items and bytes and distinguish one-instance from fleet concurrency 32. Receipt retention and restored authority bound duplicate protection; reconcile external model effects after data loss. RPO/RTO are targets until restore and failover evidence exists.",
+      "0456": "The arbitrary extraction score returns true for billing but is not calibrated evidence. Trusted numeric inputs can otherwise be negative or nonfinite despite TypeScript number types. Independent scale is only one benefit; weigh team ownership, deployment coupling and cross-boundary invariants. A bounded context does not require a separate deployable service.",
+      "0457": "The two meanings of Order deliberately differ. Core/supporting/generic classifications depend on this business: payments may be core for another company. The relationship enum simplifies a context map; customer-supplier, published language and an anti-corruption layer can coexist rather than being mutually exclusive. Validate the map with domain owners before choosing deployment boundaries.",
+      "0458": "Money validates safe nonnegative USD cents and freezes its public fields; it does not implement value equality or currency conversion. Order readonly identity/total are compile-time restrictions, not runtime immutability. Pulling events drains volatile intent, so retain it through transaction failure. Address, repository and concurrency control remain extensions rather than implemented aggregate guarantees.",
+      "0459": "The command claim and order version check solve different races. A fresh outbox ID is safe only when committed command identity prevents duplicate accepted execution. The consumer adapter must scope and compare event intent, not merely remember an untrusted ID. Neither function implements durable process-manager timers, broker delivery or replayed response content.",
+      "0460": "All subscribers are invoked even if one throws synchronously, and successful effects remain when another fails. A hung handler leaves allSettled pending; there is no capacity or deadline enforcement. Unsubscribe removes the handler but leaves an empty type entry, so unbounded dynamic event types can grow the map. This in-memory dispatcher has no durable position or unavailable-consumer recovery.",
+      "0461": "The commands require an existing three-broker disposable lab and create a delete-retained topic, not a compacted topic. Seven-day retention is not an exact per-record deletion deadline. Stable key placement scopes order; broker retention and compaction can leave offset gaps without renumbering survivors. No shell command or broker mutation is executed by this review.",
+      "0462": "With three replicas, min ISR two and acks all, successful writes depend on eligible ISR and election policy, not just three configured copies. acks all is not exactly two acknowledgements or per-write filesystem fsync. The property names are client configuration, not shell commands. Separate partition leadership from controller metadata quorum and test the exact failure/durability assumptions.",
+      "0463": "The batch validates metadata before effects, accepts increasing offset gaps and commits the next offset without Number precision loss. Full-string validation rejects trailing newlines as noncanonical offsets. Inbox identity must include cluster/topic incarnation and logical consumer purpose; a rebalance still requires effect fencing. The producer config is illustrative and Kafka transactions do not include this database automatically.",
+      "0464": "The v2 type constant rejects v1; optional channel and its default do not prove old/new compatibility or insert a value. String IDs remain unbounded in this minimal schema, so byte, length and business validation belong at the boundary. The validator is synchronous by contract, and quarantine failure must propagate. Registry checks cannot prove semantic handler compatibility or safe replay."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review." };
+  }
+  if (Number(lesson.number) >= 441 && Number(lesson.number) <= 448) {
+    const checkpoint = {
+      "0441": "The serialized write sketch omits durable append, election and current-term commit rules; majority responses alone do not implement consensus. A session freshness token needs cluster/stream identity and an applied position, while linearizable reads also need current authority. Test acknowledged-write preservation through failover rather than treating any newly reachable node as a safe leader.",
+      "0442": "The vectors are concurrent: eu is ahead on the left and us on the right. Equal vectors with different values are rejected; neither comparison merges a conflict. Payload strings are a caller precondition, not validated by reconcile. Writer membership, incarnation, durable counters and conflict resolution remain required before this becomes multi-region replication.",
+      "0443": "All nine fixed-set pair comparisons intersect, but the sloppy write A/D and read B/C do not. This is set arithmetic, not a consistency protocol. Count distinct eligible durable acknowledgements, then reason about concurrent and incomplete writes, version selection and repair. Successful quorum counts do not by themselves establish linearizability or loss-free handoff.",
+      "0444": "The stale read violates linearizability because its invocation follows the completed write. The checker intentionally rejects overlaps and only models one register/two operations; it does not test transactions or session-token routing. Distinguish serializability from strict serializability, which additionally respects real-time transaction order. Eventual agreement still needs delivery and repair assumptions.",
+      "0445": "The completed write followed by an isolated stale read supplies the counterexample. Returning an error does not satisfy CAP availability for that read. The available branch has no convergence algorithm; the consistent branch is not a quorum implementation. State the partition and operation explicitly, and separate normal-operation replication latency from a blanket two-letter database label.",
+      "0446": "Adding token 40 moves exactly points 21 through 40, but all 1,000 requests for point 21 still target D. The scan validates and searches a tiny ring linearly; it measures neither hashing quality nor live migration. Data copy/catch-up, routing versions and write ownership are separate from consumer-group rebalancing. A hot key may require changing the data model, not more tokens.",
+      "0447": "A higher term is persisted even when the prefix check fails. The success-shaped outcome deliberately says readyForLogProcessing, not append success. Trusted RPCs, serialized dispatch and durable hard-state adapter behavior are assumptions; rejecting a failed persistence promise must also stop normal node processing. Elections, conflict repair, commit rules and membership remain outside this precheck.",
+      "0448": "The row lock orders token allocation for one resource; zero updated rows grants no lease. Sequence configuration, authorization and failover must preserve monotonic authority. A target that checks last_fence rejects old tokens only after observing a newer one: expiry alone does not reject a late write before that. Require an authority check if that stricter property matters, and define renewal/multiple writes separately."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review." };
+  }
+  if (Number(lesson.number) >= 434 && Number(lesson.number) <= 440) {
+    const checkpoint = {
+      "0434": "The adapter reads one assigned partition sequentially; maxInFlight is not a portable client API or proof of parallel processing. Commit the next offset as a decimal string without Number conversion. A failed effect or commit stops the partition even after retry routing. Producer acknowledgement, consumer fetch and durable business completion are different observations; rebalances need ownership fencing beyond this loop.",
+      "0435": "The database adapter must atomically claim the tenant/logical-consumer identity, compare duplicate intent and commit the local effect. The code's false claim branch relies on that adapter contract. Acknowledging after commit allows redelivery, not a second committed local effect while the inbox is retained. Retention expiry, catastrophic storage loss and external side effects remain outside that guarantee.",
+      "0436": "stableHash, partitionCount, handleInOrder and commit are missing adapters. Specify unsigned hash mapping and positive partition count. Checking ownership only before handle does not fence a late effect or commit after revocation; drain or fence at the effect/commit authority. Partition changes need migration, and extra consumers cannot split one hot key while retaining its serial order.",
+      "0437": "Classification does not enforce retry counts, delay, quarantine durability or replay authorization. Unknown errors deliberately enter investigation rather than an infinite retry. Record protected payload access and an accountable owner; persist disposition before source acknowledgement. Moving a failed event to another topic can let later events overtake it, even with the same partition key.",
+      "0438": "The SQL fragments require separate parameter sets, schemas and an explicit transaction adapter. The outbox closes the local state/intent gap, not the broker publication/relay-checkpoint gap. A zero-row producer update emits no event; reconcile why. Consumer target existence and canonical duplicate comparison are required contracts, and the relay/CDC position, schema evolution and retention still need implementation.",
+      "0439": "Awaiting history, state and due-action writes keeps the illustrated transaction open until they settle, but does not implement deduplication or optimistic version checks. timeoutMs is inert configuration without durable scheduling. Compensation is a new business action, possibly impossible or failed; reconcile uncertain payment outcomes before issuing it and persist manual-repair ownership.",
+      "0440": "The three fake decisions test dispatch only, not prepare, coordinator durability or network recovery. Unknown or unreadable decisions must preserve prepared state rather than infer abort. Commit requires all required participants to prepare; a refusal can lead to abort without everyone preparing. Compare a single transaction owner, outbox or saga against the exact invariant, not only their availability."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review." };
+  }
+  if (Number(lesson.number) >= 426 && Number(lesson.number) <= 433) {
+    const checkpoint = {
+      "0426": "Strict dominance is false for equal vectors; two unequal vectors with neither dominating are concurrent in this modeled history. Lamport order alone cannot distinguish concurrency. The fixture uses two fixed participants, not the three-process extension, and supplies no HLC, counter-overflow or incarnation handling. Extend the event schedule before comparing clocks.",
+      "0427": "The two successes have scheduled durations 100 and 10 ms but service durations both 10 ms; nearest-rank p99 is therefore 100 versus 10. Neither estimates a population tail from two samples. Half the scheduled work did not succeed. For independent branches with probability p of meeting a threshold, all n meet it with probability p to the n; shared failures invalidate that independence assumption.",
+      "0428": "withDeadline propagates a cooperative signal; it does not race an ignoring operation or forcibly enforce a return time. Timer delivery can be delayed by a blocked event loop and the timeout signal is not explicitly cleared on early success. A cancelled adapter owns cleanup and remote reconciliation. Reuse the deadline locally and translate only the remaining budget across process boundaries.",
+      "0429": "maxAttempts includes the first call, and the budget is charged only for an admitted retry. The demonstration budget always permits retries, so it is not fleet protection. A deadline must be included in the supplied signal; classify errors and keep operation identity stable. Zero-delay fixtures do not measure jitter distribution, Retry-After behavior or hedged-request cancellation.",
+      "0430": "Admission creates no waiting queue and limits active operations in one object/isolate, not requests per second or aggregate fleet work. A hung operation retains its slot until actual settlement. The error properties need an HTTP adapter to become status and Retry-After headers. Measure memory/bytes and upstream queues as well as local concurrency before calling the whole service bounded.",
+      "0431": "The fake clock tests one half-open probe and cooldown, not rolling failure classification or enforced bulkheads. Probe inputs are trusted fixture values. A hung probe remains half-open; an external reset requires generations so a late completion cannot close a newer breaker. One successful probe closes this example, not necessarily a production recovery policy.",
+      "0432": "The transfer helpers are missing, so the table is a classification worksheet rather than atomic money processing. Receipt lookup outside an atomic claim can race; scope identity and compare the request fingerprint before replay. Set union is duplicate-safe but a growing set still needs retention policy. Commutative increments are not idempotent, and transfer guards may make ordering matter.",
+      "0433": "The envelope is synthetic: its abbreviated event ID is not a generated globally unique identifier. Keep event identity stable across redelivery and trace identity diagnostic, not authoritative. A partition key scopes ordering only under the broker/producer contract. Independent subscriptions and retention cost must be evaluated separately; this object does not publish or acknowledge anything."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the supplied local fixture or worksheet, including a failure and the mechanism's boundary. Extension: implement the missing adapters and measure a bounded workload, changed constraint and recovery behavior in an authorized environment. Offline assertions do not verify a live distributed protocol or production capacity." };
+  }
+  if (Number(lesson.number) >= 421 && Number(lesson.number) <= 425) {
+    const checkpoint = {
+      "0421": "The CLI names are illustrative, not packages to install. Define first authenticated success from a clean consumer environment, including credential setup and failure diagnosis. A passing schema diff cannot establish behavioral compatibility; test a released client and document sandbox differences. Governance needs an exception owner and expiry, not only a checklist.",
+      "0422": "The object states assumptions but implements no protocol: deterministicStateMachine is missing and transition is never called. Unbounded delay alone cannot guarantee eventual leader progress; liveness additionally needs eventual communication/scheduling conditions and an appropriate election protocol. Enumerate committed-but-response-lost and never-received histories that look identical to the caller.",
+      "0423": "The injector and assertion helpers are specifications, not executed fault injection. Clarify whether atMs is an absolute schedule or an additional delay; sequential awaited injections need not overlap. The listed plan does not inject disk corruption or Byzantine peers. Check safety during the fault and recovery after it, with a bounded observation window rather than claiming liveness from one run.",
+      "0424": "TCP hides packet duplication and reordering within a surviving connection; duplicate application operations arise through retries or another application-level delivery path. State which layer the fault proxy changes. A reset after commit and a reset before receipt can look identical, so reconcile stable operation identity at the authority. The missing injector is not a runnable network lab.",
+      "0425": "operation and simulateClockStep are unsupplied adapters. The clock step appears after the measurement, so this snippet does not demonstrate a negative wall duration. Inject independent wall and monotonic clocks around the operation to test a backward step without changing the host clock. Monotonic origins are local, resolution is finite, and suspend behavior is platform-dependent; a monotonic reading is not cross-host causal order."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review." };
+  }
+  if (Number(lesson.number) >= 397 && Number(lesson.number) <= 420) {
+    const checkpoint = {
+      "0397": "The capability sheet assigns authority but implements no invariants. One terminal outcome per accepted job needs a guarded state transition, and billing deduplication needs durable identity. Start with a modular monolith when separate deployment adds no demonstrated benefit; cross-boundary uncertainty still needs a named owner.",
+      "0398": "The example.test endpoint is a placeholder, not an external service to contact. curl --http2 requests negotiation but does not prove the final protocol or proxy path. Capture the actual exchange; a timeout after PUT may follow a successful write. HTTP semantics do not make every intermediary transformation safe.",
+      "0399": "Safety concerns requested effects, while idempotency concerns repeated intended effects; neither requires identical responses. Repeating the same conditional PUT can yield 412 after the first success changes the version. Cacheability is independent: explicit POST caching is possible under its rules, and DELETE need not return the same status twice.",
+      "0400": "The object illustrates resource identity and links, not actual routable operations. A cancellation resource can make retry semantics explicit, but naming it does not implement idempotency or permission. Prefer a clear action when it expresses domain intent more honestly than an artificial generic update.",
+      "0401": "The Content-Encoding header is illustrative: actual bytes must be Brotli encoded before declaring br. Vary covers request dimensions that select representations; unsupported preferences need a deliberate response policy. Locale-specific display must not alter stable IDs, monetary units or machine-readable timestamps.",
+      "0402": "The 409 identifies conflicting reuse of an operation key, not every retryable failure. type and code are stable machine contracts; title/detail can change for humans. instance identifies this occurrence and should not expose secrets. Problem Details is a representation, not an automatic domain-to-status mapping.",
+      "0403": "The parser fails fast and JSON.parse accepts duplicate names with last-value behavior, so it does not implement aggregated errors or duplicate rejection. The revised project-ID check rejects a final newline, which JavaScript's dollar anchor alone permits. UTF-8/byte/schema checks still do not authorize the project or make outbound connections SSRF-safe.",
+      "0404": "Claim, job, event and stored response need one real transaction. A conflict loser reads a separate Read Committed snapshot and must never fall through into new writes. Canonical intent includes semantic defaults and scope; receipt expiry deliberately ends the deduplication window. Authorize replay independently of whether the key exists.",
+      "0405": "The parser accepts tag lists and commas inside tags, excludes weak matches and treats wildcard as existence. It now rejects CR/LF and non-HTTP outer whitespace. Matching a previously read ETag is not an atomic update: the authority must apply a version predicate. Missing-policy 428, syntax 400 and false-condition 412 are different outcomes.",
+      "0406": "The SQL and JavaScript are separate adapter fragments with missing signing and database setup. Fetch one extra row, then continue after the last returned row, not the probe. Bind tenant/filter/order and expiry to authenticated cursor contents. Stable ordering does not preserve a cross-page snapshot under deletes or ordering-field mutation.",
+      "0407": "Columns and operators come from an allowlist while values remain separate parameters. The single predicate always uses $1; combining fragments needs parameter renumbering and a whole-query budget. Valid timestamps are deliberately canonical UTC strings. Schema validation is not object authorization or a reliable estimate of query work.",
+      "0408": "Two fixture predicates catch one missing field but do not prove consumer compatibility. A non-null priority of the wrong type would pass the v2 predicate. Deprecation's structured date and Sunset's HTTP date describe a schedule; observe real client migration and preserve rollback before removal.",
+      "0409": "Shared caches use s-maxage while private caches use max-age; Age contributes to freshness rather than restarting it at every hop. A 304 updates a stored representation and has no replacement body. The transcript is illustrative and omits some wire metadata; Vary and personalized authorization must be consistent on actual responses.",
+      "0410": "Links expose candidate next actions but the server must reauthorize and recheck state when an action arrives. A custom links object needs documented relation and method semantics for clients to use it. Statelessness does not prohibit persistent business data or caches; hidden conversational session assumptions are the relevant distinction.",
+      "0411": "All local references are defined, but the minimal schema supplies neither authentication nor full domain rules. OpenAPI 3.1 uses JSON Schema semantics; format enforcement depends on tools. Generated clients and examples need conformance and mixed-version tests, not only a syntactically valid document.",
+      "0412": "Removed field number and name stay reserved; optional result_uri distinguishes absence from the default string. Preserving wire compatibility does not preserve changed field meaning. The proto declares one unary and one server stream, not an implemented server, deadline propagation or cancellation behavior.",
+      "0413": "The policy object enforces nothing until wired before execution. Bound first and list multiplication, authorize each field/object and scope loaders to a request. Object-valued loader keys need a deliberate equality/cache-key policy, otherwise equivalent arguments may miss deduplication. SDL and resolver fragments are separate inputs.",
+      "0414": "Verification binds the timestamp string and original bytes before JSON decoding. Full-string checks now reject newline-suffixed timestamps and hex signatures. A valid signature and five-minute window do not prevent duplicate effects within that window; validate event schema and atomically persist scoped acceptance before acknowledgement.",
+      "0415": "retry is milliseconds and the blank line terminates an SSE event. Last-Event-ID is a resume hint only if the server retains and replays the corresponding history. The WebSocket policy is prose, not a running channel; heartbeats cannot prove a peer is dead or that a business effect committed.",
+      "0416": "The policy consumes a verified principal and authoritative resource, then denies unsupported actions and classifications. Returning audit/field obligations does not enforce them: callers must project fields and persist required audit. Test actual adapters against stale authority and another tenant, beyond the local decision table.",
+      "0417": "The YAML is product-neutral policy, not a deployable gateway configuration. Clarify whether attempts counts total tries, reject prefix-confusable routes and preserve the caller's remaining budget. Gateway identity and coarse limits do not replace service object authorization or atomic domain rules.",
+      "0418": "The parser permits only name and visibility, but permission to change visibility is separate. The outbound allowlist is inert configuration until enforced across URL, DNS, connection, redirects and body reads. Input normalization and prototype-key rejection do not establish safe execution in every interpreter.",
+      "0419": "The observation is synthetic and the label assertion excludes only IDs explicitly checked. Real method/status/tenant-class values also need bounded normalization. Diagnostic logs are not a partitioned message log; sampled traces cannot substitute for durable audit. No telemetry SDK or cross-service propagation is exercised.",
+      "0420": "The two tests prove total-order traversal and a tie counterexample on one frozen dataset. They do not generate arbitrary inputs, sign cursors or execute database concurrency. Replace only the page adapter to extend coverage, keeping authorization, snapshot changes and released-client compatibility as distinct assertions."
+    }[lesson.number];
+    if (checkpoint) profile = { ...profile, checkpoint, labScope: "Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior." };
+  }
+  if (lesson.number === "0396") profile = { ...profile,
+    checkpoint: "The capstone specifies a system to build, not runnable SQL or existing make targets. A failed claim must branch to replay or conflict without inserting a second job. Durable job acceptance and optional Redis acceleration have separate availability and backlog limits. Restoring the database may lose accepted work within the stated RPO; reconcile downstream effects before resuming consumers.",
+    labScope: "Core: walk through every listed crash/replay schedule and name the authoritative records and expected counts. Extension: implement the missing PostgreSQL/Redis adapters and collect actual concurrency, restore and operational evidence. No installation, database mutation or recovery drill is performed by this content review." };
+  if (Number(lesson.number) >= 381 && Number(lesson.number) <= 395) {
+    const checkpoint = {
+      "0381": "Serial keyspace execution does not mean every Redis activity uses one thread. A long command delays peers; a blocked list client is a different mechanism. Logical databases share process resources, not PostgreSQL-style catalogs. The continuous latency probe must be stopped explicitly and monitoring-disabled silence is not a healthy-latency result.",
+      "0382": "Lengths count encoded bytes, including embedded CRLF and zero bytes. The offline encoder does not parse replies or bound a network pipeline. One TCP read is not one reply, and RESP3 pushes need separate handling. A connection retains WATCH/MULTI state; do not move those operations arbitrarily across pooled connections.",
+      "0383": "The first run yields counter values 1 and 1; replay resets hash logins to 1 while page views rises. NX failure does not cancel other EXEC commands. Hash encoding thresholds and field-expiry support depend on version. These synthetic session values are not authentication or secure session issuance.",
+      "0384": "LPUSH prepends each argument, producing event-1 first; reverse score ties use reverse lexical member order. The queue move transfers job-1, not its effect or acknowledgement. Define recovery and slow-consumer policy rather than treating processing-list presence as completed work.",
+      "0385": "BITOP returns bytes allocated, while BITCOUNT counts set bits. Sparse large IDs create large strings, so map into bounded offsets. HyperLogLog's error is statistical, not a guaranteed maximum for one count; two IDs do not test representative accuracy. Longitude precedes latitude and geographic distance is not road travel time.",
+      "0386": "CONFIG SET changes the whole instance, not one logical database. KEEPTTL preserves a remaining TTL only if a key still exists; recreating a missing key without EX leaves no expiry. allkeys-lfu can evict any fixture key, so allow -2 observations under pressure. Restore settings and verify authoritative fallback separately.",
+      "0387": "The deliberate transaction leaves balance:42 at 500 despite the later type error. Queue-time errors and WATCH invalidation have different outcomes. Lua also does not undo earlier writes on runtime failure. The script counts attempts in a first-hit window; it does not reject excess work or implement a sliding window.",
+      "0388": "Pipelining removes round-trip waits, not command CPU work or transactional interleaving. Ten thousand generated SETs are bounded inputs, not bounded server output under every client behavior. Compare full latency distributions with fixed payload/keyspace and persistence; stop at predefined resource limits.",
+      "0389": "BGSAVE and BGREWRITEAOF may queue, defer or fail depending on active persistence and configuration; inspect replies and INFO rather than assuming both start immediately. Multipart AOF needs the manifest and referenced files. Check tools inspect offline copies, and repair can discard data; no crash or repair is run by this review.",
+      "0390": "WAIT acknowledges replication of this connection's earlier writes, not durable consensus or rollback after timeout. Sentinel failure detection quorum differs from the majority authorization required for failover. The commands require separate data and Sentinel endpoints and can disrupt topology; measure acknowledged-write survival and client rerouting.",
+      "0391": "Matching hash tags co-locate keys but do not make SET NX guard an earlier HSET. MULTI belongs to one owning-node connection; redirects do not authorize replaying individual queued writes. ASK is temporary and needs ASKING on the destination connection, whereas MOVED updates routing knowledge.",
+      "0392": "XACK removes pending ownership, not the stream entry or an external effect. XAUTOCLAIM can overlap a slow live consumer; idempotency must survive that overlap. MESSAGE_ID is a placeholder to replace with an actual returned ID. Trimming and retention can destroy unprocessed bodies; distinguish current-version retention options.",
+      "0393": "The key binds tenant, ID and exact version, but the caller must obtain the authoritative version for latest reads. A 15-second negative hit can hide later creation. Cache rejection becomes a miss; a hung call still requires a client deadline. Single-flight and fallback admission are explicitly unimplemented extensions, not properties of try/catch.",
+      "0394": "The random owner token identifies one lease attempt; it is not an increasing fencing value. The resource rejects a lower fence after a newer write, and the strict predicate permits one write per fence. A safe allocator and idempotent replay contract are missing; Redis lease ownership alone cannot stop a paused stale owner.",
+      "0395": "ACL DRYRUN checks authorization without authenticating or executing. The password syntax is for interactive redis-cli, not unquoted shell redirection. Key prefix permissions do not authorize other tenants, and admin diagnostics use a separate identity. Persistence of ACL changes, TLS and credential rotation require actual configuration tests."
+    }[lesson.number];
+    if (checkpoint) profile = { ...profile, checkpoint, labScope: "Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration." };
+  }
+  if (Number(lesson.number) >= 346 && Number(lesson.number) <= 380) {
+    const checkpoint = {
+      "0346": "The role default applies to a new app_runtime session, not the administrative session after connect. No projects table is created, so to_regclass can return NULL. USAGE is not table permission. Trust every schema creator on search_path, including intentional app-before-pg_catalog shadowing; do not assume this fixture fully hardens a server.",
+      "0347": "A backend PID identifies a server process, not one application request across a pool. Statistics visibility depends on privilege, and query text can contain secrets. Backend RSS includes shared mappings, so summing RSS overstates uniquely owned physical memory; measure connection pressure under a real workload.",
+      "0348": "Relation size functions cover different combinations of heap, auxiliary storage and indexes. relpages and reltuples are estimates maintained by maintenance, not immediate exact counts. The file path is diagnostic, not an invitation to edit server files; no page-inspection extension is supplied.",
+      "0349": "CHECK rejects false, not NULL, so NOT NULL supplies a separate guarantee. The email domain is only a minimal shape check; arrays permit duplicates and null elements unless constrained. Empty ranges can be valid here. Generated lower text is immutable under the supported expression rules, not proof the whole domain model is complete.",
+      "0350": "Tenant-scoped candidate keys prevent a SKU collision within one tenant while allowing it elsewhere. Order lines and price snapshots are intentionally absent; this schema alone cannot demonstrate third normal form for a complete commerce model. Derive dependencies from business rules before denormalizing.",
+      "0351": "The exclusion rejects overlapping occupied ranges only for equal tenant and room. Nonempty does not imply finite bounds. Deferred checking permits temporary conflict but not invalid commit; the empty transaction currently inserts no conflict. btree_gist must already be available and extension creation needs authorized privileges.",
+      "0352": "Batches need separate commits and resumable bounds; a small key range is not necessarily small work. NOT VALID still checks new writes. A validated non-null check can avoid a later table scan, not eliminate the required lock. Confirm old writers populate the new field before enforcement and measure truncation's business impact.",
+      "0353": "The WHERE filter removes old jobs before both count and average; completed is a subset count while average covers all retained jobs. Inner joining omits projects with no qualifying jobs. Alias and grouping behavior follows logical semantics, while the optimizer can reorder only equivalent work.",
+      "0354": "EXISTS avoids multiplying parent rows; NOT EXISTS avoids NOT IN's null trap. The lateral tie-breaker uses created_at then id, but nullable timestamps need an explicit policy. The fixture assumes globally identifying project IDs; tenant-local IDs require tenant predicates on every join.",
+      "0355": "The path marks a repeated node and prevents further expansion from that cycle row; the flagged row still appears. That does not bound depth or total work on a large acyclic graph. NOT MATERIALIZED is not a universal speed switch; explain repeated work and predicate pushdown on the actual plan.",
+      "0356": "The explicit ROWS frame gives row-by-row accumulation under a deterministic tie-breaker. The grouped percentile is attached to every tenant row, not recalculated as a running percentile. Distinguish subtotal NULL placeholders with GROUPING when real dimension NULLs exist, and define duration NULL handling.",
+      "0357": "The SQL assumes account existence and sufficient-funds rules and is not a complete money API. A savepoint is declared but never rolled back to; partial rollback after debit could violate the transfer invariant. Lock accounts in stable order across every caller. Unique request IDs reject duplicates but do not alone implement successful replay.",
+      "0358": "Session B must really be a different connection, with A's snapshot established before B commits. A sees its snapshot until commit, then a new statement sees later committed data. xmin/xmax/ctid are diagnostics, not durable application versions. Vacuum cannot remove versions still required by an old snapshot.",
+      "0359": "Both serializable transactions must overlap to expose the intended write-skew dependency. Retrying only UPDATE is insufficient: reread the count in a fresh transaction. An empty update after the invariant recheck is a business outcome, not a serialization error. Serializable does not execute one transaction at a time.",
+      "0360": "SKIP LOCKED omits contended rows and therefore changes selection fairness and snapshot completeness. This fragment only locks rows, then releases them at commit; it does not persist a job claim. SSI predicate locks track conflicts without ordinary blocking, while advisory locks require all participants to follow the same convention.",
+      "0361": "The helper retries only 40001 and 40P01 with at most ten attempts. Each adapter call must roll back and begin fresh; the stable operation key survives attempts. Backoff is jittered but there is no caller deadline or cancellation. Existing fake-error checks establish control flow, not a reproduced database deadlock.",
+      "0362": "INCLUDE can cover returned values but large payloads enlarge entries and may exceed index tuple limits. Visibility-map state controls heap visits. B-tree posting-list deduplication is not request deduplication and is disabled for INCLUDE indexes. CREATE INDEX CONCURRENTLY cannot run inside a transaction block.",
+      "0363": "The shared starter creates several index families but only explains the jobs B-tree query. Add corresponding operator queries to measure GIN, GiST and BRIN. Lossy matches need rechecks; BRIN depends on physical correlation. Hash and SP-GiST are comparison extensions, not executed demonstrations.",
+      "0364": "Equality on tenant then ordered created_at/id fits this access path; INCLUDE payload is not a search key. The planner must establish the partial predicate, which a generic parameterized plan may not prove. Measure write amplification and workload-wide redundancy before retaining every shown index.",
+      "0365": "Extended statistics describe within-table column relationships, not every join correlation. A higher target increases sample/storage/planning costs and is not guaranteed to help. Keep the target schema consistent: this script assumes jobs resolves to app.jobs, while current_schema can otherwise differ from the literal app filter.",
+      "0366": "Compare estimates and actuals on the same per-loop basis, then count repeated work. Node timings are inclusive, so do not sum the plan tree into elapsed time. Buffer reads are not necessarily physical device reads because the OS may cache them. ANALYZE executes the statement and rollback does not reverse all possible effects.",
+      "0367": "A selective indexed inner lookup can suit nested loops; broad equality inputs may favor hashing, and existing order may favor merging. The shared query is not guaranteed to select each algorithm. Vary representative data and memory separately; a sequential scan is not automatically a failed optimization.",
+      "0368": "The shared maintenance probe does not yet compare indexed-column updates or measure HOT ratios. HOT requires same-page space and eligible unchanged indexed values, with version-specific summarizing-index exceptions. Bloat can be reusable space; reclaiming it for the OS has different locking and rewrite costs.",
+      "0369": "Dead-tuple counts are estimates and scale factors combine with other thresholds. Small per-table factors are a fixture, not a universal tuning preset. Long snapshots and slot horizons can retain required versions. VACUUM is not VACUUM FULL, and wraparound safety is distinct from immediate query speed.",
+      "0370": "LSN movement can include concurrent cluster activity and does not isolate one transaction's WAL bytes. pg_stat_checkpointer requires the stated newer version. CHECKPOINT is an operational action, not proof that backups or replication are healthy. A crash drill must verify committed and uncommitted outcomes in a disposable instance.",
+      "0371": "PgBouncer pool size is generally per database/user pool, not one universal twenty-connection service cap. max_client_conn bounds client slots, not useful database execution. Prepared-statement compatibility depends on pool mode, protocol and version; session locks/settings cannot assume a stable backend across transactions.",
+      "0372": "The single September partition rejects out-of-range rows because there is no default partition. Use explicit UTC boundaries when the intended retention calendar is UTC. Pruning follows relevant predicates, not tenant filtering alone. Partitioned uniqueness generally must include partition keys; partitioning is not sharding or automatic query acceleration.",
+      "0373": "Sent-to-replayed byte distance covers only that stage, not unsent WAL or client-visible staleness. An idle primary makes time-since-last-replay grow without a backlog. Slots can retain WAL indefinitely under unsuitable limits. Promotion needs fencing and client routing; monitoring queries do not implement safe failover.",
+      "0374": "Publisher and subscriber commands run on separate configured databases. Replica identity FULL can increase traffic and apply cost; it does not replicate DDL or sequence state. The subscription owns its slot, and the slot diagnostic belongs on the publisher. Row-change replication is not an atomic external business-event consumer.",
+      "0375": "The logical restore targets only the disposable restore_probe database; clean can drop its objects. Base backup plus streamed start WAL is not an ongoing archive policy for later PITR. Verify credentials, roles, tablespaces, archive continuity and application recovery before reporting RPO/RTO. No backup, restore or server termination runs here.",
+      "0376": "RLS needs non-owner, non-superuser, non-BYPASSRLS tests and explicit write checks. The custom tenant setting is supplied by a trusted authenticated application, not secure against arbitrary SQL. hostssl requires encrypted connections, while verify-full verifies server identity; neither replaces grants or row policy.",
+      "0377": "pg_stat_statements requires prior configuration and extension availability; cumulative totals need a known interval or deltas. Mean latency hides tails and normalized query text still deserves redaction. Wait views are snapshots, not a complete incident timeline; correlate host and application evidence.",
+      "0378": "work_mem applies to individual operations and can multiply across workers and concurrent queries; hash memory may use an additional multiplier. Shared buffers and OS cache are different layers. The shared diagnostics script supplies no load generator or tuning change: establish matched baselines before modifying settings.",
+      "0379": "The query orders only by vector distance, so showing a lexical score does not make it hybrid retrieval. jsonb_path_ops supports a specific operator set, not every JSON query. Filtered approximate search may return too few candidates; compare recall and latency to exact search and define explicit fusion or reranking.",
+      "0380": "The conflict branch uses a separate Read Committed statement after claim contention to obtain the committed receipt. It never falls through into business writes. A stale version rolls back this claim and does not cache a failure. Existing fake checks cannot prove database uniqueness, rollback, concurrent visibility or consumer inbox atomicity."
+    }[lesson.number];
+    if (checkpoint) profile = { ...profile, checkpoint, labScope: "Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow." };
+  }
+  if (lesson.trackId === "fastapi") {
+    const checkpoint = {
+      "0303": "The CLI starts the server; FastAPI builds contracts, Starlette supplies ASGI behavior, and Pydantic validates values. The health route proves only that its handler responds. Record compatible installed versions and import paths; reload is a development process model, not production replication.",
+      "0304": "One HTTP scope belongs to one request even when a socket carries many requests. This raw app reads only one event and ignores the body; it supplies neither lifespan nor WebSockets. Response start precedes body, and a successful send is not proof that the remote client consumed it.",
+      "0305": "The helper currently visits an app with no custom routes. Call it after registering all operations and before first schema generation; route names must be globally unique if used as operation IDs. A cached schema is not automatically invalidated when you mutate route metadata.",
+      "0306": "The status override distinguishes actual creation from an existing result; the service contract must justify that distinction. Document both 200 and 201, not only the decorator default. Fixed paths precede unconstrained dynamic paths. Verify HEAD and OPTIONS on actual FastAPI routes rather than assuming every Starlette behavior is inherited.",
+      "0307": "tenant_id and project_id come from path segments; kind and as_of are query values here. Router converters can fail matching with 404, while matched text rejected by Pydantic usually yields 422. A valid UUID is not proof of tenant membership.",
+      "0308": "Limit is bounded, and the revised tag field bounds both item count and string length. Offset still permits expensive deep scans. Query-model support is version-dependent; repeated values and missing defaults need actual requests. Header and cookie extraction establish no identity or trust.",
+      "0309": "Strict and extra-forbid configuration on OrderCreate is not a universal recursive policy for separately defined nested models. The discriminator chooses the payment variant; specify each variant's unknown-field and length rules. Price input must not override authoritative server pricing merely because it passed validation.",
+      "0310": "The endpoint reads at most its file limit plus one byte, after multipart parsing has already occurred. MIME metadata and a magic prefix are insufficient image validation. Authorize owner_id before storage and bound decoded dimensions, parser spooling and ingress time; finally closes the uploaded file on read failure.",
+      "0311": "The declared output model filters the ordinary returned object, not a manually returned Response. It prevents these extra fields from leaving but does not authorize access to the email or user ID. Invalid output is a server defect, not a client request-validation error.",
+      "0312": "csv.writer handles quoting but not spreadsheet formula injection. Streaming does not guarantee proxy flush timing or close an unsupplied repository iterator correctly. RedirectResponse defaults to method-preserving 307; choose deliberately. File ranges and secure cookies are extensions not present in this starter.",
+      "0313": "The validation handler omits raw values and messages that may expose secrets. These JSON shapes are only a partial problem-details contract: choose application/problem+json and consistent fields when claiming that standard. Domain error mappings need their classes and adapters; response-validation defects need safe server logging.",
+      "0314": "499 is a nonstandard diagnostic convention; an already disconnected client may never receive it. request.state.request_id requires middleware to set it. Direct client metadata is not trusted proxy identity, and checking disconnect once does not cancel subsequent work.",
+      "0315": "The tenant header selects a boundary while the authenticated principal proves membership. Cached dependency results are request-local and do not make a session safe for concurrent tasks. Supply the missing graph and call log before claiming a node executed once.",
+      "0316": "Function-scoped exit commits before response sending; the dependent session can remain request-scoped. Confirm the installed version supports scope. Exceptions thrown through yield skip the following commit; rollback and close still need adapter and cancellation evidence. Prefer an explicit use-case transaction when hidden exit commits obscure ownership.",
+      "0317": "The configured callable holds a required scope, not per-request mutable identity. Decorator dependencies enforce checks but discard return values. Overrides use the original callable as a key and must be restored; a new equivalent-looking factory result may be a different dependency key.",
+      "0318": "The transport sketch still needs get_service and an actual framework-independent use case. A 202 response promises acceptance, not completed processing; establish durable acceptance before using it for restart-surviving work. Layering earns its place through a change or test seam, not folder count.",
+      "0319": "lru_cache is process-local and lazy, not automatic startup validation. Call settings during lifespan to fail before readiness. SecretStr masks common representations but get_secret_value reveals it; it does not validate a database URL or prevent all logging leaks. Overrides and cache clearing need test isolation.",
+      "0320": "AsyncExitStack owns the engine before later acquisition and verification, then unwinds in reverse order. Each worker has separate clients and pools. The fixture supplies no model loader; readiness must wait for verification, and forced termination can prevent cleanup despite correct graceful-lifespan code.",
+      "0321": "Only framework-dispatched def endpoints or dependencies are automatically offloaded, not a synchronous helper called from async code. The commented broken endpoint currently does not block. JSON decoding remains synchronous CPU work after an awaited HTTP response; bound response sizes and measure pool contention.",
+      "0322": "Three named tasks bound this fan-out. AnyIO cancellation is cooperative and cleanup may outlast the nominal deadline; remote effects may already exist. The starter implements all-or-fail aggregation, not partial results or an explicit disconnect watcher. Never share one mutable database session among the children.",
+      "0323": "Ten base plus five overflow connections are a per-engine ceiling for a compatible pool, not the service-wide total across workers. pre_ping detects stale checkout connections, not transaction recovery. The tenant predicate is necessary but still needs an authenticated principal and an explicit public output model.",
+      "0324": "Flush obtains IDs and checks statements inside the transaction; leaving begin normally commits. Retry must create a fresh whole transaction and classify the driver's actual serialization failure, not assume an undefined exception name catches it. External effects belong after commit or in the outbox; attempts alone do not impose a total deadline.",
+      "0325": "The missing claim adapter must serialize tenant/operation/key, compare intent and store receipt with job and outbox in one commit. A replay inside begin still exits its transaction. BackgroundTasks is imported but not demonstrated; a local post-response callback cannot replace durable delivery.",
+      "0326": "The password-grant code is explicitly a legacy reading exercise, not a new OAuth recommendation. The hashing adapter must return a boolean or translate its library's mismatch exception. JWT validation authenticates allowed claims, not current account permissions; rotation, revocation and bounded hashing concurrency remain required.",
+      "0327": "SecurityScopes supplies requested names; authenticate and get_authorized must enforce actual authority. A passing global scope does not grant another tenant's object. Test membership, object ownership and action independently, and avoid leaking existence through inconsistent denial behavior.",
+      "0328": "The token is bound to the server session, not merely two equal attacker inputs. Attach require_csrf to every relevant state-changing route; defining it alone protects none. Login CSRF, rotation, expiry and logout need their own flow. SameSite is site-based defense in depth, not an origin authorization rule.",
+      "0329": "The most recently added middleware wraps earlier user middleware, so redirects and host failures can bypass the inner CORS layer. Wrap the whole app when all error responses need CORS. Trust forwarded scheme only from controlled proxies; otherwise redirect loops or forged metadata can break security assumptions.",
+      "0330": "The revised middleware accepts only bounded ASCII request IDs and resets ContextVar state on every exit. Correlation is not authentication. It emits an HTTP response header but no WebSocket accept header, and does not populate request.state. Supply imports/context initialization and decide how outer server-error responses receive correlation.",
+      "0331": "The body limiter bounds retained decoded ASGI bytes for small JSON requests and rejects content encoding. It does not prevent the server from handing it a large chunk or a slow client from holding a slot. Existing offline tests cover chunking and rejection; rate, header, timeout and authorization controls remain separate.",
+      "0332": "Adding a security scheme component does not secure an operation or declare its security requirement. Schema caching needs intentional invalidation after supported changes. No client generation or compatibility diff runs in this sketch; compare semantic contracts, not only JSON text.",
+      "0333": "A webhook declaration documents outbound delivery, not an automatically served receiver or sender. The HMAC covers exact serialized body bytes but supplies no freshness window. Durable retry, SSRF-safe destinations, response limits and atomic receiver deduplication must be implemented by the missing adapters.",
+      "0334": "root_path describes a deployment prefix; it is not a substitute for actual proxy rewrite configuration. Mounting a sub-app gives it a separate routing/schema boundary, not private network access. docs_url=None does not disable its OpenAPI endpoint or authorize /_internal; explicitly protect those routes.",
+      "0335": "The queue bounds 50 objects, not their total byte size or all clients' memory. Authentication and room authorization must happen before accept. manager.join occurs before try, so partial join failure needs its own cleanup contract. Sender failures and slow consumers need an explicit owner; process-local membership does not implement cross-worker broadcast.",
+      "0336": "The timeout scope exits before each yield, and metadata rejects framing controls. Heartbeats aid idle connections but do not guarantee delivery or replay. Empty data may dispatch no event; define event JSON and size contracts. Last-Event-ID recovery and proxy buffering need separate server/client tests.",
+      "0337": "Autoescaping protects ordinary HTML text contexts, not every URL, script or trusted-markup context. A nonce variable alone does not install a CSP header. The template, static directory, schema and GraphQL authorization are missing integrations; mounted GraphQL still needs depth, complexity and rate limits.",
+      "0338": "The TestClient context owns lifespan and finally restores prior overrides. This test assumes the default HTTPException response shape and a supplied app fixture. Global overrides are still unsafe for concurrent tests sharing one app. No real socket, proxy or worker behavior is established.",
+      "0339": "ASGITransport does not start lifespan, so the explicit manager matters. Equal returned IDs do not alone prove one persisted row, atomic receipt or absence of duplicate effects. The fixture must isolate a real migrated database and support the asyncio backend used by gather; no packages or database were installed here.",
+      "0340": "call_next timing measures response production, not completion of a streamed body. The exception counter misses handled error responses unless status is counted separately. Route templates bound one label; normalize arbitrary methods too. Telemetry failures must not mask the original outcome, and an unhealthy readiness result must carry an appropriate failure status.",
+      "0341": "The finite worker count bounds task creation, but latencies retains one sample per request. This is closed-loop success-only timing; errors abort the run and admission wait is excluded. Supply a percentile definition and representative client before comparing throughput or p99. More workers multiply memory and pools.",
+      "0342": "The Dockerfile is a recipe, not a built or deployed artifact. A mutable base tag and unhashed pip command do not prove reproducibility. Requirements must contain a compatible CLI/server stack; proxy trust, one-time migration ownership, resource limits and real signal draining remain deployment configuration.",
+      "0343": "Deprecation metadata and dated headers communicate a plan but do not implement removal or compatibility. The v1 router still needs inclusion in app. Enum additions and error/ordering changes can break consumers despite an additive schema; measure client usage and stage storage changes before removal.",
+      "0344": "The wrapper times handler/response creation, not streaming transmission. A metric exception in finally can replace the real result; use a non-throwing telemetry boundary. Set route_class before registering routes and compare a dependency or middleware alternative before relying on internals.",
+      "0345": "The thin route is an integration contract, not a finished multi-tenant service. The adapter must atomically persist project, event, scoped intent and replay result; 201 on replay must match the documented original-response policy. Real authorization, concurrency, rollback and deployment evidence remain required beyond this sketch."
+    }[lesson.number];
+    if (checkpoint) profile = { ...profile, checkpoint, labScope: "Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result." };
+  }
+  if (lesson.trackId === "python") {
+    const checkpoint = {
+      "0260": "sys.executable and prefixes identify the interpreter actually running, not the one a shell prompt suggests. Bytecode is CPython/version-specific evidence. The commented environment commands are a workflow to inspect, not proof of an installed or locked environment.",
+      "0261": "A closure retains bindings in cells, not frozen values. Assignment makes a function name local even before that statement executes; calling broken demonstrates UnboundLocalError. Frame inspection can itself retain objects, so release the inspection reference as the starter does.",
+      "0262": "Assignment preserves identity, shallow copy replaces only the outer container, and deepcopy traverses the graph. None as a default creates per-call storage only because the function allocates inside the body. Deep copying is not always meaningful for resources or identity-bearing entities.",
+      "0263": "The fixture rounds the final taxed total to 64.92 under its chosen policy. Decimal avoids binary representation error but still has finite context precision and rounding. Choose currency and rounding stage explicitly; accepting bool as an integer is usually wrong at a money boundary.",
+      "0264": "Replacing one UTF-8 byte is not replacing one character: the broken decode is intentional. Normalize only under a stated equivalence policy; normalization is not authentication or a defense against every visually confusable name. Character count also differs from user-perceived grapheme count.",
+      "0265": "Repeated inner-list references explain the matrix alias; a new outer list alone does not fix it. Deque supports efficient endpoint operations, not arbitrary list indexing. The tiny timing comparison demonstrates a workload, not a universal throughput ratio.",
+      "0266": "Equal keys require equal hashes, while collisions do not imply equality. Frozen fields only make this key safe when their values remain hashable and equality-stable. Dictionary order follows insertion, not sorted order; deleting and reinserting a key changes its position.",
+      "0267": "Mapping patterns allow extra keys unless you reject them explicitly. The sum branch converts values with int, which accepts booleans and truncates some numeric values; it is a grammar demonstration, not strict external validation. State accepted types and unknown-command behavior before adding handlers.",
+      "0268": "Argument binding enforces positional and keyword placement, not limit ranges or business validity. The sentinel distinguishes omitted values from explicit None. Defaults are evaluated once at definition time; explain why a fresh per-call cache requires allocation in the body.",
+      "0269": "partial stores arguments without running the function; closures retain cells and callable instances retain explicit state. The fixture assumes comparable typed inputs and ordered bounds. Prefer the simplest representation and explain how mutation of captured state changes later calls.",
+      "0270": "except* handles matching subgroups, not necessarily the whole group. A timeout alone does not authorize retry: an external effect may already have happened. load_project needs a repository fixture before its explicit cause chain is exercised; preserve that cause without exposing secrets to callers.",
+      "0271": "The code labels separate files and needs the missing service module; it is not one runnable script. sys.modules caches objects before execution completes, which permits partially initialized cycles. Move shared policy to a lower dependency boundary instead of treating delayed imports as a universal cure.",
+      "0272": "classmethod receives the actual class and supports subclass construction; staticmethod receives no implicit receiver. valid_name is merely a helper unless every construction path invokes it. The sample does not establish a class-wide validated-name invariant.",
+      "0273": "super continues after the current class in the instance's MRO, not necessarily to a named parent. Cooperative methods need compatible signatures and consistent forwarding. The two-mixin example is not proof that an arbitrary diamond hierarchy preserves the contract; composition is the simpler alternative when collaboration suffices.",
+      "0274": "The scoreboard orders by total and then tuple, keeping ties compatible with its value equality. NotImplemented lets Python try the other operand's protocol; it is not an exception to raise. Containers here are Python collections, not Docker processes.",
+      "0275": "The data descriptor outranks instance storage during normal access. Exact-int validation excludes bool and non-finite numbers. This class deliberately includes __dict__ in slots, so it is not a dictionary-free memory optimization; direct storage mutation can bypass the descriptor's invariant.",
+      "0276": "Frozen dataclasses prevent ordinary field reassignment, not mutation of a supplied child. The finite Decimal and currency checks are runtime validation, whereas the tuple tag annotation alone is not. Addition intentionally drops tags; precision and currency-specific rounding remain a separate policy.",
+      "0277": "Countdown validates a nonnegative exact integer, and each iter call creates independent traversal state. An exhausted iterator stays exhausted. The sentinel input iterator is created but not consumed, so running the starter does not establish interactive-input behavior.",
+      "0278": "The generator body opens its file only when first advanced. Explicit close runs active cleanup; breaking a Python for loop does not automatically close an externally retained generator. The fixture closes flatten, not managed_lines, so it does not test file cleanup. yield from forwards more than repeated next calls.",
+      "0279": "The parser splits a deliberately simple line format; it is not a CSV parser. batched requires Python 3.12 or newer. Laziness bounds some intermediate storage, not retained inputs, sinks or every itertools operation. The tiny allocation sample cannot prove production streaming bounds.",
+      "0280": "The timing wrapper runs cleanup in finally and preserves metadata with wraps. It is synchronous: wrapping async def this way measures coroutine creation, not awaited execution. Stacking changes which behavior is inside the timer, and a failing logging sink can replace the original exception unless isolated.",
+      "0281": "ExitStack unwinds acquired resources in reverse order if later acquisition fails. Reading every file still consumes data memory and one descriptor per open file. Async connection startup occurs before the yield: the acquisition function must own partial-startup cleanup, while cancellation during close needs a deliberate policy.",
+      "0282": "Narrowing helps a checker but does not validate arbitrary external values. assert_never exposes an unhandled branch to static tools and raises if reached at runtime. Record the interpreter and checker separately; running this script is not evidence that strict static analysis passed.",
+      "0283": "A read-only Reader can be covariant because it produces rather than consumes its type parameter. ParamSpec preserves the callable parameter relationship, not runtime validation or metadata. Protocol compatibility is structural; the sample has not run a type checker or a real adapter contract test.",
+      "0284": "The parser rejects bool IDs through exact-int checks and returns a typed representation. It does not yet reject extra fields or enforce every length, positivity or uniqueness rule. Define those domain requirements before claiming the boundary is a complete schema or authorization check.",
+      "0285": "The same-directory temporary file is flushed and synced before replacement; serialization failure leaves the prior target intact and removes staging. Rename is not a complete power-loss guarantee without directory/storage semantics. CSV and time-zone experiments are extensions, not executed by this JSON fixture.",
+      "0286": "The token grammar plus option delimiter prevents this option-injection path, and external diff/text conversion are disabled. The call still trusts Git and the repository. capture_output buffers output in memory: the three-second timeout is not an output-byte bound. A bounded reader is required before running against potentially huge output.",
+      "0287": "gather preserves input result order even when completion order differs. The sleeps simulate cooperative waits, not network I/O. Calling a blocking function on the loop would stall peers; merely adding async def changes neither that call nor CPU execution into parallel work.",
+      "0288": "Four workers and a 20-item queue bound admitted queued items, not bytes or the caller's original input. task_done belongs in finally; TaskGroup cancels and joins siblings when a worker fails. These in-process acknowledgements are not durable completion, and cancellation does not roll back external effects.",
+      "0289": "The lock protects the whole read-modify-write invariant. A conventional GIL does not replace that contract, and a passing 20000-increment fixture does not prove all interleavings. No free-threaded build or native-extension thread-safety test is exercised here.",
+      "0290": "spawn needs a real importable main module and serializable callables and arguments. The explicit context avoids platform-default assumptions. Each future's timeout is not a shared deadline, and executor exit can still wait for running jobs. The small prime bounds do not establish a scalable number-theory implementation.",
+      "0291": "The selector is a heuristic, not a measured scheduler: waiting I/O needs a compatible async API, otherwise bounded threads may fit. Durability requires persisted work and replay ownership, not the enum label. CPU work releasing the GIL may benefit from threads; measure conversion, queueing and isolation costs.",
+      "0292": "Removing root names leaves a cycle for GC to reclaim; the weak reference does not keep it alive. The collected count can include unrelated objects. Explicit close remains required for external resources; this cycle fixture does not demonstrate cache replacement, resurrection or deterministic finalization.",
+      "0293": "The decoder validates the versioned envelope only, not project fields. Bound bytes before allocating the payload, then decide duplicate-name and non-finite-number policy. Deepcopy preserves graph relationships under its protocol but JSON does not preserve arbitrary identity. Never load untrusted pickle.",
+      "0294": "set removes duplicates and sorting adds an ordering cost. timeit reports total time for 20 runs here, not one request's tail latency. Allocation tracing remains enabled and changes measurement overhead; compare instrumented diagnosis separately from an uninstrumented baseline. No cache or optimization has yet been validated.",
+      "0295": "The direct test checks one normalized success and an adapter interaction; autospec checks signatures, not persistence semantics. Add blank-input and failed-save cases, then test idempotent normalization across a defined domain. A testing property is an invariant, not a property descriptor. No pytest installation is needed for the direct assertions.",
+      "0296": "The default request_id lets non-context records format safely. execute still needs a process implementation before its exception path runs. LoggerAdapter provides correlation, not automatic redaction; tracebacks and job values may contain secrets. Avoid request IDs as metric labels and investigate warning filters separately.",
+      "0297": "This is a multi-file packaging recipe, not a built wheel. Supply actual package code and py.typed, then inspect both wheel and sdist contents. A minimum backend version is not a reproducible build pin. Artifact metadata and successful imports must be checked in the intended target environment.",
+      "0298": "A hashed requirements export must cover the actual transitive resolution and target artifacts. A venv does not lock dependencies, and hashes do not establish trust in their source. The displayed install/build/publish workflow remains unexecuted; the user's no-install constraint applies to this review.",
+      "0299": "libstats.so is an unsupplied platform-specific artifact. argtypes and restype describe an ABI contract, not proof the native function obeys it. Establish nonzero length, pointer lifetime and error behavior before calling; a native memory bug can crash Python, and an ordinary C library is not a Python stable-ABI extension.",
+      "0300": "Protocol declares the repository contract without implementing persistence. The handler assumes a typed name and trims it before writing; external validation belongs at the input boundary. Demonstrate the dependency direction with an injected fake before adding a framework or generic repository hierarchy.",
+      "0301": "Path resolution rejects traversal for the observed filesystem state but is not race-free authority over a later open. The external conversion command needs an installed compatible tool and a complete input/output contract; it is not executed here. Self-comparing a random token demonstrates the API, not authentication or secret rotation.",
+      "0302": "The service depends on an adapter that atomically claims scoped intent, creates the project and records the replay result. The sequential fake checks control flow, not concurrent uniqueness or rollback in a database. Returning an existing result still exits the context without a new commit; the adapter must support that read/replay path safely."
+    }[lesson.number];
+    if (checkpoint) profile = { ...profile, checkpoint, labScope: "Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review." };
+  }
+  if (lesson.trackId === "nodejs") {
+    const checkpoint = {
+      "0214": "engines expresses compatibility, not a pin or automatic enforcement. Record the exact deployed binary and dependency artifact; the sample's broad range is not an LTS policy. argv can contain secrets, so use synthetic arguments for this diagnostic fixture.",
+      "0215": "The sample mixes pool crypto, file work and network readiness; elapsed time cannot attribute delay to one layer. It needs a real .mjs file and external fetch, whose body must be consumed or cancelled in a full client. Fixed password/salt values are workload fixtures, not password-storage advice.",
+      "0216": "Compare scheduling relationships inside the I/O callback, not one universal top-level order. The 25ms print is a sample deadline, not proof every callback finished. Record read errors and completion explicitly when turning this observation into a test.",
+      "0217": "ESM evaluation already runs in microtask context, so do not apply CommonJS top-level nextTick ordering blindly. The 100000-iteration chain is a bounded starvation demonstration, not an infinite loop. Chunking via setImmediate yields opportunities but does not create CPU parallelism.",
+      "0218": "The crypto batch demonstrates shared-pool pressure but does not measure file or DNS latency. Loop delay can stay modest while pool queues wait. Compare competing operations with bounded admission; changing pool size is startup configuration, not guaranteed throughput improvement.",
+      "0219": "The Promise executor converts synchronous throws to rejection, and only the first completion settles the Promise. The wrapper does not cancel underlying work or undo duplicated side effects. Promisify is preferable for a conventional API; preserve method receivers for receiver-dependent callbacks.",
+      "0220": "emit invokes listeners synchronously; returned promises are not awaited. Register once before emitting or the event is missed. captureRejections routes rejected listener promises but is not a catch for all synchronous throws. A listener warning is a diagnostic threshold, not an enforced memory bound.",
+      "0221": "run scopes the store to its async chain; it is not a mutable process-global request ID. The custom resource fixture installs a store explicitly and does not prove propagation across every third-party callback. Never treat correlated request metadata as authentication or use per-request IDs as unbounded metric labels.",
+      "0222": "The referenced deadline keeps this fixture alive while the periodic timer is unrefed. Work is serial but interval ticks can accumulate; use work-then-timeout for fixed delay. Abort is observed and both promises are settled; actual application handles still need separate cleanup evidence.",
+      "0223": "The frame decoder requires a Buffer and exact declared length within 1024 bytes. subarray aliases storage; Buffer.from(view) copies. A high-level string conversion may replace invalid encoding, so choose a strict policy if bytes must be valid text. The fixture does not exercise unsafe allocation.",
+      "0224": "byteOffset and byteLength select the visible range, not the whole pooled backing buffer. The final slice makes an exact independent ArrayBuffer. No worker transfer occurs in this starter; test detachment and alias effects separately before transferring owned storage.",
+      "0225": "StringDecoder joins split UTF-8 sequences before uppercasing. Chunk-wise uppercase is a text transformation, not arbitrary binary-safe processing; malformed sequences are substituted. The tiny sink accumulates output deliberately and is not a bounded production sink.",
+      "0226": "Default Readable async iteration destroys on early break. That does not mean every custom iterator or iterator option has the same lifetime policy. Backpressure permits bounded read-ahead, so one consumed chunk need not equal one source yield. The source must observe cancellation and release what it owns.",
+      "0227": "False means pause admission, not failed write. highWaterMark limits a queue threshold rather than total process memory. The slow fixture has no injected sink failure; robust use also owns errors and premature close. Corking requires matching uncork or end; scheduling uncork next tick is caller behavior.",
+      "0228": "Unique staging avoids another call's temporary file, while rename permits last-writer wins. Pipeline failure cannot undo external effects. Cleanup failure may coexist with the original error; preserve both when that distinction matters. The fixture does not supply checksums or crash-durability proof.",
+      "0229": "The shared starter is a Node gzip pipeline, not Web Stream adaptation. Add an actual Web Readable and adapter to establish lock, cancellation and backpressure behavior. Do not infer that a fetch body can be consumed twice or that adapter buffering is free.",
+      "0230": "wx avoids taking another writer's existing temporary file; the PID name still collides for simultaneous same-process calls. File sync plus rename is not directory-sync durability. Run only in a disposable directory, and distinguish write/close/cleanup errors from successful replacement.",
+      "0231": "relative checks lexical containment, not symlink-safe authority. The conservative startsWith('..') also rejects valid names beginning with two dots. Decode URL input once at the boundary before applying filesystem policy. A trusted directory and platform-aware open strategy remain required.",
+      "0232": "A data chunk can contain partial or multiple frames. The 4096-byte policy limits the pending batch, so a large batch of small valid frames can be rejected. Pause after write pressure and resume pumping on drain. Bound connection count and output expansion separately from this input buffer.",
+      "0233": "lookup follows OS resolver policy while resolve methods query DNS records. The three-call elapsed time does not isolate each latency and Promise.all fails if any record query fails. setDefaultResultOrder affects later lookups, not the already-completed sample. Observe address family and actual connection choice.",
+      "0234": "Chain and hostname verification authenticate the intended server under the trust policy; they do not authorize application access. ALPN selects a protocol but this fixture sends no application request. The advertised lab's local certificate and invalid-hostname cases must be supplied separately; never disable verification to pass them.",
+      "0235": "This endpoint validates and echoes; 200 claims no creation. Body bytes are bounded and malformed UTF-8 is rejected, but an oversized async iterator can destroy the request before a 413 is sent. Header/body/idle limits do not replace an application deadline or ingress connection policy.",
+      "0236": "The limit counts received decoded-body bytes, not a trusted Content-Length. One chunk exists before the check; JSON parsing is synchronous and not interrupted by the deadline. Cancellation cleanup preserves the original failure. Domain schema and trusted destination policy are still caller responsibilities.",
+      "0237": "Session close drains existing streams; GOAWAY alone is not complete socket shutdown. The fixture tracks established sessions and forces them at a deadline, not every TLS-handshake socket. H2-only configuration does not implement HTTP/1 fallback. Real client flow-control and TLS tests remain necessary.",
+      "0238": "Split package metadata and executable code into their actual files. Import identity follows resolved URLs and conditions, not source spelling alone. The dist files and cycle are unsupplied. Record Node support for import.meta properties and loader hooks before using them in a library.",
+      "0239": "The shared recipe describes CommonJS but executes an ESM consumer; add a .cjs cycle to observe partial exports. Reassigning exports does not replace module.exports. Clearing one cache entry leaves other references and effects alive, so it is not general hot reload.",
+      "0240": "Conditional import/require targets can create two independent stateful implementations. Test consumer-visible identity from the actual artifact. Modern Node can require some synchronous ESM graphs; top-level await and version rules matter, so ERR_REQUIRE_ESM is not a universal outcome.",
+      "0241": "Native stripping executes erasable syntax without type checking, TSX support or tsconfig transforms. The documented compiler options require a sufficiently recent TypeScript compiler; the workspace's older compiler cannot validate every option. Use only an already-installed checker here; do not run npx if it might install one.",
+      "0242": "The commands are an installation/audit recipe, not executed in this review. ignore-scripts blocks lifecycle execution for that install, not malicious imported code. Inspect actual package contents and supported lock/install flags; semver and provenance communicate intent/evidence, not absence of vulnerabilities.",
+      "0243": "The fixture parses env values but ignores argv. Number accepts formats beyond decimal digits and an empty shutdown string becomes zero; choose the intended grammar explicitly. A parsed URL is not a validated database scheme, and freezing the outer config does not freeze a URL object's setters. Aggregate and redact startup failures before readiness.",
+      "0244": "The isolated process intentionally exits nonzero and preserves its synthetic cause. Classify recovery from stable code and operation context, not message substrings. The error class alone provides no retry safety, supervisor or HTTP mapping.",
+      "0245": "uncaughtExceptionMonitor observes without suppressing default termination. A warning is not necessarily fatal; explicit strict unhandled-rejection mode makes this fixture's policy reproducible. Do not resume normal service after an unknown broken invariant; an external supervisor owns bounded restarts.",
+      "0246": "Repeated calls share one drain promise, readiness falls first and the deadline forces the fake HTTP connections. Tests establish coordinator behavior, not load-balancer propagation or closure of upgraded sockets. A supervisor must enforce the final process deadline and non-HTTP resources need owners.",
+      "0247": "The full-match revision guard rejects suffixes including a final newline. Direct argv prevents shell interpretation, but trusted executable/PATH/repository and disabled external diff hooks still matter. Buffered output is capped; cancellation does not prove every descendant stopped or effects were undone.",
+      "0248": "The first result/error/exit wins and termination is awaited. The wrapper supports a one-result worker, not a stream or reusable pool. Supplied fixture workers test success/failure/abort; they do not establish a representative speedup or rollback of worker side effects.",
+      "0249": "This cluster recipe requires startServer and shutdown ownership. Immediate respawning can form a crash loop; add bounded backoff and readiness policy before deployment. A four-worker cap is illustrative, not capacity sizing. Prefer one clear replication owner when the platform already provides replicas.",
+      "0250": "The passing assertions prove the deliberate bugs: changed intent disappears and uncertain side effects repeat. A Set is not a durable idempotency receipt. Define scoped identity, atomic effect/receipt, retry/retention budgets and recovery before selecting a queue; never promote this counterexample to production.",
+      "0251": "The fetch fake proves signal propagation and pre/in-flight abort handling in that fake. It does not open a socket or prove a remote operation stopped. Test-local mocks restore their replacements; coverage reports executed regions, not correctness or real dependency agreement.",
+      "0252": "The server-owned origin allowlist is narrower than arbitrary URL acceptance. It is not complete SSRF control: enforce connection-time destination/egress and redirect policy, including IPv6 and rebinding. Runtime permissions are version-dependent defense in depth, not a sandbox for hostile JavaScript.",
+      "0253": "The wrapper records start/finish duration in one async store; it does not emit a complete distributed trace or classify success. Subscribers run synchronously and must not throw; diagnostics-channel subscriber failure can become uncaught. Keep fields bounded/redacted and subscriber lifetime explicit.",
+      "0254": "The 60ms idle wait establishes API usage, not production capacity or stable tail percentiles. Histograms are nanoseconds converted to milliseconds; ELU is loop activity, not CPU utilization. Clear retained marks/measures in long-running instrumentation and compare representative blocking versus I/O loads.",
+      "0255": "No requests are inserted by the starter, and an unrefed interval may never run if nothing else keeps the process alive. It illustrates a retaining path, not an observed leak. arrayBuffers is included within external accounting; do not add overlapping counters as independent memory totals.",
+      "0256": "The commands require a real app and representative workload; no profile is produced by reading them. Bind the inspector locally and use authorized access. Reports and heaps can contain secrets; match artifacts and runtime versions and collect the least sensitive evidence that tests the hypothesis.",
+      "0257": "The C and JavaScript blocks are separate incomplete sketches. Node-API stability does not guarantee OS/architecture/library portability or memory safety. Synchronous native/Wasm work still blocks its calling thread; imports and shared process fate define the actual authority and crash boundary.",
+      "0258": "The sketch leaves validation/persistence adapters and total admission policy unsupplied; workers is unused. Pipeline completion does not undo committed rows. Optional telemetry must not mask the outcome, while required audit persistence needs an explicit contract. Explain partial-import versus staged atomic promotion before implementation.",
+      "0259": "A reviewed service sketch is not a finished capstone. Prove byte/queue/connection limits, slow-client behavior, authorization, durable acceptance, cancellation, worker failure and shutdown with real adapters. 202 is meaningful only when the remaining work has the stated acceptance durability."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review." };
+  }
+  if (lesson.trackId === "react") {
+    const checkpoint = {
+      "0171": "Identify who transforms TSX, serves modules and owns the root. The snippet requires App, the mount element and a privacy-safe reportError adapter. It is not a complete project scaffold. Record the existing project's React, DOM, type and tooling versions before diagnosing development/production differences.",
+      "0172": "The element is a description, not a DOM node. jsx is illustrative compiler output and needs its runtime import; user is supplied input. Freezing this object is not a rendering step. JSX text escaping does not establish a safe URL or sanitize raw HTML.",
+      "0173": "Card composes caller content without inspecting children or duplicating markup contracts. useId connects the heading and section. DeleteActions is a supplied component, not implemented deletion. If there are no actions, decide whether an empty footer belongs in the API rather than adding configuration for every future variation.",
+      "0174": "Copying the stories array prevents repeated rendering from appending to props; reserve a non-colliding identity for the create item. Panel calls useState before its early return. Strict Mode reveals selected development problems, not proof of production correctness or permission to perform effects during render.",
+      "0175": "Capture runs before the button handler; stopping bubbling cannot undo that capture log and does not prevent browser defaults. Two functional updaters add two, while count inside that handler remains the old snapshot. Supply audit and test native keyboard activation as well as pointer input.",
+      "0176": "Three updaters compose against pending quantity and saturate at 99. The initializer runs for initialization, not whenever initial changes. Supply a clamp with an explicit numeric contract and Editor; use a deliberate key reset or controlled state if entity changes should reinitialize it. A shallow update must copy every changed nested branch.",
+      "0177": "Only answered actions record undo history; next is not independently undoable and step is unbounded. Returning a prior snapshot is valid only while consumers preserve immutability. Choose a bounded history and step/answer schema for the product. useReducer organizes transitions; it does not validate arbitrary actions or perform effects.",
+      "0178": "Store the selected identity and derive its current object from items. The visible ID now becomes null when that item is absent; the stored ID can select it again if it returns. Decide whether this restoration is intended before adding reset logic. Derived completion counts need no synchronization Effect.",
+      "0179": "Keys preserve sibling identity within one parent, not globally across columns. Moving a card to another parent resets its local state even with the same key. Lift cross-column drafts above both parents when preservation is required. Changing AccountForm's key deliberately resets the entire local subtree.",
+      "0180": "A missing provider uses the default, but a provider supplying undefined does not. Splitting dispatch from tasks can reduce context-driven updates for dispatch-only readers; parent rendering can still occur. Provider shorthand requires React 19 or newer. Supply tasksReducer and initialTasks and measure before claiming reduced renders.",
+      "0181": "Changing a ref does not render UI. The handle exposes focus/select, not the DOM node's full authority; attachment occurs at commit. requestRef is illustrative and unused. forwardRef supports older consumers; ref-as-prop needs compatible React/types. Verify the actual focus result in a browser.",
+      "0182": "The room key resets visible history and the active flag rejects callbacks after cleanup. Aborting is not proof the connection adapter stopped; disconnect and error handling remain adapter responsibilities. Retaining 100 messages bounds only this list, not transport buffers or message size. Setup failures also need resource cleanup ownership.",
+      "0183": "Fixed positioning now makes the viewport-relative anchor coordinates effective. Layout measurement blocks paint; it does not track later font, resize or scroll changes automatically. The style registry must return cleanup and belongs to the library integration. Do not use insertion effects for ordinary application synchronization.",
+      "0184": "Changing roomId reconnects; theme only changes what a later notification reads. Effect Events are not dependency suppression for genuinely reactive work and must not become general event-handler props. Verify API and lint support in the target project and retain connection cleanup.",
+      "0185": "Each Hook call owns its subscription, while navigator.onLine is shared browser state. Online does not prove the service is reachable. The inline subscribe function can resubscribe on renders; hoist it if that churn matters. The server snapshot is a hydration policy, not a server connectivity measurement.",
+      "0186": "Memoization can reuse rank output and callback identity only while dependencies and referenced capabilities stay valid. Internal state/context can still render Results. Keep only a measured bailout; neither memo nor useMemo supplies a semantic guarantee. analytics is an external capability, not demonstrated telemetry.",
+      "0187": "Urgent query state owns the input; lower-priority rendering may show stale results. Combining transition and deferred value is illustrative and often redundant—choose the smallest mechanism that meets measured needs. Neither debounces requests nor preempts a single long synchronous calculation. aria-busy must reflect the pending behavior the UI actually exposes.",
+      "0188": "The generated ID ties one label and error to one input, not to database or list identity. Matching server/client trees and coordinated root prefixes are prerequisites. If callers also supply a description, merge its ID with the error ID instead of silently overwriting that accessibility relationship.",
+      "0189": "Unchanged external state must return the same immutable snapshot identity. subscribe must return cleanup and its methods must work with the supplied receiver. The server snapshot must match hydration bootstrap data. createStore is an integration requirement, not an implemented concurrency-safe store.",
+      "0190": "Split server and client modules before execution. A stable server-owned Promise can be read under Suspense; rejection needs an error boundary. use may be conditional, unlike ordinary Hooks, but must still follow its documented call restrictions. Suspense is not an automatic Effect-fetch cache.",
+      "0191": "saveComment receives previous state before FormData and must return the agreed state shape. The dispatcher runs in the form Action context; its returned value is not a promise for a committed server result. Authoritative comments must update after success. A constant pending ID assumes at most one optimistic row; multiple pending submissions require unique identities and tested pending/reset behavior.",
+      "0192": "React owns name; the browser owns the chosen File. accept and required help the client but do not authorize a write or verify file contents. Model pending/error/success and reset policy explicitly; a completed Action can reset uncontrolled fields while controlled state remains yours.",
+      "0193": "Resolve B before A and ensure A cannot overwrite current intent. Cancellation and exclusion of stale results are separate defenses. Include all query-defining values in cache identity and define optimistic reconciliation against concurrent authoritative updates; passing the fixture requires visible-state evidence.",
+      "0194": "lazy requires a compatible default component export. Suspense owns pending UI and an error boundary owns render-time rejection; neither implements fetching policy. Optional hover preload rejection is now handled locally. Retrying a failed module may require cache/resource recovery, not merely resetting the boundary.",
+      "0195": "Place boundaries around independently recoverable regions. A render failure and an event-handler failure have different owners; do not promise one boundary catches both. Reset only after the failing input/resource can change, preserve unrelated state and redact diagnostic payloads.",
+      "0196": "showModal supplies native top-layer modality; createPortal supplies placement, not modality. The parent must unmount onClose. Verify keyboard focus, Escape, restoration and nested interactions in the target browser; the JSX alone does not prove the full modal acceptance contract.",
+      "0197": "Negative type tests prove only the declared prop/ref relationships. Add actual disabled and keyboard interaction evidence. Prefer one concrete element contract until multiple element forms are necessary; casts that erase a wrong ref target defeat the purpose of the exercise.",
+      "0198": "Test content growth, zoom and focus rather than a single attractive screenshot. Assign token, variant and cascade ownership before adding a styling package. A design system includes interaction and contribution contracts, not just a palette.",
+      "0199": "Native semantics are the starting point, not the whole audit. Record focus movement and screen-reader announcements on the actual interaction. Keep status regions present before updates and avoid duplicate/noisy alerts. Automated scans cannot establish all keyboard or assistive-technology behavior.",
+      "0200": "Hold the dependency pending to prove loading state before resolving it; reject another call to prove recovery. Await observable output and use role/name queries. act coordinates React work but does not implement layout, native navigation or assistive technology in a simulated DOM.",
+      "0201": "Render count is not interaction cost. Use a suitable profiling build and equivalent inputs; distinguish React rendering from browser layout, paint and network waiting. Optimize the dominant measured cost, then preserve correctness and compare the same interaction.",
+      "0202": "Compiler adoption requires compatible tooling and valid Rules-of-React semantics. Confirm which slice compiled and compare performance before changing manual memoization. A scoped opt-out and rollback are operational policies, not evidence that compilation fixes impure components.",
+      "0203": "Render proposes a tree and may restart; commit applies accepted host changes without time-slicing that commit. This is not a database rollback guarantee, and observers/effects have their own timing. Fiber fields and lane numbers are implementation details rather than stable application APIs.",
+      "0204": "Use createRoot for client-owned content and hydrateRoot for matching server output. Root lifetime owns unmount cleanup. A hydration mismatch is a defect to diagnose, not fixed by suppressing warnings. flushSync is a narrow integration escape hatch with performance and pending-work consequences.",
+      "0205": "Measure shell arrival, delayed content and usable interactivity separately. Streamed HTML can arrive before hydration. Static APIs have different contracts: non-hydratable renderToStaticMarkup is not interchangeable with a prerender API intended for later hydration. Test the selected API, not the generic label SSR.",
+      "0206": "The server-only data/markdown code and separate client module have different authority. Client Components may also be pre-rendered on the server, so the directive does not mean browser-only execution. The local like counter neither persists nor authorizes likes. The sanitizer and framework serialization contract must be supplied and tested.",
+      "0207": "Validate a narrow editable-field schema and request identity, and authorize the actual write. A separate owner read can race with a later write unless the database operation enforces the authorization predicate or equivalent transaction contract. Passing an idempotencyKey option alone proves no durable replay semantics. Progressive enhancement needs framework/form evidence.",
+      "0208": "Define who owns URL/history, loaders, cache invalidation and persistent layouts. Rapid navigation must keep data aligned with the active route. Core React provides no router contract; evaluate the chosen framework's behavior and preload only when its expected benefit justifies the work.",
+      "0209": "Text escaping is not sanitization of HTML or authorization of URLs. Supply and pin the sanitizer, test its actual policy, and avoid assuming these option names work for every library. location requires a browser or an injected base URL. Allowed navigation schemes do not establish trusted destination or server-side access.",
+      "0210": "Match stack and source map to the deployed build, redact sensitive props and reproduce with production-like inputs. A DevTools observation narrows a hypothesis; a regression test and repeated original interaction establish the fix. Mitigation and root cause are separate outcomes.",
+      "0211": "The class reconnects on room changes and disconnects on unmount, but status remains idle because this fixture never updates it. A Hook migration should preserve one synchronization process, not copy lifecycle methods mechanically. Legacy context is migration material, not a supported new design.",
+      "0212": "Separate URL choices, authoritative server cache, unsaved draft and transient interaction state. Test two instances and navigation before promoting state globally. Choose boundaries from ownership and independent change, not a preferred directory tree or component count.",
+      "0213": "Portfolio completion requires the actual application and recorded accessibility, failure, security, profiling and delivery evidence. Label mocks and measured environments. A content-reviewed project brief is not a deployed portfolio, user mastery or production experience."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: explain the supplied component or acceptance recipe and predict one changed-input result. Component snippets require the project's React imports, named collaborators and compatible runtime; they are not standalone files. Browser, framework, accessibility and deployment acceptance need separate execution evidence. No packages are installed by this review." };
+  }
+  if (lesson.number >= "0111" && lesson.number <= "0125") {
+    const checkpoint = {
+      "0111": "The deferred callback runs before the subscription closes because disposal reverses registration order. using disposes on scope exit, not collection. await using awaits disposal, not an arbitrary initializer. Multiple failures use SuppressedError ordering; add a throwing disposer to verify it. Parse support is required: a runtime guard cannot rescue unsupported using syntax.",
+      "0112": "The clone is a new cyclic graph with Date and Map preserved; JSON rejects this original for unsupported BigInt or cycles. Separate those inputs to attribute the failure. A schemaVersion check alone does not validate project fields. Transfer detaches supported sender buffers, whereas cloning copies them; neither is authorization.",
+      "0113": "The explicit Z denotes an instant; formatting changes its representation, not that instant. This fixture shows one side of a DST transition, not disambiguation of a repeated local time. Recurring local schedules need their named zone and calendar policy retained. Locale output and zone rules depend on runtime data, so do not persist display text as a canonical timestamp.",
+      "0114": "The 64-code-unit cap bounds matching input, and full-match comparison rejects a trailing newline that dollar anchoring alone can admit. The u flag changes Unicode pattern semantics but is not grapheme matching or a performance guarantee. Never run an unbounded catastrophic pattern to prove the risk; use a separately bounded experiment.",
+      "0115": "The fixture decodes an ArrayBuffer with explicit big-endian fields and a minimum length. It is not a TypedArray-slice decoder and currently permits trailing bytes. Decide exact-frame versus stream-prefix policy before tightening length checks. ArrayBuffers can also be resizable; transfer or resize may invalidate assumptions about existing views.",
+      "0116": "Publish value before status, then notify. Waiters must check the predicate, not treat any notification as proof that work completed. The supplied worker and compute function are integration requirements, not implemented here. Add termination/error/deadline handling before waiting on unreliable workers; browser isolation and waitAsync support require host verification.",
+      "0117": "The listener captures the owner binding; assigning null changes what it can read. Removing the listener releases the subscription, not proof of immediate collection. This small example does not reproduce a growing leak. Compare retained paths under repeated load; never rely on FinalizationRegistry for correctness or resource release.",
+      "0118": "The numeric assertion proves the workload before timing; timings alone do not prove which compiler tier ran. Capture the engine version and an actual bytecode/optimization trace to support that explanation. V8 is one implementation and may add or change tiers while preserving language behavior.",
+      "0119": "The starter measures only stable shapes, so it establishes no stable-versus-unstable speedup. Add equivalent outputs, realistic mixed shapes and repeated order-balanced runs before attributing a difference to inline caches. Prefer clear data contracts over layout changes without end-to-end evidence.",
+      "0120": "Thirty warm samples from one process describe this run, not independent production requests or a confidence interval. The displayed median is an upper-middle order statistic; label the chosen percentile convention. Report cold starts separately, consume results, and measure loop delay under representative load before claiming responsiveness improved.",
+      "0121": "The null-prototype record and blocked keys narrow one flat string-valued data contract. Object.entries can invoke getters on arbitrary objects: use parsed, bounded data at this boundary, not hostile executable objects. Same-origin HTTPS URL validation is local policy, not SSRF defense or authorization; redirects and endpoint privileges need separate controls.",
+      "0122": "Two table cases also check idempotence on those values; they are not a generated property-test campaign. The pre-aborted fetch checks reason propagation without starting a request, not cancellation of an in-flight remote effect. Await the assertion and add a deliberately broken implementation to test the test.",
+      "0123": "The executable tests provide a reproduction boundary, not heap or CPU evidence. Choose a conditional breakpoint for a wrong value, exact artifact maps for transformed stacks, retaining paths for memory growth and CPU samples for hot computation. Pausing changes timing; repeat the original workload after the fix.",
+      "0124": "createProcessor is effectful orchestration, not a pure functional core. Injected capabilities expose ownership but do not prove repository atomicity. Validation here is synchronous; an async validator would need to be awaited. Serial admission bounds active commits to one while results still grow with batch size.",
+      "0125": "The starter implements only serial orchestration. A later failure does not roll back earlier commits, and caller abort does not prove transaction rollback. The capstone acceptance contract still requires real duplicate-intent, crash/replay, overload and recovery evidence. A memory fake can test call order, not certify durable idempotency or a production-ready service."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review." };
+  }
+  if (lesson.number >= "0101" && lesson.number <= "0110") {
+    const checkpoint = {
+      "0101": "Symbol('inspect') creates a fresh identity; equal descriptions do not make equal symbols. Well-known symbols are standardized shared hooks, while Symbol.for uses the registry. The example supplies a custom inspection hook, not Symbol.iterator or privacy. Reflect.ownKeys can reveal actual symbol properties.",
+      "0102": "Reflect.get forwards the original receiver, which preserves accessor semantics but is not universal transparent wrapping: private brands and built-in internal slots can reject proxy receivers. Revocation disables the proxy, not separately held target references. A logging proxy is not a complete security membrane; omitting fixed from ownKeys must fail.",
+      "0103": "The fake gateway fails twice; both translated errors retain the original cause despite optional metric failure. finally can replace an earlier return or throw, so mandatory cleanup/audit failures need an explicit policy. AggregateError stores multiple failures; constructing one does not throw it. Choose a safe public mapping separately from internal diagnosis.",
+      "0104": "Split the labelled blocks into their named files before running. The imported count observes increment without copying. This starter does not create a cycle: add two modules with an early lexical read to test TDZ, then defer the read or remove the dependency cycle. Top-level await delays dependants and is not a new thread.",
+      "0105": "The disabled branch does not import analytics. The enabled branch needs the separately supplied analytics module and a failure policy. Dynamic import does not itself prove bundler chunk splitting or tree shaking; inspect the build graph and network in that extension. Module organization is not a security sandbox.",
+      "0106": "The hostile thenable's first resolution wins and the chain yields 42. Promise executors run synchronously; registered reactions do not. A resolved promise can still be pending while adopting another promise. finally preserves the prior outcome unless it throws or returns a rejected thenable; it is not a result-transforming then callback.",
+      "0107": "async:start precedes script:end because an async function begins executing synchronously until suspension. Awaiting zero still resumes later. No CPU work was offloaded. Start independent work together only after choosing concurrency and failure bounds; shared state may change across await.",
+      "0108": "For this fixture, async resumption was queued before the explicit microtask and Promise reaction, and those precede the timer. Do not extrapolate to every Node phase, nextTick context, task source or browser paint. A microtask checkpoint can drain repeatedly queued work and starve later tasks.",
+      "0109": "The pool bounds active awaited operations, preserves input positions and records both synchronous throws and rejected promises. Inputs/results still require O(n) space; this is not streaming backpressure. Callers must not mutate the input array during traversal or detach work inside operation. A hanging operation prevents completion without an adapter deadline.",
+      "0110": "Abort is cooperative and cannot undo a remote commit. The relative URL requires a browser origin; supply an absolute URL for Node. This wrapper normalizes all observed aborts to AbortError, so inspect the original signal reason if timeout versus navigation matters. A coincident aborted signal is not proof that it caused every caught error."
+    }[lesson.number];
+    profile = { ...profile, checkpoint, labScope: "Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations." };
+  }
+  if (lesson.number >= "0080" && lesson.number <= "0100") {
+    const checkpoint = {
+      "0080": "Report value, type, exception and runtime separately. The observer handles synchronous operations; returning a rejected Promise does not enter its catch. Console presentation is host behavior, not an ECMAScript guarantee. Extend with an awaited operation only when testing asynchronous failure.",
+      "0081": "Explain why valueOf returning an object falls through to toString and produces string concatenation, not numeric addition. Abstract operations describe observable semantics, not mandatory engine allocations. A throwing conversion stops the expression; do not infer success from a partial trace.",
+      "0082": "Assignment copies a value; for objects that value identifies the same object. A shallow spread creates a new outer object but retains nested identities. Compare alias mutation, outer reassignment and nested mutation before selecting a copy strategy; deep copying is not a universal ownership solution.",
+      "0083": "Separate approximate Number arithmetic from exact integer BigInt arithmetic. An integer result is not necessarily a safe integer. BigInt cents require an explicit currency, scale, rounding and serialization contract; the addition fixture does not supply those policies. Number.EPSILON is not a universal absolute tolerance.",
+      "0084": "Choose a unit before enforcing a length limit: code units, code points, graphemes or encoded bytes. NFC can equate the composed and decomposed accent fixture; it does not perform case folding or prevent visually confusable identifiers. Record runtime and Unicode support when comparing segmentation results across systems.",
+      "0085": "An empty array is truthy even though numeric conversion yields zero. The parser accepts canonical nonnegative safe-integer text, rejecting whitespace, signs, leading zeros and suffixes deliberately. If the product needs a different grammar, change that contract explicitly; parseInt alone does not validate the entire input.",
+      "0086": "Choose the equality relation before implementing deduplication: includes finds NaN, indexOf does not, and Set merges signed zeros. Distinct objects remain distinct despite identical contents. The table stringifies labels, hiding signed zero and object identity; inspect row indices or explicit identity labels when explaining it. Relational ordering is a separate operation, not equality with a direction.",
+      "0087": "Resolve inner names through the defining block, function and module, not the caller's locals. Binding creation and assignment are different events. Run this fixture as an ES module before discussing globalThis; browser classic scripts and Node CommonJS have different top-level behavior. Shadowing changes lookup without changing the outer value.",
+      "0088": "The outer call has returned when the closure runs, yet its captured bindings remain accessible. A debugger stack is not the scope chain or a required engine memory layout. A second realm has distinct intrinsics; add a separate-realm fixture before claiming to have demonstrated cross-realm instanceof behavior.",
+      "0089": "The lexical binding exists but is uninitialized before its declaration, so the read throws. Replacing let with var makes that early read undefined, not the later assigned value. const forbids reassignment, not object mutation. The expected-failure assertion must also fail if no exception occurs.",
+      "0090": "The left counter reaches two while the independently created right counter stays zero. Freezing the returned API does not freeze captured state. A let loop supplies per-iteration bindings; a shared var binding changes the callbacks' results. Retention requires a reachable owner: remove the listener or registry reference, then use heap evidence rather than assuming immediate collection.",
+      "0091": "The default prefix makes read.length zero, but callers may still supply an argument. Undefined selects the default; null does not. Compare an arrow's captured this with an ordinary function's receiver before replacing a callback. Defaults/rest and destructuring are parameter contracts, not input validation.",
+      "0092": "A detached strict ordinary call loses account as its receiver. call/apply provide it for one call; bind returns a wrapper. Construction of a constructible bound function ignores its bound this, while arrows cannot construct. The top-level arrow assertion assumes ES modules; use a wrapper or explicit binding according to ownership, not a universal precedence slogan.",
+      "0093": "name is an own accessor; kind is inherited; assigning name creates the own _name data property. Object.keys excludes inherited and symbol keys, for-in includes inherited enumerable string keys, and Reflect.ownKeys includes non-enumerable and symbol own keys. The underscore is not private: direct _name writes bypass validation. Use private state if enforcement is required.",
+      "0094": "The chain is project to base to null. Ordinary assignment cannot shadow base's non-writable kind property; in strict mode it throws. An explicit own defineProperty is a different operation. Lookup delegates without copying. Prototype performance or pollution claims require a measured or security-specific extension, not this fixture alone.",
+      "0095": "Instance entries are private, methods are on prototypes, and static initialization runs once per class evaluation. AuditedLedger.add logs an attempt before validation, not a successful durable posting. The inherited static getter uses this.#created: AuditedLedger.created fails the private brand check. Read Ledger.created for the base counter, or explicitly redesign counter ownership. Repeated balance reductions make repeated adds quadratic overall; this bounded fixture is not a production ledger.",
+      "0096": "The sorted update changes both project and tags; the rename-only update reuses tags by identity and demonstrates structural sharing. Freezing each shown container is deliberate, not recursive behavior of Object.freeze. Choose copying from ownership and supported data types; structured cloning does not preserve arbitrary functions or custom class behavior.",
+      "0097": "A five-slot empty array has length five and no own elements. map skips absent indices in this ordinary sparse fixture; spread reads them as undefined. Sorting defaults to string order and copying is shallow. V8 element kinds are not a portable complexity guarantee; benchmark the actual workload before changing representations.",
+      "0098": "byId strongly retains project even though metadata uses a WeakMap. Weak metadata is not a bounded cache, eviction policy or proof of collection. Choose Map for arbitrary keys and iteration, Set for membership, and weak associations only when enumeration is unnecessary. The fixture demonstrates semantics, not performance rankings.",
+      "0099": "A generator instance is a one-shot iterator; a fresh call to range creates a fresh traversal. Early break closes the started generator and runs its finally. Exhaustion does not require an extra return call. Lazy helper availability and cleanup on different abrupt paths need their own probes; this starter does not implement the full helper pipeline.",
+      "0100": "The first next yields one, the second yields two, and next('stop') returns stopped with done true. Calling return before the first next never enters the body or its finally. Calling throw on a suspended generator injects an exception at yield; a finally that itself yields can delay completion. This synchronous range is not cancellable network pagination."
+    }[lesson.number];
+    profile = { ...profile, checkpoint,
+      labScope: "Core: predict and run the supplied bounded JavaScript fixture, then explain one changed input. Use a modern Node ES module unless the snippet explicitly requests a browser. Browser comparisons, debugger/heap inspection and broader lab variants are extensions, not results established by this starter." };
+  }
   if (lesson.number === "0597") return {
     ...profile, commentPrefix: "//",
     sourceLabel: "Introduction to Information Retrieval: evaluation",
@@ -11064,6 +11599,33 @@ console.log({ fleet, unweighted });
   if (crossTrackExercise) return { ...profile, ...exerciseSource, commentPrefix: "//",
     code: crossTrackExercise.map((text, index) => `// ${["Exercise specification (requires the described fixture; not executed here)", "Setup", "Change one condition", "Expected reasoning / evidence"][index]}\n// ${text}`).join("\n\n") };
   if (lesson.trackId === "web-platform") {
+    const review = {
+      "0051": {
+        sourceLabel: "Fetch Standard: fetching and responses", sourceUrl: "https://fetch.spec.whatwg.org/",
+        explanation: "Separate identifying a resource from transporting a request. DNS supplies records; cached results and existing connections can skip new lookup/handshake work. HTTP/1.1 and HTTP/2 commonly use TCP, while HTTP/3 uses QUIC over UDP. TLS protects a connection to its authenticated peer; a terminating proxy can be that peer rather than the origin. CDN cache keys, freshness and authorization determine whether a shared response is safe. A URL fragment is handled by the client rather than sent as the HTTP request target.",
+        checkpoint: "The two measured intervals are headers-available and body-consumption, not a direct decomposition into DNS/TCP/TLS times. Inspect Resource Timing and negotiated protocol, but zeros may reflect reuse or access restrictions. no-store does not make the transport cold or eliminate every intermediary. Compare warm and cold conditions without conflating them; a fast cached private response is a security failure if its cache key or policy crosses user boundaries. The same-origin fixture and bounded body must exist before running."
+      },
+      "0052": {
+        sourceLabel: "HTML Standard: labels", sourceUrl: "https://html.spec.whatwg.org/multipage/forms.html#the-label-element",
+        explanation: "HTML source is parsed into a DOM; error recovery means the resulting tree can differ from the text you wrote. The accessibility tree exposes selected roles, names, states and relationships rather than copying every DOM node. Native input, label and button elements provide built-in semantics and interaction. ARIA can adjust exposed meaning but does not manufacture keyboard behavior for a clickable div. Use heading structure and landmarks to explain organization independently of visual styling.",
+        checkpoint: "The label's for value must identify this input, and name determines the submitted field key. Remove the association and compare accessible name and label activation, not just appearance. required is browser validation, not server input validation. Compare a native button with a custom control including focus, keyboard and disabled behavior. Save a disposable standalone fixture; the default form submits to its current address, so use synthetic text only. Browser and assistive-technology checks are still needed."
+      },
+      "0053": {
+        sourceLabel: "CSS Positioned Layout: painting order", sourceUrl: "https://www.w3.org/TR/css-position-3/#painting-order",
+        explanation: "Cascade chooses values; layout determines boxes; paint produces drawing commands; compositing combines rendered surfaces. Specificity is not the first or only cascade decision: origin, importance and layer ordering can decide before it. A stacking context groups descendants as a unit in its parent, so a large child z-index cannot outrank a higher sibling context. A stacking context is not a guarantee of a dedicated GPU layer. Read/write interleaving can force layout; measure it instead of assuming every transform is free.",
+        checkpoint: "The fixture now makes child and front sibling overlap from 3rem to 5rem relative to the parent top. Parent z-index 0 traps child 999 below sibling 1; removing that parent z-index lets the child compete in the outer context. Inspect actual bounding rectangles before diagnosing stacking, since nonoverlapping elements reveal nothing. Compare removing the unnecessary context with moving a popover into an appropriate layer; increasing the child's number does not escape its parent. This is a stacking experiment, not a complete responsive-layout or GPU-performance benchmark."
+      },
+      "0054": {
+        sourceLabel: "HTML Standard: event loops", sourceUrl: "https://html.spec.whatwg.org/multipage/webappapis.html#event-loops",
+        explanation: "Synchronous JavaScript runs before its queued continuations. At a microtask checkpoint, queued microtasks run and may enqueue more microtasks; this can delay tasks and rendering. A zero-delay timer becomes eligible later, not immediately. Animation callbacks let code prepare for a rendering update, but neither a callback nor an awaited promise proves that pixels were displayed. Rendering opportunities depend on browser scheduling and page visibility. Split long work or move suitable computation to a worker when measurement shows main-thread contention.",
+        checkpoint: "Predict sync then microtask before the later callbacks; do not invent a universal timer-versus-animation ordering. await Promise.resolve() yields to microtasks, not necessarily input or paint. For a changed workload with thousands of operations, compare bounded task chunks and workers, accounting for data transfer and state ownership. Record input delay and long tasks in an actual browser; Node or a hand-written scheduler fake cannot verify rendering. Never run an infinite starvation demo."
+      },
+      "0055": {
+        sourceLabel: "Fetch Standard: CORS protocol", sourceUrl: "https://fetch.spec.whatwg.org/#http-cors-protocol",
+        explanation: "An origin includes scheme, host and port; same-site cookie rules use a different boundary. CORS governs browser access to cross-origin responses and preflights some requests, not permission for an arbitrary client to call an API. Server authorization is still required. HttpOnly prevents cookie reads by script, but injected script can still initiate authenticated actions. SameSite helps against some cross-site requests, not every CSRF scenario; use a deliberate CSRF defense. CSP is defense in depth, not a substitute for safe output handling. localStorage is script-readable and synchronous; availability and partitioning depend on context.",
+        checkpoint: "The probe saves and restores one synthetic key, not a token. Restoration is not atomic across tabs, so use an isolated page and no concurrent writers. Compare localStorage with a server-managed HttpOnly cookie session under XSS and CSRF threats; neither choice eliminates authorization or session lifecycle design. Storage denial may throw even on read. Do not interpret two ports as different sites merely because they are different origins. The fixture tests storage mechanics only, not hardened authentication, CORS, CSP or sandboxing."
+      }
+    }[lesson.number];
     const code = {
       "0051": `// Browser console on a page you own; provide a same-origin /api/example fixture.
 // Use bounded test data. This issues one GET, not a deployment or load test.
@@ -11098,9 +11660,9 @@ browser repair is not a reason to ship invalid structure. -->`,
       "0053": `<!-- Standalone fixture: a child cannot escape its parent's stacking context. -->
 <!doctype html><html lang="en"><meta charset="utf-8"><title>Stacking experiment</title>
 <style>
-.back { position: relative; z-index: 0; background: lightblue; padding: 2rem; }
-.child { position: absolute; z-index: 999; top: 2rem; background: gold; }
-.front { position: relative; z-index: 1; margin-top: -1rem; background: pink; }
+.back { position: relative; z-index: 0; background: lightblue; height: 4rem; }
+.child { position: absolute; z-index: 999; top: 3rem; height: 2rem; background: gold; }
+.front { position: relative; z-index: 1; margin-top: -1rem; height: 2rem; background: pink; }
 </style>
 <div class="back">Parent context<div class="child">Child with z-index 999</div></div>
 <div class="front">Sibling context with z-index 1</div>
@@ -11136,7 +11698,8 @@ try {
 // CORS controls permitted browser response access, not server authorization.
 // Threat-model XSS before selecting client-side storage for sensitive material.`
     }[lesson.number];
-    return { ...profile, code, commentPrefix: "//" };
+    return { ...profile, ...review, code, commentPrefix: "//",
+      labScope: "Browser-only exercise: use a disposable fixture you own, record a prediction, change the specified condition and inspect the result in developer tools. The core example covers one mechanism; the broader lab is an extension. No browser, screen-reader, network-timing or security integration result is claimed by local text/Node checks. Nothing needs installing to read and rehearse the model." };
   }
   if (lesson.trackId === "react") {
     const experiments = {
@@ -11368,6 +11931,10 @@ assert all(round(value, 6) == 0.4 for value in bin_gaps)
   if (lesson.trackId === "engineering-foundations") {
     const reviewed = {
       "0001": {
+        analogy: "A pipeline is a relay of bytes, not a relay of success: the receiver can finish normally even when the sender failed.",
+        explanation: "The shell parses quoting and expansions, selects a builtin or resolves an executable (often through PATH), connects standard input/output/error, and starts the command. A child inherits exported environment values; changing them in the child does not update its parent. Check executable identity, working directory, permissions and stderr before changing application code. On Unix, directory execute permission means search/traversal, not running the directory. Signals are a separate control channel: SIGTERM permits handling and cleanup; SIGKILL cannot be caught. A shell exit status summarizes termination, not whether the intended business work happened.",
+        labScope: "Core check: run the read-only pipeline below in a separate Bash process so its shell options do not alter your session. Extension: diagnose a disposable service using its command path, working directory, required environment names (not secret values), stderr and exit status. No service fixture is supplied here.",
+        checkpoint: "If both commands fail with statuses 7 then 3, pipefail reports 3, not 7. Without pipefail the last command also reports 3. Explain why checking only the final status loses information; compare capturing Bash PIPESTATUS immediately with explicitly checking each stage. A service that exits zero but writes a truncated artifact still failed its contract. For a shutdown incident, distinguish a requested signal, observed process termination and completed cleanup before calling it safe.",
         sourceLabel: "Bash manual: pipelines and exit status",
         sourceUrl: "https://www.gnu.org/software/bash/manual/bash.html#Pipelines",
         code: `# Run with Bash, not an arbitrary sh. No files or services are changed.
@@ -11389,6 +11956,10 @@ printf 'without pipefail=%s; with pipefail=%s\\n' "$without_pipefail" "$with_pip
 # Never dump the entire environment into a diagnostic log: it can contain secrets.`
       },
       "0002": {
+        analogy: "The working tree is your draft, the index is the selected photograph, and a commit is the labeled album entry connecting that photograph to its parents.",
+        explanation: "A blob stores content, a tree associates names and modes with objects, and a commit links a tree to parent commit(s) and metadata. A branch is a movable reference; HEAD usually names the current branch, or directly names a commit when detached. Staging captures content at that moment, so later edits can leave the same file both staged and unstaged. A merge integrates histories using common ancestry; a fast-forward only moves a reference. Rebase replays changes onto a new base and usually creates new commit identities. Neither operation proves the combined code behaves correctly.",
+        labScope: "Core check: inspect objects and the two diffs without editing this repository. Extension in a disposable repository only: stage a file, edit it again, predict both diffs; create conflicting branches and explain the intended combined behavior before resolving. Recovery, splitting commits and bisect are follow-up workflows, not actions performed by this snippet.",
+        checkpoint: "A strong answer distinguishes content snapshots from references and explains why merge conflict resolution needs behavior tests. Prefer preserving shared ancestry unless the team explicitly coordinates rewriting it; a private branch may be rebased before integration. For a lost committed change, inspect the local reflog and preserve a recovery reference before further edits; reflog retention is finite and it cannot recover every never-recorded edit. Bisect needs known good/bad commits and a reliable predicate; a flaky or environment-dependent test can accuse the wrong change. Review logical changes and tests, not just a conflict-free diff.",
         sourceLabel: "Pro Git: Git objects",
         sourceUrl: "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
         code: `# Run in a repository with at least one commit. Read-only inspection.
@@ -11408,9 +11979,13 @@ git diff --cached --stat
 # Decide based on branch ownership and team policy, not a cleaner-looking graph.`
       },
       "0003": {
+        analogy: "A lockfile is a shopping list with exact items; a repeatable meal also needs the same kitchen, tools and recipe steps.",
+        explanation: "A manifest declares direct dependencies; their dependencies form the transitive graph. Version ranges express acceptable candidates, whereas a lock records a particular resolution. Semantic versioning communicates intended compatibility, not proof that an update is safe. Frozen installation refuses inconsistent inputs instead of silently resolving new ones. Reproducing a dependency graph is weaker than producing byte-identical artifacts: platform, runtime, compiler, environment and scripts can change outputs. For Python, record the interpreter and platform as well as pinned transitive requirements and artifact hashes; an isolated virtual environment alone is not a dependency lock.",
+        labScope: "Planning only: nothing needs installing to complete the core comparison. Write an input/evidence table for matching and mismatched manifest/lock pairs, then name at least three build inputs outside the lock. Optional Node/Python installation experiments require a separately authorized disposable environment; they are not executed or verified here.",
+        checkpoint: "Do not promise that a matching lock guarantees installation success: network access, unsupported platforms and scripts may still fail. Distinguish repeatable resolution, repeatable test behavior and byte-for-byte reproducible builds. For an update, inspect direct and transitive changes, provenance and scripts, then test the behavior your service relies on. If offline builds become mandatory, a lock alone is insufficient: preserve approved artifacts and the build environment. Pinning indefinitely trades update uncertainty for accumulating vulnerability and maintenance risk.",
         sourceLabel: "npm ci: frozen dependency installation",
         sourceUrl: "https://docs.npmjs.com/cli/v11/commands/npm-ci/",
-        code: `# Planning exercise. These inspection commands do not install anything.
+        code: `# Exercise: planning only. These inspection commands do not install anything.
 node --version
 npm --version
 # In a disposable project with package.json and a committed package-lock.json:
@@ -11419,13 +11994,18 @@ npm --version
 # 3. Change one declared dependency without updating the lock; npm ci must fail.
 # 4. Restore the fixture, repeat in a clean environment, and run the same tests.
 # Do not run this destructive-to-node_modules experiment in your working project.
-# Expected evidence: matching lock succeeds; mismatch fails instead of rewriting it.
+# Expected: with prerequisites satisfied, matching inputs install; mismatch fails
+# instead of rewriting the lock. A matching lock cannot prevent every install failure.
 # Senior checkpoint: a lock pins resolution, not OS, native toolchain, registry
 # availability, or lifecycle-script behavior. Review scripts and registry trust;
 # --ignore-scripts is useful isolation but may make legitimate packages unusable.
 # Preserve the failing log and exact toolchain, not just "works on my machine".`
       },
       "0004": {
+        analogy: "Treat a bug report like competing explanations for a failed experiment: choose the next measurement that separates the explanations, not the change that merely looks plausible.",
+        explanation: "Separate the observation (two computations) from its proposed cause (zero treated as absence). First reproduce with controlled inputs. Predict what each competing cause would produce, change one relevant condition, and preserve a regression check that fails under the old behavior. A stack trace shows a call path, not necessarily the originating cause; logs show only what was instrumented. Use a breakpoint for local state and a profiler for where time or allocation is spent. Instrumentation can alter timing, so keep concurrency and production-only hypotheses separate from this deterministic example.",
+        labScope: "Core check: execute the synchronous zero-cache reproducer and counterexample below. Extension: apply the same observation/prediction/intervention table to one existing frontend, backend, database or AI defect; no seeded multi-service system is supplied. Record the first observation that would disprove your leading explanation.",
+        checkpoint: "The broken function computes twice because !0 is true; Map.has checks membership independently of the stored value. The second key protects the miss path from a fix that simply disables computation. Compare removing a cheap cache with preserving it using correct membership semantics. If computation becomes async, simultaneous misses may require sharing an in-flight promise, with explicit rejection and eviction rules; this test provides no concurrency evidence. During an incident, bound impact or roll back when safe while preserving evidence; mitigation is not proof of root cause.",
         sourceLabel: "Node.js: assertions",
         sourceUrl: "https://nodejs.org/api/assert.html",
         commentPrefix: "//",
@@ -11455,9 +12035,13 @@ assert.equal(calls, 2);
 // This synchronous test neither reproduces nor proves a fix for that race.`
       },
       "0005": {
+        analogy: "A decision record is the reasoning attached to a fork in the road, so the next team knows both why you turned and when a different route would make sense.",
+        explanation: "Write for the reader's next action. A README explains purpose and entry points; a runbook gives symptoms, safe checks, mitigation, verification and escalation; an incident note separates observed timeline from hypotheses; a pull-request description states what changed, why, tests and rollout risk. An ADR records a significant choice with context, alternatives and consequences. Keep assumptions distinguishable from measurements. Under the linked ADR process, accepted decisions are superseded by a new record when circumstances change, rather than silently rewriting their historical rationale.",
+        labScope: "Tabletop writing exercise, not runnable shell code or an implemented outbox. Rewrite the proposed decision below after changing notification delivery from required to best effort. Then write a five-line runbook for rising outbox age: symptom, safe diagnosis, mitigation, verification and owner. Do not invent measured latency or a completed failure-injection test.",
+        checkpoint: "Explain the database-commit/publish crash gap and why durable intent does not remove duplicate delivery. A consumer must make its local effect idempotent atomically with deduplication, or use the external provider's idempotency contract; merely remembering an event ID is insufficient. Best-effort analytics may justify simpler direct publication. A good record states this changed constraint, rejected alternatives, operational cost, owner and revisit trigger; it does not describe the preferred technology as universally best.",
         sourceLabel: "AWS Prescriptive Guidance: architecture decision records",
-        sourceUrl: "https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/welcome.html",
-        code: `# Worked decision record — synthetic assumptions, not measured production facts
+        sourceUrl: "https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html",
+        code: `# Exercise: worked decision record — synthetic assumptions, not measured facts
 Title: Start the notification worker with a database outbox
 Status: Proposed
 Context: Notification loss after order commit is unacceptable. Assume 20 events/s
@@ -11545,8 +12129,45 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     };
   }
   if (lesson.trackId === "computer-science") {
+    const checkpoint = {
+      "0018": "At n=32 the missing-target searches use 32 versus 5 comparisons; array construction still costs O(n). Compare preprocessing plus repeated queries with one linear scan. Amortized bounds describe a sequence, not a promise that every request has low latency; benchmark the complete workload only after defining its counted operations.",
+      "0019": "Counts answer frequency, the stack removes newest, and the indexed queue removes oldest. A head index avoids repeated shifting but retains consumed entries. Linked deletion is constant only with the necessary predecessor; JavaScript arrays are not guaranteed packed native arrays. For user-visible text, code points still differ from grapheme clusters.",
+      "0020": "The sample tracks connectivity, not paths, order or minimum keys. Its unbalanced parent chains can require linear find time; do not import the optimized union-find bound. Deleting an edge can split a component, which this structure cannot simply undo. Choose adjacency plus traversal if the changed requirement asks for the actual route.",
+      "0021": "For coins 1,3,4 and amount 6, greedy uses three coins while DP finds two. The recurrence considers every possible final coin; positive denominations ensure smaller predecessor amounts. Compare recursion with memoization, but count amount-based states: this is pseudopolynomial in numeric input, not universally polynomial in input bits.",
+      "0022": "The merge chooses the left equal key first; tag equal records to observe stability rather than comparing indistinguishable numbers. Fixed last-pivot quickselect can be quadratic on ordered or duplicate-heavy inputs. Compare sorting once for many rank queries with selection for one rank; counting sort instead pays for the key range. Inputs here are finite numbers, not arbitrary comparator objects.",
+      "0023": "For lower bound, indices below lo are less than target and indices at or above hi are not; n is a valid insertion position. firstFeasible uses inclusive bounds and requires a feasible upper endpoint. Count predicate cost as well as iterations. Midpoints use arithmetic, avoiding signed 32-bit shift overflow on large index ranges.",
+      "0024": "On abba, left must never move backward when an old character is outside the window. Prefix range(left,right) is half-open and assumes valid indices; the initial zero handles ranges starting at zero. These string indices count UTF-16 units. Negative numbers invalidate some sum-window rules, but not prefix subtraction.",
+      "0025": "Save next before overwriting the current link; reversing mutates the input list and assumes an acyclic list. Cycle detection compares node identity, not equal values. Test null, one node and a self-cycle separately; a sentinel can remove head cases without changing the need to preserve reachability.",
+      "0026": "BST bounds must propagate from every ancestor, not just compare a parent with its children. This strict numeric policy rejects duplicates and assumes finite keys. BFS retains all queued references here, so account for O(n) storage rather than only the largest live frontier. Serialization needs shape/null markers; traversal values alone may not reconstruct the tree.",
+      "0027": "BFS minimizes edge count, not arbitrary weighted cost. Topological sorting consumes the supplied indegrees; include every vertex and correct incoming counts, then compare processed count with vertex count to detect a cycle. Use fresh counts for a second run. An MST minimizes total connecting weight, not every source-to-target path.",
+      "0028": "Choose, recurse, undo restores the parent state. Skip an equal unused predecessor to avoid duplicate sibling choices, while allowing repeated values at different depths. Copy each completed path or later mutation corrupts prior answers. Even perfect pruning cannot avoid the cost of writing all requested permutations.",
+      "0029": "best[v] is the minimum coin count for v; previous[v] records one improving final coin. Zero has an empty solution and unreachable amounts return undefined. Positive integer coins and bounded nonnegative amount are preconditions. Keeping only the final score loses reconstruction; bounded coin supplies require a different state or traversal.",
+      "0030": "Earliest finish maximizes the number of compatible positive-duration half-open intervals on one resource. Replace the first interval in an optimum without reducing remaining space, then repeat. Change the objective to weighted value and that proof no longer holds; compare weighted interval DP instead of reusing the greedy rule.",
+      "0031": "Number bit operations truncate to 32 bits, and shifts wrap their count modulo 32. Bit 31 can yield a negative signed Number while still representing a set flag; >>> is the unsigned exception. Test all 32 set bits and zero. Wider masks need BigInt and a declared width policy, not larger Number shift counts.",
+      "0032": "Lookup before insert guarantees distinct pair indices, including [3,3]. Expected hash lookup does not make string key construction free: sorting each label of length L costs about L log L. Grouping uses code-point sequences without Unicode normalization. Compare sorting, counts and hashing under the actual alphabet and ordering requirements.",
+      "0033": "Sorted order justifies moving left for a small sum and right for a large sum; without it, skipped pairs may be valid. The sample returns positions in the supplied sorted sequence, not original indices after a new sort. Its five recorded steps cost O(n) storage; drop tracing for constant auxiliary scan state.",
+      "0034": "The window is duplicate-free after updating left, which only moves forward. Retained trace objects add O(n) space beyond the distinct-character map. UTF-16 units are not user-perceived characters; change the representation before promising grapheme-aware results. A longest-distinct invariant does not prove a different sum or minimum-cover window.",
+      "0035": "Each stack index is unresolved until a strictly greater value arrives; equal values do not resolve it. Push/pop work is linear in total, but copying the whole stack at every step is quadratic for decreasing input. Remove snapshots before benchmarking the linear algorithm. The -1 missing-answer sentinel is ambiguous if -1 can also be a legitimate greater value; return indices or optional results when that distinction matters.",
+      "0036": "After reversal the original head is the tail; callers must retain the returned head. Prove the reversed prefix and untouched suffix still partition the nodes. A two-node cycle must be detected by identity, and cyclic input is outside reverse's contract. Compare relinking with copying when other owners still reference the list.",
+      "0037": "The min-heap contains the k largest values seen so far, and its root is the smallest retained candidate. Reject k outside 1..n; repeated values count toward rank. Full heap snapshots add O(nk) storage/work, so the heap-only O(k) claim is not a bound for this traced fixture. Compare selection or sorting for one finite batch with a heap for ongoing arrivals.",
+      "0038": "Derive an upper bound by changing the partition comparison, not by adding one to an arbitrary match. For answer search, first establish a monotonic predicate and feasible high bound; all-false inputs violate this helper's contract. Rotated arrays with duplicate keys can prevent halving and degrade to linear search. Include predicate execution cost.",
+      "0039": "Four-neighbor DFS marks before recursion, preventing revisits; diagonal contact is not connected here. Assume a rectangular binary grid and bound recursion depth by reachable cells. An explicit stack avoids runtime recursion limits but still needs visited/frontier storage. Test empty, all-water and one connected region without changing the adjacency rule silently.",
+      "0040": "The sample optimizes count, not duration or revenue. Try [0,4) worth 100 against [0,2),[2,4) worth 1 each: earliest finish picks two but loses weighted value. State the exchange proof's objective and half-open endpoint rule, then choose another algorithm when the constraint changes.",
+      "0041": "Reconstruct by repeatedly subtracting the stored positive coin; this must terminate at zero. Empty coins with zero amount still have an empty solution, while an unreachable positive amount has none. Count O(amount × denominations) work and O(amount) state; memoization does not magically make an exponential or pseudopolynomial state space small.",
+      "0042": "A two-node directed cycle leaves no zero-indegree start and must fail topological ordering. A missing reachable vertex in the supplied indegree map is an invalid fixture, not evidence of a cycle. Compare BFS for equal weights with Dijkstra for nonnegative unequal weights and Bellman-Ford when relevant negative edges exist; reachable negative cycles can make finite shortest paths undefined.",
+      "0043": "The result for empty input is one empty permutation, not zero solutions. Deduplication relies on sorting and the used predecessor rule; test repeated values and preservation of the original input. Pruning must prove impossibility or an admissible objective bound, not merely discard an unattractive-looking branch. A generator can reduce retained output, not the work of enumerating it.",
+      "0044": "All initially active cells enter at distance zero; levelEnd freezes one wave while new cells join the next. Mark on enqueue to avoid counting the same fresh cell twice. The fixture mutates grid cells and retains consumed queue entries; copy input if ownership requires preservation. No fresh cells gives zero; unreachable fresh cells gives -1.",
+      "0045": "The terminal marker distinguishes cat from the prefix ca, including a possible empty word at the root. The sample implements exact membership, not ranked autocomplete or wildcard search. Those extensions must account for visited branches and output characters; O(prefix length) alone does not cover listing a large subtree. Compare a set for exact-only lookup.",
+      "0046": "Count earlier prefix-target values before adding the current prefix, or a zero target can count an empty range. Seed zero once to include ranges starting at index zero. Negative values are valid; exact arithmetic is assumed for these small integer inputs. If updates become frequent, a static prefix array may need a Fenwick/segment tree rather than rebuilding after every update.",
+      "0047": "Advance each boundary only after its edge, then guard the opposite edge to avoid duplicate output on one-row/column interiors. Empty matrices now return empty output; input must be rectangular. Four indices are constant state, but output and retained trace are additional storage. In-place square rotation is a separate extension, not what spiral traversal implements.",
+      "0048": "The last merged interval summarizes all processed overlap; sorting by start makes that local comparison sufficient. This closed-interval policy merges touching endpoints. Full output snapshots make disjoint-input tracing quadratic despite the O(n log n) underlying sort/sweep. For half-open occupancy counts, process equal endpoints under the chosen end-before-start convention instead of copying the merge rule.",
+      "0049": "x & (x-1) removes one set bit per iteration, including the coerced bit-31 pattern. countBits32 counts a 32-bit representation, not an arbitrary integer's mathematical bits. XOR cancellation requires the stated multiplicities; it does not find every duplicate. Subset enumeration still has 2^n outputs even with compact masks.",
+      "0050": "Clarify distinct indices and duplicates, explain the seen-prefix invariant, then compare the result with a quadratic oracle. The fixture checks several arrays across many targets but is finite evidence, not exhaustive proof. Under a sorted-input/constant-extra-space constraint, use two pointers and state whether callers want original or sorted positions. Preserve exact-sum assumptions when changing numeric inputs."
+    }[lesson.number];
     return {
       ...profile,
+      checkpoint,
+      labScope: "Core: run the small JavaScript fixture and explain its invariant, one boundary case and an alternative. Use finite, exactly representable numeric examples, valid indices, rectangular grids and the structure-specific preconditions stated in the checkpoint; these are algorithms, not untrusted-input APIs. The other named structures/problems are extension exercises, not all implemented by this starter. Include instrumentation and output costs when reporting complexity.",
       sourceLabel: "MIT 6.006 Introduction to Algorithms",
       sourceUrl: "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/",
       commentPrefix: "//",
@@ -11554,6 +12175,20 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     };
   }
   if (lesson.trackId === "systems-foundations") {
+    const checkpoint = {
+      "0056": "This list labels layers; it is not serialized network bytes. HTTPS additionally protects HTTP content with TLS, and segmentation does not preserve application message boundaries. A receiver must buffer incomplete messages and separate coalesced ones. The next-hop MAC can change at each routed link while destination IP generally remains end-to-end unless translation occurs. A TCP ACK confirms stream receipt, not successful business processing; use an application response and appropriate persistence evidence.",
+      "0057": "A /27 has 32 IPv4 addresses; this sample checks prefix membership, not whether every address is assignable to a host. For an off-link destination, resolve the gateway's link address rather than the remote host's. The one-subnet cache is a simplified model: real on-link routes, proxy ARP and multiple interfaces need additional policy. IPv6 uses Neighbor Discovery, not ARP. Compare network prefix, next hop and neighbor entry separately when diagnosing reachability.",
+      "0058": "10.42.7.8 selects /16 before /8 or /0. The sample chooses by prefix length, not gateway spelling; equal-prefix metric/ECMP and policy routing are outside its model. The NAT map is one illustrative reverse mapping, not a complete connection tracker or firewall. A missing traceroute reply may be filtered rather than a failed hop; asymmetric return routing limits inference. Compare route lookup with actual neighbor and socket evidence before changing a gateway.",
+      "0059": "UDP length includes its eight-byte header; this codec checks shape but omits pseudo-header checksum validation. The field maximum is not a path payload budget, especially with IP headers. The TCP list is one possible active-close sequence, not an implemented state machine; FIN closes one sending direction, and TIME-WAIT has a distinct purpose. TCP reliability does not make retrying an unknown business outcome safe. Choose framing and idempotency at the application boundary.",
+      "0060": "min(cwnd,rwnd) caps outstanding data; subtract in-flight data before calling the remainder new-data allowance. The example uses toy units and RTT rounds, not an update per ACK or a live controller. Timeout reset differs from fast recovery and modern algorithm behavior. Compare socket-level flow control with admission limits: a bounded socket cannot prevent an upstream application queue from exhausting memory. Measure queue age, outstanding bytes and rejection before increasing buffers.",
+      "0061": "The request target includes path and query, but not the fragment; the corrected planner checks that distinction. It is an explanatory cold-path plan, not DNS resolution, certificate validation, SSRF filtering or a client implementation. Cached names and reusable connections can skip setup; HTTP/3 uses QUIC rather than TCP. Compare connection reuse with independent connections under shared failure/capacity constraints, and verify hostname/trust policy before interpreting encrypted traffic as authenticated access.",
+      "0062": "The local pipe crosses real OS wrappers and closes both descriptors even on failure. A five-byte fixture is not a general framing/read-exactly helper: larger or interrupted I/O needs explicit loops and error handling. fork creates another process; exec replaces the image; wait collects status and reaps a child. A descriptor number can be reused after close, so ownership must prevent stale users from acting on a different resource. No fork/exec or signal experiment is executed here.",
+      "0063": "Positive quantum and bursts make total remaining work strictly decrease, proving this finite simulation terminates. Smaller quantum can improve simulated turn-taking but adds context-switch overhead in reality. The fixture assumes every task is ready initially and has no I/O, priorities or multiple CPUs; it does not model a current Linux scheduler. Compare CPU saturation with blocked work using runnable queues and CPU time, not elapsed time alone.",
+      "0064": "All transfers lock the same live objects in id order, removing circular lock acquisition for this operation. One object per domain account and cooperation by every reader/writer are essential; duplicate objects defeat the protection. Self-transfer must be rejected before taking the same non-reentrant lock twice. This is in-process atomicity, not durability, fairness or cross-process consistency. Compare coarse locking with a database transaction when ownership moves across workers; condition-variable waits require a predicate loop.",
+      "0065": "0x1234 splits into virtual page 1 and offset 0x234; frame 9 yields 0x9234. A missing table key raises a toy fault, not a real page-table walk; frame validity, permissions and TLB behavior are not modeled. Page faults can be demand-zero, copy-on-write or file-backed and need not read swap. The separate LRU simulation counts misses and handles zero capacity; real replacement policies and hardware locality require measurement, not a textbook-policy assumption.",
+      "0066": "The protocol stages in the same trusted directory, flushes/fsyncs content, replaces the name and syncs the directory. Rename visibility is not equivalent to crash durability; already-open readers may still see the old inode. If directory fsync fails, replacement may already be visible, so an exception does not imply rollback. The fixture checks content preservation and cleanup on invalid data, not power-loss behavior. Compare in-place rewrite with replacement under ownership, metadata and filesystem guarantees.",
+      "0067": "The snapshot measures this process, not a whole container or host. An unlimited descriptor limit uses the platform's RLIM_INFINITY sentinel, which is not always positive. Namespaces change views; cgroups account/limit resources; capabilities and other controls constrain authority. Containers generally share a kernel, unlike a guest-kernel VM. For a suspected OOM or CPU-throttle incident, correlate process exits with actual controller counters; this read-only POSIX snapshot neither creates nor verifies Linux isolation."
+    }[lesson.number];
     let sourceLabel = "RFC 9110 HTTP Semantics";
     let sourceUrl = "https://www.rfc-editor.org/rfc/rfc9110.html";
     if (/IPv4|Routing tables/.test(lesson.title)) {
@@ -11562,6 +12197,10 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     } else if (/UDP, TCP|TCP flow control/.test(lesson.title)) {
       sourceLabel = "RFC 9293 Transmission Control Protocol";
       sourceUrl = "https://www.rfc-editor.org/rfc/rfc9293.html";
+      if (/TCP flow control/.test(lesson.title)) {
+        sourceLabel = "RFC 5681 TCP Congestion Control";
+        sourceUrl = "https://www.rfc-editor.org/rfc/rfc5681.html";
+      }
     } else if (/System calls/.test(lesson.title)) {
       sourceLabel = "Linux system calls manual";
       sourceUrl = "https://man7.org/linux/man-pages/man2/syscalls.2.html";
@@ -11586,10 +12225,26 @@ Owner: Name the team that handles replay, retention, and incidents before approv
       sourceLabel,
       sourceUrl,
       commentPrefix: "#",
-      code: systemsFoundationsCodeFor(lesson.title, profile.code)
+      code: systemsFoundationsCodeFor(lesson.title, profile.code),
+      checkpoint,
+      labScope: "Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model."
     };
   }
   if (lesson.trackId === "lld-machine-coding") {
+    const checkpoint = {
+      "0068": "State 0 <= used <= total before choosing classes. Integer validation matters: total=1.5 would never equal an integer used count and could admit indefinitely. Test full, release and empty release; clarify whether reserve/release needs identity or idempotency before adding it. This counter has public mutable fields and assumes serialized cooperating callers, not multi-user reservation safety. A single counter is simpler than a booking service when identity is outside scope.",
+      "0069": "Money equality includes amount and currency; two equal VehicleId values identify the same modeled key, not the same Python object. Frozen dataclasses prevent ordinary field assignment, not arbitrary deep mutation or validation of every annotation. This fixture uses Decimal and string inputs; it does not enforce currency codes, scale, rounding, identity normalization or exchange rates. Add those rules from a real requirement, and distinguish an entity's stable identity from a descriptive value object.",
+      "0070": "The list shows references and Floor.add rejects a repeated number, but two floors can still reference the same Spot and callers can bypass add. Do not call that enforced UML composition: exclusive part ownership and deletion semantics need an explicit policy. Compare shared aggregation with owning composition when a floor is removed or a spot transferred. Python garbage collection follows references, not UML diamonds; the diagram communicates a contract that code must actually enforce.",
+      "0071": "A Protocol communicates required shape to a type checker; Python does not enforce annotations at runtime. checkout now rejects fractional, Boolean and negative cents before invoking the fake. A fake returning payment-1 proves invocation, not a charge or a real provider's timeout/error contract. Compare injecting one callable with a protocol as the boundary grows. A retry after an unknown payment outcome needs stable idempotency and reconciliation, not blindly calling charge again.",
+      "0072": "Two actual pricing policies justify one supplied callable, not a factory hierarchy. Integer validation rejects fractional hours rather than silently choosing a rounding rule. hourly deliberately charges at least one hour even at zero usage, while first_hour_free can return zero; state that policy before coding. If billing changes to partial hours or another currency, decide rounding/units before extending the strategy. Adapter, Decorator and Observer solve different variations and are not implemented here.",
+      "0073": "The transition function returns a legal next state; it neither persists it nor performs payment/shipping. CANCELLED cannot ship, and repeated pay is rejected rather than treated as a successful retry. Enum membership alone does not enforce command validity. Compare a pure transition table with a class only when lifecycle behavior needs it. Persisted concurrent commands require a version/transaction boundary and side-effect coordination beyond this table.",
+      "0074": "The check and assignment share one lock, so two contenders yield one winner. Reject empty/non-string customers before using None as the unowned sentinel. Every caller must use the same Seat instance and respect its owner field; this is not database or cross-process synchronization. A repeated reservation by the winner returns false but does not duplicate the effect. If the response must be repeatable, define that policy explicitly; thread-safe admission and idempotent result replay are different requirements.",
+      "0075": "The repository write and event append are separate effects. Inject append failure and observe a stored booking with no event: an exception did not roll back state. Compare that demonstration with a real transaction writing booking plus outbox intent; relaying can still duplicate publication. The dictionary is not persistence, and retries currently hit duplicate rejection rather than replaying a known successful response. Define stable identity and recovery before claiming an atomic use case.",
+      "0076": "The contract checks missing keys, overwrite semantics and empty-key rejection through public methods. Passing against MemoryStore does not validate another adapter's durability, consistency, encoding or failure behavior. Run the same applicable contract against the real adapter when available, with integration-specific cases. Compare an assertion about a returned value with one about a private dict: the latter can block harmless refactoring. Add boundary cases from actual requirements, not an arbitrary test-count target.",
+      "0077": "First-fit allocation is deterministic in input order, not necessarily nearest or lowest-numbered. The constructor now rejects duplicate spot numbers; park rejects blank vehicles, duplicate parking and incompatible/full inventory. The copied collection still holds mutable Spot references and assumes single-threaded ownership. Tickets, pricing and concurrency are extensions, not supplied features. Compare linear scanning with an indexed free-spot structure only when measured scale or allocation policy requires it.",
+      "0078": "Positive balance means the payer is owed money; negative means a participant owes it. The sum remains zero, but that invariant alone does not prove the intended participants or shares were correct. Decimal arithmetic is context-dependent; define one currency, bounded magnitudes and scale before promising exact posting. This returns one proposed balanced posting, not stored history or completed settlement. Debt simplification must preserve net obligations without erasing the original expenses.",
+      "0079": "An LRU hit moves the entry to the recent end, so reading a before inserting c evicts b. Capacity must be a positive integer. The sliding log expires events at or before now-window, defining the window as (now-window, now]; admitted events only are recorded. Positive limits/windows, monotonic ordered timestamps and one serialized history owner are preconditions, not enforced service guarantees. None is the cache-miss sentinel; distinguish stored None if allowed. Compare a simple fixed window with the exact log's memory and burst behavior."
+    }[lesson.number];
     let sourceLabel = "Python data model documentation";
     let sourceUrl = "https://docs.python.org/3/reference/datamodel.html";
     if (/Object relationships/.test(lesson.title)) {
@@ -11619,10 +12274,26 @@ Owner: Name the team that handles replay, retention, and incidents before approv
       sourceLabel,
       sourceUrl,
       commentPrefix: "#",
-      code: lldMachineCodingCodeFor(lesson.title, profile.code)
+      code: lldMachineCodingCodeFor(lesson.title, profile.code),
+      checkpoint,
+      labScope: "Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API."
     };
   }
   if (lesson.trackId === "software-design") {
+    const checkpoint = {
+      "0006": "Trace quantity validation, subtotal, eligibility and discount separately. Test empty input, a nonmember, 99 versus 100 at the threshold and overflow; short code is not evidence of preserved behavior. If a new currency is introduced, decide representation and rounding explicitly rather than hiding them in a naming refactor. Compare extraction with leaving a small coherent function intact; measure what a reviewer must understand, not just line count.",
+      "0007": "A shipping rule shared by every checkout has one business owner; search normalization and display-name normalization need not change together. For a new case-sensitive search requirement, change only the search function and preserve displayed capitalization. Compare that change with a flag-heavy shared normalizer. These functions accept typed internal inputs, not arbitrary HTTP payloads; parse region and numeric values at the application boundary. A duplication count alone cannot decide whether an abstraction is worthwhile.",
+      "0008": "reserveIfAvailable is one atomic capability, not find-then-save hidden behind an interface. With one item and two competing reservations, exactly one may succeed. The local fake exercises the caller contract, not database locking; a real adapter needs concurrent integration tests and explicit timeout/error semantics. Compare a direct adapter call with a narrow injected function before adding a repository hierarchy. A storage change should affect adapter tests without rewriting stock policy.",
+      "0009": "The first matching rule wins, so moving the always-true standard rule first suppresses every discount. Compare a single conditional with ordered rules and state which real variation earns the latter. SRP separates pricing from notification ownership, not every line into a class. OCP applies to a chosen variation axis, not all future requirements. Rules here are trusted in-process code; untrusted plugins need authority, output validation and failure isolation, none of which a TypeScript interface supplies.",
+      "0010": "Returning undefined for a missing order is part of the contract; throwing for the same valid lookup can break substitution even when signatures compile. A read-only consumer should receive OrderReader, not a mandatory save capability. Injection is wiring; inversion is the dependency direction that lets policy own the port. MemoryOrders retains object references and has no durable storage: TypeScript Readonly is not runtime freezing or isolation. If callers may mutate inputs, specify copying/ownership and test it before substituting this fake for a database adapter.",
+      "0011": "Order matters: discount then cap maps 100 to 80, but cap then discount maps it to 72. Composition removes subclass combinations, not the need to define ordering and valid intermediate values. These trusted pure rules contain no I/O; external effects belong in a separately tested shell. A tagged-data switch may be simpler for a small closed variant set; inheritance needs substitutability, not merely shared fields. The price fixture is arithmetic, not a currency/rounding implementation.",
+      "0012": "hasDecisionFields checks record shape only: invented evidence also passes. Defend an Adapter using actual incompatible provider contracts, error semantics and tests; compare it with one direct function while only one provider exists. A second provider may justify a stable boundary but not a general plugin platform. Name the cost of the extra indirection and what observation would make you remove it. Pattern literacy means explaining forces and consequences, not treating a boolean check or pattern name as design approval.",
+      "0013": "The runnable part is a Builder producing a frozen snapshot. A plain validated options object may be simpler; the simple createMailer function is not by itself a demonstration of the classic inheritance-based Factory Method. Abstract Factory concerns compatible product families, Prototype requires a copying/identity policy, and dependency injection needs no container. Singleton scope depends on runtime/module/class-loader boundaries and is not a distributed uniqueness guarantee. The mailer declarations are missing integrations; HTTPS validation alone is not SSRF prevention or HTTP-header validation.",
+      "0014": "Adapter changes the provider interface, Decorator adds tracing behind the same contract, and Facade narrows the caller's task. A throwing optional recorder must not replace a provider result/error; the example now isolates synchronous recorder failures. The signal is forwarded, not proof the provider obeys cancellation. Compare wrappers with one function when variation is absent. Composite handles trees, Proxy controls access, Bridge separates variation axes, and Flyweight shares intrinsic state; none is automatically needed just because the syntax resembles these wrappers.",
+      "0015": "The transition table rejects send from draft, but sent is only local state here, not proof an external notification was delivered. Listeners are synchronous and fail-fast: state changes before callbacks, a throw stops later callbacks, and nested dispatch can interleave notifications. Compare a single direct callback with Observer; add queuing only if ordered non-reentrant delivery is required. Command-as-data does not supply durable retry or undo. State selects lifecycle behavior; Strategy selects an algorithm. Visitor favors new operations over new element variants.",
+      "0016": "The two characterization cases preserve standard/member output, not every input, failure, side effect or timing behavior. Add zero, threshold and invalid-input cases relevant to the accepted contract before restructuring. If current behavior is a bug, record it and fix it as a separate behavior change; do not silently bless it forever. Compare the discount table with the original conditional: a smell is a reason to investigate, not proof the table is better. Review one transformation at a time and check that a deliberate wrong discount fails the tests.",
+      "0017": "The use case owns policy while injected persistence owns the transaction. The fake proves save/commit/rollback branching, not isolation, connection cleanup or durability. A real adapter must prevent concurrent draft-to-placed races and release resources on both success and failure. Rollback failure now preserves the original error too. A lost commit response may mean committed state; rollback cannot prove it did not commit. Define reconciliation/idempotency before retrying. Compare direct transaction code in one module with ports when substitution actually helps; moving folders or splitting deployments alone does not enforce boundaries."
+    }[lesson.number];
     let sourceLabel = "Google engineering practices for code review";
     let sourceUrl = "https://google.github.io/eng-practices/review/reviewer/looking-for.html";
     if (/Cohesion|Single Responsibility|Liskov Substitution|Composition/.test(lesson.title)) {
@@ -11640,6 +12311,8 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     }
     return {
       ...profile,
+      checkpoint,
+      labScope: "Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.",
       sourceLabel,
       sourceUrl,
       commentPrefix: "//",
@@ -12419,7 +13092,7 @@ def run_one(db, worker, stopping):
 import { createHash } from "node:crypto";
 
 function auditDigest(previousHash, payload) {
-  if (previousHash !== "GENESIS" && !/^[0-9a-f]{64}$/.test(previousHash)) throw new Error("invalid predecessor");
+  if (previousHash !== "GENESIS" && (typeof previousHash !== "string" || /^[0-9a-f]{64}$/.exec(previousHash)?.[0] !== previousHash)) throw new Error("invalid predecessor");
   if (typeof payload !== "string" || Buffer.byteLength(payload, "utf8") > 65_536) throw new Error("bounded payload required");
   return createHash("sha256").update(JSON.stringify(["audit-v1", previousHash, payload])).digest("hex");
 }
@@ -12442,6 +13115,7 @@ assert.equal(auditDigest("GENESIS", payload), hash);
 assert.notEqual(auditDigest("GENESIS", payload.replace("allowed", "denied")), hash);
 assert.notEqual(auditDigest(hash, payload), hash);
 assert.throws(() => auditDigest("bad", payload));
+assert.throws(() => auditDigest(hash + "\\n", payload));
 assert.throws(() => auditDigest("GENESIS", undefined));
 assert.throws(() => auditDigest("GENESIS", "x".repeat(65_537)));
 
@@ -13508,7 +14182,8 @@ function diagramFor(lesson) {
     ], "Log before calling, inside the function before and after await, and after calling; predict the order with an already-fulfilled Promise.", "The before-await log precedes the caller's after-call log; the after-await log runs later. Check the returned Promise and rejection path.");
   }
 
-  if ((lesson.trackId === "javascript" && title.startsWith("testing,")) ||
+  if (lesson.number === "0420" || (lesson.trackId === "javascript" && title.startsWith("testing,")) ||
+      (lesson.trackId === "nodejs" && title.startsWith("node test runner,")) ||
       (lesson.trackId === "react" && title.startsWith("component tests,")) ||
       (lesson.trackId === "python" && title.startsWith("testing,")) ||
       (lesson.trackId === "fastapi" && /^(testclient,|async integration tests,)/.test(title)) ||
@@ -13535,6 +14210,14 @@ function diagramFor(lesson) {
       ["03 · RENDER", "The chosen owner supplies the displayed value", "Keep controlled/uncontrolled mode stable through the input's lifetime."],
       ["04 · SUBMIT", "Read and validate the intended fields", "Use labels and names, show usable errors and validate again at the server boundary."]
     ], "Type into each fixture, change its initial/default value and compare with a controlled-state update.", "DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.");
+  }
+  if (lesson.number === "0183") {
+    return flow("react-layout-timing", [
+      ["01 · RENDER", "Compute the element description", "Do not read layout or insert external styles during render."],
+      ["02 · INSERT", "Library styles become available", "Insertion Effects precede Layout Effects; do not assume refs or a particular DOM mutation order here."],
+      ["03 · LAYOUT", "Measure committed DOM", "Layout Effects can measure and queue corrections before paint, blocking paint while they run."],
+      ["04 · PAINT", "The browser can display the result", "Later resizing, font loading or anchor movement requires its own synchronization."]
+    ], "Change the tooltip content and compare a layout correction with passive measurement.", "Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.");
   }
   if (lesson.trackId === "react" && /effect|external synchronization/.test(title)) {
     return flow("react-effect", [
@@ -13569,6 +14252,30 @@ function diagramFor(lesson) {
     ], "Change one input or key and predict which component state is preserved.", "React DevTools, render count, DOM mutations, focus, and displayed state.");
   }
 
+  if (["0325", "0333"].includes(lesson.number)) {
+    return flow("fastapi-delivery", [
+      ["01 · INTENT", "Accept an authorized operation", "Validate the command and stable identity before creating work."],
+      ["02 · COMMIT", "Persist work with its business state", "An outbox closes the database/publication gap; a callback declaration does not execute delivery."],
+      ["03 · DELIVER", "A worker attempts the external call", "Use bounded attempts, trusted destinations and an agreed signature contract."],
+      ["04 · REPLAY", "Recover from ambiguous acknowledgement", "The receiver deduplicates atomically with its effect; a timeout may follow successful processing."]
+    ], "Lose the response after receiver commit, then retry the same event and verify the effect count.", "Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.");
+  }
+  if (lesson.number === "0319") {
+    return flow("fastapi-settings", [
+      ["01 · SOURCES", "Read process configuration", "Document environment, file and secret-source precedence."],
+      ["02 · VALIDATE", "Reject invalid startup values", "Required strings alone do not enforce allowed URLs, ranges or environments."],
+      ["03 · CACHE", "Reuse the validated settings", "The cache is lazy and per process; call it during startup before readiness."],
+      ["04 · OPERATE", "Own rotation and test isolation", "Refresh or restart deliberately and keep raw secret values out of logs."]
+    ], "Remove a required value and verify startup fails before traffic is admitted.", "Configuration source, safe error, readiness and cache lifetime; never print actual credentials.");
+  }
+  if (["0340", "0341"].includes(lesson.number)) {
+    return flow("fastapi-diagnostics", [
+      ["01 · QUESTION", "Define the measured boundary", "Separate response creation, full body delivery and admission wait."],
+      ["02 · OBSERVE", "Collect bounded, attributable signals", "Record errors, representative latency, CPU and pool wait without secret or unbounded labels."],
+      ["03 · COMPARE", "Test one bottleneck hypothesis", "Keep offered load and workload comparable; success-only closed-loop results have limits."],
+      ["04 · VERIFY", "Check improvement and regressions", "Recheck correctness, memory, errors and tail behavior before accepting a change."]
+    ], "Slow the database without changing CPU work and predict which timings and queues rise.", "Measurement definition, failures, queueing and before/after evidence; no production load test is supplied.");
+  }
   if (lesson.trackId === "fastapi" && title.startsWith("async def,")) {
     return flow("fastapi-execution", [
       ["01 · DISPATCH", "Identify who calls the function", "FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop."],
@@ -13650,6 +14357,14 @@ function diagramFor(lesson) {
     ], "Trace one valid request and one failure while recording every ASGI event.", "Scope fields, middleware order, dependency calls, send events, and client response.");
   }
 
+  if (["0300", "0302"].includes(lesson.number)) {
+    return flow("python-use-case", [
+      ["01 · INPUT", "Validate a command", "External representation is checked before application policy uses it."],
+      ["02 · POLICY", "Apply the domain rule", "The use case depends on an explicit repository or unit-of-work contract."],
+      ["03 · ADAPTER", "Perform the owned effect", "The adapter implements persistence; a Protocol supplies no transaction or rollback."],
+      ["04 · OUTCOME", "Return a result or preserve failure", "Test failed writes and, for the capstone, scoped intent replay and atomic commit."]
+    ], "Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.", "Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.");
+  }
   if (lesson.trackId === "python" && /^(runtime validation|copying, serialization|python security)/.test(title)) {
     return flow("python-data-boundary", [
       ["01 · RECEIVE", "Untrusted data enters", "Text, bytes or paths have not earned permission to drive an operation."],
@@ -13804,6 +14519,14 @@ function diagramFor(lesson) {
     ], "Trace one operation with async hooks and inject a timeout or shutdown.", "Async IDs, handle count, event-loop delay, response, and exit sequence.");
   }
 
+  if (["0124", "0125"].includes(lesson.number)) {
+    return flow("javascript-command", [
+      ["01 · ADMIT", "The processor accepts a command", "Cancellation and validation gate the next operation."],
+      ["02 · COMMIT", "The repository owns atomic effects", "Business state, stable result, intent identity and outbox must share a transaction."],
+      ["03 · RELAY", "Committed events are delivered", "A separate relay may retry; consumers own duplicate-safe effects."],
+      ["04 · OBSERVE", "Outcomes reveal the boundary", "Partial batches, uncertain commits and replay require explicit recovery evidence."]
+    ], "Inject a failure after one committed command and explain what may already be durable.", "Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.");
+  }
   if (lesson.trackId === "javascript" && /^(declarations|execution contexts|hoisting|closures|functions)/.test(title)) {
     return flow("javascript-bindings", [
       ["01 · CREATE", "Code establishes bindings", "Declaration instantiation creates and sometimes initializes names."],
@@ -14681,7 +15404,43 @@ function diagramAriaLabel(diagram) {
 
 function traceSubjectFor(lesson) {
   const title = lesson.title.toLowerCase();
+  if (lesson.number === "0431") return "dependency isolation and recovery";
+  if (lesson.number === "0479") return "an AWS authorization decision";
+  if (["0453", "0454", "0455"].includes(lesson.number)) return "an architecture decision under changing constraints";
 
+  if (lesson.trackId === "software-design") return "a requirement-driven code change";
+  if (lesson.trackId === "computer-science") return "an algorithm execution";
+  if (lesson.number === "0097") return "an array operation";
+  if (lesson.number === "0104") return "a module import";
+  if (lesson.number === "0116") return "a shared-memory handoff";
+  if (lesson.number === "0203") return "a render and commit cycle";
+  if (lesson.number === "0230") return "a filesystem replacement";
+  if (lesson.number === "0231") return "a filesystem access decision";
+  if (lesson.number === "0251") return "a diagnostic experiment";
+  if (lesson.number === "0265") return "a sequence operation";
+  if (["0284", "0293"].includes(lesson.number)) return "a validated data boundary";
+  if (["0300", "0302"].includes(lesson.number)) return "an application use case";
+  if (["0315", "0316", "0317", "0318"].includes(lesson.number)) return "a dependency lifetime";
+  if (Number(lesson.number) >= 381 && Number(lesson.number) <= 388) return "a Redis command";
+  if (["0389", "0390"].includes(lesson.number)) return "Redis recovery";
+  if (lesson.number === "0405") return "an HTTP precondition";
+  if (lesson.number === "0391") return "a cluster-local transaction";
+  if (lesson.number === "0392") return "a stream delivery";
+  if (lesson.number === "0393") return "a versioned cache read";
+  if (lesson.number === "0394") return "a fenced write";
+  if (lesson.number === "0395") return "a Redis authorization decision";
+  if (lesson.number === "0347") return "database process ownership";
+  if (["0355", "0356", "0365", "0366"].includes(lesson.number)) return "a database query";
+  if (lesson.number === "0369") return "database maintenance";
+  if (lesson.number === "0371") return "a pooled transaction";
+  if (lesson.number === "0374") return "logical replication";
+  if (lesson.number === "0378") return "a diagnostic experiment";
+  if (lesson.number === "0380") return "a replay-safe command";
+  if (lesson.number === "0319") return "validated process configuration";
+  if (lesson.number === "0326") return "an authentication decision";
+  if (lesson.number === "0336") return "a streamed event";
+  if (["0338", "0339"].includes(lesson.number)) return "a contract test";
+  if (["0124", "0125"].includes(lesson.number)) return "a validated command";
   if (lesson.trackId === "lld-machine-coding") return "a machine-coding use case";
   if (lesson.trackId === "systems-foundations") return /request to wire|ipv4|routing tables|udp, tcp|tcp flow control|dns resolution/.test(title) ? "a request from application to wire" : "a process crossing a kernel boundary";
   if (/layer 4 and layer 7 load balancing/.test(title)) return "a load-balanced connection and request";
@@ -15049,7 +15808,7 @@ const SIMPLE_CONCEPTS = {
     ["useref", "useRef keeps a mutable value across renders without scheduling a render when it changes. It is suitable for DOM nodes and operational handles, not information that should appear on screen."],
     ["useeffect", "useEffect synchronizes committed React state with an external system such as a connection, timer, or browser API. Setup and cleanup form one repeatable synchronization process."],
     ["strict mode", "Strict Mode adds development-only checks and deliberately replays selected work to reveal impure rendering and missing cleanup. It does not double-run production work."],
-    ["rules of hooks", "The Rules of Hooks keep hook calls in the same order on every render. React relies on that order to match each call with its stored state slot."],
+    ["rules of hooks", "Ordinary Hooks must run in a stable top-level order inside React components or custom Hooks, so React can associate their state correctly. The use API permits conditional and loop calls, but still has its own component/Hook and error-handling restrictions."],
     ["reconciliation", "Reconciliation compares the previous and next element descriptions and decides which fibers can be reused. Element type, position, and key guide preservation or replacement."],
     ["keys", "A key gives a child stable identity among siblings. Stable data keys let React preserve the correct state when items move, while index keys can attach state to the wrong item."],
     ["render snapshots", "A render snapshot is the fixed set of props, state, and closures seen during one component call. Later state updates schedule another snapshot instead of mutating the current one."],
@@ -15086,7 +15845,7 @@ const SIMPLE_CONCEPTS = {
     ["apirouter", "APIRouter groups related operations, prefixes, tags, and dependencies before they are included in an application. Inclusion copies routes into the same app; mounting delegates to another ASGI app."],
     ["testclient", "TestClient drives the ASGI application in process through a synchronous HTTP-style interface. It is fast and deterministic, but it does not reproduce a real network, proxy, or multi-process deployment."],
     ["asgi", "ASGI is the async server-to-application protocol. The server provides a connection scope and two callables: receive brings events in, and send emits response or WebSocket events."],
-    ["scope", "An ASGI scope is an immutable-looking dictionary that describes one connection, including protocol type, path, method, headers, client, server, and proxy root path."],
+    ["scope", "An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests."],
     ["receive", "receive is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection."],
     ["send", "send is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract."],
     ["uvicorn", "Uvicorn is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application."],
@@ -15095,7 +15854,7 @@ const SIMPLE_CONCEPTS = {
     ["path operations", "A path operation connects an HTTP method and path pattern to an endpoint function. FastAPI inspects the function signature to build validation, dependencies, responses, and documentation."],
     ["routing order", "Routes are checked in registration order. A broad dynamic path can capture traffic intended for a later fixed path, so specific routes must be designed and ordered deliberately."],
     ["path parameters", "Path parameters come from matched URL segments. FastAPI then converts and validates those strings using the declared Python annotation and constraints."],
-    ["query parameters", "Query parameters are optional or repeated values after the question mark in a URL. Their defaults and annotations define absence, validation, and generated documentation."],
+    ["query parameters", "Query parameters carry values after the question mark in a URL. They may be required, optional or repeated; declarations and defaults determine absence, parsing and validation behavior."],
     ["headers", "Headers carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them."],
     ["cookies", "Cookies are name-value data a browser can attach automatically to matching requests. Their domain, path, Secure, HttpOnly, SameSite, and expiry rules shape both security and behavior."],
     ["request bodies", "A request body is the main representation sent by a client. FastAPI parses its content type and gives the decoded value to Pydantic for validation."],
@@ -15103,7 +15862,7 @@ const SIMPLE_CONCEPTS = {
     ["serialization", "Serialization converts Python values into bytes that follow the response media type. It can add measurable CPU cost and can fail when return values violate the declared output contract."],
     ["depends", "Depends declares that a function needs another callable's result. FastAPI inspects that callable too, so dependencies compose into a request-scoped graph."],
     ["annotated", "Annotated keeps the real Python type while attaching FastAPI metadata such as Depends, Query, Header, or validation constraints. It makes contracts reusable without losing type information."],
-    ["lifespan", "Lifespan is the ASGI startup-and-shutdown context for one application process. Code before yield acquires shared resources; code after yield closes them even during shutdown."],
+    ["lifespan", "Lifespan coordinates startup and shutdown resources for an application process. Use context managers or finally for cleanup on exceptional exits. Graceful shutdown allows cleanup, but a forced kill or process crash cannot guarantee it runs."],
     ["thread pools", "A thread pool lets synchronous functions wait without blocking the event-loop thread. It has finite capacity and does not make CPU-bound Python work scale freely."],
     ["event-loop", "The event loop runs many coroutines cooperatively on one thread. Each coroutine must reach await points quickly or one blocking call can delay every request in that worker."],
     ["cancellation", "Cancellation asks in-flight async work to stop at an await point. Correct code lets it propagate, releases resources in finally blocks, and avoids publishing partial results."],
@@ -15313,7 +16072,7 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["time zones", "A time zone maps instants to local calendar fields through rules that change historically and around daylight-saving transitions. It is not just a fixed UTC offset."],
     ["intl", "Intl exposes locale-aware formatting, collation, segmentation, and plural rules backed by host internationalization data. Formatting should stay separate from stored domain values."],
     ["regular expressions", "A regular expression describes a pattern over text. Backtracking engines may explore many alternatives, so ambiguous nested repetition on untrusted input can become a denial of service."],
-    ["arraybuffer", "ArrayBuffer owns a fixed raw byte region. TypedArray and DataView objects interpret slices of that storage without owning separate copies."],
+    ["arraybuffer", "ArrayBuffer owns raw byte storage, fixed-length by default or resizable when constructed with maxByteLength. TypedArray and DataView interpret views of that storage; resizing or transfer can change whether a view remains usable."],
     ["dataview", "DataView reads and writes multiple numeric formats at arbitrary byte offsets with explicit endianness, making binary protocols portable."],
     ["sharedarraybuffer", "SharedArrayBuffer exposes the same bytes to multiple agents. Correctness requires a synchronization protocol rather than ordinary unsynchronized reads and writes."],
     ["atomics", "Atomics performs indivisible operations with defined ordering on supported shared typed arrays and supplies wait and notification primitives."],
@@ -15456,7 +16215,7 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["poll", "The poll phase processes eligible I/O callbacks and may wait for new events when no earlier constraint requires immediate progress."],
     ["check", "The check phase is where setImmediate callbacks run after polling in the same loop iteration."],
     ["process.nexttick", "process.nextTick queues work for Node's next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled."],
-    ["promise microtasks", "Promise reactions run through V8's microtask mechanism at Node-defined checkpoints after current JavaScript work and next-tick processing."],
+    ["promise microtasks", "Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution."],
     ["queuemicrotask", "queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions."],
     ["setimmediate", "setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer."],
     ["timers", "Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later."],
@@ -15495,8 +16254,8 @@ Object.assign(SIMPLE_CONCEPTS, {
     ["async iteration", "for-await-of consumes a Readable through its async iterator and gives structured early-exit cleanup with normal loop control."],
     ["object mode", "Object-mode streams count arbitrary JavaScript values rather than byte length, so highWaterMark represents object count rather than bytes."],
     ["highwatermark", "highWaterMark is an internal queue threshold that triggers backpressure signals. It is not a strict total-memory limit for the process."],
-    ["drain", "A Writable emits drain after its queue falls below the pressure threshold, telling a paused producer it may resume."],
-    ["cork", "Writable corking batches small writes until uncork or next tick, potentially reducing system calls when the implementation supports vectorized output."],
+    ["drain", "After write returns false, drain signals that the buffered writes have drained and the producer may resume. It is not a durability acknowledgment or merely an arbitrary drop below highWaterMark."],
+    ["cork", "Writable corking buffers writes until matching uncork calls or end. It does not automatically uncork on the next tick; callers often schedule uncork with process.nextTick to batch writes for _writev."],
     ["backpressure", "Backpressure makes an upstream producer slow down when downstream capacity is full, preventing queues and memory from growing with total input."],
     ["pipeline", "stream.pipeline owns a connected chain, propagates errors and cancellation, destroys affected stages, and provides one completion signal."],
     ["finished", "stream.finished waits for a stream's completion or premature close and helps make lifecycle ownership explicit."],
@@ -15867,7 +16626,7 @@ const BEGINNER_GLOSSARY = {
     "frequency maps": "A frequency map records how many times each value occurs and supports count-based comparisons and constraints.",
     "intervals": "An interval represents a continuous range with defined endpoint rules; sorting endpoints exposes overlap and gaps.",
     "linked-list patterns": "Linked-list patterns preserve reachability while pointers are redirected, advanced at different speeds, or merged.",
-    "sentinel nodes": "A sentinel node is a temporary fixed node that removes special handling for an empty head or first insertion.",
+    "sentinel nodes": "A sentinel node is a dummy boundary node that removes special handling for an empty head or first insertion. It may be temporary or retained as part of the structure.",
     "fast and slow pointers": "Fast and slow pointers advance at different rates to find a midpoint, cycle, or relative position without extra storage.",
     "fast": "The fast pointer advances more steps per iteration so its position reveals structure relative to another pointer.",
     "slow pointers": "The slow pointer advances at the reference rate and meets or trails the fast pointer under a stated invariant.",
@@ -15887,7 +16646,7 @@ const BEGINNER_GLOSSARY = {
     "topological sorting": "Topological sorting orders a directed acyclic graph so every dependency appears before the work that depends on it.",
     "shortest paths": "A shortest-path algorithm minimizes a defined path cost; the correct algorithm depends on edge weights and negative cycles.",
     "minimum spanning trees": "A minimum spanning tree connects all vertices in a weighted undirected graph with minimum total edge weight and no cycles.",
-    "union-find": "Union-find maintains disjoint components with near-constant amortized union and representative lookup.",
+    "union-find": "Union-find maintains disjoint components. Combining path compression with union by rank or size gives near-constant amortized union and representative lookup; a naive implementation can be linear.",
     "decision trees": "A decision tree represents each available choice as a branch and each partial solution as a node.",
     "permutations": "A permutation is an ordering of selected items, so changing position creates a different result.",
     "combinations": "A combination selects items without treating different orders as different results.",
@@ -16494,10 +17253,54 @@ function beginnerTrackContext(lesson) {
 }
 
 function simpleConceptExplanation(term, lesson) {
+  if (lesson.trackId === "python") {
+    if (term.toLowerCase() === "containers") return "Python containers hold objects and expose operations such as membership, iteration or indexed lookup. A list, set and dictionary have different protocols and costs; this is unrelated to operating-system containers.";
+    if (term.toLowerCase() === "start methods") return "Multiprocessing start methods control how a child process begins: spawn starts a fresh interpreter, fork copies the parent process state, and forkserver asks a server process to fork. Availability and defaults depend on platform and Python version; choose an explicit compatible context.";
+    if (term.toLowerCase() === "named tuples") return "Named tuples are tuple subclasses whose fields also have names. They support positional access and unpacking while making records clearer; their outer structure is immutable, but referenced children may be mutable.";
+    if (lesson.number === "0295" && term.toLowerCase() === "properties") return "Testing properties are rules expected to hold across a stated input domain, such as normalization being idempotent. Generated cases can search for counterexamples; this is unrelated to Python's property descriptor.";
+  }
   if (lesson.trackId === "typescript" && lesson.title.startsWith("Function types") && term.toLowerCase() === "parameters") {
     return "Parameters describe the inputs a function accepts. Optional parameters permit omission; rest parameters collect additional arguments. This is distinct from the capitalized Parameters<F> utility, which extracts parameter types into a tuple.";
   }
   const normalized = term.toLowerCase();
+  if (lesson.number === "0469" && normalized === "observability") return "Reliability observability uses metrics, logs, traces and other system outputs to distinguish causes of user-visible failure. Relate signals to service-level indicators and recovery evidence; privileged admin activity is only one possible domain, not the definition.";
+  if (lesson.number === "0446" && normalized === "rebalancing") return "Shard rebalancing moves data and serving ownership between storage nodes. Copying, catching up concurrent writes, versioning routes and transferring authority must preserve the selected consistency contract; this is not merely a consumer-group reassignment.";
+  if (lesson.number === "0447" && normalized === "Raft terms".toLowerCase()) return "Raft terms are monotonically increasing logical election epochs. Nodes persist the current term and vote; a higher term invalidates older leadership. A term can have no elected leader, and a term number alone does not prove a log entry committed.";
+  if (lesson.number === "0447" && normalized === "safety") return "Distributed-systems safety means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break safety, but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol's guarantees.";
+  if (lesson.number === "0434" && normalized === "acknowledgements") return "Acknowledgements report completion at a named boundary: a producer acknowledgement may confirm broker acceptance or replication, while a consumer acknowledgement releases a delivery or advances progress. Neither automatically proves an external business effect is durable.";
+  if (lesson.number === "0435" && normalized === "at-least-once") return "At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.";
+  if (lesson.number === "0440" && normalized === "two-phase commit") return "Two-phase commit asks participants to prepare, then records a durable commit or abort decision. Commit requires all required participants to vote prepared; a refusal can trigger abort. A prepared participant may remain blocked until it can learn an authoritative decision.";
+  if (lesson.number === "0430" && normalized === "bounded queues") return "Bounded queues cap waiting work by items, bytes or another explicit resource budget. When full, producers must wait, reject, shed or use an explicitly safe alternative; a queue bound does not itself bound active work or total upstream memory.";
+  if (lesson.number === "0419" && normalized === "logs") return "Diagnostic logs are timestamped event records used to investigate application behavior. Include safe context and correlation, with retention and access controls; they are distinct from a partitioned replayable message log and from a complete audit record.";
+  if (Number(lesson.number) >= 381 && Number(lesson.number) <= 395) {
+    if (normalized === "databases") return "Redis logical databases are numbered keyspaces selected on a connection in supported deployments. They share server memory, CPU, persistence and administration; they are not isolated PostgreSQL catalogs or a strong tenant security boundary. Redis Cluster supports database zero only.";
+    if (normalized === "connections") return "A Redis connection carries an ordered protocol stream and client state such as the selected database, authentication and WATCH/MULTI state. Redis does not allocate a PostgreSQL-style backend process per connection; buffers and blocked clients still consume resources.";
+    if (normalized === "hyperloglog") return "HyperLogLog estimates distinct cardinality using compact probabilistic state instead of storing every member. Its advertised standard error describes a statistical distribution, not a guaranteed maximum error for an individual estimate; it cannot enumerate members.";
+  }
+  if (Number(lesson.number) >= 346 && Number(lesson.number) <= 380) {
+    const definition = {
+      "clusters": "A PostgreSQL database cluster is a collection of databases managed by one server instance with shared cluster-level objects and a data directory. It does not mean a distributed deployment, and its stored data still exists when the server is stopped.",
+      "transactions": "A PostgreSQL transaction groups transactional changes into one commit or rollback boundary. Sequence increments and external effects are not generally rolled back; durability of acknowledged commits depends on configured flush and replication guarantees.",
+      "table locks": "Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate table locks; compare the compatibility matrix rather than inferring behavior from the name.",
+      "row locks": "Row locks coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.",
+      "predicate locks": "PostgreSQL SSI predicate locks track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.",
+      "advisory locks": "Advisory locks coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.",
+      "idempotent transactions": "An idempotent transaction preserves one logical operation's intended effect across retries, typically using an atomic scoped identity and saved outcome. Atomicity of each attempt alone does not prevent two separately committed attempts from duplicating effects.",
+      "hash joins": "A hash join builds a hash table from one input and probes it using the other input for compatible equality conditions. Memory limits, skew and batching affect cost; spilling can require extra temporary I/O.",
+      "merge joins": "A merge join advances through inputs ordered by compatible join keys. Existing indexes may provide order, otherwise sorting adds cost; duplicate-key groups still produce all required matching combinations.",
+      "base backups": "A physical base backup copies a consistent PostgreSQL cluster starting point together with required recovery information. Further point-in-time recovery needs an unbroken suitable WAL history and compatible server setup; this is not a selective logical pg_dump archive.",
+      "hot updates": "A HOT update can link a new version on the same heap page without ordinary new index entries when enough space exists and relevant indexed columns are unchanged. Summarizing indexes such as BRIN are an exception in supported versions; inspect the target PostgreSQL version's eligibility rules."
+    }[normalized];
+    if (definition) return definition;
+    if (lesson.number === "0362" && normalized === "deduplication") return "B-tree deduplication compactly represents eligible duplicate index keys with a posting list of tuple locations. It saves index space; it does not deduplicate business requests or enforce uniqueness, and indexes with INCLUDE columns do not use it.";
+    if (lesson.number === "0362" && normalized === "ordering") return "B-tree ordering follows its operator class, collation, direction and null placement. An index may provide a requested order, but rows are not contractually ordered unless the query specifies ORDER BY.";
+    if (lesson.number === "0372" && normalized === "routing") return "Partition routing chooses a child relation from a row's partition-key values and partition bounds. With no matching or default partition, insertion fails; this is not network request routing.";
+  }
+  if (lesson.trackId === "fastapi") {
+    if (normalized === "request scope") return "Request scope is the lifetime owned by one HTTP request, not one reusable TCP connection or an entire worker process. A session acquired for it must not be shared by concurrent tasks or retained by a later job.";
+    if (lesson.number === "0312" && normalized === "files") return "FileResponse sends a server-side file as an HTTP response, with metadata and supported range handling. Authorize the selected path and keep the file available for the response lifetime; this is different from parsing an uploaded file.";
+    if (normalized === "openapi callbacks") return "An OpenAPI callback describes an outbound request associated with an operation, with its destination expressed through a runtime expression. It documents a contract; it does not send requests. Named webhooks describe incoming events from the recipient's perspective without that initiating-operation relationship.";
+  }
   if (lesson.trackId === "nodejs" && normalized === "sessions" && lesson.title.startsWith("HTTP/2")) {
     return "An HTTP/2 session manages one connection shared by multiple request/response streams. Connection-level settings and flow control affect those streams; gracefully closing a session is different from cancelling one stream. This is not a TLS resumption session or a user's login session.";
   }
@@ -16682,7 +17485,7 @@ function lessonHtml(lesson, profile) {
   <div class="grid">
     <section class="card">
       <span class="section-label">02 · Mental model</span>
-      <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
+      <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.explanation ? `\n      <p>${escapeHtml(profile.explanation)}</p>` : ""}
       <p class="analogy"><strong>Analogy:</strong> ${escapeHtml(profile.analogy)}</p>
     </section>
 
@@ -16708,7 +17511,7 @@ function lessonHtml(lesson, profile) {
 
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
-    <p>${escapeHtml(sentence(lesson.practical))}</p>
+    <p>${escapeHtml(sentence(lesson.practical))}</p>${profile.labScope ? `\n    <p><strong>Core and extension:</strong> ${escapeHtml(profile.labScope)}</p>` : ""}
 ${REUSE_PURPOSE[lesson.number] ? `<p><strong>Distinct exercise:</strong> ${escapeHtml(REUSE_PURPOSE[lesson.number])}</p>` : ""}
 ${lesson.trackId === "typescript" ? `<p><strong>Before you run:</strong> ${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
 ${lesson.trackId === "data-systems" && Number(lesson.number) < 381 ? `<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>` : ""}
@@ -16753,7 +17556,7 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> ${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
+        <p><strong>Mechanism checkpoint:</strong> ${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p><strong>Worked answer criteria:</strong> ${escapeHtml(profile.checkpoint)}</p>` : ""}
         <p><strong>Evidence to explain:</strong> ${escapeHtml(sentence(d.evidence))}</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Worked track case: ${escapeHtml(senior.title)} ↗</a></p>

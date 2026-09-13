@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="Query parameters">
         <span>01</span>
         <h3>Query parameters</h3>
-        <p><strong>What it means:</strong> Query parameters are optional or repeated values after the question mark in a URL. Their defaults and annotations define absence, validation, and generated documentation.</p>
+        <p><strong>What it means:</strong> Query parameters carry values after the question mark in a URL. They may be required, optional or repeated; declarations and defaults determine absence, parsing and validation behavior.</p>
       </article><article class="concept-card" data-subtopic="headers">
         <span>02</span>
         <h3>headers</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement pagination and filter objects with bounded lists, aliases, headers, and cookies while testing duplicate and malformed input.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -128,7 +129,7 @@ class ProjectFilter(BaseModel):
     limit: int = Field(50, gt=0, le=100)
     offset: int = Field(0, ge=0)
     order: Literal[&quot;created_at&quot;, &quot;updated_at&quot;] = &quot;created_at&quot;
-    tags: list[str] = []
+    tags: list[Annotated[str, Field(min_length=1, max_length=64)]] = Field(default_factory=list, max_length=10)
 
 @app.get(&quot;/projects&quot;)
 async def list_projects(
@@ -179,6 +180,7 @@ async def list_projects(
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand repeated values, absence versus null, alias conversion, header normalization, cookie extraction, annotated constraints, and schema generation.</p>
+        <p><strong>Worked answer criteria:</strong> Limit is bounded, and the revised tag field bounds both item count and string length. Offset still permits expensive deep scans. Query-model support is version-dependent; repeated values and missing defaults need actual requests. Header and cookie extraction establish no identity or trust.</p>
         <p><strong>Evidence to explain:</strong> Parsed types, validation error locations, status code, and generated schema.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>

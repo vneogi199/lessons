@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="acknowledgements">
         <span>02</span>
         <h3>acknowledgements</h3>
-        <p><strong>What it means:</strong> An acknowledgement tells the broker that a delivery may stop being considered in flight; its placement relative to the side effect defines a failure window.</p>
+        <p><strong>What it means:</strong> Acknowledgements report completion at a named boundary: a producer acknowledgement may confirm broker acceptance or replication, while a consumer acknowledgement releases a delivery or advances progress. Neither automatically proves an external business effect is durable.</p>
       </article><article class="concept-card" data-subtopic="visibility">
         <span>03</span>
         <h3>visibility</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Observe messages through publish, storage, fetch, processing, acknowledgement, crash, redelivery, and retention expiry with lag metrics.</p>
+    <p><strong>Core and extension:</strong> Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
 
 
 
@@ -187,6 +188,7 @@ for await (const record of consumer.records({ maxInFlight: 32 })) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace publication into durable broker storage, partition ownership, delivery position, in-flight state, acknowledgement or offset commit, redelivery, retention, and producer or consumer pressure.</p>
+        <p><strong>Worked answer criteria:</strong> The adapter reads one assigned partition sequentially; maxInFlight is not a portable client API or proof of parallel processing. Commit the next offset as a decimal string without Number conversion. A failed effect or commit stops the partition even after retry routing. Producer acknowledgement, consumer fetch and durable business completion are different observations; rebalances need ownership fencing beyond this loop.</p>
         <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

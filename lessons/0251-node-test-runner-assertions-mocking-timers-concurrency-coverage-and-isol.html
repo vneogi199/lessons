@@ -36,14 +36,14 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a concurrent task</h2>
-      <ol class="trace-flow" data-flow="node-request" aria-label="Mechanism trace: Input reaches the Node process then Handler coordinates the operation then Runtime performs external work then Result returns to JavaScript. Experiment: Trace one operation with async hooks and inject a timeout or shutdown.">
-        <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
+      <h2>Trace a diagnostic experiment</h2>
+      <ol class="trace-flow" data-flow="behavior-test" aria-label="Mechanism trace: State one observable requirement then Arrange the relevant environment then Exercise the real boundary under test then Compare outcomes and clean up. Experiment: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>State one observable requirement</strong><small>Specify inputs, expected behavior and the failure the test must detect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROL</span><strong>Arrange the relevant environment</strong><small>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ACT</span><strong>Exercise the real boundary under test</strong><small>Trigger the operation or user interaction and await its observable completion.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ASSERT</span><strong>Compare outcomes and clean up</strong><small>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Trace one operation with async hooks and inject a timeout or shutdown.</strong>
-        <small><b>Inspect:</b> Async IDs, handle count, event-loop delay, response, and exit sequence.</small>
+        <strong>Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</strong>
+        <small><b>Inspect:</b> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</small>
       </div>
     </aside>
   </div>
@@ -88,24 +88,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · EVENT</span>
-        <h3>Input reaches the Node process</h3>
-        <p>A request, timer, signal, or message creates work.</p>
+        <span>01 · CONTRACT</span>
+        <h3>State one observable requirement</h3>
+        <p>Specify inputs, expected behavior and the failure the test must detect.</p>
       </article><article>
-        <span>02 · JAVASCRIPT</span>
-        <h3>Handler coordinates the operation</h3>
-        <p>Promises and callbacks describe continuation.</p>
+        <span>02 · CONTROL</span>
+        <h3>Arrange the relevant environment</h3>
+        <p>Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</p>
       </article><article>
-        <span>03 · SYSTEM</span>
-        <h3>Runtime performs external work</h3>
-        <p>Sockets, files, workers, or child processes progress.</p>
+        <span>03 · ACT</span>
+        <h3>Exercise the real boundary under test</h3>
+        <p>Trigger the operation or user interaction and await its observable completion.</p>
       </article><article>
-        <span>04 · COMPLETION</span>
-        <h3>Result returns to JavaScript</h3>
-        <p>Response, log, exit state, or error becomes visible.</p>
+        <span>04 · ASSERT</span>
+        <h3>Compare outcomes and clean up</h3>
+        <p>Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Trace one operation with async hooks and inject a timeout or shutdown.</p><p><strong>Then inspect:</strong> Async IDs, handle count, event-loop delay, response, and exit sequence.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p><p><strong>Then inspect:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></div>
   </section>
 
   
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Test an abortable HTTP client and process lifecycle using node:test without third-party frameworks.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -163,16 +164,16 @@ test(&quot;client propagates cancellation&quot;, async t =&gt; {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Input reaches the Node process → Handler coordinates the operation → Runtime performs external work → Result returns to JavaScript. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> State one observable requirement → Arrange the relevant environment → Exercise the real boundary under test → Compare outcomes and clean up. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Trace one operation with async hooks and inject a timeout or shutdown.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Async IDs, handle count, event-loop delay, response, and exit sequence.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p></article>
     </div>
   </section>
 
@@ -180,20 +181,21 @@ test(&quot;client propagates cancellation&quot;, async t =&gt; {
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Choose unit, integration, process, and contract tests for a Node service.</li>
-      <li>Trace a concurrent task for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a diagnostic experiment for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you test an abortable HTTP client and process lifecycle using node:test without third-party frameworks, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand test discovery, subprocess or thread isolation, mock restoration, timer control, async completion, concurrency, and built-in coverage.</p>
-        <p><strong>Evidence to explain:</strong> Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
+        <p><strong>Worked answer criteria:</strong> The fetch fake proves signal propagation and pre/in-flight abort handling in that fake. It does not open a socket or prove a remote operation stopped. Test-local mocks restore their replacements; coverage reports executed regions, not correctness or real dependency agreement.</p>
+        <p><strong>Evidence to explain:</strong> Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>

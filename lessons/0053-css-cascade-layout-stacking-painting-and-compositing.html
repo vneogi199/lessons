@@ -31,6 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand specificity, formatting contexts, intrinsic sizing, layers, and GPU compositing.</p>
+      <p>Cascade chooses values; layout determines boxes; paint produces drawing commands; compositing combines rendered surfaces. Specificity is not the first or only cascade decision: origin, importance and layer ordering can decide before it. A stacking context groups descendants as a unit in its parent, so a large child z-index cannot outrank a higher sibling context. A stacking context is not a guarantee of a dedicated GPU layer. Read/write interleaving can force layout; measure it instead of assuming every transform is free.</p>
       <p class="analogy"><strong>Analogy:</strong> A page load resembles a theatre production: networking delivers the script, parsing casts the actors, layout blocks the stage, and paint turns the plan into pixels.</p>
     </section>
 
@@ -101,6 +102,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce complex responsive layouts and diagnose overflow, stacking, and repaint problems.</p>
+    <p><strong>Core and extension:</strong> Browser-only exercise: use a disposable fixture you own, record a prediction, change the specified condition and inspect the result in developer tools. The core example covers one mechanism; the broader lab is an extension. No browser, screen-reader, network-timing or security integration result is claimed by local text/Node checks. Nothing needs installing to read and rehearse the model.</p>
 
 
 
@@ -114,9 +116,9 @@
     <pre aria-label="Starter code"><code>&lt;!-- Standalone fixture: a child cannot escape its parent&#039;s stacking context. --&gt;
 &lt;!doctype html&gt;&lt;html lang=&quot;en&quot;&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;Stacking experiment&lt;/title&gt;
 &lt;style&gt;
-.back { position: relative; z-index: 0; background: lightblue; padding: 2rem; }
-.child { position: absolute; z-index: 999; top: 2rem; background: gold; }
-.front { position: relative; z-index: 1; margin-top: -1rem; background: pink; }
+.back { position: relative; z-index: 0; background: lightblue; height: 4rem; }
+.child { position: absolute; z-index: 999; top: 3rem; height: 2rem; background: gold; }
+.front { position: relative; z-index: 1; margin-top: -1rem; height: 2rem; background: pink; }
 &lt;/style&gt;
 &lt;div class=&quot;back&quot;&gt;Parent context&lt;div class=&quot;child&quot;&gt;Child with z-index 999&lt;/div&gt;&lt;/div&gt;
 &lt;div class=&quot;front&quot;&gt;Sibling context with z-index 1&lt;/div&gt;
@@ -167,6 +169,7 @@ by itself prove allocation of a dedicated GPU compositing layer. --&gt;</code></
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand specificity, formatting contexts, intrinsic sizing, layers, and GPU compositing.</p>
+        <p><strong>Worked answer criteria:</strong> The fixture now makes child and front sibling overlap from 3rem to 5rem relative to the parent top. Parent z-index 0 traps child 999 below sibling 1; removing that parent z-index lets the child compete in the outer context. Inspect actual bounding rectangles before diagnosing stacking, since nonoverlapping elements reveal nothing. Compare removing the unnecessary context with moving a popover into an appropriate layer; increasing the child&#039;s number does not escape its parent. This is a stacking experiment, not a complete responsive-layout or GPU-performance benchmark.</p>
         <p><strong>Evidence to explain:</strong> Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#web-platform">Worked track case: The network is fast but the page feels slow ↗</a></p>
@@ -187,7 +190,7 @@ by itself prove allocation of a dedicated GPU compositing layer. --&gt;</code></
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://developer.mozilla.org/en-US/docs/Web" target="_blank" rel="noreferrer">MDN Web Docs ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.w3.org/TR/css-position-3/#painting-order" target="_blank" rel="noreferrer">CSS Positioned Layout: painting order ↗</a></div>
     
     
     

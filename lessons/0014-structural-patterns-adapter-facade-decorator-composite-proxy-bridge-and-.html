@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Adapt a provider API to a domain port, decorate it with tracing, place it behind a small facade, and verify order, errors, cancellation, and types without changing the core service.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.</p>
 
 
 
@@ -142,7 +143,11 @@ class TracedModel implements TextModel {
   async complete(prompt: string, signal: AbortSignal) {
     const started = performance.now();
     try { return await this.inner.complete(prompt, signal); }
-    finally { this.record({ operation: &quot;model.complete&quot;, elapsedMs: performance.now() - started }); }
+    finally {
+      // Optional diagnostics must not replace the model result or original error.
+      try { this.record({ operation: &quot;model.complete&quot;, elapsedMs: performance.now() - started }); }
+      catch { /* Best-effort synchronous diagnostics only, not a mandatory audit log. */ }
+    }
   }
 }
 
@@ -198,6 +203,7 @@ class AssistantFacade {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Change interfaces, simplify subsystems, wrap behavior, represent part-whole trees, control access, separate two variation axes, or share immutable state while preserving identity and contract behavior.</p>
+        <p><strong>Worked answer criteria:</strong> Adapter changes the provider interface, Decorator adds tracing behind the same contract, and Facade narrows the caller&#039;s task. A throwing optional recorder must not replace a provider result/error; the example now isolates synchronous recorder failures. The signal is forwarded, not proof the provider obeys cancellation. Compare wrappers with one function when variation is absent. Composite handles trees, Proxy controls access, Bridge separates variation axes, and Flyweight shares intrinsic state; none is automatically needed just because the syntax resembles these wrappers.</p>
         <p><strong>Evidence to explain:</strong> Requirement delta, dependency graph, files changed, test cases, runtime trace, failure path, and deleted or added code.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>

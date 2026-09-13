@@ -2,6 +2,29 @@
 
 ## Knowledge
 
+- [ECMAScript array length](https://tc39.es/ecma262/2023/multipage/indexed-collections.html#sec-properties-of-array-instances-length), [generator completion](https://tc39.es/ecma262/2025/multipage/control-abstraction-objects.html#sec-generatorresumeabrupt), and [resizable buffers](https://github.com/tc39/proposal-resizablearraybuffer)
+  Ground the sparse-length counterexample, unopened-generator return behavior and fixed versus resizable storage distinction in the JavaScript individual review.
+- [TC39 explicit resource management](https://github.com/tc39/proposal-explicit-resource-management)
+  Use for reverse disposal order and preservation of work/disposal failures; syntax and built-in support must be checked in the execution environment.
+
+- [TCP congestion control](https://www.rfc-editor.org/rfc/rfc5681.html), [HTTP resource identifiers](https://www.rfc-editor.org/rfc/rfc9110.html#section-4.2), and [file/directory synchronization](https://man7.org/linux/man-pages/man2/fsync.2.html)
+  Use for systems 0060–0066: in-flight data versus window limits, query versus fragment handling, and namespace durability after atomic replacement. Round-level simulations and successful local file reads do not verify live TCP behavior or power-loss recovery.
+
+- [HTML event loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops), [HTML labels](https://html.spec.whatwg.org/multipage/forms.html#the-label-element), [CSS painting order](https://www.w3.org/TR/css-position-3/#painting-order), and [Fetch/CORS](https://fetch.spec.whatwg.org/#http-cors-protocol)
+  Use for browser foundations 0051–0055: scheduling versus displayed pixels, semantic label associations, nested stacking contexts, and response access versus server authorization. Browser-only fixture instructions are not browser integration evidence.
+
+- [MIT algorithm lecture notes](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/pages/lecture-notes/) and [ECMAScript shifts](https://tc39.es/ecma262/multipage/ecmascript-language-expressions.html#sec-bitwise-shift-operators)
+  Use for 0018–0050: cost models and proof obligations, DP state-space size, language-specific integer width, and the distinction between algorithm work and retained teaching traces.
+
+- [Bash pipeline status](https://www.gnu.org/software/bash/manual/bash.html#Pipelines), [Git objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects), [reflog](https://git-scm.com/docs/git-reflog), and [bisect](https://git-scm.com/docs/git-bisect)
+  Use for foundations 0001–0002: process status versus successful work, snapshots versus references, recovery limits and reliable regression predicates. Bash web retrieval timed out during the final review; installed Bash help and read-only assertions verified the pipeline rule.
+
+- [npm ci](https://docs.npmjs.com/cli/v11/commands/npm-ci/) and [pip repeatable installs](https://pip.pypa.io/en/stable/topics/repeatable-installs/)
+  Use for 0003: frozen resolution, manifest mismatch, transitive pins, artifact hashes and platform-specific bundles. A matching lock is not a guarantee of installation success. These references do not authorize installations.
+
+- [Node strict assertions](https://nodejs.org/api/assert.html) and [ADR process](https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html)
+  Use for 0004's executable falsification and 0005's context/decision/consequences, review ownership and supersession. The outbox decision is a synthetic tabletop case, not deployment evidence.
+
 - [Retrieval precision and recall](https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-unranked-retrieval-sets-1.html) and [KD-tree nearest-neighbor queries](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.KDTree.query.html)
   Use to separate judged document relevance from nearest-neighbor accuracy and exact results from a particular brute-force implementation. Lesson 0597 uses only synthetic IDs and arithmetic, not SciPy or a retrieval service.
 

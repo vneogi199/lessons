@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="idempotent transactions">
         <span>05</span>
         <h3>idempotent transactions</h3>
-        <p><strong>What it means:</strong> A transaction groups database statements into one outcome: all durable effects commit together or none become visible after rollback.</p>
+        <p><strong>What it means:</strong> An idempotent transaction preserves one logical operation&#039;s intended effect across retries, typically using an atomic scoped identity and saved outcome. Atomicity of each attempt alone does not prevent two separately committed attempts from duplicating effects.</p>
       </article>
     </div>
   </section>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce a deadlock, eliminate inconsistent lock order, and add bounded jittered retries around the whole transaction.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -178,6 +179,7 @@ def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
+        <p><strong>Worked answer criteria:</strong> The helper retries only 40001 and 40P01 with at most ten attempts. Each adapter call must roll back and begin fresh; the stable operation key survives attempts. Backoff is jittered but there is no caller deadline or cancellation. Existing fake-error checks establish control flow, not a reproduced database deadlock.</p>
         <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

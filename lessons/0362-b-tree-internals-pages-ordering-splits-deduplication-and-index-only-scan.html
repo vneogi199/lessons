@@ -63,7 +63,7 @@
       </article><article class="concept-card" data-subtopic="ordering">
         <span>03</span>
         <h3>ordering</h3>
-        <p><strong>What it means:</strong> Ordering specifies which events or operations must be observed in sequence. State the scope: one connection, key, partition, or the entire system.</p>
+        <p><strong>What it means:</strong> B-tree ordering follows its operator class, collation, direction and null placement. An index may provide a requested order, but rows are not contractually ordered unless the query specifies ORDER BY.</p>
       </article><article class="concept-card" data-subtopic="splits">
         <span>04</span>
         <h3>splits</h3>
@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="deduplication">
         <span>05</span>
         <h3>deduplication</h3>
-        <p><strong>What it means:</strong> Deduplication identifies repeated work and avoids applying its effect again. Correctness depends on the identity, atomic claim, retention period, and stored outcome.</p>
+        <p><strong>What it means:</strong> B-tree deduplication compactly represents eligible duplicate index keys with a posting list of tuple locations. It saves index space; it does not deduplicate business requests or enforce uniqueness, and indexes with INCLUDE columns do not use it.</p>
       </article><article class="concept-card" data-subtopic="index-only scans">
         <span>06</span>
         <h3>index-only scans</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a B-tree for a real access path, inspect size and plan behavior, and demonstrate when an index-only scan still reads the heap.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 <p><strong>Distinct exercise:</strong> In a disposable PostgreSQL database, focus the index fixture on B-tree order and index-only scans. Compare heap fetches before/after visibility changes; an INCLUDE column alone does not guarantee a heap-free plan. The sample does not expose page splits directly.</p>
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -177,6 +178,7 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow keys through root, internal, and leaf pages; connect splits, fill factor, duplicate handling, heap references, and visibility-map checks.</p>
+        <p><strong>Worked answer criteria:</strong> INCLUDE can cover returned values but large payloads enlarge entries and may exceed index tuple limits. Visibility-map state controls heap visits. B-tree posting-list deduplication is not request deduplication and is disabled for INCLUDE indexes. CREATE INDEX CONCURRENTLY cannot run inside a transaction block.</p>
         <p><strong>Evidence to explain:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

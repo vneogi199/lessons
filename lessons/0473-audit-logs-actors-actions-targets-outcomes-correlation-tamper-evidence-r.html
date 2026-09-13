@@ -125,6 +125,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Instrument privileged changes, redact sensitive values, link events across services, detect a broken hash chain, export an investigation timeline, and test retention and access controls.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -139,7 +140,7 @@
 import { createHash } from &quot;node:crypto&quot;;
 
 function auditDigest(previousHash, payload) {
-  if (previousHash !== &quot;GENESIS&quot; &amp;&amp; !/^[0-9a-f]{64}$/.test(previousHash)) throw new Error(&quot;invalid predecessor&quot;);
+  if (previousHash !== &quot;GENESIS&quot; &amp;&amp; (typeof previousHash !== &quot;string&quot; || /^[0-9a-f]{64}$/.exec(previousHash)?.[0] !== previousHash)) throw new Error(&quot;invalid predecessor&quot;);
   if (typeof payload !== &quot;string&quot; || Buffer.byteLength(payload, &quot;utf8&quot;) &gt; 65_536) throw new Error(&quot;bounded payload required&quot;);
   return createHash(&quot;sha256&quot;).update(JSON.stringify([&quot;audit-v1&quot;, previousHash, payload])).digest(&quot;hex&quot;);
 }
@@ -162,6 +163,7 @@ assert.equal(auditDigest(&quot;GENESIS&quot;, payload), hash);
 assert.notEqual(auditDigest(&quot;GENESIS&quot;, payload.replace(&quot;allowed&quot;, &quot;denied&quot;)), hash);
 assert.notEqual(auditDigest(hash, payload), hash);
 assert.throws(() =&gt; auditDigest(&quot;bad&quot;, payload));
+assert.throws(() =&gt; auditDigest(hash + &quot;\n&quot;, payload));
 assert.throws(() =&gt; auditDigest(&quot;GENESIS&quot;, undefined));
 assert.throws(() =&gt; auditDigest(&quot;GENESIS&quot;, &quot;x&quot;.repeat(65_537)));
 
@@ -214,6 +216,7 @@ assert.throws(() =&gt; auditDigest(&quot;GENESIS&quot;, &quot;x&quot;.repeat(65_
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Model an audit event as security evidence with an authenticated actor, attempted action, affected target, outcome, request correlation, trusted time, append-only storage, controlled access, and policy-driven retention.</p>
+        <p><strong>Worked answer criteria:</strong> Hash the exact bounded payload string with its predecessor; full-string validation rejects malformed predecessor hashes including final newlines. This detects alteration only against trusted retained evidence, not whole-chain rewriting or unanchored tail deletion. lockTail must serialize an empty chain too. The digest fixture does not implement redaction, durable append, access control, retention or a complete chain verifier.</p>
         <p><strong>Evidence to explain:</strong> Actor/session, policy decision, approval and reason, target set, idempotency record, state diff, outcome, audit hash, alert, and rollback result.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>

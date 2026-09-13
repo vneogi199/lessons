@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate congestion-window growth and loss, compare it with a receive window, and connect socket buffering to application-level bounded queues.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -142,8 +143,11 @@ assert trace[:5] == [1, 2, 4, 8, 9]
 assert trace[6] == 1
 
 receiver_window = 6
-sendable = min(trace[4], receiver_window)
-assert sendable == 6
+window_limit = min(trace[4], receiver_window)
+assert window_limit == 6
+in_flight = 3  # same toy units as the windows, not measured bytes
+new_data_allowance = max(0, window_limit - in_flight)
+assert new_data_allowance == 3
 # Flow control protects the receiver; congestion control protects the path.
 # This reset models a timeout, not fast recovery after duplicate ACKs. Real
 # slow start grows with acknowledgments (roughly doubling per RTT), and modern
@@ -191,6 +195,7 @@ assert sendable == 6
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Keep a sender within receiver capacity and estimated network capacity while acknowledgements grow windows, loss reduces them, retransmission repairs gaps, and applications propagate pressure.</p>
+        <p><strong>Worked answer criteria:</strong> min(cwnd,rwnd) caps outstanding data; subtract in-flight data before calling the remainder new-data allowance. The example uses toy units and RTT rounds, not an update per ACK or a live controller. Timeout reset differs from fast recovery and modern algorithm behavior. Compare socket-level flow control with admission limits: a bounded socket cannot prevent an upstream application queue from exhausting memory. Measure queue age, outstanding bytes and rejection before increasing buffers.</p>
         <p><strong>Evidence to explain:</strong> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
@@ -211,7 +216,7 @@ assert sendable == 6
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noreferrer">RFC 9293 Transmission Control Protocol ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.rfc-editor.org/rfc/rfc5681.html" target="_blank" rel="noreferrer">RFC 5681 TCP Congestion Control ↗</a></div>
     
     
     <a href="../reference/systems-foundations-deep-dive-map.html" target="_blank">Systems foundations coverage map ↗</a>

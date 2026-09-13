@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an object&#039;s lifetime</h2>
+      <h2>Trace database process ownership</h2>
       <ol class="trace-flow" data-flow="data-boundary" aria-label="Mechanism trace: Application expresses an invariant then Database organizes durable state then Concurrency rules protect changes then State survives failure. Experiment: Break one assumption with concurrent or failed work and verify the invariant survives.">
         <li class="trace-stage"><span>01 · MODEL</span><strong>Application expresses an invariant</strong><small>Schema and access patterns turn meaning into constraints.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STORAGE</span><strong>Database organizes durable state</strong><small>Indexes, pages, logs, and caches support access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COORDINATE</span><strong>Concurrency rules protect changes</strong><small>Transactions and locks define legal interleavings.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>State survives failure</strong><small>Backups, logs, replicas, and checks prove durability.</small></li>
       </ol>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Map live sessions and background processes to pg_stat_activity and OS process evidence under a small workload.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -145,7 +146,7 @@ WHERE name IN (&#039;shared_buffers&#039;, &#039;wal_buffers&#039;, &#039;max_co
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace database process ownership from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Break one assumption with concurrent or failed work and verify the invariant survives.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Constraints, query plan, lock state, log position, replica state, and restored data.</p></article>
@@ -156,19 +157,20 @@ WHERE name IN (&#039;shared_buffers&#039;, &#039;wal_buffers&#039;, &#039;max_co
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Trace one query through PostgreSQL processes and explain why too many connections consume real resources.</li>
-      <li>Trace an object&#039;s lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace database process ownership for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you map live sessions and background processes to pg_stat_activity and OS process evidence under a small workload, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace database process ownership. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow connection acceptance, per-session processes, shared buffers, WAL buffers, checkpointer, background writer, autovacuum, and operating-system boundaries.</p>
+        <p><strong>Worked answer criteria:</strong> A backend PID identifies a server process, not one application request across a pool. Statistics visibility depends on privilege, and query text can contain secrets. Backend RSS includes shared mappings, so summing RSS overstates uniquely owned physical memory; measure connection pressure under a real workload.</p>
         <p><strong>Evidence to explain:</strong> Constraints, query plan, lock state, log position, replica state, and restored data.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

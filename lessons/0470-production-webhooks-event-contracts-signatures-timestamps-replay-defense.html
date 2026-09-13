@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build both sides of a signed webhook, persist the event before acknowledging it, reject stale or altered requests, retry failures, deduplicate repeated delivery, and rotate secrets safely.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -201,6 +202,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
+        <p><strong>Worked answer criteria:</strong> The SDK verifies provider-specific original bytes; the local HMAC lesson is not a compatible replacement. Multiple signatures are not the same as configuring every active secret. Keep the clock/tolerance and account/live-mode checks explicit, return success only after durable acceptance, and define oversize-read failure handling. Timestamp freshness alone permits in-window replay; ordering and worker effects remain separate contracts.</p>
         <p><strong>Evidence to explain:</strong> Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>

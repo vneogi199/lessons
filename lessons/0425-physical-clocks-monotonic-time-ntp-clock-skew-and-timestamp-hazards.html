@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate clock jumps and skew in expiry, token, audit, and last-write-wins logic and replace unsafe duration measurements with monotonic time.</p>
+    <p><strong>Core and extension:</strong> Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
 
 
 
@@ -171,6 +172,7 @@ simulateClockStep({ node: &quot;B&quot;, milliseconds: -30_000 });</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
+        <p><strong>Worked answer criteria:</strong> operation and simulateClockStep are unsupplied adapters. The clock step appears after the measurement, so this snippet does not demonstrate a negative wall duration. Inject independent wall and monotonic clocks around the operation to test a backward step without changing the host clock. Monotonic origins are local, resolution is finite, and suspend behavior is platform-dependent; a monotonic reading is not cross-host causal order.</p>
         <p><strong>Evidence to explain:</strong> Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

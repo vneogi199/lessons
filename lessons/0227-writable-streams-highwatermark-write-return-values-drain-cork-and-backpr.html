@@ -67,11 +67,11 @@
       </article><article class="concept-card" data-subtopic="drain">
         <span>04</span>
         <h3>drain</h3>
-        <p><strong>What it means:</strong> A Writable emits drain after its queue falls below the pressure threshold, telling a paused producer it may resume.</p>
+        <p><strong>What it means:</strong> After write returns false, drain signals that the buffered writes have drained and the producer may resume. It is not a durability acknowledgment or merely an arbitrary drop below highWaterMark.</p>
       </article><article class="concept-card" data-subtopic="cork">
         <span>05</span>
         <h3>cork</h3>
-        <p><strong>What it means:</strong> Writable corking batches small writes until uncork or next tick, potentially reducing system calls when the implementation supports vectorized output.</p>
+        <p><strong>What it means:</strong> Writable corking buffers writes until matching uncork calls or end. It does not automatically uncork on the next tick; callers often schedule uncork with process.nextTick to batch writes for _writev.</p>
       </article><article class="concept-card" data-subtopic="backpressure">
         <span>06</span>
         <h3>backpressure</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a slow destination and prove respecting false from write keeps memory bounded.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -178,6 +179,7 @@ console.log({ writableLength: sink.writableLength, destroyed: sink.destroyed });
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
+        <p><strong>Worked answer criteria:</strong> False means pause admission, not failed write. highWaterMark limits a queue threshold rather than total process memory. The slow fixture has no injected sink failure; robust use also owns errors and premature close. Corking requires matching uncork or end; scheduling uncork next tick is caller behavior.</p>
         <p><strong>Evidence to explain:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>

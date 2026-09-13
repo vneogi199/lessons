@@ -31,7 +31,8 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
-      <p class="analogy"><strong>Analogy:</strong> Treat the development environment like an airport: processes are flights, file descriptors are gates, signals are control messages, and logs are the flight recorder.</p>
+      <p>The shell parses quoting and expansions, selects a builtin or resolves an executable (often through PATH), connects standard input/output/error, and starts the command. A child inherits exported environment values; changing them in the child does not update its parent. Check executable identity, working directory, permissions and stderr before changing application code. On Unix, directory execute permission means search/traversal, not running the directory. Signals are a separate control channel: SIGTERM permits handling and cleanup; SIGKILL cannot be caught. A shell exit status summarizes termination, not whether the intended business work happened.</p>
+      <p class="analogy"><strong>Analogy:</strong> A pipeline is a relay of bytes, not a relay of success: the receiver can finish normally even when the sender failed.</p>
     </section>
 
     <aside class="card blackboard">
@@ -113,6 +114,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build diagnostic shell workflows and troubleshoot a broken local service.</p>
+    <p><strong>Core and extension:</strong> Core check: run the read-only pipeline below in a separate Bash process so its shell options do not alter your session. Extension: diagnose a disposable service using its command path, working directory, required environment names (not secret values), stderr and exit status. No service fixture is supplied here.</p>
 
 
 
@@ -182,6 +184,7 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
+        <p><strong>Worked answer criteria:</strong> If both commands fail with statuses 7 then 3, pipefail reports 3, not 7. Without pipefail the last command also reports 3. Explain why checking only the final status loses information; compare capturing Bash PIPESTATUS immediately with explicitly checking each stage. A service that exits zero but writes a truncated artifact still failed its contract. For a shutdown incident, distinguish a requested signal, observed process termination and completed cleanup before calling it safe.</p>
         <p><strong>Evidence to explain:</strong> The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>
