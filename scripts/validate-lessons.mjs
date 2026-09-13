@@ -699,7 +699,7 @@ const requiredSystemsLessons = [
   ["IPv4", "ip_network", "rfc-editor.org/rfc/rfc4632"],
   ["Routing tables", "next_hop", "rfc-editor.org/rfc/rfc4632"],
   ["UDP, TCP", "encode_datagram", "rfc-editor.org/rfc/rfc9293"],
-  ["TCP flow control", "congestion_trace", "rfc-editor.org/rfc/rfc9293"],
+  ["TCP flow control", "congestion_trace", "rfc-editor.org/rfc/rfc5681"],
   ["DNS resolution", "request_plan", "rfc-editor.org/rfc/rfc9110"],
   ["System calls", "os.pipe", "man7.org/linux/man-pages/man2/syscalls.2.html"],
   ["Processes, threads", "round_robin", "docs.kernel.org/scheduler"],

@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an object&#039;s lifetime</h2>
+      <h2>Trace a validated data boundary</h2>
       <ol class="trace-flow" data-flow="python-data-boundary" aria-label="Mechanism trace: Untrusted data enters then Choose a bounded format then Establish the intended contract then Perform the permitted operation. Experiment: Change the version, value type or path and predict which check rejects it.">
         <li class="trace-stage"><span>01 · RECEIVE</span><strong>Untrusted data enters</strong><small>Text, bytes or paths have not earned permission to drive an operation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DECODE</span><strong>Choose a bounded format</strong><small>JSON decoding does not establish a domain schema; untrusted pickle can execute code.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Establish the intended contract</strong><small>Check types, versions, sizes and authority before use.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · USE</span><strong>Perform the permitted operation</strong><small>Record safe rejection or a validated result; copying is not a security boundary.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Fix an aliasing defect and design a safe versioned JSON format instead of unpickling untrusted input.</p>
+    <p><strong>Core and extension:</strong> Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
 
 
 
@@ -175,7 +176,7 @@ for invalid in ([], {&quot;schema_version&quot;: True, &quot;project&quot;: {}},
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a validated data boundary from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change the version, value type or path and predict which check rejects it.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p></article>
@@ -186,19 +187,20 @@ for invalid in ([], {&quot;schema_version&quot;: True, &quot;project&quot;: {}},
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain copy versus deepcopy, pickle risks, schema evolution, and identity in serialized graphs.</li>
-      <li>Trace an object&#039;s lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a validated data boundary for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you fix an aliasing defect and design a safe versioned JSON format instead of unpickling untrusted input, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a validated data boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="python">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare shallow and deep traversal, identity preservation, recursive graphs, reduction protocols, version compatibility, and code execution during deserialization.</p>
+        <p><strong>Worked answer criteria:</strong> The decoder validates the versioned envelope only, not project fields. Bound bytes before allocating the payload, then decide duplicate-name and non-finite-number policy. Deepcopy preserves graph relationships under its protocol but JSON does not preserve arbitrary identity. Never load untrusted pickle.</p>
         <p><strong>Evidence to explain:</strong> Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

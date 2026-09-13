@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a bounded subprocess runner with timeouts, captured output, safe arguments, and graceful termination.</p>
+    <p><strong>Core and extension:</strong> Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
 
 
 
@@ -130,7 +131,7 @@ def inspect_revision(revision: str) -&gt; str:
     if not SAFE_ID.fullmatch(revision):
         raise ValueError(&quot;invalid revision&quot;)
     completed = subprocess.run(
-        [&quot;git&quot;, &quot;show&quot;, &quot;--stat&quot;, &quot;--oneline&quot;, &quot;--end-of-options&quot;, revision, &quot;--&quot;],
+        [&quot;git&quot;, &quot;show&quot;, &quot;--no-ext-diff&quot;, &quot;--no-textconv&quot;, &quot;--stat&quot;, &quot;--oneline&quot;, &quot;--end-of-options&quot;, revision, &quot;--&quot;],
         text=True,
         capture_output=True,
         timeout=3,
@@ -142,6 +143,7 @@ def inspect_revision(revision: str) -&gt; str:
 assert SAFE_ID.fullmatch(&quot;abc123&quot;)
 assert not SAFE_ID.fullmatch(&quot;--help&quot;)
 assert not SAFE_ID.fullmatch(&quot;main;echo injected&quot;)
+assert not SAFE_ID.fullmatch(&quot;abc123\n&quot;)
 # Argument arrays avoid shell parsing, but do not themselves prevent option
 # injection. The conservative token policy and option delimiter address that.
 # This exercise only defines the Git call; run it in a trusted disposable repo.
@@ -188,6 +190,7 @@ assert not SAFE_ID.fullmatch(&quot;main;echo injected&quot;)
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace regex backtracking, process creation, argument vectors, pipes, exit status, environment inheritance, signal delivery, and shell interpretation.</p>
+        <p><strong>Worked answer criteria:</strong> The token grammar plus option delimiter prevents this option-injection path, and external diff/text conversion are disabled. The call still trusts Git and the repository. capture_output buffers output in memory: the three-second timeout is not an output-byte bound. A bounded reader is required before running against potentially huge output.</p>
         <p><strong>Evidence to explain:</strong> Object identity, type, frame locals, return value, exception, and timing.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

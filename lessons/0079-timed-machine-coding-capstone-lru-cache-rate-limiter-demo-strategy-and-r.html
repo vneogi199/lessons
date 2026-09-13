@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement and demonstrate a bounded LRU cache plus per-client limiter using only the standard library, then self-review correctness, clarity, extensibility, and tradeoffs.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -119,7 +120,7 @@
 
 class LRUCache:
     def __init__(self, capacity: int) -&gt; None:
-        if capacity &lt; 1: raise ValueError(&quot;capacity&quot;)
+        if type(capacity) is not int or capacity &lt; 1: raise ValueError(&quot;positive integer capacity required&quot;)
         self.capacity, self.data = capacity, OrderedDict()
     def get(self, key):
         if key not in self.data: return None
@@ -183,6 +184,7 @@ assert [allow(history, time, 2, 10) for time in (0, 1, 2, 10)] == [True, True, F
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Prioritize a vertical slice under time pressure, combine a hash map with recency ordering, add a clock-controlled rate rule, and reserve time for tests, explanation, and one extension.</p>
+        <p><strong>Worked answer criteria:</strong> An LRU hit moves the entry to the recent end, so reading a before inserting c evicts b. Capacity must be a positive integer. The sliding log expires events at or before now-window, defining the window as (now-window, now]; admitted events only are recorded. Positive limits/windows, monotonic ordered timestamps and one serialized history owner are preconditions, not enforced service guarantees. None is the cache-miss sentinel; distinguish stored None if allowed. Compare a simple fixed window with the exact log&#039;s memory and burst behavior.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

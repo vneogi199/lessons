@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an evaluation case</h2>
+      <h2>Trace an AWS authorization decision</h2>
       <ol class="trace-flow" data-flow="aws-authorization" aria-label="Mechanism trace: A signed AWS request arrives then Authorization policies combine then Explicit deny or effective allow then Verify the configured audit evidence. Experiment: Run one allowed and one explicitly denied request with the same role.">
         <li class="trace-stage"><span>01 · PRINCIPAL</span><strong>A signed AWS request arrives</strong><small>Identity, session, action, resource, and context are known.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Authorization policies combine</strong><small>Identity, resource, boundary, session, and SCP rules apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECISION</span><strong>Explicit deny or effective allow</strong><small>The service accepts or rejects the requested action.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUDIT</span><strong>Verify the configured audit evidence</strong><small>Check that the relevant management or data events are enabled and retained; not every operation is automatically logged.</small></li>
       </ol>
@@ -55,31 +55,31 @@
       <article class="concept-card" data-subtopic="IAM identities">
         <span>01</span>
         <h3>IAM identities</h3>
-        <p><strong>What it means:</strong> IAM identities is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IAM users and roles represent principals and permission-bearing identities; assumed-role sessions use temporary credentials. Groups organize IAM users but are not request principals.</p>
       </article><article class="concept-card" data-subtopic="policies">
         <span>02</span>
         <h3>policies</h3>
-        <p><strong>What it means:</strong> policies is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS permission policies contain effect, action, resource and optional condition statements. Whether a policy grants access or only limits it depends on its type and attachment.</p>
       </article><article class="concept-card" data-subtopic="resources">
         <span>03</span>
         <h3>resources</h3>
-        <p><strong>What it means:</strong> resources is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> An AWS resource is a service-owned object addressed by an ARN or service identifier. Actions differ in supported resource scoping, and object-level permission is not the same as permission on its container.</p>
       </article><article class="concept-card" data-subtopic="conditions">
         <span>04</span>
         <h3>conditions</h3>
-        <p><strong>What it means:</strong> conditions is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IAM conditions compare request-context values with policy criteria. Key availability, operators and missing-key behavior matter; a condition only affects the statement that contains it.</p>
       </article><article class="concept-card" data-subtopic="evaluation logic">
         <span>05</span>
         <h3>evaluation logic</h3>
-        <p><strong>What it means:</strong> evaluation logic is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS evaluates the applicable policy types for the principal, action, resource and request context. Explicit deny wins; grants, permission limits and same-account or cross-account rules must be evaluated for the exact principal type rather than one universal union formula.</p>
       </article><article class="concept-card" data-subtopic="boundaries">
         <span>06</span>
         <h3>boundaries</h3>
-        <p><strong>What it means:</strong> boundaries is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> An IAM permissions boundary limits permissions an identity-based policy can grant to a user or role; it does not grant permissions itself. Resource-policy and session-principal rules require separate evaluation.</p>
       </article><article class="concept-card" data-subtopic="explicit deny">
         <span>07</span>
         <h3>explicit deny</h3>
-        <p><strong>What it means:</strong> explicit deny is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> An applicable explicit Deny statement overrides an Allow. This differs from implicit denial because no sufficient permission was granted.</p>
       </article>
     </div>
   </section>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build and test least-privilege access for one service action and deliberately trigger an explicit deny.</p>
+    <p><strong>Core and extension:</strong> Core: solve the fictional policy/responsibility scenario and state the expected allow, deny or failure boundary. Extension: use an explicitly authorized isolated account to collect redacted API and audit evidence with cost and cleanup limits. This review invokes no cloud credentials or services and installs nothing.</p>
 
 
 
@@ -154,7 +155,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an evaluation case from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an AWS authorization decision from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Run one allowed and one explicitly denied request with the same role.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p></article>
@@ -165,19 +166,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain why an allow can still be denied and how to debug AccessDenied systematically.</li>
-      <li>Trace an evaluation case for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an AWS authorization decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you build and test least-privilege access for one service action and deliberately trigger an explicit deny, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an evaluation case. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an AWS authorization decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Combine identity, resource, session, boundary, and organization policies through AWS authorization evaluation.</p>
+        <p><strong>Worked answer criteria:</strong> The JSON grants GetObject on one object prefix over secure transport; it grants neither ListBucket nor KMS decryption. Its conditional allow does not globally deny insecure access granted elsewhere. The trailing shell comment is not JSON. A simulator is partial evidence: actual access also depends on applicable policies and configured S3 data-event logging.</p>
         <p><strong>Evidence to explain:</strong> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

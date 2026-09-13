@@ -67,11 +67,11 @@
       </article><article class="concept-card" data-subtopic="hash joins">
         <span>04</span>
         <h3>hash joins</h3>
-        <p><strong>What it means:</strong> A join combines row sets according to a predicate. Join type decides whether unmatched rows disappear, survive with NULLs, or are tested only for existence.</p>
+        <p><strong>What it means:</strong> A hash join builds a hash table from one input and probes it using the other input for compatible equality conditions. Memory limits, skew and batching affect cost; spilling can require extra temporary I/O.</p>
       </article><article class="concept-card" data-subtopic="merge joins">
         <span>05</span>
         <h3>merge joins</h3>
-        <p><strong>What it means:</strong> A join combines row sets according to a predicate. Join type decides whether unmatched rows disappear, survive with NULLs, or are tested only for existence.</p>
+        <p><strong>What it means:</strong> A merge join advances through inputs ordered by compatible join keys. Existing indexes may provide order, otherwise sorting adds cost; duplicate-key groups still produce all required matching combinations.</p>
       </article><article class="concept-card" data-subtopic="sorts">
         <span>06</span>
         <h3>sorts</h3>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Generate workloads that select each major scan and join strategy, then constrain memory to observe a sort or hash spill.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 <p><strong>Distinct exercise:</strong> Change selectivity and test data size in the same join fixture. Compare scan/join choices and spill evidence without forcing a preferred plan as the final fix. Explain when a sequential scan is cheaper than an index lookup.</p>
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -179,6 +180,7 @@ GROUP BY p.id ORDER BY count(*) DESC LIMIT 20;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compare access and join algorithms by startup cost, total work, input ordering, memory, random I/O, batching, and spill behavior.</p>
+        <p><strong>Worked answer criteria:</strong> A selective indexed inner lookup can suit nested loops; broad equality inputs may favor hashing, and existing order may favor merging. The shared query is not guaranteed to select each algorithm. Vary representative data and memory separately; a sequential scan is not automatically a failed optimization.</p>
         <p><strong>Evidence to explain:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

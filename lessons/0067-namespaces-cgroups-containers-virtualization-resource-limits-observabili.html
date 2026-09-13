@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Trace a containerized service from process and socket through namespaces, cgroups, storage, and network paths; reproduce CPU, memory, file, and connection pressure and record recovery evidence.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -138,7 +139,8 @@ def snapshot() -&gt; dict[str, object]:
     }
 
 evidence = snapshot()
-assert evidence[&quot;pid&quot;] &gt; 0 and evidence[&quot;open_file_limit&quot;] &gt; 0
+assert evidence[&quot;pid&quot;] &gt; 0
+assert evidence[&quot;open_file_limit&quot;] == resource.RLIM_INFINITY or evidence[&quot;open_file_limit&quot;] &gt; 0
 # On Linux inspect /proc/PID/ns, /proc/PID/cgroup, mountinfo, capabilities,
 # pressure-stall data, sockets, faults, throttling, OOM events, and exit status.
 # Namespaces change views; cgroups account and limit resources.</code></pre>
@@ -184,6 +186,7 @@ assert evidence[&quot;pid&quot;] &gt; 0 and evidence[&quot;open_file_limit&quot;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Compose kernel namespaces for views, cgroups for accounting and limits, filesystems and capabilities for authority, and telemetry for diagnosing the same process under real constraints.</p>
+        <p><strong>Worked answer criteria:</strong> The snapshot measures this process, not a whole container or host. An unlimited descriptor limit uses the platform&#039;s RLIM_INFINITY sentinel, which is not always positive. Namespaces change views; cgroups account/limit resources; capabilities and other controls constrain authority. Containers generally share a kernel, unlike a guest-kernel VM. For a suspected OOM or CPU-throttle incident, correlate process exits with actual controller counters; this read-only POSIX snapshot neither creates nor verifies Linux isolation.</p>
         <p><strong>Evidence to explain:</strong> Return values, errno, process state, scheduler events, memory counters, file metadata, and resource limits.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>

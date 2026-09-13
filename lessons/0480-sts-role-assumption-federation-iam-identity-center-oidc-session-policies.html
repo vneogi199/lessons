@@ -59,27 +59,27 @@
       </article><article class="concept-card" data-subtopic="role assumption">
         <span>02</span>
         <h3>role assumption</h3>
-        <p><strong>What it means:</strong> role assumption is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Role assumption exchanges an authorized identity for a temporary role session. The role trust policy controls who can assume it; permission policies constrain what the session can do.</p>
       </article><article class="concept-card" data-subtopic="federation">
         <span>03</span>
         <h3>federation</h3>
-        <p><strong>What it means:</strong> federation is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Federation lets an external identity system authenticate users or workloads that obtain scoped AWS sessions. Trust configuration must bind the intended issuer, audience and identity claims.</p>
       </article><article class="concept-card" data-subtopic="IAM Identity Center">
         <span>04</span>
         <h3>IAM Identity Center</h3>
-        <p><strong>What it means:</strong> IAM Identity Center is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IAM Identity Center centrally manages workforce access to AWS accounts and supported applications using assignments and permission sets. It is not a substitute for workload role design.</p>
       </article><article class="concept-card" data-subtopic="OIDC">
         <span>05</span>
         <h3>OIDC</h3>
-        <p><strong>What it means:</strong> OIDC is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> OpenID Connect supplies signed identity claims from an issuer. AWS workload federation validates configured issuer, audience and subject conditions before granting a role session; an arbitrary repository token is not sufficient authority.</p>
       </article><article class="concept-card" data-subtopic="session policies">
         <span>06</span>
         <h3>session policies</h3>
-        <p><strong>What it means:</strong> session policies is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Session policies restrict permissions for an individual temporary session; they cannot add permissions beyond the role&#039;s permitted identity-based access. Evaluate resource-policy exceptions using the exact principal and policy types.</p>
       </article><article class="concept-card" data-subtopic="temporary credentials">
         <span>07</span>
         <h3>temporary credentials</h3>
-        <p><strong>What it means:</strong> temporary credentials is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Temporary AWS credentials comprise an access key ID, secret access key and session token with an expiry. Applications must refresh through the supported provider rather than log or persist the session as a permanent key.</p>
       </article>
     </div>
   </section>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Configure CI federation without stored AWS keys and restrict role assumption using claims and session conditions.</p>
+    <p><strong>Core and extension:</strong> Core: solve the fictional policy/responsibility scenario and state the expected allow, deny or failure boundary. Extension: use an explicitly authorized isolated account to collect redacted API and audit evidence with cost and cleanup limits. This review invokes no cloud credentials or services and installs nothing.</p>
 
 
 
@@ -176,6 +177,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace an external identity through trust policy evaluation into bounded temporary role credentials.</p>
+        <p><strong>Worked answer criteria:</strong> Trust authorizes obtaining a session; session permissions authorize its actions. Bind OIDC issuer, audience and the provider&#039;s exact subject shape to the protected deployment environment, not a broad repository wildcard. Expiry requires credential refresh and does not retrospectively undo effects. Federation and confused-deputy controls differ by caller type.</p>
         <p><strong>Evidence to explain:</strong> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

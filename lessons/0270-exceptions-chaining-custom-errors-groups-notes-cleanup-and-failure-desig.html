@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Design a domain error hierarchy, preserve root causes, handle concurrent failures, and expose safe error messages.</p>
+    <p><strong>Core and extension:</strong> Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
 
 
 
@@ -143,7 +144,7 @@ try:
         ValueError(&quot;project was malformed&quot;),
     ])
 except* TimeoutError as timeouts:
-    print(&quot;retryable&quot;, timeouts.exceptions)
+    print(&quot;timeouts (retry policy still required)&quot;, timeouts.exceptions)
 except* ValueError as invalid:
     print(&quot;invalid&quot;, invalid.exceptions)</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -188,6 +189,7 @@ except* ValueError as invalid:
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace stack unwinding, handler matching, exception context and cause, ExceptionGroup splitting, finally execution, and traceback retention.</p>
+        <p><strong>Worked answer criteria:</strong> except* handles matching subgroups, not necessarily the whole group. A timeout alone does not authorize retry: an external effect may already have happened. load_project needs a repository fixture before its explicit cause chain is exercised; preserve that cause without exposing secrets to callers.</p>
         <p><strong>Evidence to explain:</strong> Object identity, type, frame locals, return value, exception, and timing.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

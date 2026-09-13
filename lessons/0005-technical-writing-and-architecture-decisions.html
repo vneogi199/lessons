@@ -31,7 +31,8 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand how written context reduces coordination cost in distributed teams.</p>
-      <p class="analogy"><strong>Analogy:</strong> Treat the development environment like an airport: processes are flights, file descriptors are gates, signals are control messages, and logs are the flight recorder.</p>
+      <p>Write for the reader&#039;s next action. A README explains purpose and entry points; a runbook gives symptoms, safe checks, mitigation, verification and escalation; an incident note separates observed timeline from hypotheses; a pull-request description states what changed, why, tests and rollout risk. An ADR records a significant choice with context, alternatives and consequences. Keep assumptions distinguishable from measurements. Under the linked ADR process, accepted decisions are superseded by a new record when circumstances change, rather than silently rewriting their historical rationale.</p>
+      <p class="analogy"><strong>Analogy:</strong> A decision record is the reasoning attached to a fork in the road, so the next team knows both why you turned and when a different route would make sense.</p>
     </section>
 
     <aside class="card blackboard">
@@ -93,17 +94,18 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Write READMEs, runbooks, ADRs, incident notes, and concise pull-request descriptions.</p>
+    <p><strong>Core and extension:</strong> Tabletop writing exercise, not runnable shell code or an implemented outbox. Rewrite the proposed decision below after changing notification delivery from required to best effort. Then write a five-line runbook for rising outbox age: symptom, safe diagnosis, mitigation, verification and owner. Do not invent measured latency or a completed failure-injection test.</p>
 
 
 
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
+      <li><span>Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code># Worked decision record — synthetic assumptions, not measured production facts
+    <pre aria-label="Starter code"><code># Exercise: worked decision record — synthetic assumptions, not measured facts
 Title: Start the notification worker with a database outbox
 Status: Proposed
 Context: Notification loss after order commit is unacceptable. Assume 20 events/s
@@ -163,6 +165,7 @@ Owner: Name the team that handles replay, retention, and incidents before approv
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand how written context reduces coordination cost in distributed teams.</p>
+        <p><strong>Worked answer criteria:</strong> Explain the database-commit/publish crash gap and why durable intent does not remove duplicate delivery. A consumer must make its local effect idempotent atomically with deduplication, or use the external provider&#039;s idempotency contract; merely remembering an event ID is insufficient. Best-effort analytics may justify simpler direct publication. A good record states this changed constraint, rejected alternatives, operational cost, owner and revisit trigger; it does not describe the preferred technology as universally best.</p>
         <p><strong>Evidence to explain:</strong> A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>
@@ -183,7 +186,7 @@ Owner: Name the team that handles replay, retention, and incidents before approv
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/welcome.html" target="_blank" rel="noreferrer">AWS Prescriptive Guidance: architecture decision records ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html" target="_blank" rel="noreferrer">AWS Prescriptive Guidance: architecture decision records ↗</a></div>
     
     
     

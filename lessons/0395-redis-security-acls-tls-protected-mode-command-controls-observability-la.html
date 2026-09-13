@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an object&#039;s lifetime</h2>
+      <h2>Trace a Redis authorization decision</h2>
       <ol class="trace-flow" data-flow="redis-acl-boundary" aria-label="Mechanism trace: Provision a separate lab user then Check command and key permissions then Test both allowed and denied requests. Experiment: Keep the command unchanged and switch only the tenant in the key; then try an administrative command.">
         <li class="trace-stage"><span>01 · IDENTITY</span><strong>Provision a separate lab user</strong><small>Administrator credentials and application credentials have different responsibilities.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><strong>Check command and key permissions</strong><small>An allowed GET still fails for a key outside the permitted tenant prefix.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY</span><strong>Test both allowed and denied requests</strong><small>DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport.</small></li>
       </ol>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Create least-privilege users, enable secure transport, block unsafe administration paths, and diagnose a latency or memory incident from native evidence.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -169,7 +170,7 @@ MEMORY DOCTOR
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a Redis authorization decision from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Keep the command unchanged and switch only the tenant in the key; then try an administrative command.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</p></article>
@@ -180,19 +181,20 @@ MEMORY DOCTOR
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Present a production Redis hardening and diagnosis checklist without relying on network isolation alone.</li>
-      <li>Trace an object&#039;s lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a Redis authorization decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you create least-privilege users, enable secure transport, block unsafe administration paths, and diagnose a latency or memory incident from native evidence, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a Redis authorization decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow client identity through encrypted transport and ACL categories while tracking slow commands, latency events, command statistics, clients, memory fragmentation, key sampling, and persistence health.</p>
+        <p><strong>Worked answer criteria:</strong> ACL DRYRUN checks authorization without authenticating or executing. The password syntax is for interactive redis-cli, not unquoted shell redirection. Key prefix permissions do not authorize other tenants, and admin diagnostics use a separate identity. Persistence of ACL changes, TLS and credential rotation require actual configuration tests.</p>
         <p><strong>Evidence to explain:</strong> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

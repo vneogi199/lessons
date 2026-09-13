@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce double booking under concurrent reservation attempts, repair it with one lock boundary, and verify exactly one winner.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -127,6 +128,7 @@ class Seat:
         self.owner: str | None = None
 
     def reserve(self, customer: str) -&gt; bool:
+        if not isinstance(customer, str) or not customer.strip(): raise ValueError(&quot;customer&quot;)
         with self._lock:
             if self.owner is not None: return False
             self.owner = customer
@@ -180,6 +182,7 @@ assert sorted(results) == [False, True] and seat.owner in {&quot;A&quot;, &quot;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Identify shared mutable state, define atomic boundaries, protect invariants with narrow locking, and make retried commands avoid duplicate effects.</p>
+        <p><strong>Worked answer criteria:</strong> The check and assignment share one lock, so two contenders yield one winner. Reject empty/non-string customers before using None as the unowned sentinel. Every caller must use the same Seat instance and respect its owner field; this is not database or cross-process synchronization. A repeated reservation by the winner returns false but does not duplicate the effect. If the response must be repeatable, define that policy explicitly; thread-safe admission and idempotent result replay are different requirements.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

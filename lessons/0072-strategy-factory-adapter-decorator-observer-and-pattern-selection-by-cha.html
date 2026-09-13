@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Start with direct pricing code, add one pricing strategy and payment adapter, decorate audit evidence, and compare the resulting change surface.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -130,7 +131,8 @@ def first_hour_free(hours: int, rate: int) -&gt; int:
     return max(0, hours - 1) * rate
 
 def fee(hours: int, rate: int, rule: PriceRule = hourly) -&gt; int:
-    if hours &lt; 0 or rate &lt; 0: raise ValueError(&quot;negative input&quot;)
+    if type(hours) is not int or type(rate) is not int or hours &lt; 0 or rate &lt; 0:
+        raise ValueError(&quot;nonnegative integer hours and rate required&quot;)
     return rule(hours, rate)
 
 assert fee(3, 100) == 300
@@ -178,6 +180,7 @@ assert fee(3, 100, first_hour_free) == 200
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Introduce a pattern only where a second concrete variation creates pressure in construction, algorithms, interfaces, wrapping, or notification flow.</p>
+        <p><strong>Worked answer criteria:</strong> Two actual pricing policies justify one supplied callable, not a factory hierarchy. Integer validation rejects fractional hours rather than silently choosing a rounding rule. hourly deliberately charges at least one hour even at zero usage, while first_hour_free can return zero; state that policy before coding. If billing changes to partial hours or another currency, decide rounding/units before extending the strategy. Adapter, Decorator and Observer solve different variations and are not implemented here.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

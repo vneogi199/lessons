@@ -102,6 +102,7 @@
 
   <section class="card mechanism-walkthrough" data-dsa-approach="true">
     <span class="section-label">05B · Approach ladder</span>
+    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
     <div class="walkthrough-grid">
       <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Kth largest → merge feeds → running median</p></article>
       <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Sort after every update: O(n log n)</p></article>
@@ -113,6 +114,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Progress through kth-largest readings, merging sorted sensor feeds, and a running median; compare full sorting with bounded and dual heaps.</p>
+    <p><strong>Core and extension:</strong> Core: run the small JavaScript fixture and explain its invariant, one boundary case and an alternative. Use finite, exactly representable numeric examples, valid indices, rectangular grids and the structure-specific preconditions stated in the checkpoint; these are algorithms, not untrusted-input APIs. The other named structures/problems are extension exercises, not all implemented by this starter. Include instrumentation and output costs when reporting complexity.</p>
 
 
 
@@ -150,6 +152,7 @@ function popHeap(heap) {
 }
 
 function kthLargest(values, k) {
+  if (!Number.isSafeInteger(k) || k &lt; 1 || k &gt; values.length) throw new RangeError(&quot;k&quot;);
   const heap = [], trace = [];
   for (const value of values) {
     pushHeap(heap, value);
@@ -160,7 +163,8 @@ function kthLargest(values, k) {
 }
 
 console.assert(kthLargest([8, 3, 10, 12, 5], 3).value === 8);
-// Keep only k candidates: O(n log k) time and O(k) space versus sorting all n.</code></pre>
+// Heap work: O(n log(k+1)) time, O(k) state. Retained snapshots add O(nk)
+// time and storage; omit them for a production streaming implementation.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -203,6 +207,7 @@ console.assert(kthLargest([8, 3, 10, 12, 5], 3).value === 8);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Maintain a partial order in a complete tree so the current extreme is cheap without paying to sort every element or every update.</p>
+        <p><strong>Worked answer criteria:</strong> The min-heap contains the k largest values seen so far, and its root is the smallest retained candidate. Reject k outside 1..n; repeated values count toward rank. Full heap snapshots add O(nk) storage/work, so the heap-only O(k) claim is not a bound for this traced fixture. Compare selection or sorting for one finite batch with a heap for ongoing arrivals.</p>
         <p><strong>Evidence to explain:</strong> Invariant checks, operation count, output, runtime samples, and peak memory.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#computer-science">Worked track case: Top K under changing input constraints ↗</a></p>

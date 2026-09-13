@@ -36,14 +36,14 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace untrusted input crossing a boundary</h2>
-      <ol class="trace-flow" data-flow="javascript-engine" aria-label="Mechanism trace: Program creates executable work then Execution records observed behavior then Engine optimizes or collects then Profiles expose the outcome. Experiment: Warm a representative workload, change one object shape or retaining edge, and profile both runs.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>Program creates executable work</strong><small>Parsing and object allocation establish runtime inputs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FEEDBACK</span><strong>Execution records observed behavior</strong><small>Types, shapes, calls, allocations, and timing form evidence.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPT</span><strong>Engine optimizes or collects</strong><small>Guards, tiers, deoptimization, and GC respond to reality.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Profiles expose the outcome</strong><small>Latency, CPU, heap, and retaining paths test the explanation.</small></li>
+      <h2>Trace a validated command</h2>
+      <ol class="trace-flow" data-flow="javascript-command" aria-label="Mechanism trace: The processor accepts a command then The repository owns atomic effects then Committed events are delivered then Outcomes reveal the boundary. Experiment: Inject a failure after one committed command and explain what may already be durable.">
+        <li class="trace-stage"><span>01 · ADMIT</span><strong>The processor accepts a command</strong><small>Cancellation and validation gate the next operation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMMIT</span><strong>The repository owns atomic effects</strong><small>Business state, stable result, intent identity and outbox must share a transaction.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RELAY</span><strong>Committed events are delivered</strong><small>A separate relay may retry; consumers own duplicate-safe effects.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Outcomes reveal the boundary</strong><small>Partial batches, uncertain commits and replay require explicit recovery evidence.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Warm a representative workload, change one object shape or retaining edge, and profile both runs.</strong>
-        <small><b>Inspect:</b> Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</small>
+        <strong>Inject a failure after one committed command and explain what may already be durable.</strong>
+        <small><b>Inspect:</b> Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · SOURCE</span>
-        <h3>Program creates executable work</h3>
-        <p>Parsing and object allocation establish runtime inputs.</p>
+        <span>01 · ADMIT</span>
+        <h3>The processor accepts a command</h3>
+        <p>Cancellation and validation gate the next operation.</p>
       </article><article>
-        <span>02 · FEEDBACK</span>
-        <h3>Execution records observed behavior</h3>
-        <p>Types, shapes, calls, allocations, and timing form evidence.</p>
+        <span>02 · COMMIT</span>
+        <h3>The repository owns atomic effects</h3>
+        <p>Business state, stable result, intent identity and outbox must share a transaction.</p>
       </article><article>
-        <span>03 · ADAPT</span>
-        <h3>Engine optimizes or collects</h3>
-        <p>Guards, tiers, deoptimization, and GC respond to reality.</p>
+        <span>03 · RELAY</span>
+        <h3>Committed events are delivered</h3>
+        <p>A separate relay may retry; consumers own duplicate-safe effects.</p>
       </article><article>
-        <span>04 · MEASURE</span>
-        <h3>Profiles expose the outcome</h3>
-        <p>Latency, CPU, heap, and retaining paths test the explanation.</p>
+        <span>04 · OBSERVE</span>
+        <h3>Outcomes reveal the boundary</h3>
+        <p>Partial batches, uncertain commits and replay require explicit recovery evidence.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Warm a representative workload, change one object shape or retaining edge, and profile both runs.</p><p><strong>Then inspect:</strong> Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Inject a failure after one committed command and explain what may already be durable.</p><p><strong>Then inspect:</strong> Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p></div>
   </section>
 
   
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build an event-processing slice with bounded concurrency, cancellation, idempotency, structured errors, tests, metrics, profiles, and a failure runbook.</p>
+    <p><strong>Core and extension:</strong> Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review.</p>
 <p><strong>Distinct exercise:</strong> Implement the repository and relay in the capstone, then demonstrate crash recovery, replay, authorization and bounded admission. Defend the concurrency limit using measured pool capacity; do not count the integration sketch as a deployed system.</p>
 
 
@@ -155,16 +156,16 @@ export function createProcessor({ repository, validateCommand }) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Program creates executable work → Execution records observed behavior → Engine optimizes or collects → Profiles expose the outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> The processor accepts a command → The repository owns atomic effects → Committed events are delivered → Outcomes reveal the boundary. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace untrusted input crossing a boundary from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Warm a representative workload, change one object shape or retaining edge, and profile both runs.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a validated command from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Inject a failure after one committed command and explain what may already be durable.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p></article>
     </div>
   </section>
 
@@ -172,20 +173,21 @@ export function createProcessor({ repository, validateCommand }) {
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Defend the complete design by tracing success, overload, cancellation, duplicate input, dependency failure, memory growth, and recovery.</li>
-      <li>Trace untrusted input crossing a boundary for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a validated command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you build an event-processing slice with bounded concurrency, cancellation, idempotency, structured errors, tests, metrics, profiles, and a failure runbook, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a validated command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect language semantics, async scheduling, module design, resource ownership, validation, error taxonomy, runtime measurement, and operational constraints in one service.</p>
-        <p><strong>Evidence to explain:</strong> Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</p>
+        <p><strong>Worked answer criteria:</strong> The starter implements only serial orchestration. A later failure does not roll back earlier commits, and caller abort does not prove transaction rollback. The capstone acceptance contract still requires real duplicate-intent, crash/replay, overload and recovery evidence. A memory fake can test call order, not certify durable idempotency or a production-ready service.</p>
+        <p><strong>Evidence to explain:</strong> Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>

@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a delegation chain without class syntax, shadow a property, and observe the cost and security risk of prototype mutation.</p>
+    <p><strong>Core and extension:</strong> Core: predict and run the supplied bounded JavaScript fixture, then explain one changed input. Use a modern Node ES module unless the snippet explicitly requests a browser. Browser comparisons, debugger/heap inspection and broader lab variants are extensions, not results established by this starter.</p>
 <p><strong>Distinct exercise:</strong> Trace the same object&#039;s inherited kind lookup and own name accessor. Try shadowing an inherited non-writable data property under strict mode; explain why prototype delegation is not property copying.</p>
 
 
@@ -125,7 +126,7 @@ Object.defineProperty(project, &quot;name&quot;, {
   configurable: false,
   get() { return this._name; },
   set(value) {
-    if (!value.trim()) throw new TypeError(&quot;name required&quot;);
+    if (typeof value !== &quot;string&quot; || !value.trim()) throw new TypeError(&quot;name required&quot;);
     this._name = value.trim();
   }
 });
@@ -134,6 +135,11 @@ project.name = &quot; Evidence &quot;;
 console.assert(project.name === &quot;Evidence&quot;);
 console.assert(Object.hasOwn(project, &quot;name&quot;));
 console.assert(!Object.hasOwn(project, &quot;kind&quot;));
+for (const invalid of [null, 42, &quot; &quot;]) {
+  try { project.name = invalid; throw new Error(&quot;accepted invalid name&quot;); }
+  catch (error) { console.assert(error instanceof TypeError); }
+  console.assert(project.name === &quot;Evidence&quot;);
+}
 console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project));
 
 // Lookup checks own descriptors first, then follows [[Prototype]]. Assignment
@@ -180,6 +186,7 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow ordinary property lookup through an object&#039;s internal prototype chain and distinguish constructor prototype properties from an object&#039;s prototype.</p>
+        <p><strong>Worked answer criteria:</strong> The chain is project to base to null. Ordinary assignment cannot shadow base&#039;s non-writable kind property; in strict mode it throws. An explicit own defineProperty is a different operation. Lookup delegates without copying. Prototype performance or pollution claims require a measured or security-specific extension, not this fixture alone.</p>
         <p><strong>Evidence to explain:</strong> Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

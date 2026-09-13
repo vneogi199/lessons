@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="ASGI scope">
         <span>01</span>
         <h3>ASGI scope</h3>
-        <p><strong>What it means:</strong> An ASGI scope is an immutable-looking dictionary that describes one connection, including protocol type, path, method, headers, client, server, and proxy root path.</p>
+        <p><strong>What it means:</strong> An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</p>
       </article><article class="concept-card" data-subtopic="receive">
         <span>02</span>
         <h3>receive</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Write a tiny raw ASGI application and middleware, then compare its event trace with the same request handled by FastAPI.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -179,6 +180,7 @@ async def app(scope, receive, send):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
+        <p><strong>Worked answer criteria:</strong> One HTTP scope belongs to one request even when a socket carries many requests. This raw app reads only one event and ignores the body; it supplies neither lifespan nor WebSockets. Response start precedes body, and a successful send is not proof that the remote client consumed it.</p>
         <p><strong>Evidence to explain:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>

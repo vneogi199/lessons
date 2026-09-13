@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a token sequence</h2>
+      <h2>Trace a fenced write</h2>
       <ol class="trace-flow" data-flow="redis-coordination" aria-label="Mechanism trace: Application names a cache or coordination operation then Atomic primitive changes shared state then Delay, duplicate, expiry, or outage occurs then Durable system accepts or rejects effect. Experiment: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.">
         <li class="trace-stage"><span>01 · INTENT</span><strong>Application names a cache or coordination operation</strong><small>Key design, event identity, owner token, TTL, and source of truth enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REDIS</span><strong>Atomic primitive changes shared state</strong><small>Entry, pending owner, lease, counter, or cached value becomes visible.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE WINDOW</span><strong>Delay, duplicate, expiry, or outage occurs</strong><small>Old owners, missed acknowledgements, stale values, and retries challenge correctness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUTHORITY</span><strong>Durable system accepts or rejects effect</strong><small>Idempotency, fencing, version, fallback, and business state close the proof.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Demonstrate an unsafe lease, repair the protected resource with fencing, and implement an atomic bounded rate limiter with expiry.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -159,7 +160,7 @@ WHERE id = $3 AND fence &lt; $2;
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a token sequence from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a fenced write from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></article>
@@ -170,19 +171,20 @@ WHERE id = $3 AND fence &lt; $2;
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain why a Redis lock alone may not protect correctness and choose purpose-built primitives for limits and work delivery.</li>
-      <li>Trace a token sequence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a fenced write for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you demonstrate an unsafe lease, repair the protected resource with fencing, and implement an atomic bounded rate limiter with expiry, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a fenced write. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
+        <p><strong>Worked answer criteria:</strong> The random owner token identifies one lease attempt; it is not an increasing fencing value. The resource rejects a lower fence after a newer write, and the strict predicate permits one write per fence. A safe allocator and idempotent replay contract are missing; Redis lease ownership alone cannot stop a paused stale owner.</p>
         <p><strong>Evidence to explain:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an iteration step</h2>
+      <h2>Trace a requirement-driven code change</h2>
       <ol class="trace-flow" data-flow="pattern-decision" aria-label="Mechanism trace: A repeated design pressure appears then Competing needs shape the choice then A named pattern assigns responsibilities then Evidence tests the added indirection. Experiment: Implement the direct design first, add one real variation, then compare it with the smallest suitable pattern.">
         <li class="trace-stage"><span>01 · PROBLEM</span><strong>A repeated design pressure appears</strong><small>Current requirements, change axes, constraints, and direct-design pain are observable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FORCES</span><strong>Competing needs shape the choice</strong><small>Simplicity, coupling, lifetime, state, failure, performance, and team understanding conflict.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STRUCTURE</span><strong>A named pattern assigns responsibilities</strong><small>Objects, functions, messages, and dependencies cooperate for a stated intent.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSEQUENCE</span><strong>Evidence tests the added indirection</strong><small>Change cost, tests, traces, failure behavior, and alternatives show whether the pattern earns its complexity.</small></li>
       </ol>
@@ -129,6 +129,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a typed state machine with commands and strategies, add an observer, then test invalid transitions, duplicate delivery, handler failure, and subscriber cleanup.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.</p>
 
 
 
@@ -158,6 +159,8 @@ class Workflow {
     if (!next) throw new Error(&quot;invalid &quot; + command.type + &quot; from &quot; + this.#status);
     const previous = this.#status;
     this.#status = next;
+    // Synchronous, fail-fast listeners: a throw stops later listeners but does
+    // not undo the transition. Nested dispatch is not queued or isolated.
     for (const listener of [...this.#listeners]) listener(previous, next);
   }
   get status() { return this.#status; }
@@ -187,7 +190,7 @@ console.assert(workflow.status === &quot;approved&quot; &amp;&amp; events[0] ===
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an iteration step from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a requirement-driven code change from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Implement the direct design first, add one real variation, then compare it with the smallest suitable pattern.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Requirement delta, dependency graph, files changed, test cases, runtime trace, failure path, and deleted or added code.</p></article>
@@ -198,19 +201,20 @@ console.assert(workflow.status === &quot;approved&quot; &amp;&amp; events[0] ===
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Select a behavioral pattern from the control-flow problem and explain its hidden operational costs.</li>
-      <li>Trace an iteration step for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a requirement-driven code change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you implement a typed state machine with commands and strategies, add an observer, then test invalid transitions, duplicate delivery, handler failure, and subscriber cleanup, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Move algorithms, notifications, requests, transitions, handler selection, traversal, coordination, snapshots, or operations into explicit structures while controlling order, reentrancy, failure, lifetime, and exhaustiveness.</p>
+        <p><strong>Worked answer criteria:</strong> The transition table rejects send from draft, but sent is only local state here, not proof an external notification was delivered. Listeners are synchronous and fail-fast: state changes before callbacks, a throw stops later callbacks, and nested dispatch can interleave notifications. Compare a single direct callback with Observer; add queuing only if ordered non-reentrant delivery is required. Command-as-data does not supply durable retry or undo. State selects lifecycle behavior; Strategy selects an algorithm. Visitor favors new operations over new element variants.</p>
         <p><strong>Evidence to explain:</strong> Requirement delta, dependency graph, files changed, test cases, runtime trace, failure path, and deleted or added code.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>

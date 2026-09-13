@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a data operation</h2>
+      <h2>Trace a cluster-local transaction</h2>
       <ol class="trace-flow" data-flow="redis-cluster-conditional-write" aria-label="Mechanism trace: Find the primary owning the hash slot then Queue both commands then Inspect each result then Separate isolation from a condition. Experiment: Pre-create the lease, execute the transaction, and compare both replies with the cart value.">
         <li class="trace-stage"><span>01 · ROUTE</span><strong>Find the primary owning the hash slot</strong><small>Matching hash tags place these keys together; one connection owns transaction state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><strong>Queue both commands</strong><small>HSET and SET NX are separate operations, even inside MULTI.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Inspect each result</strong><small>The existing lease makes SET NX return null, but HSET still updates the cart.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REASON</span><strong>Separate isolation from a condition</strong><small>Same-slot execution is not a guarded lease check; express the condition before the protected write.</small></li>
       </ol>
@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run a small cluster, inspect slot ownership, use hash tags for an atomic multi-key operation, reshard, and observe redirect handling.</p>
+    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -173,7 +174,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a data operation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a cluster-local transaction from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Pre-create the lease, execute the transaction, and compare both replies with the cart value.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p></article>
@@ -184,19 +185,20 @@ redis-cli --cluster reshard 127.0.0.1:7000
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain Redis Cluster scaling and availability, including asynchronous replication and cross-slot constraints.</li>
-      <li>Trace a data operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a cluster-local transaction for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you run a small cluster, inspect slot ownership, use hash tags for an atomic multi-key operation, reshard, and observe redirect handling, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a cluster-local transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
+        <p><strong>Worked answer criteria:</strong> Matching hash tags co-locate keys but do not make SET NX guard an earlier HSET. MULTI belongs to one owning-node connection; redirects do not authorize replaying individual queued writes. ASK is temporary and needs ASKING on the destination connection, whereas MOVED updates routing knowledge.</p>
         <p><strong>Evidence to explain:</strong> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

@@ -106,6 +106,7 @@
 
   <section class="card mechanism-walkthrough" data-dsa-approach="true">
     <span class="section-label">05B · Approach ladder</span>
+    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
     <div class="walkthrough-grid">
       <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Unpaired ID → population count → subsets</p></article>
       <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Set or boolean-array bookkeeping: O(n) space</p></article>
@@ -117,6 +118,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Progress through one unpaired identifier, population count, and subset-mask generation; show each binary transition and compare bit work with collection-based alternatives.</p>
+    <p><strong>Core and extension:</strong> Core: run the small JavaScript fixture and explain its invariant, one boundary case and an alternative. Use finite, exactly representable numeric examples, valid indices, rectangular grids and the structure-specific preconditions stated in the checkpoint; these are algorithms, not untrusted-input APIs. The other named structures/problems are extension exercises, not all implemented by this starter. Include instrumentation and output costs when reporting complexity.</p>
 <p><strong>Distinct exercise:</strong> Representation drill: demonstrate that Number shifts wrap the shift count modulo 32, then implement a BigInt mask for bit 40. Test an empty mask and explain why Number and BigInt operands cannot be mixed in bitwise operations.</p>
 
 
@@ -146,7 +148,9 @@ console.assert(hasFlag(permissions, 2));
 permissions = removeFlag(permissions, 2);
 console.assert(!hasFlag(permissions, 2));
 console.assert(countBits32(0b101101) === 4);
-// JavaScript bitwise operators use signed 32-bit integers; use BigInt beyond that.</code></pre>
+// Number operands are coerced to 32 bits; &gt;&gt;&gt; returns an unsigned result.
+// Flag helpers require integer bit positions 0..31: shift counts wrap modulo 32.
+// Use BigInt operators for wider masks (no &gt;&gt;&gt;); do not mix Number and BigInt.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -189,6 +193,7 @@ console.assert(countBits32(0b101101) === 4);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow fixed-width bit patterns through masking, shifting, toggling, cancellation, and subset enumeration while respecting language numeric limits.</p>
+        <p><strong>Worked answer criteria:</strong> x &amp; (x-1) removes one set bit per iteration, including the coerced bit-31 pattern. countBits32 counts a 32-bit representation, not an arbitrary integer&#039;s mathematical bits. XOR cancellation requires the stated multiplicities; it does not find every duplicate. Subset enumeration still has 2^n outputs even with compact masks.</p>
         <p><strong>Evidence to explain:</strong> Invariant checks, operation count, output, runtime samples, and peak memory.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#computer-science">Worked track case: Top K under changing input constraints ↗</a></p>

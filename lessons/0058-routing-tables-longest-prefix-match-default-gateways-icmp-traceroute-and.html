@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement longest-prefix route selection and a small NAT table, then interpret ping and traceroute evidence for broken local, routed, and translated paths.</p>
+    <p><strong>Core and extension:</strong> Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
 
 
@@ -132,7 +133,7 @@ def next_hop(destination: str) -&gt; str:
     matches = [(network.prefixlen, gateway) for network, gateway in routes if address in network]
     if not matches:
         raise LookupError(&quot;no route&quot;)
-    return max(matches)[1]
+    return max(matches, key=lambda route: route[0])[1]
 
 nat: dict[tuple[str, int], tuple[str, int]] = {}
 nat[(&quot;203.0.113.5&quot;, 40001)] = (&quot;10.42.0.9&quot;, 53000)
@@ -182,6 +183,7 @@ assert nat[(&quot;203.0.113.5&quot;, 40001)] == (&quot;10.42.0.9&quot;, 53000)
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Select the most specific route, decrement hop limits, report network errors, translate endpoint tuples at boundaries, and reverse the translation for returning traffic.</p>
+        <p><strong>Worked answer criteria:</strong> 10.42.7.8 selects /16 before /8 or /0. The sample chooses by prefix length, not gateway spelling; equal-prefix metric/ECMP and policy routing are outside its model. The NAT map is one illustrative reverse mapping, not a complete connection tracker or firewall. A missing traceroute reply may be filtered rather than a failed hop; asymmetric return routing limits inference. Compare route lookup with actual neighbor and socket evidence before changing a gateway.</p>
         <p><strong>Evidence to explain:</strong> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>

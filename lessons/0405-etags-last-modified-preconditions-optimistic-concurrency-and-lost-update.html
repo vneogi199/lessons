@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a concurrent task</h2>
+      <h2>Trace an HTTP precondition</h2>
       <ol class="trace-flow" data-flow="api-contract-request" aria-label="Mechanism trace: Client forms a contract request then Intermediary and service apply policy then Owned state evaluates the transition then Stable response returns. Experiment: Repeat or condition the same request through one intermediary and predict every observable difference.">
         <li class="trace-stage"><span>01 · INTENT</span><strong>Client forms a contract request</strong><small>Method or operation, identity, representation, validators, deadline, and version enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BOUNDARY</span><strong>Intermediary and service apply policy</strong><small>Routing, authentication, limits, parsing, validation, and authorization constrain work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORITY</span><strong>Owned state evaluates the transition</strong><small>Preconditions, invariants, idempotency, transaction, and dependencies decide outcome.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONTRACT</span><strong>Stable response returns</strong><small>Status, representation, error type, cache metadata, telemetry, and compatibility become evidence.</small></li>
       </ol>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement conditional GET and conditional update, reproduce a lost update, and prove that a stale ETag receives 412 without overwriting newer state.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
 
 
 
@@ -122,8 +123,8 @@ const strongEtag = bytes =&gt; &#039;&quot;&#039; + createHash(&quot;sha256&quot
 // Parse bounded If-Match, including lists, weak tags and commas INSIDE a tag.
 // A real server must combine field lines according to HTTP rules before this.
 function ifMatch(header, currentEtag) {
-  if (typeof header !== &quot;string&quot; || header.length &gt; 8192) throw new TypeError(&quot;invalid If-Match&quot;);
-  const value = header.trim();
+  if (typeof header !== &quot;string&quot; || header.length &gt; 8192 || /[\r\n]/.test(header)) throw new TypeError(&quot;invalid If-Match&quot;);
+  const value = header.replace(/^[ \t]+|[ \t]+$/g, &quot;&quot;);
   if (value === &quot;*&quot;) return currentEtag !== null;
   const tags = [...value.matchAll(/(?:W\/)?&quot;[\x21\x23-\x7e\x80-\xff]*&quot;/g)];
   let end = 0;
@@ -146,6 +147,8 @@ assert.equal(ifMatch(&quot;*&quot;, &#039;&quot;b&quot;&#039;), true);
 assert.equal(ifMatch(&#039;, &quot;b&quot;,&#039;, &#039;&quot;b&quot;&#039;), true); // Empty list elements ignored.
 assert.throws(() =&gt; ifMatch(&#039;&quot;a&quot; &quot;b&quot;&#039;, &#039;&quot;b&quot;&#039;));
 assert.throws(() =&gt; ifMatch(&#039;&quot;a&quot;, junk&#039;, &#039;&quot;a&quot;&#039;));
+assert.throws(() =&gt; ifMatch(&#039;&quot;a&quot;\n&#039;, &#039;&quot;a&quot;&#039;));
+assert.throws(() =&gt; ifMatch(&#039;\u00a0&quot;a&quot;&#039;, &#039;&quot;a&quot;&#039;));
 assert.notEqual(strongEtag(Buffer.from(&quot;A&quot;)), strongEtag(Buffer.from(&quot;B&quot;)));
 // Endpoint policy may require If-Match (428 if absent). Malformed syntax =&gt; 400;
 // a valid but false condition =&gt; 412. Do not compare the whole header literally.
@@ -172,7 +175,7 @@ assert.notEqual(strongEtag(Buffer.from(&quot;A&quot;)), strongEtag(Buffer.from(&
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an HTTP precondition from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Repeat or condition the same request through one intermediary and predict every observable difference.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p></article>
@@ -183,19 +186,20 @@ assert.notEqual(strongEtag(Buffer.from(&quot;A&quot;)), strongEtag(Buffer.from(&
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare cache revalidation with optimistic concurrency and explain strong versus weak validators.</li>
-      <li>Trace a concurrent task for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an HTTP precondition for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you implement conditional GET and conditional update, reproduce a lost update, and prove that a stale ETag receives 412 without overwriting newer state, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP precondition. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Turn a selected representation or resource version into a validator and evaluate If-Match or If-None-Match before applying a state transition.</p>
+        <p><strong>Worked answer criteria:</strong> The parser accepts tag lists and commas inside tags, excludes weak matches and treats wildcard as existence. It now rejects CR/LF and non-HTTP outer whitespace. Matching a previously read ETag is not an atomic update: the authority must apply a version predicate. Missing-policy 428, syntax 400 and false-condition 412 are different outcomes.</p>
         <p><strong>Evidence to explain:</strong> Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

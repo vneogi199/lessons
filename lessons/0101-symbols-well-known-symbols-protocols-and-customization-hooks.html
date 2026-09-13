@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="well-known symbols">
         <span>02</span>
         <h3>well-known symbols</h3>
-        <p><strong>What it means:</strong> A Symbol is a unique primitive often used as a collision-resistant property key or protocol hook. Symbol-keyed state remains discoverable and is not private.</p>
+        <p><strong>What it means:</strong> Well-known symbols are standardized shared symbol values, such as Symbol.iterator, that select language protocols. They are not fresh symbols created from matching descriptions.</p>
       </article><article class="concept-card" data-subtopic="protocols">
         <span>03</span>
         <h3>protocols</h3>
@@ -101,6 +101,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Add iteration and safe primitive conversion to a domain object without name collisions.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
 <p><strong>Distinct exercise:</strong> Use the custom symbol to explain collision-resistant property keys. Add a well-known protocol such as Symbol.iterator separately; a symbol&#039;s description is not its identity and symbol-keyed properties are not secret.</p>
 
 
@@ -130,7 +131,9 @@ const { proxy, revoke } = Proxy.revocable(target, {
 console.assert(proxy.value === 42);
 console.log(proxy[inspect]());
 revoke();
-try { proxy.value; } catch (error) { console.assert(error instanceof TypeError); }</code></pre>
+let revokedReadFailed = false;
+try { proxy.value; } catch (error) { revokedReadFailed = error instanceof TypeError; }
+console.assert(revokedReadFailed);</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -173,6 +176,7 @@ try { proxy.value; } catch (error) { console.assert(error instanceof TypeError);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand unique symbol identity, global symbol registration, symbol-keyed properties, and hooks such as iterator, toPrimitive, species, and toStringTag.</p>
+        <p><strong>Worked answer criteria:</strong> Symbol(&#039;inspect&#039;) creates a fresh identity; equal descriptions do not make equal symbols. Well-known symbols are standardized shared hooks, while Symbol.for uses the registry. The example supplies a custom inspection hook, not Symbol.iterator or privacy. Reflect.ownKeys can reveal actual symbol properties.</p>
         <p><strong>Evidence to explain:</strong> Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

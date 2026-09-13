@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an attribute or protocol operation</h2>
+      <h2>Trace a filesystem replacement</h2>
       <ol class="trace-flow" data-flow="node-request" aria-label="Mechanism trace: Input reaches the Node process then Handler coordinates the operation then Runtime performs external work then Result returns to JavaScript. Experiment: Trace one operation with async hooks and inject a timeout or shutdown.">
         <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
       </ol>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement an atomic configuration write and descriptor-safe read with explicit permissions and cleanup.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -168,7 +169,7 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an attribute or protocol operation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a filesystem replacement from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Trace one operation with async hooks and inject a timeout or shutdown.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Async IDs, handle count, event-loop delay, response, and exit sequence.</p></article>
@@ -179,19 +180,20 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain TOCTOU races and why checking existence before opening is unsafe.</li>
-      <li>Trace an attribute or protocol operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a filesystem replacement for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you implement an atomic configuration write and descriptor-safe read with explicit permissions and cleanup, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an attribute or protocol operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a filesystem replacement. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace path resolution, descriptor ownership, kernel page cache, partial operations, rename-based replacement, metadata, and unreliable watch semantics.</p>
+        <p><strong>Worked answer criteria:</strong> wx avoids taking another writer&#039;s existing temporary file; the PID name still collides for simultaneous same-process calls. File sync plus rename is not directory-sync durability. Run only in a disposable directory, and distinguish write/close/cleanup errors from successful replacement.</p>
         <p><strong>Evidence to explain:</strong> Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>

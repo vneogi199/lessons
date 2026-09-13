@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Define a structural payment protocol, provide real and fake adapters, and swap them without changing checkout policy.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -127,7 +128,7 @@ class FakeGateway:
         return f&quot;payment-{len(self.charges)}&quot;
 
 def checkout(amount_cents: int, gateway: PaymentGateway) -&gt; str:
-    if amount_cents &lt; 0: raise ValueError(&quot;amount&quot;)
+    if type(amount_cents) is not int or amount_cents &lt; 0: raise ValueError(&quot;nonnegative integer cents required&quot;)
     return gateway.charge(amount_cents)
 
 fake = FakeGateway()
@@ -175,6 +176,7 @@ assert fake.charges == [2500]</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Let policy depend on the smallest capability it needs, preserve caller-visible contracts across implementations, and inject time, storage, notification, or payment boundaries.</p>
+        <p><strong>Worked answer criteria:</strong> A Protocol communicates required shape to a type checker; Python does not enforce annotations at runtime. checkout now rejects fractional, Boolean and negative cents before invoking the fake. A fake returning payment-1 proves invocation, not a charge or a real provider&#039;s timeout/error contract. Compare injecting one callable with a protocol as the boundary grows. A retry after an unknown payment outcome needs stable idempotency and reconciliation, not blindly calling charge again.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

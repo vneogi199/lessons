@@ -325,6 +325,39 @@ export const SENIOR_CASES = {
 
 // Exact, track-specific corrections take precedence over broad catalog matches.
 export const TERM_CORRECTIONS = {
+  "cloud-aws": {
+    "cloud mental models": "Cloud design treats compute, storage and networking as metered services controlled through APIs. Separate configuration from workload execution, and name who owns identity, data, capacity and recovery at each boundary.",
+    "elasticity": "Elasticity adjusts provisioned capacity as demand changes. Scaling has delay, quotas and cost; it does not remove bottlenecks or repair application correctness.",
+    "managed services": "Managed services delegate specified infrastructure operations to the provider. Customers still choose configuration, access, data lifecycle and workload behavior; the exact responsibility split depends on the service.",
+    "aws global infrastructure": "AWS infrastructure separates geographic Regions, zonal fault domains, edge points and independent partitions. A service's placement and dependencies determine which failures a design can tolerate.",
+    "edge locations": "Edge locations place supported caching, delivery and network services near users. They are not interchangeable with Availability Zones for arbitrary regional workloads.",
+    "partitions": "AWS partitions are groups of Regions with independent IAM boundaries, such as aws, aws-cn and aws-us-gov. Credentials and cross-Region service features do not automatically cross partitions; this is distinct from a network communication failure.",
+    "service scope": "Service scope identifies whether a resource or operation belongs to an account, Region, Availability Zone or wider service boundary. Global naming does not imply absence of regional dependencies.",
+    "organizations": "AWS Organizations groups accounts for centralized billing and policy management. Its organizational hierarchy applies governance without merging account identities or resources.",
+    "organizational units": "Organizational units group accounts and nested OUs so common organization policies can be applied through a hierarchy. They are governance groupings, not network segments.",
+    "scps": "Service control policies constrain permissions available to member-account principals; they do not grant access. They do not govern management-account principals or service-linked roles, so those require separate controls.",
+    "control tower": "AWS Control Tower sets up and governs a multi-account landing zone using account provisioning and controls. Its configured coverage and drift still need ownership and review.",
+    "landing zones": "A landing zone is the foundational multi-account environment for workloads: identity, account structure, logging, security controls and networking conventions. It is a starting operating model, not a finished application architecture.",
+    "aws cli": "The AWS CLI maps shell commands to AWS service APIs. Effective credentials, Region, endpoint, pagination and output handling determine what the command actually does.",
+    "sdks": "AWS SDKs provide language APIs for service requests, credential discovery, signing and retries. Defaults and provider precedence are version- and SDK-specific; they do not make business side effects automatically retry-safe.",
+    "profiles": "AWS profiles name configuration and credential sources for a tool invocation. A profile can refer to a role or federated session rather than store a long-lived secret.",
+    "credential provider chain": "A credential provider chain searches configured credential sources according to the specific SDK or CLI rules. Verify the effective caller and source rather than assuming a profile name proves the intended identity.",
+    "sigv4": "Signature Version 4 authenticates AWS requests by signing a canonical request with credential-derived keys and scope. Request bytes, service, Region and time matter; HTTPS still protects transport confidentiality.",
+    "endpoints": "AWS endpoints are service API addresses selected for service, Region, partition and endpoint options. A private endpoint changes network reachability, not the permissions required by the service.",
+    "iam identities": "IAM users and roles represent principals and permission-bearing identities; assumed-role sessions use temporary credentials. Groups organize IAM users but are not request principals.",
+    "policies": "AWS permission policies contain effect, action, resource and optional condition statements. Whether a policy grants access or only limits it depends on its type and attachment.",
+    "resources": "An AWS resource is a service-owned object addressed by an ARN or service identifier. Actions differ in supported resource scoping, and object-level permission is not the same as permission on its container.",
+    "conditions": "IAM conditions compare request-context values with policy criteria. Key availability, operators and missing-key behavior matter; a condition only affects the statement that contains it.",
+    "evaluation logic": "AWS evaluates the applicable policy types for the principal, action, resource and request context. Explicit deny wins; grants, permission limits and same-account or cross-account rules must be evaluated for the exact principal type rather than one universal union formula.",
+    "boundaries": "An IAM permissions boundary limits permissions an identity-based policy can grant to a user or role; it does not grant permissions itself. Resource-policy and session-principal rules require separate evaluation.",
+    "explicit deny": "An applicable explicit Deny statement overrides an Allow. This differs from implicit denial because no sufficient permission was granted.",
+    "role assumption": "Role assumption exchanges an authorized identity for a temporary role session. The role trust policy controls who can assume it; permission policies constrain what the session can do.",
+    "federation": "Federation lets an external identity system authenticate users or workloads that obtain scoped AWS sessions. Trust configuration must bind the intended issuer, audience and identity claims.",
+    "iam identity center": "IAM Identity Center centrally manages workforce access to AWS accounts and supported applications using assignments and permission sets. It is not a substitute for workload role design.",
+    "oidc": "OpenID Connect supplies signed identity claims from an issuer. AWS workload federation validates configured issuer, audience and subject conditions before granting a role session; an arbitrary repository token is not sufficient authority.",
+    "session policies": "Session policies restrict permissions for an individual temporary session; they cannot add permissions beyond the role's permitted identity-based access. Evaluate resource-policy exceptions using the exact principal and policy types.",
+    "temporary credentials": "Temporary AWS credentials comprise an access key ID, secret access key and session token with an expiry. Applications must refresh through the supported provider rather than log or persist the session as a permanent key."
+  },
   javascript: {
     "primitive values": "A primitive is an immutable value that is not an object: undefined, null, a boolean, number, bigint, string, or symbol. Reassigning a variable replaces its value; it does not mutate the old primitive.",
     "objects": "An object has identity and properties. Two variables can hold the same object value, so a property mutation through one is visible through the other. Two separately created objects have different identities even when their properties match.",
@@ -584,7 +617,7 @@ Object.assign(TERM_CORRECTIONS.javascript, {
   "composition": "Composition builds behavior by combining collaborating values or functions. It can make ownership and change boundaries clearer than a deep inheritance hierarchy.",
   "arrays": "An Array is an object with special indexed-property and length behavior. It can contain holes and non-index properties; iteration and copying methods do not all treat holes alike.",
   "holes": "A hole is an absent indexed property inside an array's length. It differs from an own property whose value is undefined, even when a direct read looks the same.",
-  "length": "An array's length is one more than its largest array index, subject to array rules; it is not a count of existing elements. Reducing length can delete indexed properties.",
+  "length": "An array's length bounds its own array indices; it need not equal the number of elements or one plus the largest present index. Increasing length creates holes, not elements. Reducing it attempts to delete higher indexed properties and can fail on non-configurable ones.",
   "mutation": "Mutation changes an existing object's state. Every holder of that same object value may observe it, unlike rebinding one local variable to a new object.",
   "copying methods": "Copying array methods produce a new array instead of changing the receiver. Nested object values can still be shared; a new array does not imply a deep copy.",
   "sorting": "Array.sort mutates the array and defaults to string-based comparison. Supply a consistent numeric comparator when sorting numbers; use a copying approach when mutation is not allowed.",
@@ -1130,7 +1163,19 @@ Object.assign(TERM_CORRECTIONS.nodejs ||= {}, {
   "workers": "Worker threads run separate JavaScript execution contexts and exchange or share data under explicit communication rules."
 });
 
+Object.assign(TERM_CORRECTIONS["javascript"] ||= {}, {
+  "well-known symbols": "Well-known symbols are standardized shared symbol values, such as Symbol.iterator, that select language protocols. They are not fresh symbols created from matching descriptions.",
+  "unicode modes": "The u and v regular-expression flags enable Unicode-aware pattern semantics; v additionally supports Unicode set notation and properties of strings. They cannot be combined and neither makes matching equivalent to grapheme segmentation. Check target-runtime support.",
+  "ownership": "For object properties here, ownership means a property is directly on an object rather than inherited. Object.hasOwn tests that distinction; it does not establish resource ownership or access control."
+});
+
+Object.assign(TERM_CORRECTIONS["react"] ||= {}, {
+  "events": "React event handlers respond to browser interactions through React's event system. Capture, bubbling, default behavior and the component's current render snapshot determine what each handler observes.",
+  "routing": "Frontend routing maps a URL and navigation intent to the active UI and data-loading boundaries. A router or framework supplies matching, history and lifecycle policy; React alone does not define them."
+});
+
 Object.assign(TERM_CORRECTIONS["lld-machine-coding"] ||= {}, {
+  "composition": "In UML, composite aggregation models whole-part ownership: a part belongs to at most one composite at a time, and deletion of the whole deletes its remaining object parts. Merely storing references in a Python list does not enforce that lifecycle contract.",
   "uml class diagrams": "UML class diagrams show classes and relationships; use them to clarify ownership and cardinality rather than decorating obvious code.",
   "parking lot machine-coding case study": "The parking-lot exercise models admission, allocation, tickets, and charging while preserving capacity and ownership under contention.",
   "splitwise expense-sharing case study": "The expense-sharing exercise records exact obligations and settlements while preserving total balances and currency rules.",

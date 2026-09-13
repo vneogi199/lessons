@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a build and installation</h2>
+      <h2>Trace a requirement-driven code change</h2>
       <ol class="trace-flow" data-flow="design-change" aria-label="Mechanism trace: A concrete requirement creates pressure then Code ownership and dependencies are traced then The smallest clear design changes then Evidence measures the result. Experiment: Apply one realistic change before and after the refactor and compare how much unrelated code must be understood or edited.">
         <li class="trace-stage"><span>01 · CHANGE</span><strong>A concrete requirement creates pressure</strong><small>The requested behavior and likely reasons to change identify the real design problem.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Code ownership and dependencies are traced</strong><small>Names, cohesion, coupling, state, contracts, and boundaries reveal the affected area.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · MODIFY</span><strong>The smallest clear design changes</strong><small>Simple control flow, narrow capabilities, composition, tests, and explicit tradeoffs contain impact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Evidence measures the result</strong><small>Behavior, files changed, dependency direction, complexity, readability, and failure handling test the claim.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Repair a subtype that strengthens a precondition, split a broad interface by consumer need, and inject a narrow clock or storage capability into domain policy.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.</p>
 
 
 
@@ -159,7 +160,7 @@ await readerContract(() =&gt; new MemoryOrders());</code></pre>
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a build and installation from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a requirement-driven code change from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Apply one realistic change before and after the refactor and compare how much unrelated code must be understood or edited.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</p></article>
@@ -170,19 +171,20 @@ await readerContract(() =&gt; new MemoryOrders());</code></pre>
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Diagnose a SOLID violation from observable behavior rather than class shape or acronym recall.</li>
-      <li>Trace a build and installation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a requirement-driven code change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you repair a subtype that strengthens a precondition, split a broad interface by consumer need, and inject a narrow clock or storage capability into domain policy, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a build and installation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Make implementations preserve caller-visible preconditions, postconditions, invariants, and failure behavior while consumers depend only on the capabilities they actually use and policy owns the abstraction.</p>
+        <p><strong>Worked answer criteria:</strong> Returning undefined for a missing order is part of the contract; throwing for the same valid lookup can break substitution even when signatures compile. A read-only consumer should receive OrderReader, not a mandatory save capability. Injection is wiring; inversion is the dependency direction that lets policy own the port. MemoryOrders retains object references and has no durable storage: TypeScript Readonly is not runtime freezing or isolation. If callers may mutate inputs, specify copying/ownership and test it before substituting this fake for a database adapter.</p>
         <p><strong>Evidence to explain:</strong> Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>

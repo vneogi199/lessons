@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a concurrent task</h2>
+      <h2>Trace a replay-safe command</h2>
       <ol class="trace-flow" data-flow="database-command-replay" aria-label="Mechanism trace: Claim the tenant-scoped request key then Replay or perform the operation then Save effect, result and event together then Recover a lost response or duplicate delivery. Experiment: Lose the response after commit, retry the same key, then reuse it with changed input.">
         <li class="trace-stage"><span>01 · CLAIM</span><strong>Claim the tenant-scoped request key</strong><small>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BRANCH</span><strong>Replay or perform the operation</strong><small>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Save effect, result and event together</strong><small>One transaction commits all records or rolls them all back. Return success only after commit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RETRY</span><strong>Recover a lost response or duplicate delivery</strong><small>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</small></li>
       </ol>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a duplicate-safe command with version checking and a transactional outbox, then consume it idempotently.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -191,7 +192,7 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a replay-safe command from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Lose the response after commit, retry the same key, then reuse it with changed input.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p></article>
@@ -202,19 +203,20 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain how database transactions support idempotent APIs and reliable event publication without claiming distributed atomicity.</li>
-      <li>Trace a concurrent task for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a replay-safe command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you implement a duplicate-safe command with version checking and a transactional outbox, then consume it idempotently, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a replay-safe command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
+        <p><strong>Worked answer criteria:</strong> The conflict branch uses a separate Read Committed statement after claim contention to obtain the committed receipt. It never falls through into business writes. A stale version rolls back this claim and does not cache a failure. Existing fake checks cannot prove database uniqueness, rollback, concurrent visibility or consumer inbox atomicity.</p>
         <p><strong>Evidence to explain:</strong> One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

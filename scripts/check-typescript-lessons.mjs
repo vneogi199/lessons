@@ -91,17 +91,28 @@ try {
   }
   assert.deepEqual(checked, TYPESCRIPT_EXECUTABLE_LESSONS, "documented verification set must match executed labs");
   const designProbes = {
-    "0006": `for (const unitPrice of [NaN, Infinity, -1]) { let failed=false; try {orderTotal([{unitPrice,quantity:1}],false);} catch {failed=true;} if(!failed) throw new Error("invalid price"); }`,
+    "0006": `for (const unitPrice of [NaN, Infinity, -1, Number.MAX_VALUE]) { let failed=false; try {orderTotal([{unitPrice,quantity:2}],false);} catch {failed=true;} if(!failed) throw new Error("invalid price or overflow"); }
+if(orderTotal([],true)!==0 || orderTotal([{unitPrice:99,quantity:1}],true)!==99 || orderTotal([{unitPrice:100,quantity:1}],false)!==100)throw new Error("discount boundaries");`,
     "0007": `let rejected=false;try {shippingCents("domestic",NaN);}catch {rejected=true;} if(!rejected) throw new Error("NaN weight");`,
     "0008": `let available=1; const inventory:Inventory={async reserveIfAvailable(_id,quantity){if(available<quantity)return false;available-=quantity;return true;}};
 const results=await Promise.allSettled([reserveAvailable(inventory,"p",1),reserveAvailable(inventory,"p",1)]);
-if(results.filter(r=>r.status==="fulfilled").length!==1 || available!==0) throw new Error("reservation contract");`,
+if(results.filter(r=>r.status==="fulfilled").length!==1 || available!==0) throw new Error("reservation contract");
+let invoked=false;let rejected=false;try{await reserveAvailable({async reserveIfAvailable(){invoked=true;return true;}},"p",Number.MAX_SAFE_INTEGER+1);}catch{rejected=true;}if(!rejected||invoked)throw new Error("unsafe quantity reached adapter");`,
+    "0009": `if(price({subtotal:100,customer:"member"},[standardPrice,memberDiscount])!==100)throw new Error("rule order");let rejected=false;try{price({subtotal:100,customer:"member"},[]);}catch{rejected=true;}if(!rejected)throw new Error("missing rule");`,
+    "0011": `if(composePrice(nonNegative,capAt(80),memberDiscount)(100)!==72)throw new Error("composition order");`,
+    "0012": `if(!hasDecisionFields({...decision,evidence:"invented"}))throw new Error("presence is not proof");`,
     "0013": `if(!Object.isFrozen(request.headers)||typeof request.url!=="string")throw new Error("mutable result");
 let failed=false;try{new RequestBuilder().timeout(NaN);}catch{failed=true;}if(!failed)throw new Error("invalid timeout");`,
     "0014": `const records:object[]=[]; const model=new AssistantFacade(new TracedModel(new ProviderAdapter({async generate(input){return {output:input.text};}}),event=>{records.push(event);}));
-if(await model.answer("hello",new AbortController().signal)!=="Answer briefly: hello"||records.length!==1)throw new Error("wrapper contract");`,
+if(await model.answer("hello",new AbortController().signal)!=="Answer briefly: hello"||records.length!==1)throw new Error("wrapper contract");
+const fault=new Error("provider");const recorder=()=>{throw new Error("recorder");};
+if(await new TracedModel({async complete(){return "ok";}},recorder).complete("x",new AbortController().signal)!=="ok")throw new Error("lost result");
+let caught:unknown;try{await new TracedModel({async complete(){throw fault;}},recorder).complete("x",new AbortController().signal);}catch(error){caught=error;}if(caught!==fault)throw new Error("masked provider error");`,
+    "0015": `const w=new Workflow();let later=false;w.subscribe(()=>{throw new Error("listener");});w.subscribe(()=>{later=true;});let failed=false;try{w.dispatch({type:"approve"});}catch{failed=true;}if(!failed || w.status!=="approved" || later)throw new Error("fail-fast transition semantics");
+let invalid=false;try{new Workflow().dispatch({type:"send"});}catch{invalid=true;}if(!invalid)throw new Error("invalid transition");`,
     "0017": `const calls:string[]=[]; let invalid=false;const useCase=new PlaceOrder(async()=>({orders:{async find(id){return invalid?undefined:{id,status:"draft" as const};},async save(){calls.push("save");}},async commit(){calls.push("commit");},async rollback(){calls.push("rollback");}}));
-await useCase.execute("a");invalid=true;try{await useCase.execute("missing");}catch{}if(calls.join()!=="save,commit,rollback")throw new Error("transaction branching");`,
+await useCase.execute("a");invalid=true;try{await useCase.execute("missing");}catch{}if(calls.join()!=="save,commit,rollback")throw new Error("transaction branching");
+const original=new Error("save");const cleanup=new Error("rollback");let caught:unknown;try{await new PlaceOrder(async()=>({orders:{async find(id){return {id,status:"draft"};},async save(){throw original;}},async commit(){throw new Error("must not commit");},async rollback(){throw cleanup;}})).execute("a");}catch(error){caught=error;}if(!(caught instanceof AggregateError)||caught.errors[0]!==original||caught.errors[1]!==cleanup)throw new Error("lost transaction errors");`,
     "0591": `const bytes=new TextEncoder().encode('id:  a\\ndata: {"word":"café"}\\n\\ndata: {"n":2}\\n\\n');
 const chunks=Array.from(bytes,byte=>new Uint8Array([byte]));
 const response=new Response(new ReadableStream({pull(controller){const chunk=chunks.shift();if(chunk)controller.enqueue(chunk);else controller.close();}}));

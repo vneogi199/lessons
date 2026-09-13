@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a database-backed worker, crash it after a side effect, recover the expired lease, prove idempotency, move poison work aside, and stop without losing in-flight state.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -221,6 +222,7 @@ def run_one(db, worker, stopping):
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
+        <p><strong>Worked answer criteria:</strong> The claim adapter must commit before work; now() is transaction time and long claim transactions consume the lease. A unique attempt token protects settling B&#039;s lease from stale A, not A&#039;s external I/O. The shown delay reaches 1,024 seconds, not 3,600, and supplies neither jitter nor a maximum attempt policy. Heartbeats, shutdown hooks and exception/receipt adapters are required extensions.</p>
         <p><strong>Evidence to explain:</strong> Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>

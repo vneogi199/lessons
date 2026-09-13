@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Harden a merge function, remove dynamic code execution, validate URLs and schemas, and document dependency provenance.</p>
+    <p><strong>Core and extension:</strong> Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review.</p>
 
 
 
@@ -134,8 +135,21 @@ function safeRecord(input) {
   return output;
 }
 
-const url = new URL(userSuppliedUrl, location.origin);
-if (url.origin !== location.origin || url.protocol !== &quot;https:&quot;) throw new TypeError(&quot;unsafe URL&quot;);
+// Offline same-origin URL policy; this does not fetch or follow redirects.
+function sameOriginUrl(input, origin = &quot;https://app.example&quot;) {
+  const url = new URL(input, origin);
+  if (url.origin !== origin || url.protocol !== &quot;https:&quot; || url.username || url.password) throw new TypeError(&quot;unsafe URL&quot;);
+  return url;
+}
+console.assert(sameOriginUrl(&quot;/projects&quot;).pathname === &quot;/projects&quot;);
+console.assert(Object.getPrototypeOf(safeRecord({ name: &quot;Ada&quot; })) === null);
+for (const input of [&quot;https://evil.example&quot;, &quot;javascript:alert(1)&quot;, &quot;https://user@app.example&quot;]) {
+  let rejected = false;
+  try { sameOriginUrl(input); } catch { rejected = true; }
+  console.assert(rejected);
+}
+try { safeRecord(JSON.parse(&#039;{&quot;__proto__&quot;:&quot;blocked&quot;}&#039;)); throw new Error(&quot;accepted unsafe key&quot;); }
+catch (error) { console.assert(error instanceof TypeError); }
 
 // Never pass untrusted text to eval, Function, shell interpreters, HTML sinks,
 // SQL, template compilers, or module specifiers without a boundary-specific design.</code></pre>
@@ -181,6 +195,7 @@ if (url.origin !== location.origin || url.protocol !== &quot;https:&quot;) throw
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace how untrusted keys, strings, URLs, modules, and serialized values cross interpreters or mutate shared prototypes and authority.</p>
+        <p><strong>Worked answer criteria:</strong> The null-prototype record and blocked keys narrow one flat string-valued data contract. Object.entries can invoke getters on arbitrary objects: use parsed, bounded data at this boundary, not hostile executable objects. Same-origin HTTPS URL validation is local policy, not SSRF defense or authorization; redirects and endpoint privileges need separate controls.</p>
         <p><strong>Evidence to explain:</strong> Validated representation, prototype state, regex timing, error, audit event, and dependency provenance.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>

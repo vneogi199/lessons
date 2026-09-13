@@ -106,6 +106,7 @@
 
   <section class="card mechanism-walkthrough" data-dsa-approach="true">
     <span class="section-label">05B · Approach ladder</span>
+    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
     <div class="walkthrough-grid">
       <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Merge → insert → minimum rooms</p></article>
       <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Compare every pair: O(n²)</p></article>
@@ -117,6 +118,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Progress through merging bookings, inserting one booking, and finding minimum rooms; compare pairwise overlap checks with sort-and-sweep processing.</p>
+    <p><strong>Core and extension:</strong> Core: run the small JavaScript fixture and explain its invariant, one boundary case and an alternative. Use finite, exactly representable numeric examples, valid indices, rectangular grids and the structure-specific preconditions stated in the checkpoint; these are algorithms, not untrusted-input APIs. The other named structures/problems are extension exercises, not all implemented by this starter. Include instrumentation and output costs when reporting complexity.</p>
 
 
 
@@ -140,7 +142,9 @@
 
 const result = mergeIntervals([[8,10],[1,3],[2,6]]);
 console.assert(JSON.stringify(result.merged) === &quot;[[1,6],[8,10]]&quot;);
-// Sorting exposes all possible overlaps locally: O(n log n), versus O(n²) pairs.</code></pre>
+// Closed intervals: touching endpoints merge. Sorting/sweeping is O(n log n),
+// but copying every merged prefix for the trace adds O(n²) time and storage
+// for disjoint intervals. Remove snapshots when measuring algorithm-only cost.</code></pre>
     <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
@@ -183,6 +187,7 @@ console.assert(JSON.stringify(result.merged) === &quot;[[1,6],[8,10]]&quot;);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Sort interval boundaries so local comparisons summarize all earlier ranges, then sweep starts and ends to measure simultaneous occupancy.</p>
+        <p><strong>Worked answer criteria:</strong> The last merged interval summarizes all processed overlap; sorting by start makes that local comparison sufficient. This closed-interval policy merges touching endpoints. Full output snapshots make disjoint-input tracing quadratic despite the O(n log n) underlying sort/sweep. For half-open occupancy counts, process equal endpoints under the chosen end-before-start convention instead of copying the merge rule.</p>
         <p><strong>Evidence to explain:</strong> Invariant checks, operation count, output, runtime samples, and peak memory.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#computer-science">Worked track case: Top K under changing input constraints ↗</a></p>

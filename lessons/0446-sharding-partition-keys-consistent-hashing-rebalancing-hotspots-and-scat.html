@@ -67,7 +67,7 @@
       </article><article class="concept-card" data-subtopic="rebalancing">
         <span>04</span>
         <h3>rebalancing</h3>
-        <p><strong>What it means:</strong> Rebalancing changes partition or work ownership among consumers and must coordinate in-flight work and position tracking.</p>
+        <p><strong>What it means:</strong> Shard rebalancing moves data and serving ownership between storage nodes. Copying, catching up concurrent writes, versioning routes and transferring authority must preserve the selected consistency contract; this is not merely a consumer-group reassignment.</p>
       </article><article class="concept-card" data-subtopic="hotspots">
         <span>05</span>
         <h3>hotspots</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Design a partition key from workload data, simulate skew and rebalancing, and measure scatter-gather fan-out and tail latency.</p>
+    <p><strong>Core and extension:</strong> Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
 
 
 
@@ -187,6 +188,7 @@ for (const [point, nodes] of [[-1, ring], [0, []], [0, [...ring].reverse()]]) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Map data and requests to owners, move ranges or virtual nodes as capacity changes, preserve routing metadata, and control skew, hot keys, global queries, and cross-shard invariants.</p>
+        <p><strong>Worked answer criteria:</strong> Adding token 40 moves exactly points 21 through 40, but all 1,000 requests for point 21 still target D. The scan validates and searches a tiny ring linearly; it measures neither hashing quality nor live migration. Data copy/catch-up, routing versions and write ownership are separate from consumer-group rebalancing. A hot key may require changing the data model, not more tokens.</p>
         <p><strong>Evidence to explain:</strong> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

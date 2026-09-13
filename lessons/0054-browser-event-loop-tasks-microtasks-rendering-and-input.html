@@ -31,6 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Connect JavaScript scheduling to style, layout, paint, frames, and responsiveness.</p>
+      <p>Synchronous JavaScript runs before its queued continuations. At a microtask checkpoint, queued microtasks run and may enqueue more microtasks; this can delay tasks and rendering. A zero-delay timer becomes eligible later, not immediately. Animation callbacks let code prepare for a rendering update, but neither a callback nor an awaited promise proves that pixels were displayed. Rendering opportunities depend on browser scheduling and page visibility. Split long work or move suitable computation to a worker when measurement shows main-thread contention.</p>
       <p class="analogy"><strong>Analogy:</strong> A page load resembles a theatre production: networking delivers the script, parsing casts the actors, layout blocks the stage, and paint turns the plan into pixels.</p>
     </section>
 
@@ -101,6 +102,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Diagnose long tasks, layout thrashing, race conditions, and animation jank.</p>
+    <p><strong>Core and extension:</strong> Browser-only exercise: use a disposable fixture you own, record a prediction, change the specified condition and inspect the result in developer tools. The core example covers one mechanism; the broader lab is an extension. No browser, screen-reader, network-timing or security integration result is claimed by local text/Node checks. Nothing needs installing to read and rehearse the model.</p>
 
 
 
@@ -164,6 +166,7 @@ console.assert(trace.join() === &quot;sync&quot;);
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect JavaScript scheduling to style, layout, paint, frames, and responsiveness.</p>
+        <p><strong>Worked answer criteria:</strong> Predict sync then microtask before the later callbacks; do not invent a universal timer-versus-animation ordering. await Promise.resolve() yields to microtasks, not necessarily input or paint. For a changed workload with thousands of operations, compare bounded task chunks and workers, accounting for data transfer and state ownership. Record input delay and long tasks in an actual browser; Node or a hand-written scheduler fake cannot verify rendering. Never run an infinite starvation demo.</p>
         <p><strong>Evidence to explain:</strong> Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#web-platform">Worked track case: The network is fast but the page feels slow ↗</a></p>
@@ -184,7 +187,7 @@ console.assert(trace.join() === &quot;sync&quot;);
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://developer.mozilla.org/en-US/docs/Web" target="_blank" rel="noreferrer">MDN Web Docs ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://html.spec.whatwg.org/multipage/webappapis.html#event-loops" target="_blank" rel="noreferrer">HTML Standard: event loops ↗</a></div>
     
     
     

@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="Transactions">
         <span>01</span>
         <h3>Transactions</h3>
-        <p><strong>What it means:</strong> A transaction groups database statements into one outcome: all durable effects commit together or none become visible after rollback.</p>
+        <p><strong>What it means:</strong> A PostgreSQL transaction groups transactional changes into one commit or rollback boundary. Sequence increments and external effects are not generally rolled back; durability of acknowledged commits depends on configured flush and replication guarantees.</p>
       </article><article class="concept-card" data-subtopic="ACID">
         <span>02</span>
         <h3>ACID</h3>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a multi-step money transfer with savepoints and prove atomicity under constraint, process, and client failures.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -180,6 +181,7 @@ COMMIT;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow a session transaction through statement boundaries, snapshots, resource ownership, constraint checks, WAL records, commit visibility, and abort cleanup.</p>
+        <p><strong>Worked answer criteria:</strong> The SQL assumes account existence and sufficient-funds rules and is not a complete money API. A savepoint is declared but never rolled back to; partial rollback after debit could violate the transfer invariant. Lock accounts in stable order across every caller. Unique request IDs reject duplicates but do not alone implement successful replay.</p>
         <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

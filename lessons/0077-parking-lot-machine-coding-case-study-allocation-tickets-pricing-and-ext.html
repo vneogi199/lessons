@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a runnable parking-lot core, demonstrate park and leave flows, add one vehicle category, and inspect invariant and extension tests.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -124,8 +125,11 @@ class Spot:
     vehicle: str | None = None
 
 class ParkingLot:
-    def __init__(self, spots: list[Spot]) -&gt; None: self.spots = spots
+    def __init__(self, spots: list[Spot]) -&gt; None:
+        if len({spot.number for spot in spots}) != len(spots): raise ValueError(&quot;duplicate spot number&quot;)
+        self.spots = list(spots)
     def park(self, vehicle: str, kind: str) -&gt; int:
+        if not isinstance(vehicle, str) or not vehicle.strip(): raise ValueError(&quot;vehicle&quot;)
         if any(spot.vehicle == vehicle for spot in self.spots): raise ValueError(&quot;already parked&quot;)
         spot = next((item for item in self.spots if item.vehicle is None and item.kind == kind), None)
         if spot is None: raise RuntimeError(&quot;full&quot;)
@@ -182,6 +186,7 @@ assert all(spot.vehicle is None for spot in lot.spots)</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Coordinate spot inventory, vehicle compatibility, ticket identity, deterministic allocation, fee policy, release, and duplicate command handling without speculative services.</p>
+        <p><strong>Worked answer criteria:</strong> First-fit allocation is deterministic in input order, not necessarily nearest or lowest-numbered. The constructor now rejects duplicate spot numbers; park rejects blank vehicles, duplicate parking and incompatible/full inventory. The copied collection still holds mutable Spot references and assumes single-threaded ownership. Tickets, pricing and concurrency are extensions, not supplied features. Compare linear scanning with an indexed free-spot structure only when measured scale or allocation policy requires it.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

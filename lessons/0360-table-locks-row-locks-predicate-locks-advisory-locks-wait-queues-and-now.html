@@ -55,19 +55,19 @@
       <article class="concept-card" data-subtopic="Table locks">
         <span>01</span>
         <h3>Table locks</h3>
-        <p><strong>What it means:</strong> A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+        <p><strong>What it means:</strong> Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate table locks; compare the compatibility matrix rather than inferring behavior from the name.</p>
       </article><article class="concept-card" data-subtopic="row locks">
         <span>02</span>
         <h3>row locks</h3>
-        <p><strong>What it means:</strong> A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+        <p><strong>What it means:</strong> Row locks coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.</p>
       </article><article class="concept-card" data-subtopic="predicate locks">
         <span>03</span>
         <h3>predicate locks</h3>
-        <p><strong>What it means:</strong> A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+        <p><strong>What it means:</strong> PostgreSQL SSI predicate locks track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.</p>
       </article><article class="concept-card" data-subtopic="advisory locks">
         <span>04</span>
         <h3>advisory locks</h3>
-        <p><strong>What it means:</strong> A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+        <p><strong>What it means:</strong> Advisory locks coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.</p>
       </article><article class="concept-card" data-subtopic="wait queues">
         <span>05</span>
         <h3>wait queues</h3>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Observe blocked sessions with pg_locks and pg_stat_activity and implement a bounded worker claim using FOR UPDATE SKIP LOCKED.</p>
+    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
 <p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -177,6 +178,7 @@ COMMIT;</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
+        <p><strong>Worked answer criteria:</strong> SKIP LOCKED omits contended rows and therefore changes selection fairness and snapshot completeness. This fragment only locks rows, then releases them at commit; it does not persist a job claim. SSI predicate locks track conflicts without ordinary blocking, while advisory locks require all participants to follow the same convention.</p>
         <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>

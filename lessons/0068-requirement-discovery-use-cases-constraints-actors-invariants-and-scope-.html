@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a requirement ledger for a parking system, reject speculative features, and encode its capacity and identity invariants as executable assertions.</p>
+    <p><strong>Core and extension:</strong> Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
 
 
@@ -121,7 +122,7 @@
     </ol>
     <pre aria-label="Starter code"><code>class Capacity:
     def __init__(self, total: int) -&gt; None:
-        if total &lt; 1: raise ValueError(&quot;total&quot;)
+        if type(total) is not int or total &lt; 1: raise ValueError(&quot;positive integer total required&quot;)
         self.total, self.used = total, 0
 
     def reserve(self) -&gt; None:
@@ -180,6 +181,7 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Convert an ambiguous prompt into observable behaviors, identify authoritative state and forbidden transitions, and choose a smallest useful scope before naming classes.</p>
+        <p><strong>Worked answer criteria:</strong> State 0 &lt;= used &lt;= total before choosing classes. Integer validation matters: total=1.5 would never equal an integer used count and could admit indefinitely. Test full, release and empty release; clarify whether reserve/release needs identity or idempotency before adding it. This counter has public mutable fields and assumes serialized cooperating callers, not multi-user reservation safety. A single counter is simpler than a booking service when identity is outside scope.</p>
         <p><strong>Evidence to explain:</strong> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>

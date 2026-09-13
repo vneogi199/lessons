@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Refactor one confusing TypeScript function in behavior-preserving steps, then compare tests, complexity, mutation points, and the time another reader needs to explain it.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.</p>
 
 
 
@@ -139,6 +140,7 @@ function discountFor(subtotal: number, isMember: boolean): number {
 
 export function orderTotal(lines: readonly Line[], isMember: boolean): number {
   const subtotal = lines.reduce((sum, line) =&gt; sum + lineTotal(line), 0);
+  if (!Number.isFinite(subtotal)) throw new RangeError(&quot;subtotal overflow&quot;);
   return subtotal - discountFor(subtotal, isMember);
 }
 
@@ -189,6 +191,7 @@ console.assert(orderTotal([{ unitPrice: 50, quantity: 2 }], true) === 90);</code
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow how a reader reconstructs intent from names, scope, explicit branches, data movement, side effects, invariants, comments that explain why, and consistent layout.</p>
+        <p><strong>Worked answer criteria:</strong> Trace quantity validation, subtotal, eligibility and discount separately. Test empty input, a nonmember, 99 versus 100 at the threshold and overflow; short code is not evidence of preserved behavior. If a new currency is introduced, decide representation and rounding explicitly rather than hiding them in a naming refactor. Compare extraction with leaving a small coherent function intact; measure what a reviewer must understand, not just line count.</p>
         <p><strong>Evidence to explain:</strong> Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>

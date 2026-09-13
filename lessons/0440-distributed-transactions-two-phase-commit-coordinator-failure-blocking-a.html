@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="two-phase commit">
         <span>02</span>
         <h3>two-phase commit</h3>
-        <p><strong>What it means:</strong> Two-phase commit first makes every participant durably prepare, then records one commit or abort decision. In-doubt participants may block when the coordinator is unavailable.</p>
+        <p><strong>What it means:</strong> Two-phase commit asks participants to prepare, then records a durable commit or abort decision. Commit requires all required participants to vote prepared; a refusal can trigger abort. A prepared participant may remain blocked until it can learn an authoritative decision.</p>
       </article><article class="concept-card" data-subtopic="coordinator failure">
         <span>03</span>
         <h3>coordinator failure</h3>
@@ -105,6 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate two-phase commit with a failed coordinator and compare it with one-owner, outbox, and saga designs for the same invariant.</p>
+    <p><strong>Core and extension:</strong> Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
 
 
 
@@ -186,6 +187,7 @@ for (const decision of [&quot;COMMIT&quot;, &quot;ABORT&quot;, null]) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate prepare from commit so participants promise recoverable decisions, then examine coordinator logs, in-doubt locks, recovery, heuristic hazards, and availability cost.</p>
+        <p><strong>Worked answer criteria:</strong> The three fake decisions test dispatch only, not prepare, coordinator durability or network recovery. Unknown or unreadable decisions must preserve prepared state rather than infer abort. Commit requires all required participants to prepare; a refusal can lead to abort without everyone preparing. Compare a single transaction owner, outbox or saga against the exact invariant, not only their availability.</p>
         <p><strong>Evidence to explain:</strong> Workflow history, participant transaction, prepared state, locks, operation identity, compensation result, timer, and final invariant.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>

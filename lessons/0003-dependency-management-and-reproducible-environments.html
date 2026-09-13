@@ -31,7 +31,8 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand semantic versioning, lockfiles, registries, dependency graphs, and supply-chain risks.</p>
-      <p class="analogy"><strong>Analogy:</strong> Treat the development environment like an airport: processes are flights, file descriptors are gates, signals are control messages, and logs are the flight recorder.</p>
+      <p>A manifest declares direct dependencies; their dependencies form the transitive graph. Version ranges express acceptable candidates, whereas a lock records a particular resolution. Semantic versioning communicates intended compatibility, not proof that an update is safe. Frozen installation refuses inconsistent inputs instead of silently resolving new ones. Reproducing a dependency graph is weaker than producing byte-identical artifacts: platform, runtime, compiler, environment and scripts can change outputs. For Python, record the interpreter and platform as well as pinned transitive requirements and artifact hashes; an isolated virtual environment alone is not a dependency lock.</p>
+      <p class="analogy"><strong>Analogy:</strong> A lockfile is a shopping list with exact items; a repeatable meal also needs the same kitchen, tools and recipe steps.</p>
     </section>
 
     <aside class="card blackboard">
@@ -93,17 +94,18 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Produce reproducible Node.js and Python environments and audit a dependency update.</p>
+    <p><strong>Core and extension:</strong> Planning only: nothing needs installing to complete the core comparison. Write an input/evidence table for matching and mismatched manifest/lock pairs, then name at least three build inputs outside the lock. Optional Node/Python installation experiments require a separately authorized disposable environment; they are not executed or verified here.</p>
 
 
 
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
+      <li><span>Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code.</span></li>
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code># Planning exercise. These inspection commands do not install anything.
+    <pre aria-label="Starter code"><code># Exercise: planning only. These inspection commands do not install anything.
 node --version
 npm --version
 # In a disposable project with package.json and a committed package-lock.json:
@@ -112,7 +114,8 @@ npm --version
 # 3. Change one declared dependency without updating the lock; npm ci must fail.
 # 4. Restore the fixture, repeat in a clean environment, and run the same tests.
 # Do not run this destructive-to-node_modules experiment in your working project.
-# Expected evidence: matching lock succeeds; mismatch fails instead of rewriting it.
+# Expected: with prerequisites satisfied, matching inputs install; mismatch fails
+# instead of rewriting the lock. A matching lock cannot prevent every install failure.
 # Senior checkpoint: a lock pins resolution, not OS, native toolchain, registry
 # availability, or lifecycle-script behavior. Review scripts and registry trust;
 # --ignore-scripts is useful isolation but may make legitimate packages unusable.
@@ -159,6 +162,7 @@ npm --version
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand semantic versioning, lockfiles, registries, dependency graphs, and supply-chain risks.</p>
+        <p><strong>Worked answer criteria:</strong> Do not promise that a matching lock guarantees installation success: network access, unsupported platforms and scripts may still fail. Distinguish repeatable resolution, repeatable test behavior and byte-for-byte reproducible builds. For an update, inspect direct and transitive changes, provenance and scripts, then test the behavior your service relies on. If offline builds become mandatory, a lock alone is insufficient: preserve approved artifacts and the build environment. Pinning indefinitely trades update uncertainty for accumulating vulnerability and maintenance risk.</p>
         <p><strong>Evidence to explain:</strong> Preserve successful and mismatched-install logs from the disposable fixture; this is a proposed experiment, not a claimed result.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>

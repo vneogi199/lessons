@@ -36,14 +36,14 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a concurrent task</h2>
-      <ol class="trace-flow" data-flow="python-concurrency" aria-label="Mechanism trace: A callable or coroutine is created then Loop, thread, or process owns it then Work waits or consumes CPU then Result, error, or cancellation returns. Experiment: Run the workload once normally and once with blocking, cancellation, or worker failure.">
-        <li class="trace-stage"><span>01 · WORK</span><strong>A callable or coroutine is created</strong><small>Its wait pattern and CPU cost determine a boundary.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Loop, thread, or process owns it</strong><small>The scheduler decides when execution can progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><strong>Work waits or consumes CPU</strong><small>Cancellation and synchronization shape interleaving.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><strong>Result, error, or cancellation returns</strong><small>The owner waits for cleanup before continuing.</small></li>
+      <h2>Trace an application use case</h2>
+      <ol class="trace-flow" data-flow="python-use-case" aria-label="Mechanism trace: Validate a command then Apply the domain rule then Perform the owned effect then Return a result or preserve failure. Experiment: Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.">
+        <li class="trace-stage"><span>01 · INPUT</span><strong>Validate a command</strong><small>External representation is checked before application policy uses it.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Apply the domain rule</strong><small>The use case depends on an explicit repository or unit-of-work contract.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPTER</span><strong>Perform the owned effect</strong><small>The adapter implements persistence; a Protocol supplies no transaction or rollback.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Return a result or preserve failure</strong><small>Test failed writes and, for the capstone, scoped intent replay and atomic commit.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Run the workload once normally and once with blocking, cancellation, or worker failure.</strong>
-        <small><b>Inspect:</b> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</small>
+        <strong>Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.</strong>
+        <small><b>Inspect:</b> Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.</small>
       </div>
     </aside>
   </div>
@@ -84,24 +84,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · WORK</span>
-        <h3>A callable or coroutine is created</h3>
-        <p>Its wait pattern and CPU cost determine a boundary.</p>
+        <span>01 · INPUT</span>
+        <h3>Validate a command</h3>
+        <p>External representation is checked before application policy uses it.</p>
       </article><article>
-        <span>02 · SCHEDULE</span>
-        <h3>Loop, thread, or process owns it</h3>
-        <p>The scheduler decides when execution can progress.</p>
+        <span>02 · POLICY</span>
+        <h3>Apply the domain rule</h3>
+        <p>The use case depends on an explicit repository or unit-of-work contract.</p>
       </article><article>
-        <span>03 · SUSPEND / RUN</span>
-        <h3>Work waits or consumes CPU</h3>
-        <p>Cancellation and synchronization shape interleaving.</p>
+        <span>03 · ADAPTER</span>
+        <h3>Perform the owned effect</h3>
+        <p>The adapter implements persistence; a Protocol supplies no transaction or rollback.</p>
       </article><article>
-        <span>04 · JOIN</span>
-        <h3>Result, error, or cancellation returns</h3>
-        <p>The owner waits for cleanup before continuing.</p>
+        <span>04 · OUTCOME</span>
+        <h3>Return a result or preserve failure</h3>
+        <p>Test failed writes and, for the capstone, scoped intent replay and atomic commit.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run the workload once normally and once with blocking, cancellation, or worker failure.</p><p><strong>Then inspect:</strong> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.</p><p><strong>Then inspect:</strong> Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.</p></div>
   </section>
 
   
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build and document a typed production service slice with bounded work, stable errors, complete tests, a wheel, profiles, security evidence, and an incident runbook.</p>
+    <p><strong>Core and extension:</strong> Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
 
 
 
@@ -173,16 +174,16 @@ class ProjectService:
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> A callable or coroutine is created → Loop, thread, or process owns it → Work waits or consumes CPU → Result, error, or cancellation returns. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Validate a command → Apply the domain rule → Perform the owned effect → Return a result or preserve failure. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Run the workload once normally and once with blocking, cancellation, or worker failure.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an application use case from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.</p></article>
     </div>
   </section>
 
@@ -190,20 +191,21 @@ class ProjectService:
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Defend the architecture, runtime behavior, failure handling, performance evidence, and deployment strategy in a senior-level system-design discussion.</li>
-      <li>Trace a concurrent task for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an application use case for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you build and document a typed production service slice with bounded work, stable errors, complete tests, a wheel, profiles, security evidence, and an incident runbook, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an application use case. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="python">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace one production request or job across configuration, validation, domain logic, persistence, concurrency, cleanup, logging, packaging, deployment, and graceful shutdown.</p>
-        <p><strong>Evidence to explain:</strong> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p>
+        <p><strong>Worked answer criteria:</strong> The service depends on an adapter that atomically claims scoped intent, creates the project and records the replay result. The sequential fake checks control flow, not concurrent uniqueness or rollback in a database. Returning an existing result still exits the context without a new commit; the adapter must support that read/replay path safely.</p>
+        <p><strong>Evidence to explain:</strong> Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>

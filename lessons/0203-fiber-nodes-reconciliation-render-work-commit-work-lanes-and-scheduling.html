@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a database transaction</h2>
+      <h2>Trace a render and commit cycle</h2>
       <ol class="trace-flow" data-flow="react-render" aria-label="Mechanism trace: Props, state, and context then Components return elements then Fiber work compares trees then React updates the host UI. Experiment: Change one input or key and predict which component state is preserved.">
         <li class="trace-stage"><span>01 · INPUT</span><strong>Props, state, and context</strong><small>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RENDER</span><strong>Components return elements</strong><small>Pure functions describe the next interface tree.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Fiber work compares trees</strong><small>Type, position, and key decide preservation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>React updates the host UI</strong><small>DOM changes, refs, and commit effects become visible.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Annotate a component update from dispatched action through scheduled work, fiber traversal, effect flags, DOM mutation, and passive effects.</p>
+    <p><strong>Core and extension:</strong> Core: explain the supplied component or acceptance recipe and predict one changed-input result. Component snippets require the project&#039;s React imports, named collaborators and compatible runtime; they are not standalone files. Browser, framework, accessibility and deployment acceptance need separate execution evidence. No packages are installed by this review.</p>
 
 
 
@@ -148,7 +149,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database transaction from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a render and commit cycle from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one input or key and predict which component state is preserved.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: React DevTools, render count, DOM mutations, focus, and displayed state.</p></article>
@@ -159,19 +160,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain concurrent rendering without claiming that React renders DOM mutations concurrently.</li>
-      <li>Trace a database transaction for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a render and commit cycle for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you annotate a component update from dispatched action through scheduled work, fiber traversal, effect flags, DOM mutation, and passive effects, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a render and commit cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="react">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Build a useful internal model of current and work-in-progress fiber trees, update queues, child reconciliation, lanes, interruption, and atomic commits.</p>
+        <p><strong>Worked answer criteria:</strong> Render proposes a tree and may restart; commit applies accepted host changes without time-slicing that commit. This is not a database rollback guarantee, and observers/effects have their own timing. Fiber fields and lane numbers are implementation details rather than stable application APIs.</p>
         <p><strong>Evidence to explain:</strong> React DevTools, render count, DOM mutations, focus, and displayed state.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
