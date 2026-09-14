@@ -2442,3 +2442,139 @@ Reviewed independent counters, frozen API and per-iteration capture checks. Adde
 ## 0079 · Timed implementation
 
 Reviewed LRU ordering and sliding-log expiry. Added positive-integer cache capacity checks, invalid-capacity probes and exact boundary eviction test. Feedback states the (now-window, now] window, admitted-event-only history, monotonic/serialized caller preconditions and None-sentinel limitation. Python tests pass; no shared/distributed rate limiter or production cache is claimed.
+
+## DSA question-bank coverage · 2026-09-14
+
+Each computer-science lesson 0018–0050 now includes four to seven canonical practice questions with direct LeetCode links and badges for curated Blind 75, NeetCode 150 and/or Striver A2Z alignment. This is a topic-relevant interview practice set, not a claim that any external sheet is exhaustive or immutable.
+
+## 0018 · DSA question coverage
+
+Complexity: Contains Duplicate, Two Sum, Kth Largest Element in an Array, Product of Array Except Self. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0019 · DSA question coverage
+
+Structures: Valid Anagram, Valid Parentheses, Min Stack, Implement Queue using Stacks, Reverse Linked List. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0020 · DSA question coverage
+
+Nonlinear structures: Invert Binary Tree, Kth Smallest Element in a BST, Implement Trie, Number of Islands, Redundant Connection. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0021 · DSA question coverage
+
+Recursion/backtracking/DP: Subsets, Permutations, Combination Sum, Coin Change, Climbing Stairs. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0022 · DSA question coverage
+
+Sorting: Sort Colors, Merge Intervals, Merge Sorted Array, Kth Largest Element in an Array, Sort an Array. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0023 · DSA question coverage
+
+Binary search: Binary Search, Search in Rotated Sorted Array, Find Minimum in Rotated Sorted Array, Koko Eating Bananas, Time Based Key-Value Store. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0024 · DSA question coverage
+
+Arrays and hashing: Two Sum, Group Anagrams, Top K Frequent Elements, Longest Consecutive Sequence, Product of Array Except Self. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0025 · DSA question coverage
+
+Linked lists: Reverse Linked List, Merge Two Sorted Lists, Linked List Cycle, Reorder List, Copy List with Random Pointer. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0026 · DSA question coverage
+
+Trees: Maximum Depth of Binary Tree, Binary Tree Level Order Traversal, Validate Binary Search Tree, Lowest Common Ancestor of a Binary Tree, Binary Tree Maximum Path Sum. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0027 · DSA question coverage
+
+Graphs: Number of Islands, Clone Graph, Course Schedule, Pacific Atlantic Water Flow, Network Delay Time, Redundant Connection. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0028 · DSA question coverage
+
+Backtracking: Subsets, Permutations, Combination Sum, Word Search, N-Queens. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0029 · DSA question coverage
+
+Dynamic programming: Climbing Stairs, House Robber, Coin Change, Longest Increasing Subsequence, Word Break, Decode Ways. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0030 · DSA question coverage
+
+Greedy: Jump Game, Gas Station, Partition Labels, Non-overlapping Intervals, Task Scheduler. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0031 · DSA question coverage
+
+Bits: Single Number, Number of 1 Bits, Counting Bits, Reverse Bits, Missing Number. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0032 · DSA question coverage
+
+Arrays and hashing: Contains Duplicate, Two Sum, Group Anagrams, Top K Frequent Elements, Longest Consecutive Sequence. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0033 · DSA question coverage
+
+Two pointers: Valid Palindrome, Two Sum II, 3Sum, Container With Most Water, Trapping Rain Water. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0034 · DSA question coverage
+
+Sliding windows: Best Time to Buy and Sell Stock, Longest Substring Without Repeating Characters, Longest Repeating Character Replacement, Permutation in String, Minimum Window Substring. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0035 · DSA question coverage
+
+Stacks: Valid Parentheses, Min Stack, Evaluate Reverse Polish Notation, Daily Temperatures, Largest Rectangle in Histogram. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0036 · DSA question coverage
+
+Linked lists: Merge Two Sorted Lists, Reverse Linked List, Reorder List, Remove Nth Node From End of List, LRU Cache. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0037 · DSA question coverage
+
+Heaps: Kth Largest Element in a Stream, Last Stone Weight, K Closest Points to Origin, Kth Largest Element in an Array, Find Median from Data Stream. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0038 · DSA question coverage
+
+Binary search: Binary Search, Search in Rotated Sorted Array, Find Minimum in Rotated Sorted Array, Koko Eating Bananas, Median of Two Sorted Arrays. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0039 · DSA question coverage
+
+DFS: Maximum Depth of Binary Tree, Path Sum, Number of Islands, Clone Graph, Word Search. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0040 · DSA question coverage
+
+Greedy: Jump Game, Jump Game II, Gas Station, Hand of Straights, Merge Triplets to Form Target Triplet. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0041 · DSA question coverage
+
+Dynamic programming: House Robber, House Robber II, Coin Change, Longest Common Subsequence, Partition Equal Subset Sum, Unique Paths. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0042 · DSA question coverage
+
+Graphs: Course Schedule, Pacific Atlantic Water Flow, Word Ladder, Network Delay Time, Cheapest Flights Within K Stops. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0043 · DSA question coverage
+
+Backtracking: Subsets II, Combination Sum II, Palindrome Partitioning, Letter Combinations of a Phone Number, N-Queens. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0044 · DSA question coverage
+
+BFS: Binary Tree Level Order Traversal, Rotting Oranges, Word Ladder, Open the Lock, Shortest Path in Binary Matrix. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0045 · DSA question coverage
+
+Tries: Implement Trie, Design Add and Search Words Data Structure, Word Search II, Replace Words, Maximum XOR for Each Query. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0046 · DSA question coverage
+
+Prefix sums: Range Sum Query - Immutable, Subarray Sum Equals K, Continuous Subarray Sum, Product of Array Except Self, Find Pivot Index. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0047 · DSA question coverage
+
+Matrices: Set Matrix Zeroes, Spiral Matrix, Rotate Image, Word Search, Number of Islands. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0048 · DSA question coverage
+
+Intervals: Merge Intervals, Insert Interval, Non-overlapping Intervals, Meeting Rooms II, Minimum Number of Arrows to Burst Balloons. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0049 · DSA question coverage
+
+Bits: Single Number, Missing Number, Sum of Two Integers, Bitwise AND of Numbers Range, Maximum XOR for Each Query. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+
+## 0050 · DSA question coverage
+
+Interview core: Two Sum, LRU Cache, Design Add and Search Words Data Structure, Number of Islands, Course Schedule, Merge Intervals. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
