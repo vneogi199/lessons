@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a diagnostic experiment</h2>
+      <h2>Trace an interview decision and its evidence</h2>
       <ol class="trace-flow" data-flow="coding-interview" aria-label="Mechanism trace: Clarify inputs and constraints then State invariant and approach then Write executable code aloud then Evidence challenges the solution. Experiment: Solve one problem under time, then replay the recording and locate the first reasoning error.">
         <li class="trace-stage"><span>01 · CONTRACT</span><strong>Clarify inputs and constraints</strong><small>Examples, edge cases, scale, and allowed tools define correctness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REASON</span><strong>State invariant and approach</strong><small>Brute force creates a baseline before justified optimization.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMPLEMENT</span><strong>Write executable code aloud</strong><small>Readable language primitives preserve the reasoning trail.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · TEST</span><strong>Evidence challenges the solution</strong><small>Boundary cases, dry runs, complexity, and debugging expose errors.</small></li>
       </ol>
@@ -109,6 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Solve and debug equivalent problems in JavaScript and Python, record language-specific errors, and choose one primary interview language from measured fluency.</p>
+    <p><strong>Core and extension:</strong> Core: trace the fictional fixture, then rehearse the question with truthful personal evidence and compare the worked criteria. Extension: obtain feedback and delayed recall on a changed prompt, using consented recordings and current sources where needed. Content review does not complete applications, publish profiles, send outreach, establish legal eligibility or certify interview readiness; nothing is installed.</p>
 
 
 
@@ -123,16 +124,24 @@
 // Replace claims with truthful personal evidence; placeholders are not supplied tools.
 // JavaScript: count with Map; sort explicitly with a numeric comparator.
 function topK(values, k) {
-  if (!Number.isSafeInteger(k) || k &lt; 0 || !Array.isArray(values) || values.some(value =&gt; !Number.isFinite(value))) {
+  if (!Number.isSafeInteger(k) || k &lt; 0 || !Array.isArray(values)) {
     throw new RangeError(&quot;finite numeric values and nonnegative integer k required&quot;);
   }
   const counts = new Map();
-  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  for (const value of values) {
+    if (!Number.isFinite(value)) throw new RangeError(&quot;finite numeric values required&quot;);
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  }
   return [...counts].sort((a, b) =&gt; b[1] - a[1] || a[0] - b[0]).slice(0, k).map(([value]) =&gt; value);
 }
 console.assert(JSON.stringify(topK([3, 1, 3, 2, 1, 3], 2)) === &quot;[3,1]&quot;);
 
 console.assert(topK([], 2).length === 0 &amp;&amp; topK([1, 2], 0).length === 0);
+for (const values of [Array(1), [NaN], [Infinity], [&quot;1&quot;]]) {
+  let rejected = false;
+  try { topK(values, 1); } catch (error) { rejected = error instanceof RangeError; }
+  console.assert(rejected, &quot;invalid or sparse values must fail&quot;);
+}
 // Python equivalent uses collections.Counter and heapq.nlargest when useful.
 // This sorts m unique values: O(n + m log m) time, O(m) auxiliary space. Ties use
 // ascending numeric value, so a Python heap version must preserve that tie policy.
@@ -156,7 +165,7 @@ console.assert(topK([], 2).length === 0 &amp;&amp; topK([1, 2], 0).length === 0)
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an interview decision and its evidence from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Solve one problem under time, then replay the recording and locate the first reasoning error.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p></article>
@@ -167,19 +176,20 @@ console.assert(topK([], 2).length === 0 &amp;&amp; topK([1, 2], 0).length === 0)
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Write readable executable code, explain runtime behavior, and verify boundary cases without relying on unavailable packages or IDE magic.</li>
-      <li>Trace a diagnostic experiment for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an interview decision and its evidence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you solve and debug equivalent problems in JavaScript and Python, record language-specific errors, and choose one primary interview language from measured fluency, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an interview decision and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="international-interviews">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate algorithm reasoning from language mechanics while using familiar collections, iteration, sorting, heaps, queues, recursion limits, async boundaries, and debugging tools accurately.</p>
+        <p><strong>Worked answer criteria:</strong> The counts are three for 3, two for 1 and one for 2, so top two is [3,1]. Ties sort by ascending numeric value. Iterating validates every value, including sparse holes that Array.some would skip. The Python equivalent is an extension, not supplied executed code; preserve the tie rule and compare sort versus heap from unique-count and k.</p>
         <p><strong>Evidence to explain:</strong> Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#international-interviews">Worked track case: Explain an unpopular technical decision ↗</a></p>

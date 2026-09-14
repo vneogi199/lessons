@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Persist a conversation event log, resume an interrupted stream from the last event ID, prevent cross-user access and duplicate sends, redact logs, test race conditions, and evaluate the complete user journey.</p>
+    <p><strong>Core and extension:</strong> Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
 
 
 
@@ -150,7 +151,7 @@ export async function resume(request: Request, chatId: string) {
   await requireChatOwner(chatId, user.id);
   const params = new URL(request.url).searchParams;
   const cursor = params.get(&quot;after&quot;) ?? &quot;0&quot;;
-  if (!/^(0|[1-9][0-9]*)$/.test(cursor)) return new Response(&quot;Bad cursor&quot;, { status: 400 });
+  if (/^(0|[1-9][0-9]*)$/.exec(cursor)?.[0] !== cursor) return new Response(&quot;Bad cursor&quot;, { status: 400 });
   const after = Number(cursor);
   if (!Number.isSafeInteger(after) || after &lt; 0) return new Response(&quot;Bad cursor&quot;, { status: 400 });
 
@@ -211,6 +212,7 @@ export async function resume(request: Request, chatId: string) {
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Assign stable conversation, message, stream, and request identities so the server can authorize ownership, persist canonical events, resume after disconnect, suppress duplicates, delete private data, and replay deterministic UI state.</p>
+        <p><strong>Worked answer criteria:</strong> The canonical cursor must match the entire string: a trailing newline is invalid even when Number would accept it. The hundred-event response is a replay page, not a race-free transition to a live tail. Atomically bind scoped key, input, message, stream and job; recheck access during replay and deletion. The listed persistence adapters are not implemented by this sketch.</p>
         <p><strong>Evidence to explain:</strong> Request/message/stream IDs, raw frames, event sequence, render count, focus and announcements, auth denial, persisted state, and final evaluation.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#ai-application-engineering">Worked track case: Valid JSON requests an invalid action ↗</a></p>

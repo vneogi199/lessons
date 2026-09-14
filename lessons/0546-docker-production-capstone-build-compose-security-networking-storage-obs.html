@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace untrusted input crossing a boundary</h2>
+      <h2>Trace a container lifecycle</h2>
       <ol class="trace-flow" data-flow="docker-container-run" aria-label="Mechanism trace: Docker resolves runtime intent then Docker creates runtime objects then Runtime starts container PID 1 then State and evidence remain. Experiment: Run once with one incorrect user, signal, or resource limit and diagnose it.">
         <li class="trace-stage"><span>01 · IMAGE + CONFIG</span><strong>Docker resolves runtime intent</strong><small>Digest, command, user, mounts, network, and limits enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DAEMON</span><strong>Docker creates runtime objects</strong><small>Filesystem snapshot, namespaces, cgroups, and interfaces form.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Runtime starts container PID 1</strong><small>Kernel isolation and application lifecycle govern execution.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXIT</span><strong>State and evidence remain</strong><small>Logs, health, metrics, exit code, events, and persistent mounts explain outcome.</small></li>
       </ol>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Containerize a full-stack AI slice, sign it, run it least-privileged, inject failures, restore data, and present evidence.</p>
+    <p><strong>Core and extension:</strong> Core: predict the specified image/runtime experiment and compare the worked criteria without installing or invoking Docker. Extension: use an existing authorized disposable daemon, verified images and bounded fixtures to collect actual build, isolation, shutdown and restore evidence. Recipes do not represent completed container labs.</p>
 
 
 
@@ -156,7 +157,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace untrusted input crossing a boundary from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a container lifecycle from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Run once with one incorrect user, signal, or resource limit and diagnose it.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</p></article>
@@ -167,19 +168,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Diagnose and defend the entire container lifecycle in a senior infrastructure interview.</li>
-      <li>Trace untrusted input crossing a boundary for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a container lifecycle for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you containerize a full-stack AI slice, sign it, run it least-privileged, inject failures, restore data, and present evidence, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a container lifecycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="docker">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace source through BuildKit, registry, runtime isolation, service communication, data persistence, telemetry, failure, and recovery.</p>
+        <p><strong>Worked answer criteria:</strong> The capstone requires a supplied image and Compose app. Replace the application, interrupt the database and restore data in separate bounded experiments, preserving expected/observed results. Link non-root and network settings to actual denied operations, and demonstrate graceful stop plus recovery before claiming the full runtime contract.</p>
         <p><strong>Evidence to explain:</strong> Inspect output, namespace and cgroup state, logs, health, stats, events, and exit code.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#docker">Worked track case: The container ignores graceful shutdown ↗</a></p>

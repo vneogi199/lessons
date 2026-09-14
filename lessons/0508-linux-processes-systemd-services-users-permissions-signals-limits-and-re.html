@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a delivery change</h2>
+      <h2>Trace an operational diagnosis and response</h2>
       <ol class="trace-flow" data-flow="operations-diagnosis" aria-label="Mechanism trace: Name the affected request or workload then Identify the failing layer then Check one hypothesis safely then Confirm recovery without a hidden regression. Experiment: The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.">
         <li class="trace-stage"><span>01 · SCOPE</span><strong>Name the affected request or workload</strong><small>Capture the symptom, time window, recent changes and expected behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Identify the failing layer</strong><small>Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TEST</span><strong>Check one hypothesis safely</strong><small>Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Confirm recovery without a hidden regression</strong><small>Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</small></li>
       </ol>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Diagnose and repair a service that fails startup, exhausts a resource, and ignores graceful termination.</p>
+    <p><strong>Core and extension:</strong> Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
 
 
 
@@ -156,7 +157,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a delivery change from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an operational diagnosis and response from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p></article>
@@ -167,19 +168,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Use OS evidence to explain a production symptom from process to kernel boundary.</li>
-      <li>Trace a delivery change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an operational diagnosis and response for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you diagnose and repair a service that fails startup, exhausts a resource, and ignores graceful termination, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a delivery change. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an operational diagnosis and response. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace service startup, process identity, file permissions, signals, cgroups, descriptors, CPU, memory, and exit state.</p>
+        <p><strong>Worked answer criteria:</strong> A process-level descriptor limit can fail one service while the host has spare capacity. Count descriptors before and after repeated bounded work to distinguish a leak from a legitimate peak. systemd commands apply only on systems actually using it; SIGKILL cannot run cleanup. A restart restores capacity temporarily but is not proof the leak was fixed.</p>
         <p><strong>Evidence to explain:</strong> Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>

@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a delivery change</h2>
+      <h2>Trace a delivery change and its evidence</h2>
       <ol class="trace-flow" data-flow="delivery-change" aria-label="Mechanism trace: Reviewed change identifies intent then CI creates an immutable artifact then Platform rolls out that artifact then Telemetry confirms behavior. Experiment: Fail readiness during a staged rollout and verify traffic and rollback behavior.">
         <li class="trace-stage"><span>01 · SOURCE</span><strong>Reviewed change identifies intent</strong><small>Code, configuration, and dependencies are versioned.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD</span><strong>CI creates an immutable artifact</strong><small>Tests and scans attach evidence to one identity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DEPLOY</span><strong>Platform rolls out that artifact</strong><small>Health, capacity, secrets, and strategy control exposure.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry confirms behavior</strong><small>Rollback or progression follows production evidence.</small></li>
       </ol>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Design a small-batch workflow with protected main, required evidence, release tags, and reversible mistakes.</p>
+    <p><strong>Core and extension:</strong> Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
 
 
 
@@ -156,7 +157,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a delivery change from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a delivery change and its evidence from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Fail readiness during a staged rollout and verify traffic and rollback behavior.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p></article>
@@ -167,19 +168,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare trunk-based and long-lived branching strategies using team and deployment constraints.</li>
-      <li>Trace a delivery change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace a delivery change and its evidence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you design a small-batch workflow with protected main, required evidence, release tags, and reversible mistakes, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a delivery change. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a delivery change and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect commits and refs to integration frequency, conflict cost, review latency, release history, and recovery.</p>
+        <p><strong>Worked answer criteria:</strong> Rebase recreates commits even if their patch content appears unchanged; downstream references may still name the old commits. A local reflog can recover retained objects but is neither permanent nor a remote backup. Compare short-lived branch integration and release controls against team constraints, and preserve evidence before experimenting in a disposable repository.</p>
         <p><strong>Evidence to explain:</strong> Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>

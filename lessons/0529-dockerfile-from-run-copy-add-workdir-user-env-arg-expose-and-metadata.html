@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a container lifecycle</h2>
+      <h2>Trace an image build and delivery</h2>
       <ol class="trace-flow" data-flow="docker-image-build" aria-label="Mechanism trace: Builder receives declared inputs then BuildKit evaluates dependencies then Layers and config form a manifest then Registry and policy inspect output. Experiment: Change one dependency and predict exactly which build nodes invalidate.">
         <li class="trace-stage"><span>01 · CONTEXT</span><strong>Builder receives declared inputs</strong><small>Dockerfile, context, base digests, args, and mounts enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD GRAPH</span><strong>BuildKit evaluates dependencies</strong><small>Cache keys decide which operations execute or reuse output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMAGE</span><strong>Layers and config form a manifest</strong><small>Content digests identify immutable platform artifacts.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Registry and policy inspect output</strong><small>SBOM, provenance, signature, scan, and test attach evidence.</small></li>
       </ol>
@@ -125,6 +125,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Author a deterministic Dockerfile and inspect the resulting history, config, user, environment, and filesystem.</p>
+    <p><strong>Core and extension:</strong> Core: predict the specified image/runtime experiment and compare the worked criteria without installing or invoking Docker. Extension: use an existing authorized disposable daemon, verified images and bounded fixtures to collect actual build, isolation, shutdown and restore evidence. Recipes do not represent completed container labs.</p>
 
 
 
@@ -164,7 +165,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a container lifecycle from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an image build and delivery from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one dependency and predict exactly which build nodes invalidate.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p></article>
@@ -175,19 +176,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain instruction semantics and common security or cache mistakes.</li>
-      <li>Trace a container lifecycle for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an image build and delivery for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you author a deterministic Dockerfile and inspect the resulting history, config, user, environment, and filesystem, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a container lifecycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an image build and delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="docker">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Understand how instructions create build graph nodes, filesystem changes, configuration, and cache inputs.</p>
+        <p><strong>Worked answer criteria:</strong> APP_MODE changes at runtime while ARG is not automatically retained as an environment variable. The unconsumed BUILD_LABEL has no demonstrated effect. USER 10001 can run readable files without a passwd entry but needs appropriate write permissions. The base tag is mutable; record a verified digest and complete build inputs for reproducibility.</p>
         <p><strong>Evidence to explain:</strong> Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#docker">Worked track case: The container ignores graceful shutdown ↗</a></p>

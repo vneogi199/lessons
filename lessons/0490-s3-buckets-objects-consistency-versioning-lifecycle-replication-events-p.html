@@ -55,11 +55,11 @@
       <article class="concept-card" data-subtopic="S3 buckets">
         <span>01</span>
         <h3>S3 buckets</h3>
-        <p><strong>What it means:</strong> S3 buckets is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> An S3 bucket holds objects under bucket-specific naming, location, access and lifecycle rules. Bucket type matters; the versioned-object exercise uses general-purpose bucket semantics.</p>
       </article><article class="concept-card" data-subtopic="objects">
         <span>02</span>
         <h3>objects</h3>
-        <p><strong>What it means:</strong> objects is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> An S3 object contains bytes plus metadata addressed by a bucket and key, with a version ID when supported and enabled. Key prefixes organize names; they are not filesystem directories.</p>
       </article><article class="concept-card" data-subtopic="consistency">
         <span>03</span>
         <h3>consistency</h3>
@@ -67,7 +67,7 @@
       </article><article class="concept-card" data-subtopic="versioning">
         <span>04</span>
         <h3>versioning</h3>
-        <p><strong>What it means:</strong> versioning is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> S3 versioning retains distinct object versions and uses delete markers for ordinary deletion. Deleting an explicit version removes that version; lifecycle policies can still expire retained history.</p>
       </article><article class="concept-card" data-subtopic="lifecycle">
         <span>05</span>
         <h3>lifecycle</h3>
@@ -75,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="replication">
         <span>06</span>
         <h3>replication</h3>
-        <p><strong>What it means:</strong> replication is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Replication copies data to other eligible locations under a configured service contract. Lag, conflict, deletion and failover semantics vary; a replica is not automatically an independent backup.</p>
       </article><article class="concept-card" data-subtopic="events">
         <span>07</span>
         <h3>events</h3>
@@ -87,7 +87,7 @@
       </article><article class="concept-card" data-subtopic="data protection">
         <span>09</span>
         <h3>data protection</h3>
-        <p><strong>What it means:</strong> data protection is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Data protection combines access restrictions, encryption, version retention, recoverable backups and verified restore procedures. Each control addresses a different path to loss or exposure.</p>
       </article>
     </div>
   </section>
@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a private versioned bucket with lifecycle rules, replication, access logging, and recovery from accidental deletion.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied tabletop or configuration fragment and explain an expected failure plus its evidence. Extension: supply the missing resources in an authorized isolated AWS account and measure behavior, costs and recovery. No cloud command, credential, deployment or installation is executed by this content review.</p>
 
 
 
@@ -182,6 +183,7 @@ aws s3api list-object-versions --bucket evidence-bucket --prefix recovery-test/
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace a signed object request through authorization, encryption, version selection, storage, replication, and event publication.</p>
+        <p><strong>Worked answer criteria:</strong> The commands mutate an existing bucket, so first resolve the intended account, owner and disposable target in an authorized lab. Versioning does not enable replication or lifecycle rules by itself. A delete marker can reveal prior versions when removed, but deleting a specific version is permanent absent another copy. Strong object consistency does not make asynchronous replication or multi-object updates atomic.</p>
         <p><strong>Evidence to explain:</strong> Request metrics, throttles, query or key, replica state, audit event, and restored data.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

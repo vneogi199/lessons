@@ -59,27 +59,27 @@
       </article><article class="concept-card" data-subtopic="envelope encryption">
         <span>02</span>
         <h3>envelope encryption</h3>
-        <p><strong>What it means:</strong> envelope encryption is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Envelope encryption encrypts data locally with a data key and encrypts that key with a separately protected key. Store the encrypted data key with ciphertext; tightly control exposure and lifetime of its plaintext form.</p>
       </article><article class="concept-card" data-subtopic="key policies">
         <span>03</span>
         <h3>key policies</h3>
-        <p><strong>What it means:</strong> key policies is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> A KMS key policy governs access to that key and can enable delegation through IAM policies. A broad IAM allow alone may be insufficient without the required key policy and cross-account permissions.</p>
       </article><article class="concept-card" data-subtopic="grants">
         <span>04</span>
         <h3>grants</h3>
-        <p><strong>What it means:</strong> grants is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> KMS grants delegate specified operations on a key, often to an AWS service acting for a workload. Constraints, retirement and revocation determine the scope and lifetime of delegated access.</p>
       </article><article class="concept-card" data-subtopic="encryption context">
         <span>05</span>
         <h3>encryption context</h3>
-        <p><strong>What it means:</strong> encryption context is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> KMS encryption context is nonsecret authenticated metadata bound to supported cryptographic operations. Decryption requires matching context; context can also constrain policy and may appear in audit records.</p>
       </article><article class="concept-card" data-subtopic="rotation">
         <span>06</span>
         <h3>rotation</h3>
-        <p><strong>What it means:</strong> rotation is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Rotation changes active key material or a secret through the service&#039;s supported process. KMS key rotation retains old material for decryption; rotating a database password additionally requires coordinating the database and its clients.</p>
       </article><article class="concept-card" data-subtopic="Secrets Manager">
         <span>07</span>
         <h3>Secrets Manager</h3>
-        <p><strong>What it means:</strong> Secrets Manager is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS Secrets Manager stores versioned secrets, controls retrieval and supports configured rotation workflows. Applications still own caching, refresh, safe use and avoiding secret disclosure.</p>
       </article>
     </div>
   </section>
@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Encrypt application data, rotate a database secret, and prove which principals can decrypt in which context.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied tabletop or configuration fragment and explain an expected failure plus its evidence. Extension: supply the missing resources in an authorized isolated AWS account and measure behavior, costs and recovery. No cloud command, credential, deployment or installation is executed by this content review.</p>
 
 
 
@@ -176,6 +177,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow plaintext through data-key generation, local encryption, encrypted data keys, authorization, audit, and secret rotation.</p>
+        <p><strong>Worked answer criteria:</strong> The plaintext data key exists in the encrypting process; KMS protection does not remove that exposure. Bind nonsecret encryption context and preserve encrypted-key metadata needed for recovery. KMS rotation retains historical decryption capability, while a database-secret rotation needs client refresh and a tested transition. Neither rotation automatically revokes a compromised principal.</p>
         <p><strong>Evidence to explain:</strong> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

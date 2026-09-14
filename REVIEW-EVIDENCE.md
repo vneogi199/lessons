@@ -1,5 +1,742 @@
 # Individual content review evidence
 
+AI and interview lessons 0577–0644 individually reviewed 2026-09-14: all starters, effective definitions, diagrams and specific practice/interview prompts inspected; 68 worked checkpoints added. Local content/catalog/link checks and TypeScript checks passed, including 26 selected TypeScript lesson snippets and 17 additional design/service/stream snippets. Fixed cursor full-string validation, malformed tool/decision inputs, Qdrant delete endpoint, missing embedding-model predicate and sparse numeric arrays. No packages, model calls, SQL/extensions, clusters, deployment or public profile/outreach actions ran. Framework, provider and browser integration remain unverified. Teach supplied prediction, worked feedback and delayed changed-prompt recall; these authoring sign-offs are not learner mastery.
+
+API-specific limits checked using official OpenAI documentation for [structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs) and [function calling](https://developers.openai.com/api/docs/guides/function-calling). Additional primary references: [LangChain agents](https://docs.langchain.com/oss/python/langchain/agents), [LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts), [pinned MCP transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports), [pgvector](https://github.com/pgvector/pgvector) and [Qdrant point deletion](https://api.qdrant.tech/api-reference/points/delete-points). Jurisdiction-specific legal eligibility and market compensation are deliberately unresolved learner-specific research, not claims in the examples.
+
+## 0577 · Individual review
+
+Checked dot/cosine assertions; added projection derivation, negative scaling and finite-small-vector scope.
+
+## 0578 · Individual review
+
+Derived gradient -14, w=1.9 and loss decrease; separated regularization and held-out generalization extensions.
+
+## 0579 · Individual review
+
+Explained 99% accuracy/zero recall, undefined positive precision and deployment-specific split/leakage boundaries.
+
+## 0580 · Individual review
+
+Verified changed nearest neighbor after scaling; corrected token trace title and separated geometry from relevance.
+
+## 0581 · Individual review
+
+Checked three-versus-seven token fixture, greedy/BPE limits and token-versus-document embedding spaces.
+
+## 0582 · Individual review
+
+Derived masked scalar attention output, stability/shape assumptions and unimplemented transformer/serving components.
+
+## 0583 · Individual review
+
+Verified shifted targets and 4 ln(2)/3 loss; separated prompting, parameter training and behavioral evidence.
+
+## 0584 · Individual review
+
+Reviewed finite softmax and zero-temperature rejection; clarified decoding, caching, quantization and serving limits.
+
+## 0585 · Individual review
+
+Reviewed zero-global-gap counterexample, bin counts, long-context evidence placement and confidence limits.
+
+## 0586 · Individual review
+
+Added partial-stream, cancellation, provider-capability and usage-uncertainty criteria to adapter specification.
+
+## 0587 · Individual review
+
+Added held-out prompt/context comparison, versioning and delimiter-versus-authority boundaries.
+
+## 0588 · Individual review
+
+Added refusal/incomplete/schema/business-validity distinctions and bounded non-authoritative repair.
+
+## 0589 · Individual review
+
+Fixed non-string tool-name rejection with runnable test; clarified read-only receipt and missing approval/durable authority scope.
+
+## 0590 · Individual review
+
+Added remaining-deadline arithmetic, failed-task costs and permission/version-sensitive cache scope.
+
+## 0591 · Individual review
+
+Reviewed LF-only SSE parser and existing split-frame checks; clarified terminal completion, cursor and cancellation limits.
+
+## 0592 · Individual review
+
+Identified required UI helpers, pending/error and rejected-state extension; bound approval to server-side exact intent.
+
+## 0593 · Individual review
+
+Fixed whole-string resume cursor validation and added newline/malformed regression; clarified bounded replay versus live handoff.
+
+## 0594 · Individual review
+
+Added concrete reciprocal-rank fusion rule and controlled lexical/dense relevance comparison.
+
+## 0595 · Individual review
+
+Corrected ingestion trace title; added processing-version identity, publication and deletion reconciliation criteria.
+
+## 0596 · Individual review
+
+Added pre-exposure authorization, context reservations and claim-to-versioned-source support criteria.
+
+## 0597 · Individual review
+
+Verified relevance/ANN/reranking ratios and added 2/3 claim-level groundedness versus completeness example.
+
+## 0598 · Individual review
+
+Added post-index/cache revocation, current authorization and fail-closed freshness boundaries.
+
+## 0599 · Individual review
+
+Fixed omitted embedding-model filter in planned query; regression preserves comparable query scopes; no extension/SQL execution.
+
+## 0600 · Individual review
+
+Reviewed exact-neighbor helper and recall tests; explained exact stand-in, tie/empty-input assumptions and ANN measurement extension.
+
+## 0601 · Individual review
+
+Corrected Qdrant deletion to POST /points/delete with regression; clarified single-node replication and missing churn/restore evidence.
+
+## 0602 · Individual review
+
+Added stage-level capstone outcomes, no-evidence behavior and versioned baseline criteria.
+
+## 0603 · Individual review
+
+Fixed unhashable decision-type failure with runnable test; explained two-step lookup loop and non-time-bounded budget.
+
+## 0604 · Individual review
+
+Reviewed goal-preserving context assertions; corrected trace and distinguished process-local memory, item/token limits and consent.
+
+## 0605 · Individual review
+
+Checked current framework architecture source; clarified ToolStrategy, fake order data and invoke/stream alternatives without installation.
+
+## 0606 · Individual review
+
+Checked interrupt replay source and extracted node tests; clarified same-process saver, no refund effect and validation/approval boundaries.
+
+## 0607 · Individual review
+
+Reviewed partial JSON-RPC dispatcher and frame checks; documented missing negotiation/client/lifecycle enforcement.
+
+## 0608 · Individual review
+
+Checked pinned MCP transport source; clarified post-initialization-only sketch, header scope, cancellation and audit-after-effect uncertainty.
+
+## 0609 · Individual review
+
+Added stable approved-intent replay, receipt/approval expiry and owned human review deadline.
+
+## 0610 · Individual review
+
+Added equal-budget specialist comparison, correlated errors and shared-state/cancellation ownership.
+
+## 0611 · Individual review
+
+Defined tool-call success denominators and trajectory safety; corrected trace title and distinguished terminal outcomes.
+
+## 0612 · Individual review
+
+Added evaluation dataset release controls, classification accuracy/confusion matrix and critical slice gates.
+
+## 0613 · Individual review
+
+Added grader confusion matrix, false-pass risk, adjudication and separation from deterministic tool/schema checks.
+
+## 0614 · Individual review
+
+Reviewed all-attempt benchmark assertions and fake costs; clarified independent cases, descriptive variance and unmeasured latency tails.
+
+## 0615 · Individual review
+
+Reviewed harmless injection/executor-boundary exercise; added pre-context exposure, exact intent and destination controls.
+
+## 0616 · Individual review
+
+Added component-specific quality regression diagnosis, feedback selection bias and privacy-safe incident recovery.
+
+## 0617 · Individual review
+
+Reviewed scoped risk register; retained qualified jurisdiction review and rejected blanket fairness/compliance certification.
+
+## 0618 · Individual review
+
+Added baseline user-outcome/no-AI comparison and assumptions-versus-observation criteria.
+
+## 0619 · Individual review
+
+Added coherent vertical-slice, stable-intent and independent database/model failure criteria.
+
+## 0620 · Individual review
+
+Corrected readiness trace and separated observed load/security/restore evidence from content checks.
+
+## 0621 · Individual review
+
+Added three presentation depths, honest personal scope and changed-constraint defense.
+
+## 0622 · Individual review
+
+Derived 0.75/0.25 keyword toy ratios; separated evidence quality, responsibility fit and hiring probability.
+
+## 0623 · Individual review
+
+Removed universal one-page requirement for senior resumes; explained heuristic checks, truthful metrics and extraction prerequisites.
+
+## 0624 · Individual review
+
+Reviewed profile worksheet; kept current-control verification, privacy uncertainty and no-publication scope explicit.
+
+## 0625 · Individual review
+
+Reviewed fictional repository template and reproducibility/confidentiality boundaries.
+
+## 0626 · Individual review
+
+Reviewed official-host checks and counterexamples; distinguished verified employer linkage from fraud/eligibility certification.
+
+## 0627 · Individual review
+
+Reviewed URL identity assertions; explained equivalent/reposted URLs, stale fictional date and cohort analytics limits.
+
+## 0628 · Individual review
+
+Added factual logistics, truthful production scope and concise role narrative criteria.
+
+## 0629 · Individual review
+
+Reviewed distinct-index invariant and tests; clarified safe-arithmetic contract, selection rule and space tradeoff.
+
+## 0630 · Individual review
+
+Fixed sparse-array validation bypass with runnable invalid-input checks while preserving O(m) extra space; clarified unsupplied Python equivalent.
+
+## 0631 · Individual review
+
+Reviewed Node concurrency worked explanation and senior mechanism/failure/alternative evidence.
+
+## 0632 · Individual review
+
+Added 11.6/s average and 116/s hypothetical peak estimate with units and critical-path criteria.
+
+## 0633 · Individual review
+
+Separated hypothetical serving targets, relevance recall, grounding, tool/task success and failed-call cost.
+
+## 0634 · Individual review
+
+Reviewed situational model answers; explained length-only assertion and non-waivable obligations.
+
+## 0635 · Individual review
+
+Reviewed fictional STAR facts; added attribution, measured-scope and rollback-limit criteria.
+
+## 0636 · Individual review
+
+Corrected leadership ownership from resource-cleanup meaning; added fair opposing-view, test-scope and genuine reflection criteria.
+
+## 0637 · Individual review
+
+Reviewed audience field selection; distinguished speaking/listener evidence from fake p99 numbers.
+
+## 0638 · Individual review
+
+Added evidence-based stakeholder hypothesis, dissent, decision authority and follow-through criteria.
+
+## 0639 · Individual review
+
+Reviewed ethics worksheet as human reasoning aid, not a verified consent/compliance gate.
+
+## 0640 · Individual review
+
+Reviewed false preflight flags, recoverable demo and critical-path depth; explained discovery diagram scope.
+
+## 0641 · Individual review
+
+Reviewed fictional networking/contribution template; no invented relationship, outreach or contribution sent.
+
+## 0642 · Individual review
+
+Verified fictional 123/127 versus 118/118 compensation arithmetic and contingent-versus-guaranteed boundaries.
+
+## 0643 · Individual review
+
+Reviewed unknown jurisdiction/route worksheet; no eligibility inference or legal research outcome claimed.
+
+## 0644 · Individual review
+
+Reviewed practice planner assertions; distinguished demonstrated/unobserved evidence and adaptive delayed recall.
+
+
+Kubernetes 0547–0576 individually reviewed 2026-09-14: starter, effective definitions, diagrams and practice/interview prompts inspected; thirty worked checkpoints added. Local content, catalog, 9,372-link and whitespace checks passed. No cluster commands, installations, image pulls or live failure experiments. References: [Pod lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/), [NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) and [Deployment behavior](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/). Content review does not establish operational execution or learner mastery.
+
+## 0547 · Kubernetes review
+
+Deployment/ReplicaSet ownership versus same-Pod restart and actual availability.
+
+## 0548 · Kubernetes review
+
+UID lifetime, opaque resourceVersion, generation and optimistic conflict scope.
+
+## 0549 · Kubernetes review
+
+Authentication/authorization/admission outcomes, configured anonymous access and audit limits.
+
+## 0550 · Kubernetes review
+
+Corrected dependent-object garbage collection; finalizer cleanup, owner scope and relist-safe reconciliation.
+
+## 0551 · Kubernetes review
+
+Corrected Pending definition; node assignment, FailedScheduling and all hard constraints.
+
+## 0552 · Kubernetes review
+
+Sandbox/image/runtime diagnosis, heartbeat suspicion and stateful fencing.
+
+## 0553 · Kubernetes review
+
+Shared ports and declared volumes versus process/root filesystem scope; sidecar lifecycle.
+
+## 0554 · Kubernetes review
+
+Corrected readiness-gate definition; distinct probes and bounded termination/draining.
+
+## 0555 · Kubernetes review
+
+Four-replica surge arithmetic, terminating resource use, deadline versus rollback and data compatibility.
+
+## 0556 · Kubernetes review
+
+Ordinal/UID/PVC distinction, headless discovery, quorum and force-delete risk.
+
+## 0557 · Kubernetes review
+
+Eligible nodes, automatic tolerations and agent rollout blast radius.
+
+## 0558 · Kubernetes review
+
+Repeated Job effects, CronJob overlap scope, deadlines and business idempotency.
+
+## 0559 · Kubernetes review
+
+Service port mapping, endpoint readiness and implementation-specific forwarding.
+
+## 0560 · Kubernetes review
+
+Corrected ingress-controller definition and explained external listener/controller segment missing from backend diagram.
+
+## 0561 · Kubernetes review
+
+Absolute DNS names, ndots, application resolver and negative caches.
+
+## 0562 · Kubernetes review
+
+Corrected policy-ingress versus Ingress API; peer intersection/union, DNS and additive allowances.
+
+## 0563 · Kubernetes review
+
+Environment versus projection/reload, subPath exception and rotation exposure.
+
+## 0564 · Kubernetes review
+
+0.25 CPU request versus one CPU limit, Burstable QoS and OOM/eviction distinction.
+
+## 0565 · Kubernetes review
+
+Binding topology, RWO versus RWOP, snapshot consistency and verified restore.
+
+## 0566 · Kubernetes review
+
+Namespace limits, quota admission, policy-label ownership and tenant threats.
+
+## 0567 · Kubernetes review
+
+Job read-only Role scope, missing ServiceAccount and additive effective rights.
+
+## 0568 · Kubernetes review
+
+Corrected Linux group versus RBAC terminology, spec nesting and effective runtime controls.
+
+## 0569 · Kubernetes review
+
+Corrected scaling-limit definition and added four-to-eight HPA calculation with controller caveats.
+
+## 0570 · Kubernetes review
+
+Three/two PDB arithmetic, voluntary eviction scope, blocked drain and involuntary loss.
+
+## 0571 · Kubernetes review
+
+Transient events, sampled evidence, correlated request and durable redacted telemetry.
+
+## 0572 · Kubernetes review
+
+Read-only commands versus mutating/pulling debug command, retained previous logs and UID-aware events.
+
+## 0573 · Kubernetes review
+
+Rendered semantics, immutable selector risk, hook/release ownership and no-download boundary.
+
+## 0574 · Kubernetes review
+
+GitOps drift ownership, CRD/controller distinction, webhook failure and migration contracts.
+
+## 0575 · Kubernetes review
+
+Version-specific skew, etcd versus external data, keys and managed control-plane ownership.
+
+## 0576 · Kubernetes review
+
+Three separate failure experiments, owned guarantees and simpler-platform comparison.
+
+
+DevOps and Docker 0507–0546 reviewed 2026-09-13: all starters, effective definitions, diagrams and specific practice/interview prompts inspected. Added 40 worked checkpoints and explicit environment limits. Corrected migration prerequisite ordering, container/registry terminology and trace titles. Local audit, catalog and 9,372-link checks pass. No installations, container builds, daemon operations, Terraform, pipeline/deployment, database or registry mutations ran. References: existing lesson sources, [Terraform plans](https://developer.hashicorp.com/terraform/cli/commands/plan), [GitHub OIDC](https://docs.github.com/en/actions/concepts/security/openid-connect), [Docker storage](https://docs.docker.com/engine/storage/), [Dockerfile](https://docs.docker.com/reference/dockerfile), [Compose ordering](https://docs.docker.com/compose/how-tos/startup-order/) and [rootless](https://docs.docker.com/engine/security/rootless/). Bash manual fetch timed out; existing source link and explicit platform constraints retained. Content sign-off does not imply executed deployment labs or learner mastery.
+
+## 0507 · Delivery flow
+
+Added numerical build-versus-approval constraint and owned outcome criteria.
+
+## 0508 · Linux diagnosis
+
+Added descriptor leak versus limit, manager/platform and restart/cleanup criteria.
+
+## 0509 · Network layers
+
+Added DNS/TCP/TLS/HTTP and deadline evidence distinctions with retained certificate verification.
+
+## 0510 · Shell automation
+
+Clarified Bash dependence, digest-only validation, ERR limits and immediate dry-run/apply sequence with missing adapters.
+
+## 0511 · Git recovery
+
+Added changed commit identities, retained local reflog and private experiment scope.
+
+## 0512 · CI artifacts
+
+Clarified two-job fixture, moving inputs, missing make/runtime setup and consuming the tested artifact.
+
+## 0513 · Risk-based tests
+
+Added distinct boundary failures, known broken cases and accountable flaky-test policy.
+
+## 0514 · Build trust
+
+Added digest/source/builder binding and SLSA-version requirements; provenance and vulnerability evidence remain distinct.
+
+## 0515 · CI federation
+
+Added exact OIDC claims, environment/branch shape, untrusted-code and artifact trust criteria.
+
+## 0516 · Artifact promotion
+
+Added tested-byte/config identity, retained rollback inputs and data compatibility window.
+
+## 0517 · Configuration
+
+Added bounded units, atomic reload snapshots, safe diagnostics and flag expiry.
+
+## 0518 · Canary releases
+
+Clarified pseudocode, repeated stage gates, sample/control evidence and state-compatible abort.
+
+## 0519 · Database delivery
+
+Moved dual-writer prerequisite before backfill and added bounded transactions, null/lock and SKIP LOCKED completion limits.
+
+## 0520 · SLO telemetry
+
+Added rate-before-sum, eligibility, zero traffic and illustrative single-window policy criteria.
+
+## 0521 · Incident response
+
+Added queued-work persistence after rollback, coordinated roles, verified user recovery and owned follow-up.
+
+## 0522 · Capacity
+
+Added exact 1,200-job backlog and 120-second drain outcomes with variability/bytes/headroom limits.
+
+## 0523 · IaC execution
+
+Clarified init download/apply mutation, secret saved plans, lockfile scope and detailed-exitcode two.
+
+## 0524 · Platform product
+
+Added comparable template/portal success criteria and accountable self-service/escape paths.
+
+## 0525 · Security gates
+
+Added separate adversarial boundaries, rule-coverage limits and exception/patch closure ownership.
+
+## 0526 · Delivery capstone
+
+Added linked artifact evidence, incompatible-data recovery and measured process-improvement criteria.
+
+## 0527 · Docker architecture
+
+Added context/daemon/VM ownership and client/API/runtime failure distinctions.
+
+## 0528 · Image/container state
+
+Corrected writable-layer definition with regression and added restart/recreate/mount lifecycle criteria.
+
+## 0529 · Dockerfile semantics
+
+Added unused ARG, runtime ENV, numeric UID and moving base-tag limitations.
+
+## 0530 · Build cache
+
+Corrected ordering/invalidation to build meanings and added exact dependency/source invalidation criteria.
+
+## 0531 · BuildKit stages
+
+Added retained wheel content, broad COPY, missing locks/secret targets and ABI/index-access limitations.
+
+## 0532 · Container argv
+
+Added exact argv and whole-CMD replacement counterexample; retained missing app/shutdown scope.
+
+## 0533 · PID 1
+
+Added signal receipt versus completed cleanup and child ownership/forced-termination criteria.
+
+## 0534 · Kernel isolation
+
+Added enforced namespace/cgroup/security layers and Docker Desktop VM/kernel context.
+
+## 0535 · Hardening
+
+Corrected user-namespace meaning and added rootless/non-root, writable mounts, tmpfs and effective-limit scope.
+
+## 0536 · Container networking
+
+Added bridge name versus internal isolation, service listener and mutable curl image requirements.
+
+## 0537 · Storage lifetimes
+
+Added volume/layer outcomes, daemon bind path, UID mapping, tmpfs/swap and consistent restore criteria.
+
+## 0538 · Compose readiness
+
+Added pg_isready limitations, absent API credentials, internal egress and version-specific data path.
+
+## 0539 · Health policies
+
+Added unhealthy-versus-exited/manual-stop restart behavior and ongoing dependency recovery.
+
+## 0540 · Container telemetry
+
+Added bounded batch, driver blocking/drop behavior, stream and retention criteria.
+
+## 0541 · Debugging
+
+Corrected network-namespace/minimal-image definitions and added missing shell, stopped exec, secret inspect and volume-diff scope.
+
+## 0542 · Registry retention
+
+Corrected repository/garbage-collection meanings with regressions and added tag/digest/platform retention criteria.
+
+## 0543 · Multi-platform builds
+
+Corrected image-index definition; added builder mutation/push scope, platform workers and native performance verification.
+
+## 0544 · Image trust
+
+Corrected base-image definition and added trusted signer/digest, moving vulnerability knowledge and update ownership.
+
+## 0545 · Image optimization
+
+Corrected image immutability and added transfer/startup/memory differences plus runtime/support requirements.
+
+## 0546 · Docker capstone
+
+Added separate replacement/database/restore histories, denied-operation evidence and graceful recovery criteria.
+
+
+AWS infrastructure/application/operations 0481–0506 reviewed 2026-09-13: each starter, effective term, diagram and specific practice/interview prompt inspected. Replaced generic cloud definitions with mechanism-specific explanations and added 26 worked checkpoints. Corrected streaming partition scope and telemetry/security diagrams. Local audit, validation and 9,372-link checks pass; no AWS, deployment, SDK, paid model or database integration executed. Sources include each lesson's references and [KMS](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html), [VPC routes](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html), [CloudFront cache keys](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/controlling-the-cache-key.html), [EC2 metadata](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html), [Lambda SQS failures](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html), [RDS Multi-AZ](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html), [Bedrock Converse](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) and [change sets](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-changesets.html). Content review does not establish executed cloud labs or learner mastery.
+
+## 0481 · Envelope encryption
+
+Replaced generic KMS/context/grant/rotation/secret definitions; added plaintext data-key ownership, historical decryption and client-refresh criteria.
+
+## 0482 · VPC allocation
+
+Replaced address/routing definitions; identified one-AZ/two-subnet starter, default main routes, /20 capacity and missing three-AZ configuration.
+
+## 0483 · Private connectivity
+
+Defined gateway/endpoint/peering/transit differences and added DNS/policy/address-family and NAT-removal failure criteria.
+
+## 0484 · Packet evidence
+
+Defined firewall/resolver/flow-log diagnosis and added return-port, ACCEPT-versus-application-success and absent-record limits.
+
+## 0485 · DNS failover
+
+Defined records/aliases/policies/DNSSEC; added cached-answer, open-connection, weighting and secondary-state criteria.
+
+## 0486 · Edge caching
+
+Defined origin/behavior/key/signed-access/WAF boundaries and added Authorization forwarding, cache isolation and minimum-TTL criteria.
+
+## 0487 · Load balancing
+
+Defined ELB/ALB/NLB/listener/target behavior; added readiness, draining, fail-open and client/TLS identity distinctions.
+
+## 0488 · Instance replacement
+
+Defined images/bootstrap/metadata/placement/scaling mechanisms; added partial-bootstrap, durable-state, warm-up and retained-log criteria.
+
+## 0489 · Storage choices
+
+Defined block/scratch/shared-file/encryption/attachment/durability terms; added lifecycle, concurrent filesystem and restore distinctions.
+
+## 0490 · S3 recovery
+
+Defined bucket/object/version/protection semantics; added scoped mutation, marker-versus-version loss and replication/atomicity limits.
+
+## 0491 · Container services
+
+Defined ECR/ECS/service/capacity/Fargate mechanisms; added placeholder image, task/execution roles and missing service/network/health scope.
+
+## 0492 · Lambda batches
+
+Defined handler/cold-start/source/layer/failure terms; retained local standard/FIFO assertions and added synchronous processor/mapping/deadline criteria.
+
+## 0493 · Gateway contracts
+
+Defined API product/integration/authorizer/throttle/stage semantics; added API-type-specific features and backend timeout/object-authorization scope.
+
+## 0494 · Managed databases
+
+Defined Aurora/Multi-AZ/replicas/backup/parameter/auth/proxy mechanisms; distinguished readable clusters from traditional standby and unknown commit recovery.
+
+## 0495 · DynamoDB access
+
+Defined sort/index/adaptive/TTL concepts; added tenant skew, query amplification, asynchronous expiry and access-path-specific consistency criteria.
+
+## 0496 · Managed cache
+
+Defined cache-aside/eviction/clustering/stampede terms; added authority fallback bounds, version isolation and engine-specific expiry.
+
+## 0497 · Queue delivery
+
+Defined SNS/standard/FIFO/visibility/DLQ/polling/fan-out; added actual standard-queue settings and receive-count/consumer/SNS scope.
+
+## 0498 · Workflow replay
+
+Defined rules/archive/replay/Scheduler/Step Functions/compensation; added missing workflow definition, stable effect identity and approval lifecycle.
+
+## 0499 · Stream progress
+
+Defined service/shard/consumer/checkpoint/backpressure terms; corrected stream partitions away from IAM boundaries with regression and added numeric backlog/catch-up example.
+
+## 0500 · Cloud telemetry
+
+Defined alarm/dashboard/query/tracing/correlation terms; added custom metric, averaging/missing-data/action limits and dedicated evidence-response diagram.
+
+## 0501 · Security investigation
+
+Defined audit/configuration/detection/aggregation/investigation tools; added coverage, inference and response ownership and dedicated evidence-response diagram.
+
+## 0502 · Infrastructure changes
+
+Defined CDK/stack/change-set/custom-resource/testing terms; added asynchronous preview/drift, unsupported coverage and replacement recovery criteria.
+
+## 0503 · Recovery objectives
+
+Defined reliability/quota/multi-AZ/RTO/RPO terms; added end-to-end recovery timing, key/dependency/capacity and strategy criteria.
+
+## 0504 · Unit economics
+
+Defined tags/reports/analysis/budgets/rightsizing/commitments/Spot/FinOps; added dated-price, failed-task and shared/idle cost criteria.
+
+## 0505 · Managed models
+
+Defined SageMaker/access/inference/agents/retrieval/guardrail/evaluation/security terms; retained narrow local response adapter and added missing integration/reproducibility/budget limits.
+
+## 0506 · AWS capstone
+
+Defined cloud/capstone/delivery/cost/incident concepts; added user-journey dependency defense, owned evidence and changed-SLO criteria.
+
+
+Quality/security and AWS foundations 0465–0480 reviewed 2026-09-13: starters, effective terms, diagrams and topic-specific practice/interview prompts inspected. Added 16 worked checkpoints and explicit fixture/integration boundaries. Local audit, catalog and 9,372-link checks pass. No installations, cloud calls, SDK/framework integration, database or security experiments executed. Primary sources: [Stripe webhooks](https://docs.stripe.com/webhooks), [S3 presigned access](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html), [SLO implementation](https://sre.google/workbook/implementing-slos/), [AWS partitions](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/partitions.html), [IAM evaluation](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html), [SCPs](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps.html), plus existing lesson references. These are content sign-offs, not integration or learner certification.
+
+## 0465 · Test boundaries
+
+Added price-rule/database/provider boundary criteria and a fake-versus-real contract counterexample; recipe requires its service fixture.
+
+## 0466 · Generated and concurrent tests
+
+Separated conservation, duplicate safety and progress; added seed/minimization, arrival-rate and bounded-fault evidence requirements.
+
+## 0467 · Tenant threat model
+
+Added distinct identity/object denial cases, pre-denial leakage and secret/session ownership criteria; no attack executed.
+
+## 0468 · Supply chain
+
+Clarified lockfile/digest trust limits and harmless lifecycle-script fixtures; added prevention/detection/containment comparison.
+
+## 0469 · Reliability evidence
+
+Corrected admin-only observability definition with regression; added exact weighted error-budget outcomes and incident recovery criteria.
+
+## 0470 · Provider webhooks
+
+Clarified provider verifier/rotation configuration, bounded read failure, durable acceptance and replay/ordering limits.
+
+## 0471 · File lifecycle
+
+Clarified presigned POST versus multipart, declared versus signed bounds, immutable accepted versions and cleanup/atomic job contracts.
+
+## 0472 · Job leases
+
+Added transaction-time, attempt identity, 1,024-second actual delay ceiling and missing jitter/attempt/shutdown implementation criteria.
+
+## 0473 · Audit chain
+
+Fixed final-newline predecessor acceptance with a local rejection assertion; clarified anchored evidence, empty-tail serialization and missing full verifier/storage scope.
+
+## 0474 · Admin controls
+
+Added preview/current authority distinction, canonical intent, auth-time/session checks and local-versus-remote completion semantics.
+
+## 0475 · Cloud responsibilities
+
+Replaced generic cloud/elasticity/managed-service definitions; added explicit authorization, restore and capacity ownership criteria.
+
+## 0476 · AWS infrastructure
+
+Corrected AWS partitions away from network failures and defined edge/service scope; added AZ-versus-Region failure criteria.
+
+## 0477 · Account governance
+
+Replaced generic organization/OU/SCP/landing-zone terms; added permission-grant distinction and management/service-linked role exceptions.
+
+## 0478 · AWS requests
+
+Replaced generic CLI/SDK/profile/credential/SigV4/endpoint definitions; added invocation-specific identity and retry diagnosis.
+
+## 0479 · IAM evaluation
+
+Replaced generic identity/policy/resource/condition/boundary/deny definitions and corrected trace title; clarified object-prefix-only grant, conditional allow and data-event audit scope.
+
+## 0480 · Federated sessions
+
+Replaced generic role/federation/OIDC/session definitions; added trust-versus-action authorization, exact claims and expiry criteria.
+
+
 Distributed systems and domain/event architecture 0421–0464 reviewed 2026-09-13: each starter, effective definition, diagram and catalog practice/interview prompt inspected, including distinct shared fault-plan exercises. Added 44 worked checkpoints with scope and changed-constraint criteria. Local review, catalog and 9,372-link validation pass; offset newline and contextual definition/diagram regressions pass. No installed tools, broker/database/cluster mutation, provider, deployment or fault injection. Existing local models remain models, not protocol certification or learner mastery. Primary references: [Lamport clocks](https://lamport.azurewebsites.net/pubs/time-clocks.pdf), [Raft](https://raft.github.io/raft.pdf), [Node abort signals](https://nodejs.org/api/globals.html), [overload](https://sre.google/sre-book/handling-overload/), [prepared transactions](https://www.postgresql.org/docs/current/sql-prepare-transaction.html), [Kafka producer configuration](https://kafka.apache.org/41/configuration/producer-configs/) and each lesson's existing sources.
 
 ## 0421 · Developer experience

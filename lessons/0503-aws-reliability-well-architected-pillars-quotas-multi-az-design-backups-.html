@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an AWS service request</h2>
+      <h2>Trace an AWS architecture decision</h2>
       <ol class="trace-flow" data-flow="aws-architecture-change" aria-label="Mechanism trace: Workload constraint becomes design then IaC forms a dependency graph then AWS APIs change real resources then Telemetry and cost test the design. Experiment: Review a destructive or failing change and verify recovery without console drift.">
         <li class="trace-stage"><span>01 · REQUIREMENT</span><strong>Workload constraint becomes design</strong><small>Security, reliability, performance, cost, and operations are stated.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>IaC forms a dependency graph</strong><small>Accounts, Regions, services, quotas, and replacement risk become explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><strong>AWS APIs change real resources</strong><small>Partial failure and rollback behavior must be observed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry and cost test the design</strong><small>Review, game days, drift, and incidents drive the next change.</small></li>
       </ol>
@@ -55,7 +55,7 @@
       <article class="concept-card" data-subtopic="AWS reliability">
         <span>01</span>
         <h3>AWS reliability</h3>
-        <p><strong>What it means:</strong> AWS reliability is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS workload reliability depends on complete dependency paths, capacity, fault isolation and tested recovery. Managed-service availability does not automatically establish the application&#039;s user-facing SLO.</p>
       </article><article class="concept-card" data-subtopic="Well-Architected pillars">
         <span>02</span>
         <h3>Well-Architected pillars</h3>
@@ -63,15 +63,15 @@
       </article><article class="concept-card" data-subtopic="quotas">
         <span>03</span>
         <h3>quotas</h3>
-        <p><strong>What it means:</strong> quotas is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS quotas limit resources or request rates at defined service, account and regional scopes. Some are adjustable; approval and actual capacity can constrain recovery and scaling.</p>
       </article><article class="concept-card" data-subtopic="multi-AZ design">
         <span>04</span>
         <h3>multi-AZ design</h3>
-        <p><strong>What it means:</strong> multi-AZ design is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Multi-AZ design distributes required components across zonal fault domains and preserves usable capacity after a zone fails. Shared zonal egress, data or identity dependencies can defeat redundant compute.</p>
       </article><article class="concept-card" data-subtopic="backups">
         <span>05</span>
         <h3>backups</h3>
-        <p><strong>What it means:</strong> backups is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Backups retain recoverable database state independently of the current serving copy. Retention, encryption-key access, restore duration and validation determine practical recovery.</p>
       </article><article class="concept-card" data-subtopic="disaster recovery">
         <span>06</span>
         <h3>disaster recovery</h3>
@@ -79,11 +79,11 @@
       </article><article class="concept-card" data-subtopic="RTO">
         <span>07</span>
         <h3>RTO</h3>
-        <p><strong>What it means:</strong> RTO is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Recovery time objective states the acceptable time to restore the specified user capability after disruption. Measure detection, decision, restoration and verification against an explicit start/end definition.</p>
       </article><article class="concept-card" data-subtopic="RPO">
         <span>08</span>
         <h3>RPO</h3>
-        <p><strong>What it means:</strong> RPO is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Recovery point objective states the acceptable data-loss window. Backup or replication freshness must be measured against the authoritative business records actually recoverable.</p>
       </article>
     </div>
   </section>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run a Well-Architected review and game day for an AZ failure, dependency outage, and data-restoration scenario.</p>
+    <p><strong>Core and extension:</strong> Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
 
 
 
@@ -156,7 +157,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an AWS service request from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an AWS architecture decision from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Review a destructive or failing change and verify recovery without console drift.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p></article>
@@ -167,19 +168,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Choose backup-restore, pilot light, warm standby, or multi-site and quantify the tradeoff.</li>
-      <li>Trace an AWS service request for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an AWS architecture decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you run a Well-Architected review and game day for an AZ failure, dependency outage, and data-restoration scenario, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an AWS service request. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an AWS architecture decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Connect failure domains, dependency quotas, redundancy, recovery data, health routing, and operational readiness.</p>
+        <p><strong>Worked answer criteria:</strong> Recovery evidence must include data, keys, identity, configuration, dependencies and a verified user journey. Measure from the agreed incident boundary, not only the restore API call. Quotas and cold capacity can prevent an otherwise valid regional recovery plan. Backup/restore, pilot light, warm standby and active service differ in cost and what remains to start.</p>
         <p><strong>Evidence to explain:</strong> Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
