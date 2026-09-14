@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Distinguish in-process post-response tasks from durable queue workers, process crashes, retries, duplicate delivery, idempotency records, and transactional outboxes.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Distinguish in-process post-response tasks from durable queue workers, process crashes, retries, duplicate delivery, idempotency records, and transactional outboxes.</p>
+    <p class="concept-intro">Distinguish in-process post-response tasks from durable queue workers, process crashes, retries, duplicate delivery, idempotency records, and transactional outboxes.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="BackgroundTasks">
         <span>01</span>
         <h3>BackgroundTasks</h3>
-        <p><strong>What it means:</strong> BackgroundTasks runs small in-process work after the response is sent. The work is lost if the process crashes, so durable or retryable jobs belong in a queue-backed worker.</p>
+        <p class="concept-definition">BackgroundTasks runs small in-process work after the response is sent. The work is lost if the process crashes, so durable or retryable jobs belong in a queue-backed worker.</p>
       </article><article class="concept-card" data-subtopic="durable jobs">
         <span>02</span>
         <h3>durable jobs</h3>
-        <p><strong>What it means:</strong> A durable job stores work outside the web process so a worker can retry or resume it after failure.</p>
+        <p class="concept-definition">A durable job stores work outside the web process so a worker can retry or resume it after failure.</p>
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>03</span>
         <h3>idempotency</h3>
-        <p><strong>What it means:</strong> Idempotency makes repeating the same logical command produce one effect. Servers usually record a client key with the original result and return it for safe retries.</p>
+        <p class="concept-definition">Idempotency makes repeating the same logical command produce one effect. Servers usually record a client key with the original result and return it for safe retries.</p>
       </article><article class="concept-card" data-subtopic="queues">
         <span>04</span>
         <h3>queues</h3>
-        <p><strong>What it means:</strong> A queue stores work or messages until a consumer can process them and records delivery progress.</p>
+        <p class="concept-definition">A queue stores work or messages until a consumer can process them and records delivery progress.</p>
       </article><article class="concept-card" data-subtopic="outbox delivery">
         <span>05</span>
         <h3>outbox delivery</h3>
-        <p><strong>What it means:</strong> A transactional outbox stores an event in the same database transaction as the business change. A worker publishes it later, preventing the database and message broker from disagreeing silently.</p>
+        <p class="concept-definition">A transactional outbox stores an event in the same database transaction as the business change. A worker publishes it later, preventing the database and message broker from disagreeing silently.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>The receiver deduplicates atomically with its effect; a timeout may follow successful processing.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Lose the response after receiver commit, then retry the same event and verify the effect count.</p><p><strong>Then inspect:</strong> Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p></div>
+    <div class="diagnostic-note"><p>Lose the response after receiver commit, then retry the same event and verify the effect count.</p><p>Look for: Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a small post-response notification and a separate durable job flow with idempotency keys and replay tests.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -142,7 +142,7 @@ async def accept_command(
 # committed receipt on replay. Claim, job, outbox and receipt share this transaction.
 # BackgroundTasks is appropriate only for small, non-durable post-response work.
 # Durable workers claim and acknowledge the outbox message separately.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -154,7 +154,7 @@ async def accept_command(
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Accept an authorized operation → Persist work with its business state → A worker attempts the external call → Recover from ambiguous acknowledgement. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Accept an authorized operation → Persist work with its business state → A worker attempts the external call → Recover from ambiguous acknowledgement. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -179,14 +179,14 @@ async def accept_command(
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a job or event delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Distinguish in-process post-response tasks from durable queue workers, process crashes, retries, duplicate delivery, idempotency records, and transactional outboxes.</p>
-        <p><strong>Worked answer criteria:</strong> The missing claim adapter must serialize tenant/operation/key, compare intent and store receipt with job and outbox in one commit. A replay inside begin still exits its transaction. BackgroundTasks is imported but not demonstrated; a local post-response callback cannot replace durable delivery.</p>
-        <p><strong>Evidence to explain:</strong> Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Distinguish in-process post-response tasks from durable queue workers, process crashes, retries, duplicate delivery, idempotency records, and transactional outboxes.</p>
+        <p class="worked-answer">The missing claim adapter must serialize tenant/operation/key, compare intent and store receipt with job and outbox in one commit. A replay inside begin still exits its transaction. BackgroundTasks is imported but not demonstrated; a local post-response callback cannot replace durable delivery.</p>
+        <p>Look for: Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>

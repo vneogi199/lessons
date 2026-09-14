@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,36 +50,36 @@
 
   <section class="concept-section" data-subtopic-count="7">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
+    <p class="concept-intro">Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Cache-aside">
         <span>01</span>
         <h3>Cache-aside</h3>
-        <p><strong>What it means:</strong> Cache-aside reads the cache first, loads a miss from the authoritative store, and writes the result back. The application owns invalidation, stampede control, and outage fallback.</p>
+        <p class="concept-definition">Cache-aside reads the cache first, loads a miss from the authoritative store, and writes the result back. The application owns invalidation, stampede control, and outage fallback.</p>
       </article><article class="concept-card" data-subtopic="write-through">
         <span>02</span>
         <h3>write-through</h3>
-        <p><strong>What it means:</strong> Write-through caching updates the cache as part of the write path under a defined failure and ordering policy.</p>
+        <p class="concept-definition">Write-through caching updates the cache as part of the write path under a defined failure and ordering policy.</p>
       </article><article class="concept-card" data-subtopic="invalidation">
         <span>03</span>
         <h3>invalidation</h3>
-        <p><strong>What it means:</strong> Invalidation prevents stale cached data from being served after a relevant change. Coordinate keys, versions, and races explicitly.</p>
+        <p class="concept-definition">Invalidation prevents stale cached data from being served after a relevant change. Coordinate keys, versions, and races explicitly.</p>
       </article><article class="concept-card" data-subtopic="stampedes">
         <span>04</span>
         <h3>stampedes</h3>
-        <p><strong>What it means:</strong> Cache stampedes occur when many misses trigger duplicate expensive work; coordination and expiry spreading can reduce them.</p>
+        <p class="concept-definition">Cache stampedes occur when many misses trigger duplicate expensive work; coordination and expiry spreading can reduce them.</p>
       </article><article class="concept-card" data-subtopic="stale data">
         <span>05</span>
         <h3>stale data</h3>
-        <p><strong>What it means:</strong> Stale data reflects an earlier state; define which staleness is acceptable and how clients detect or recover from it.</p>
+        <p class="concept-definition">Stale data reflects an earlier state; define which staleness is acceptable and how clients detect or recover from it.</p>
       </article><article class="concept-card" data-subtopic="negative caching">
         <span>06</span>
         <h3>negative caching</h3>
-        <p><strong>What it means:</strong> Negative caching stores absence or failure results briefly to avoid repeated work, with careful invalidation and error classification.</p>
+        <p class="concept-definition">Negative caching stores absence or failure results briefly to avoid repeated work, with careful invalidation and error classification.</p>
       </article><article class="concept-card" data-subtopic="consistency">
         <span>07</span>
         <h3>consistency</h3>
-        <p><strong>What it means:</strong> Consistency specifies which combinations and orderings of observations are permitted. Name the model instead of treating consistency as a boolean.</p>
+        <p class="concept-definition">Consistency specifies which combinations and orderings of observations are permitted. Name the model instead of treating consistency as a boolean.</p>
       </article>
     </div>
   </section>
@@ -105,7 +105,7 @@
         <p>Idempotency, fencing, version, fallback, and business state close the proof.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p><strong>Then inspect:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
+    <div class="diagnostic-note"><p>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
   </section>
 
   
@@ -113,7 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement cache-aside with versioned keys, single-flight refresh, jittered TTL, negative caching, and observable fallback during Redis failure.</p>
-    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -161,7 +161,7 @@ async function loadProject(tenant, id, version, redis, database) {
 // version for 15 seconds. Read the primary for read-after-write guarantees.
 // ponytail: single-flight and admission control are exercise requirements,
 // not implemented by this small adapter; add them before outage/load testing.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -173,7 +173,7 @@ async function loadProject(tenant, id, version, redis, database) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -198,14 +198,14 @@ async function loadProject(tenant, id, version, redis, database) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a versioned cache read. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
-        <p><strong>Worked answer criteria:</strong> The key binds tenant, ID and exact version, but the caller must obtain the authoritative version for latest reads. A 15-second negative hit can hide later creation. Cache rejection becomes a miss; a hung call still requires a client deadline. Single-flight and fallback admission are explicitly unimplemented extensions, not properties of try/catch.</p>
-        <p><strong>Evidence to explain:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
+        <p class="worked-answer">The key binds tenant, ID and exact version, but the caller must obtain the authoritative version for latest reads. A 15-second negative hit can hide later creation. Cache rejection becomes a miss; a hung call still requires a client deadline. Single-flight and fallback admission are explicitly unimplemented extensions, not properties of try/catch.</p>
+        <p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

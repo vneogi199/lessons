@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
+    <p class="concept-intro">Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Webhooks">
         <span>01</span>
         <h3>Webhooks</h3>
-        <p><strong>What it means:</strong> A webhook is an outbound HTTP event delivery. Providers retry; consumers authenticate raw bytes, deduplicate event identity, and process asynchronously.</p>
+        <p class="concept-definition">A webhook is an outbound HTTP event delivery. Providers retry; consumers authenticate raw bytes, deduplicate event identity, and process asynchronously.</p>
       </article><article class="concept-card" data-subtopic="signatures">
         <span>02</span>
         <h3>signatures</h3>
-        <p><strong>What it means:</strong> Webhook signatures authenticate message integrity under a shared or public-key scheme; replay prevention needs additional state or timing rules.</p>
+        <p class="concept-definition">Webhook signatures authenticate message integrity under a shared or public-key scheme; replay prevention needs additional state or timing rules.</p>
       </article><article class="concept-card" data-subtopic="timestamps">
         <span>03</span>
         <h3>timestamps</h3>
-        <p><strong>What it means:</strong> Timestamps record clock readings, not universal causality; validate units, skew, and replay-window assumptions.</p>
+        <p class="concept-definition">Timestamps record clock readings, not universal causality; validate units, skew, and replay-window assumptions.</p>
       </article><article class="concept-card" data-subtopic="retries">
         <span>04</span>
         <h3>retries</h3>
-        <p><strong>What it means:</strong> A retry makes another attempt after failure or uncertainty. Bound attempts and elapsed time, and repeat side effects only when their contract supports safe retries.</p>
+        <p class="concept-definition">A retry makes another attempt after failure or uncertainty. Bound attempts and elapsed time, and repeat side effects only when their contract supports safe retries.</p>
       </article><article class="concept-card" data-subtopic="replay protection">
         <span>05</span>
         <h3>replay protection</h3>
-        <p><strong>What it means:</strong> Replay protection rejects an otherwise authentic message when its timestamp or unique identity shows that it is too old or already accepted.</p>
+        <p class="concept-definition">Replay protection rejects an otherwise authentic message when its timestamp or unique identity shows that it is too old or already accepted.</p>
       </article><article class="concept-card" data-subtopic="event evolution">
         <span>06</span>
         <h3>event evolution</h3>
-        <p><strong>What it means:</strong> Event evolution preserves interpretation for consumers that may read old and new payloads long after publication.</p>
+        <p class="concept-definition">Event evolution preserves interpretation for consumers that may read old and new payloads long after publication.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Delivery identity, lag, queue depth, reconnection, duplicate effects, and cleanup prove behavior.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.</p><p><strong>Then inspect:</strong> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p></div>
+    <div class="diagnostic-note"><p>Pause the consumer until buffers fill, then disconnect it after the effect but before acknowledgement.</p><p>Look for: Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement webhook signing and verification, rotate secrets, reject replays, queue accepted work, and simulate lost responses and out-of-order events.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
+    <p class="lab-scope">Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
 
 
 
@@ -157,7 +157,7 @@ assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-signature&
 // within the window: durable scoped inbox + work acceptance must precede 2xx.
 // Provision/rotate secrets outside code; this fixture does not implement rotation.
 // https://nodejs.org/api/crypto.html#cryptotimingsafeequala-b</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -169,7 +169,7 @@ assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-signature&
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer creates identified data → Long-lived or retried transport carries it → Receiver authenticates and advances → Ack, resume, retry, or close follows. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Producer creates identified data → Long-lived or retried transport carries it → Receiver authenticates and advances → Ack, resume, retry, or close follows. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -194,14 +194,14 @@ assert.throws(() =&gt; verifyWebhook(body, { ...headers, &quot;x-hook-signature&
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
-        <p><strong>Worked answer criteria:</strong> Verification binds the timestamp string and original bytes before JSON decoding. Full-string checks now reject newline-suffixed timestamps and hex signatures. A valid signature and five-minute window do not prevent duplicate effects within that window; validate event schema and atomically persist scoped acceptance before acknowledgement.</p>
-        <p><strong>Evidence to explain:</strong> Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Deliver an immutable event over an untrusted network, authenticate its raw bytes, bound timestamp skew, deduplicate identity, acknowledge promptly, and retry without duplicate effects.</p>
+        <p class="worked-answer">Verification binds the timestamp string and original bytes before JSON decoding. Full-string checks now reject newline-suffixed timestamps and hex signatures. A valid signature and five-minute window do not prevent duplicate effects within that window; validate event schema and atomically persist scoped acceptance before acknowledgement.</p>
+        <p>Look for: Raw frame, signature, sequence, queue bytes, heartbeat, reconnect cursor, inbox identity, acknowledgement, and final state.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

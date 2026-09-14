@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,44 +50,44 @@
 
   <section class="concept-section" data-subtopic-count="9">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
+    <p class="concept-intro">Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Redis Cluster">
         <span>01</span>
         <h3>Redis Cluster</h3>
-        <p><strong>What it means:</strong> Redis Cluster partitions keys across 16384 hash slots and redirects slot-aware clients. Replicas and quorum-based failover improve availability but do not eliminate asynchronous write-loss windows.</p>
+        <p class="concept-definition">Redis Cluster partitions keys across 16384 hash slots and redirects slot-aware clients. Replicas and quorum-based failover improve availability but do not eliminate asynchronous write-loss windows.</p>
       </article><article class="concept-card" data-subtopic="hash slots">
         <span>02</span>
         <h3>hash slots</h3>
-        <p><strong>What it means:</strong> Redis Cluster assigns keys to hash slots distributed among nodes.</p>
+        <p class="concept-definition">Redis Cluster assigns keys to hash slots distributed among nodes.</p>
       </article><article class="concept-card" data-subtopic="hash tags">
         <span>03</span>
         <h3>hash tags</h3>
-        <p><strong>What it means:</strong> Hash tags choose a shared substring for slot calculation, allowing related keys to occupy the same slot.</p>
+        <p class="concept-definition">Hash tags choose a shared substring for slot calculation, allowing related keys to occupy the same slot.</p>
       </article><article class="concept-card" data-subtopic="MOVED">
         <span>04</span>
         <h3>MOVED</h3>
-        <p><strong>What it means:</strong> MOVED redirects a client to the node currently responsible for a slot and generally prompts routing-table refresh.</p>
+        <p class="concept-definition">MOVED redirects a client to the node currently responsible for a slot and generally prompts routing-table refresh.</p>
       </article><article class="concept-card" data-subtopic="ASK">
         <span>05</span>
         <h3>ASK</h3>
-        <p><strong>What it means:</strong> ASK provides a temporary redirection during slot migration and requires the corresponding client protocol handling.</p>
+        <p class="concept-definition">ASK provides a temporary redirection during slot migration and requires the corresponding client protocol handling.</p>
       </article><article class="concept-card" data-subtopic="resharding">
         <span>06</span>
         <h3>resharding</h3>
-        <p><strong>What it means:</strong> Resharding moves key ownership between nodes while clients and migration state coordinate access.</p>
+        <p class="concept-definition">Resharding moves key ownership between nodes while clients and migration state coordinate access.</p>
       </article><article class="concept-card" data-subtopic="gossip">
         <span>07</span>
         <h3>gossip</h3>
-        <p><strong>What it means:</strong> Gossip spreads membership and state information among peers incrementally rather than through one global instantaneous view.</p>
+        <p class="concept-definition">Gossip spreads membership and state information among peers incrementally rather than through one global instantaneous view.</p>
       </article><article class="concept-card" data-subtopic="quorum">
         <span>08</span>
         <h3>quorum</h3>
-        <p><strong>What it means:</strong> A quorum is a required set or count of participants for a decision under a specified protocol; counting votes alone does not prove safety.</p>
+        <p class="concept-definition">A quorum is a required set or count of participants for a decision under a specified protocol; counting votes alone does not prove safety.</p>
       </article><article class="concept-card" data-subtopic="failover">
         <span>09</span>
         <h3>failover</h3>
-        <p><strong>What it means:</strong> Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
+        <p class="concept-definition">Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
       </article>
     </div>
   </section>
@@ -113,7 +113,7 @@
         <p>Same-slot execution is not a guarded lease check; express the condition before the protected write.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pre-create the lease, execute the transaction, and compare both replies with the cart value.</p><p><strong>Then inspect:</strong> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p></div>
+    <div class="diagnostic-note"><p>Pre-create the lease, execute the transaction, and compare both replies with the cart value.</p><p>Look for: Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p></div>
   </section>
 
   
@@ -121,7 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run a small cluster, inspect slot ownership, use hash tags for an atomic multi-key operation, reshard, and observe redirect handling.</p>
-    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -156,7 +156,7 @@ HGET &#039;cart:{user42}&#039; sku-1
 redis-cli --cluster reshard 127.0.0.1:7000
 # Observe MOVED and ASK handling, migrating/importing slots, cluster_state,
 # fail reports, replica offsets, promotion, unavailable slots, and write loss.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -168,7 +168,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Find the primary owning the hash slot → Queue both commands → Inspect each result → Separate isolation from a condition. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Find the primary owning the hash slot → Queue both commands → Inspect each result → Separate isolation from a condition. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -193,14 +193,14 @@ redis-cli --cluster reshard 127.0.0.1:7000
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a cluster-local transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
-        <p><strong>Worked answer criteria:</strong> Matching hash tags co-locate keys but do not make SET NX guard an earlier HSET. MULTI belongs to one owning-node connection; redirects do not authorize replaying individual queued writes. ASK is temporary and needs ASKING on the destination connection, whereas MOVED updates routing knowledge.</p>
-        <p><strong>Evidence to explain:</strong> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
+        <p class="worked-answer">Matching hash tags co-locate keys but do not make SET NX guard an earlier HSET. MULTI belongs to one owning-node connection; redirects do not authorize replaying individual queued writes. ASK is temporary and needs ASKING on the destination connection, whereas MOVED updates routing knowledge.</p>
+        <p>Look for: Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

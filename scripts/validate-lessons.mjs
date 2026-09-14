@@ -613,9 +613,9 @@ for (const lesson of manifest.lessons) {
   if (declared !== expectedSubtopics || cards !== expectedSubtopics) {
     failures.push(`${lesson.id}: expected ${expectedSubtopics} subtopic explanations, found ${cards}`);
   }
-  const definitions = html.split("What it means:").length - 1;
-  if (definitions !== expectedSubtopics) failures.push(`${lesson.id}: What it means: appears ${definitions} times`);
-  const connections = html.split("How they connect:").length - 1;
+  const definitions = html.split('class="concept-definition"').length - 1;
+  if (definitions !== expectedSubtopics) failures.push(`${lesson.id}: expected ${expectedSubtopics} definitions, found ${definitions}`);
+  const connections = html.split('class="concept-intro"').length - 1;
   if (connections !== 1) failures.push(`${lesson.id}: expected one shared mechanism explanation, found ${connections}`);
 }
 

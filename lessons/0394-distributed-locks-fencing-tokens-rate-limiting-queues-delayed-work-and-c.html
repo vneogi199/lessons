@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
+    <p class="concept-intro">Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Distributed locks">
         <span>01</span>
         <h3>Distributed locks</h3>
-        <p><strong>What it means:</strong> A distributed lock is a time-limited claim observed through a shared system. A lease alone cannot stop a paused former owner, so critical resources need fencing or another authoritative check.</p>
+        <p class="concept-definition">A distributed lock is a time-limited claim observed through a shared system. A lease alone cannot stop a paused former owner, so critical resources need fencing or another authoritative check.</p>
       </article><article class="concept-card" data-subtopic="fencing tokens">
         <span>02</span>
         <h3>fencing tokens</h3>
-        <p><strong>What it means:</strong> A fencing token is a monotonically increasing ownership number that the protected resource rejects when stale, preventing an expired lock holder from writing late.</p>
+        <p class="concept-definition">A fencing token is a monotonically increasing ownership number that the protected resource rejects when stale, preventing an expired lock holder from writing late.</p>
       </article><article class="concept-card" data-subtopic="rate limiting">
         <span>03</span>
         <h3>rate limiting</h3>
-        <p><strong>What it means:</strong> Rate limiting admits work according to an explicit budget over time. Its algorithm determines burst allowance, fairness, accuracy, memory, and failure behavior.</p>
+        <p class="concept-definition">Rate limiting admits work according to an explicit budget over time. Its algorithm determines burst allowance, fairness, accuracy, memory, and failure behavior.</p>
       </article><article class="concept-card" data-subtopic="queues">
         <span>04</span>
         <h3>queues</h3>
-        <p><strong>What it means:</strong> A queue holds work waiting to be processed. Define capacity, admission, ordering, acknowledgement, retry, and expiration; a queue cannot create processing capacity.</p>
+        <p class="concept-definition">A queue holds work waiting to be processed. Define capacity, admission, ordering, acknowledgement, retry, and expiration; a queue cannot create processing capacity.</p>
       </article><article class="concept-card" data-subtopic="delayed work">
         <span>05</span>
         <h3>delayed work</h3>
-        <p><strong>What it means:</strong> Delayed work becomes eligible at a future time; clocks, retries, ownership, and persistence determine actual execution guarantees.</p>
+        <p class="concept-definition">Delayed work becomes eligible at a future time; clocks, retries, ownership, and persistence determine actual execution guarantees.</p>
       </article><article class="concept-card" data-subtopic="correctness boundaries">
         <span>06</span>
         <h3>correctness boundaries</h3>
-        <p><strong>What it means:</strong> Correctness boundaries identify which component atomically enforces an invariant and where retries or partial failure can escape it.</p>
+        <p class="concept-definition">Correctness boundaries identify which component atomically enforces an invariant and where retries or partial failure can escape it.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Idempotency, fencing, version, fallback, and business state close the proof.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p><strong>Then inspect:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
+    <div class="diagnostic-note"><p>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Demonstrate an unsafe lease, repair the protected resource with fencing, and implement an atomic bounded rate limiter with expiry.</p>
-    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -142,7 +142,7 @@ WHERE id = $3 AND fence &lt; $2;
 # Prefer a database constraint, transaction, broker, or rate-limit algorithm
 # when that primitive expresses the real invariant directly.
 # https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -154,7 +154,7 @@ WHERE id = $3 AND fence &lt; $2;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -179,14 +179,14 @@ WHERE id = $3 AND fence &lt; $2;
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a fenced write. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
-        <p><strong>Worked answer criteria:</strong> The random owner token identifies one lease attempt; it is not an increasing fencing value. The resource rejects a lower fence after a newer write, and the strict predicate permits one write per fence. A safe allocator and idempotent replay contract are missing; Redis lease ownership alone cannot stop a paused stale owner.</p>
-        <p><strong>Evidence to explain:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Separate mutual-exclusion leases from stale-owner protection, reason about pauses and partitions, and model token buckets, retries, acknowledgement, scheduling, and source-of-truth durability.</p>
+        <p class="worked-answer">The random owner token identifies one lease attempt; it is not an increasing fencing value. The resource rejects a lower fence after a newer write, and the strict predicate permits one write per fence. A safe allocator and idempotent replay contract are missing; Redis lease ownership alone cannot stop a paused stale owner.</p>
+        <p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,36 +50,36 @@
 
   <section class="concept-section" data-subtopic-count="7">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
+    <p class="concept-intro">Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Network uncertainty">
         <span>01</span>
         <h3>Network uncertainty</h3>
-        <p><strong>What it means:</strong> Network uncertainty includes delay, loss, duplication, and reordering, making timeout-based conclusions incomplete.</p>
+        <p class="concept-definition">Network uncertainty includes delay, loss, duplication, and reordering, making timeout-based conclusions incomplete.</p>
       </article><article class="concept-card" data-subtopic="delay">
         <span>02</span>
         <h3>delay</h3>
-        <p><strong>What it means:</strong> Delay postpones communication or work without necessarily losing it; deadlines limit waiting but do not undo completed effects.</p>
+        <p class="concept-definition">Delay postpones communication or work without necessarily losing it; deadlines limit waiting but do not undo completed effects.</p>
       </article><article class="concept-card" data-subtopic="loss">
         <span>03</span>
         <h3>loss</h3>
-        <p><strong>What it means:</strong> Loss removes a message or response from observation; the sender may not know whether an operation executed.</p>
+        <p class="concept-definition">Loss removes a message or response from observation; the sender may not know whether an operation executed.</p>
       </article><article class="concept-card" data-subtopic="duplication">
         <span>04</span>
         <h3>duplication</h3>
-        <p><strong>What it means:</strong> Duplication delivers repeated messages or attempts, requiring identity and effect-level handling.</p>
+        <p class="concept-definition">Duplication delivers repeated messages or attempts, requiring identity and effect-level handling.</p>
       </article><article class="concept-card" data-subtopic="reordering">
         <span>05</span>
         <h3>reordering</h3>
-        <p><strong>What it means:</strong> Reordering changes arrival order relative to send order across relevant paths or attempts.</p>
+        <p class="concept-definition">Reordering changes arrival order relative to send order across relevant paths or attempts.</p>
       </article><article class="concept-card" data-subtopic="partitions">
         <span>06</span>
         <h3>partitions</h3>
-        <p><strong>What it means:</strong> In distributed systems, a partition interrupts communication between some nodes. Local progress may continue without agreement on global state.</p>
+        <p class="concept-definition">In distributed systems, a partition interrupts communication between some nodes. Local progress may continue without agreement on global state.</p>
       </article><article class="concept-card" data-subtopic="TCP limits">
         <span>07</span>
         <h3>TCP limits</h3>
-        <p><strong>What it means:</strong> TCP orders bytes within a connection; it does not prove application completion, cross-connection order, or exactly-once effects.</p>
+        <p class="concept-definition">TCP orders bytes within a connection; it does not prove application completion, cross-connection order, or exactly-once effects.</p>
       </article>
     </div>
   </section>
@@ -105,7 +105,7 @@
         <p>Logs and state must distinguish response loss from work loss.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Drop the response after committing, then retry the same logical command.</p><p><strong>Then inspect:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p></div>
+    <div class="diagnostic-note"><p>Drop the response after committing, then retry the same logical command.</p><p>Look for: Correlation ID, attempt count, idempotency record, state change, and final response.</p></div>
   </section>
 
   
@@ -113,8 +113,8 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Use a fault proxy to add delay, loss, reset, duplication, and partition behavior and verify bounded retries and idempotent state.</p>
-    <p><strong>Core and extension:</strong> Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
-<p><strong>Distinct exercise:</strong> Reuse the fault plan to separate delayed, lost, duplicated and reordered application messages. TCP&#039;s ordered byte stream does not give application-level exactly-once effects or a failure detector. Trace a successful write with a lost response and decide how retry learns the result.</p>
+    <p class="lab-scope">Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
+<p>Reuse the fault plan to separate delayed, lost, duplicated and reordered application messages. TCP&#039;s ordered byte stream does not give application-level exactly-once effects or a failure detector. Trace a successful write with a lost response and decide how retry learns the result.</p>
 
 
 
@@ -138,7 +138,7 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
 
 // A timeout means the outcome is unknown. Reconcile by stable identity and
 // authoritative state; TCP cannot make an application operation exactly once.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -150,7 +150,7 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> A client starts an operation → Message crosses an uncertain boundary → Receiver applies guarded state change → Caller sees success or uncertainty. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>A client starts an operation → Message crosses an uncertain boundary → Receiver applies guarded state change → Caller sees success or uncertainty. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -175,14 +175,14 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
-        <p><strong>Worked answer criteria:</strong> TCP hides packet duplication and reordering within a surviving connection; duplicate application operations arise through retries or another application-level delivery path. State which layer the fault proxy changes. A reset after commit and a reset before receipt can look identical, so reconcile stable operation identity at the authority. The missing injector is not a runnable network lab.</p>
-        <p><strong>Evidence to explain:</strong> Correlation ID, attempt count, idempotency record, state change, and final response.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
+        <p class="worked-answer">TCP hides packet duplication and reordering within a surviving connection; duplicate application operations arise through retries or another application-level delivery path. State which layer the fault proxy changes. A reset after commit and a reset before receipt can look identical, so reconcile stable operation identity at the authority. The missing injector is not a runnable network lab.</p>
+        <p>Look for: Correlation ID, attempt count, idempotency record, state change, and final response.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

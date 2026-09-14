@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow immutable stream IDs through group cursors, per-consumer pending state, redelivery, ownership transfer, acknowledgement, retention, and duplicate side effects.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,40 +50,40 @@
 
   <section class="concept-section" data-subtopic-count="8">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow immutable stream IDs through group cursors, per-consumer pending state, redelivery, ownership transfer, acknowledgement, retention, and duplicate side effects.</p>
+    <p class="concept-intro">Follow immutable stream IDs through group cursors, per-consumer pending state, redelivery, ownership transfer, acknowledgement, retention, and duplicate side effects.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Redis Streams">
         <span>01</span>
         <h3>Redis Streams</h3>
-        <p><strong>What it means:</strong> A Redis Stream is an append-oriented sequence of ID-addressed entries. Consumer groups track delivery progress and pending ownership for retryable processing.</p>
+        <p class="concept-definition">A Redis Stream is an append-oriented sequence of ID-addressed entries. Consumer groups track delivery progress and pending ownership for retryable processing.</p>
       </article><article class="concept-card" data-subtopic="entries">
         <span>02</span>
         <h3>entries</h3>
-        <p><strong>What it means:</strong> Stream entries are ordered records identified within a Redis stream, with field-value payloads.</p>
+        <p class="concept-definition">Stream entries are ordered records identified within a Redis stream, with field-value payloads.</p>
       </article><article class="concept-card" data-subtopic="consumer groups">
         <span>03</span>
         <h3>consumer groups</h3>
-        <p><strong>What it means:</strong> Consumer groups coordinate delivery among consumers while tracking pending work separately from stream storage.</p>
+        <p class="concept-definition">Consumer groups coordinate delivery among consumers while tracking pending work separately from stream storage.</p>
       </article><article class="concept-card" data-subtopic="pending entries">
         <span>04</span>
         <h3>pending entries</h3>
-        <p><strong>What it means:</strong> Pending entries have been delivered to a group consumer but not acknowledged under that group&#039;s tracking.</p>
+        <p class="concept-definition">Pending entries have been delivered to a group consumer but not acknowledged under that group&#039;s tracking.</p>
       </article><article class="concept-card" data-subtopic="acknowledgements">
         <span>05</span>
         <h3>acknowledgements</h3>
-        <p><strong>What it means:</strong> A stream acknowledgement clears group pending status; it does not itself atomically commit an external side effect.</p>
+        <p class="concept-definition">A stream acknowledgement clears group pending status; it does not itself atomically commit an external side effect.</p>
       </article><article class="concept-card" data-subtopic="claiming">
         <span>06</span>
         <h3>claiming</h3>
-        <p><strong>What it means:</strong> Claiming transfers eligible pending work to another consumer for recovery, potentially repeating prior side effects.</p>
+        <p class="concept-definition">Claiming transfers eligible pending work to another consumer for recovery, potentially repeating prior side effects.</p>
       </article><article class="concept-card" data-subtopic="trimming">
         <span>07</span>
         <h3>trimming</h3>
-        <p><strong>What it means:</strong> Trimming removes stream history under a retention policy; consider pending consumers and replay requirements.</p>
+        <p class="concept-definition">Trimming removes stream history under a retention policy; consider pending consumers and replay requirements.</p>
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>08</span>
         <h3>idempotency</h3>
-        <p><strong>What it means:</strong> Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
+        <p class="concept-definition">Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
       </article>
     </div>
   </section>
@@ -109,7 +109,7 @@
         <p>Idempotency, fencing, version, fallback, and business state close the proof.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p><strong>Then inspect:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
+    <div class="diagnostic-note"><p>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
   </section>
 
   
@@ -117,7 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a consumer group that survives a crashed worker, claims stale work, records idempotency, and trims only within an explicit retention policy.</p>
-    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -150,7 +150,7 @@ XAUTOCLAIM jobs workers worker-b 60000 0-0 COUNT 10
 # https://redis.io/docs/latest/commands/xtrim/
 # Track entries-added, lag, pending count and age, deliveries, claims, failures,
 # acknowledgements, trimming, duplicates, and downstream business state.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -162,7 +162,7 @@ XAUTOCLAIM jobs workers worker-b 60000 0-0 COUNT 10
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -187,14 +187,14 @@ XAUTOCLAIM jobs workers worker-b 60000 0-0 COUNT 10
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a stream delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow immutable stream IDs through group cursors, per-consumer pending state, redelivery, ownership transfer, acknowledgement, retention, and duplicate side effects.</p>
-        <p><strong>Worked answer criteria:</strong> XACK removes pending ownership, not the stream entry or an external effect. XAUTOCLAIM can overlap a slow live consumer; idempotency must survive that overlap. MESSAGE_ID is a placeholder to replace with an actual returned ID. Trimming and retention can destroy unprocessed bodies; distinguish current-version retention options.</p>
-        <p><strong>Evidence to explain:</strong> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow immutable stream IDs through group cursors, per-consumer pending state, redelivery, ownership transfer, acknowledgement, retention, and duplicate side effects.</p>
+        <p class="worked-answer">XACK removes pending ownership, not the stream entry or an external effect. XAUTOCLAIM can overlap a slow live consumer; idempotency must survive that overlap. MESSAGE_ID is a placeholder to replace with an actual returned ID. Trimming and retention can destroy unprocessed bodies; distinguish current-version retention options.</p>
+        <p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

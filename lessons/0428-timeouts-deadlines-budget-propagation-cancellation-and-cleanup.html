@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Turn a caller&#039;s total willingness to wait into a propagated remaining budget while stopping queued, active, and downstream work and releasing resources after cancellation.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Turn a caller&#039;s total willingness to wait into a propagated remaining budget while stopping queued, active, and downstream work and releasing resources after cancellation.</p>
+    <p class="concept-intro">Turn a caller&#039;s total willingness to wait into a propagated remaining budget while stopping queued, active, and downstream work and releasing resources after cancellation.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Timeouts">
         <span>01</span>
         <h3>Timeouts</h3>
-        <p><strong>What it means:</strong> A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
+        <p class="concept-definition">A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
       </article><article class="concept-card" data-subtopic="deadlines">
         <span>02</span>
         <h3>deadlines</h3>
-        <p><strong>What it means:</strong> A deadline is the absolute point when the caller no longer values completion. Downstream work should receive only the remaining budget.</p>
+        <p class="concept-definition">A deadline is the absolute point when the caller no longer values completion. Downstream work should receive only the remaining budget.</p>
       </article><article class="concept-card" data-subtopic="budget propagation">
         <span>03</span>
         <h3>budget propagation</h3>
-        <p><strong>What it means:</strong> Budget propagation passes remaining deadline or work allowance downstream rather than restarting a full budget at each hop.</p>
+        <p class="concept-definition">Budget propagation passes remaining deadline or work allowance downstream rather than restarting a full budget at each hop.</p>
       </article><article class="concept-card" data-subtopic="cancellation">
         <span>04</span>
         <h3>cancellation</h3>
-        <p><strong>What it means:</strong> Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
+        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
       </article><article class="concept-card" data-subtopic="cleanup">
         <span>05</span>
         <h3>cleanup</h3>
-        <p><strong>What it means:</strong> Cleanup releases owned resources on success, failure, and cancellation. Ownership must be clear for cleanup to be reliable.</p>
+        <p class="concept-definition">Cleanup releases owned resources on success, failure, and cancellation. Ownership must be clear for cleanup to be reliable.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p><p><strong>Then inspect:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></div>
+    <div class="diagnostic-note"><p>Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p><p>Look for: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a nested operation with one deadline, per-stage reserve, abort propagation, server-side cancellation, and leak checks.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied local fixture or worksheet, including a failure and the mechanism&#039;s boundary. Extension: implement the missing adapters and measure a bounded workload, changed constraint and recovery behavior in an authorized environment. Offline assertions do not verify a live distributed protocol or production capacity.</p>
+    <p class="lab-scope">Core: predict the supplied local fixture or worksheet, including a failure and the mechanism&#039;s boundary. Extension: implement the missing adapters and measure a bounded workload, changed constraint and recovery behavior in an authorized environment. Offline assertions do not verify a live distributed protocol or production capacity.</p>
 
 
 
@@ -151,7 +151,7 @@ await assert.rejects(withDeadline(({ signal }) =&gt; sleep(1000, null, { signal 
 // remaining budget at the transport boundary; account for transit/skew explicitly.
 // Nested calls reuse the local deadline, rather than getting a fresh full budget.
 // https://nodejs.org/api/globals.html#static-method-abortsignaltimeoutdelay</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -163,7 +163,7 @@ await assert.rejects(withDeadline(({ signal }) =&gt; sleep(1000, null, { signal 
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -188,14 +188,14 @@ await assert.rejects(withDeadline(({ signal }) =&gt; sleep(1000, null, { signal 
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Turn a caller&#039;s total willingness to wait into a propagated remaining budget while stopping queued, active, and downstream work and releasing resources after cancellation.</p>
-        <p><strong>Worked answer criteria:</strong> withDeadline propagates a cooperative signal; it does not race an ignoring operation or forcibly enforce a return time. Timer delivery can be delayed by a blocked event loop and the timeout signal is not explicitly cleared on early success. A cancelled adapter owns cleanup and remote reconciliation. Reuse the deadline locally and translate only the remaining budget across process boundaries.</p>
-        <p><strong>Evidence to explain:</strong> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Turn a caller&#039;s total willingness to wait into a propagated remaining budget while stopping queued, active, and downstream work and releasing resources after cancellation.</p>
+        <p class="worked-answer">withDeadline propagates a cooperative signal; it does not race an ignoring operation or forcibly enforce a return time. Timer delivery can be delayed by a blocked event loop and the timeout signal is not explicitly cleared on early success. A cancelled adapter owns cleanup and remote reconciliation. Reuse the deadline locally and translate only the remaining budget across process boundaries.</p>
+        <p>Look for: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

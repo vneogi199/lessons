@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
+    <p class="concept-intro">Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Physical clocks">
         <span>01</span>
         <h3>Physical clocks</h3>
-        <p><strong>What it means:</strong> Physical clocks estimate real time and can drift or jump, complicating timestamp ordering and deadlines.</p>
+        <p class="concept-definition">Physical clocks estimate real time and can drift or jump, complicating timestamp ordering and deadlines.</p>
       </article><article class="concept-card" data-subtopic="monotonic time">
         <span>02</span>
         <h3>monotonic time</h3>
-        <p><strong>What it means:</strong> A monotonic clock moves forward for duration measurement and is not adjusted to match civil time, making it safer for timeouts and latency.</p>
+        <p class="concept-definition">A monotonic clock moves forward for duration measurement and is not adjusted to match civil time, making it safer for timeouts and latency.</p>
       </article><article class="concept-card" data-subtopic="NTP">
         <span>03</span>
         <h3>NTP</h3>
-        <p><strong>What it means:</strong> NTP synchronizes clock estimates but does not create perfectly identical clocks or eliminate uncertainty.</p>
+        <p class="concept-definition">NTP synchronizes clock estimates but does not create perfectly identical clocks or eliminate uncertainty.</p>
       </article><article class="concept-card" data-subtopic="clock skew">
         <span>04</span>
         <h3>clock skew</h3>
-        <p><strong>What it means:</strong> Clock skew is the difference between clocks on separate machines. It makes cross-node timestamp ordering and lease expiry uncertain.</p>
+        <p class="concept-definition">Clock skew is the difference between clocks on separate machines. It makes cross-node timestamp ordering and lease expiry uncertain.</p>
       </article><article class="concept-card" data-subtopic="timestamp hazards">
         <span>05</span>
         <h3>timestamp hazards</h3>
-        <p><strong>What it means:</strong> Timestamp hazards include skew, jumps, precision loss, and treating wall-clock order as causal order.</p>
+        <p class="concept-definition">Timestamp hazards include skew, jumps, precision loss, and treating wall-clock order as causal order.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Causal relation, conflict, duration, lease check, or arbitrary tie-break becomes explicit.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Move one wall clock backward and deliver two independent messages in opposite orders.</p><p><strong>Then inspect:</strong> Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.</p></div>
+    <div class="diagnostic-note"><p>Move one wall clock backward and deliver two independent messages in opposite orders.</p><p>Look for: Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate clock jumps and skew in expiry, token, audit, and last-write-wins logic and replace unsafe duration measurements with monotonic time.</p>
-    <p><strong>Core and extension:</strong> Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
+    <p class="lab-scope">Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
 
 
 
@@ -130,7 +130,7 @@ console.table({
 // Safer depends on the need: version checked by authority, causal token,
 // logical clock, bounded clock uncertainty, or an explicit merge conflict.
 simulateClockStep({ node: &quot;B&quot;, milliseconds: -30_000 });</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -142,7 +142,7 @@ simulateClockStep({ node: &quot;B&quot;, milliseconds: -30_000 });</code></pre>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> A process observes or changes state → Message carries ordering evidence → Another process merges knowledge → System decides order or concurrency. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>A process observes or changes state → Message carries ordering evidence → Another process merges knowledge → System decides order or concurrency. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -167,14 +167,14 @@ simulateClockStep({ node: &quot;B&quot;, milliseconds: -30_000 });</code></pre>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
-        <p><strong>Worked answer criteria:</strong> operation and simulateClockStep are unsupplied adapters. The clock step appears after the measurement, so this snippet does not demonstrate a negative wall duration. Inject independent wall and monotonic clocks around the operation to test a backward step without changing the host clock. Monotonic origins are local, resolution is finite, and suspend behavior is platform-dependent; a monotonic reading is not cross-host causal order.</p>
-        <p><strong>Evidence to explain:</strong> Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Distinguish wall-clock adjustment from monotonic duration measurement and trace how skew, leap behavior, suspension, and uncertainty break ordering, expiry, and lease assumptions.</p>
+        <p class="worked-answer">operation and simulateClockStep are unsupplied adapters. The clock step appears after the measurement, so this snippet does not demonstrate a negative wall duration. Inject independent wall and monotonic clocks around the operation to test a backward step without changing the host clock. Monotonic origins are local, resolution is finite, and suspend behavior is platform-dependent; a monotonic reading is not cross-host causal order.</p>
+        <p>Look for: Wall and monotonic readings, message edges, Lamport values, vectors, conflicts, lease result, and chosen order.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

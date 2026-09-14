@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Account for backend memory and process cost, queueing, session state, prepared-plan lifetime, pool modes, admission control, and database capacity.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Account for backend memory and process cost, queueing, session state, prepared-plan lifetime, pool modes, admission control, and database capacity.</p>
+    <p class="concept-intro">Account for backend memory and process cost, queueing, session state, prepared-plan lifetime, pool modes, admission control, and database capacity.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Connections">
         <span>01</span>
         <h3>Connections</h3>
-        <p><strong>What it means:</strong> A PostgreSQL connection normally owns a backend process and session state. A pool bounds that finite resource and queues excess demand instead of overwhelming the server.</p>
+        <p class="concept-definition">A PostgreSQL connection normally owns a backend process and session state. A pool bounds that finite resource and queues excess demand instead of overwhelming the server.</p>
       </article><article class="concept-card" data-subtopic="sessions">
         <span>02</span>
         <h3>sessions</h3>
-        <p><strong>What it means:</strong> Database sessions retain connection-level state such as settings and temporary objects, which pooling can complicate.</p>
+        <p class="concept-definition">Database sessions retain connection-level state such as settings and temporary objects, which pooling can complicate.</p>
       </article><article class="concept-card" data-subtopic="prepared statements">
         <span>03</span>
         <h3>prepared statements</h3>
-        <p><strong>What it means:</strong> Prepared statements reuse parsed or planned statement state subject to server, driver, and pool behavior.</p>
+        <p class="concept-definition">Prepared statements reuse parsed or planned statement state subject to server, driver, and pool behavior.</p>
       </article><article class="concept-card" data-subtopic="PgBouncer">
         <span>04</span>
         <h3>PgBouncer</h3>
-        <p><strong>What it means:</strong> PgBouncer pools PostgreSQL connections; its pooling mode changes which session assumptions remain valid.</p>
+        <p class="concept-definition">PgBouncer pools PostgreSQL connections; its pooling mode changes which session assumptions remain valid.</p>
       </article><article class="concept-card" data-subtopic="pool sizing">
         <span>05</span>
         <h3>pool sizing</h3>
-        <p><strong>What it means:</strong> Pool sizing bounds concurrent database work against capacity rather than equating more connections with more throughput.</p>
+        <p class="concept-definition">Pool sizing bounds concurrent database work against capacity rather than equating more connections with more throughput.</p>
       </article><article class="concept-card" data-subtopic="transaction pooling">
         <span>06</span>
         <h3>transaction pooling</h3>
-        <p><strong>What it means:</strong> Transaction pooling assigns a server connection for a transaction, so callers cannot assume stable server-session ownership between transactions.</p>
+        <p class="concept-definition">Transaction pooling assigns a server connection for a transaction, so callers cannot assume stable server-session ownership between transactions.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Commit or rollback ends transaction ownership; session-dependent features need explicit compatibility checks.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Increase pool size under the same workload; predict queue time and database contention before measuring.</p><p><strong>Then inspect:</strong> Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</p></div>
+    <div class="diagnostic-note"><p>Increase pool size under the same workload; predict queue time and database contention before measuring.</p><p>Look for: Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Load-test bounded and oversized pools, measure wait time and throughput, and find session features incompatible with transaction pooling.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -137,7 +137,7 @@ server_idle_timeout = 60
 # FROM pg_stat_activity GROUP BY datname, state ORDER BY datname, state;
 # Measure client queue time, database active sessions, throughput, p95 latency,
 # CPU, I/O, and lock waits while increasing concurrency.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -149,7 +149,7 @@ server_idle_timeout = 60
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Client requests database capacity → Pool assigns a server connection → Backend runs the transaction → Connection becomes reusable. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Client requests database capacity → Pool assigns a server connection → Backend runs the transaction → Connection becomes reusable. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -174,14 +174,14 @@ server_idle_timeout = 60
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a pooled transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Account for backend memory and process cost, queueing, session state, prepared-plan lifetime, pool modes, admission control, and database capacity.</p>
-        <p><strong>Worked answer criteria:</strong> PgBouncer pool size is generally per database/user pool, not one universal twenty-connection service cap. max_client_conn bounds client slots, not useful database execution. Prepared-statement compatibility depends on pool mode, protocol and version; session locks/settings cannot assume a stable backend across transactions.</p>
-        <p><strong>Evidence to explain:</strong> Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Account for backend memory and process cost, queueing, session state, prepared-plan lifetime, pool modes, admission control, and database capacity.</p>
+        <p class="worked-answer">PgBouncer pool size is generally per database/user pool, not one universal twenty-connection service cap. max_client_conn bounds client slots, not useful database execution. Prepared-statement compatibility depends on pool mode, protocol and version; session locks/settings cannot assume a stable backend across transactions.</p>
+        <p>Look for: Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

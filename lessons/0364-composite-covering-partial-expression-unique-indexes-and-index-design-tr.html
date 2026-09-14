@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Trace prefix rules, predicate implication, included payload, computed keys, uniqueness enforcement, write amplification, cache use, and redundant index cost.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Trace prefix rules, predicate implication, included payload, computed keys, uniqueness enforcement, write amplification, cache use, and redundant index cost.</p>
+    <p class="concept-intro">Trace prefix rules, predicate implication, included payload, computed keys, uniqueness enforcement, write amplification, cache use, and redundant index cost.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Composite">
         <span>01</span>
         <h3>Composite</h3>
-        <p><strong>What it means:</strong> Composite indexes cover multiple columns; column order and query predicates influence useful access paths.</p>
+        <p class="concept-definition">Composite indexes cover multiple columns; column order and query predicates influence useful access paths.</p>
       </article><article class="concept-card" data-subtopic="covering">
         <span>02</span>
         <h3>covering</h3>
-        <p><strong>What it means:</strong> A covering index includes payload columns needed by a query. PostgreSQL can avoid heap reads only when tuple visibility is also known from the visibility map.</p>
+        <p class="concept-definition">A covering index includes payload columns needed by a query. PostgreSQL can avoid heap reads only when tuple visibility is also known from the visibility map.</p>
       </article><article class="concept-card" data-subtopic="partial">
         <span>03</span>
         <h3>partial</h3>
-        <p><strong>What it means:</strong> A partial index includes only rows matching a predicate, reducing size when queries can use that predicate.</p>
+        <p class="concept-definition">A partial index includes only rows matching a predicate, reducing size when queries can use that predicate.</p>
       </article><article class="concept-card" data-subtopic="expression">
         <span>04</span>
         <h3>expression</h3>
-        <p><strong>What it means:</strong> An expression index stores computed keys, improving matching expressions at additional write and maintenance cost.</p>
+        <p class="concept-definition">An expression index stores computed keys, improving matching expressions at additional write and maintenance cost.</p>
       </article><article class="concept-card" data-subtopic="unique indexes">
         <span>05</span>
         <h3>unique indexes</h3>
-        <p><strong>What it means:</strong> Unique indexes enforce uniqueness under their key and null-comparison rules while supporting lookup.</p>
+        <p class="concept-definition">Unique indexes enforce uniqueness under their key and null-comparison rules while supporting lookup.</p>
       </article><article class="concept-card" data-subtopic="index design tradeoffs">
         <span>06</span>
         <h3>index design tradeoffs</h3>
-        <p><strong>What it means:</strong> Index design balances read access, write amplification, storage, maintenance, and actual query selectivity.</p>
+        <p class="concept-definition">Index design balances read access, write amplification, storage, maintenance, and actual query selectivity.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>The plan and timing reveal whether the model was correct.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one index or predicate and compare estimated versus actual work.</p><p><strong>Then inspect:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p></div>
+    <div class="diagnostic-note"><p>Change one index or predicate and compare estimated versus actual work.</p><p>Look for: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Design the minimum index set for a workload and prove benefit with plans, write measurements, and unused-index evidence.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
-<p><strong>Distinct exercise:</strong> Vary the query predicate and selected columns around the partial covering index. Record whether the planner can establish the partial predicate, then measure index size and write cost. CREATE INDEX CONCURRENTLY must run outside a transaction block.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+<p>Vary the query predicate and selected columns around the partial covering index. Record whether the planner can establish the partial predicate, then measure index size and write cost. CREATE INDEX CONCURRENTLY must run outside a transaction block.</p>
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -136,7 +136,7 @@ FROM pg_stat_user_indexes WHERE relid = &#039;jobs&#039;::regclass;
 
 EXPLAIN (ANALYZE, BUFFERS) SELECT id, payload FROM jobs
 WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT 50;</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -148,7 +148,7 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Application submits a query → Optimizer chooses operations → Engine reads and transforms rows → Rows and metrics return. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Application submits a query → Optimizer chooses operations → Engine reads and transforms rows → Rows and metrics return. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -173,14 +173,14 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Trace prefix rules, predicate implication, included payload, computed keys, uniqueness enforcement, write amplification, cache use, and redundant index cost.</p>
-        <p><strong>Worked answer criteria:</strong> Equality on tenant then ordered created_at/id fits this access path; INCLUDE payload is not a search key. The planner must establish the partial predicate, which a generic parameterized plan may not prove. Measure write amplification and workload-wide redundancy before retaining every shown index.</p>
-        <p><strong>Evidence to explain:</strong> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Trace prefix rules, predicate implication, included payload, computed keys, uniqueness enforcement, write amplification, cache use, and redundant index cost.</p>
+        <p class="worked-answer">Equality on tenant then ordered created_at/id fits this access path; INCLUDE payload is not a search key. The planner must establish the partial predicate, which a generic parameterized plan may not prove. Measure write amplification and workload-wide redundancy before retaining every shown index.</p>
+        <p>Look for: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
+    <p class="concept-intro">Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="ASGI scope">
         <span>01</span>
         <h3>ASGI scope</h3>
-        <p><strong>What it means:</strong> An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</p>
+        <p class="concept-definition">An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</p>
       </article><article class="concept-card" data-subtopic="receive">
         <span>02</span>
         <h3>receive</h3>
-        <p><strong>What it means:</strong> receive is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection.</p>
+        <p class="concept-definition">receive is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection.</p>
       </article><article class="concept-card" data-subtopic="send">
         <span>03</span>
         <h3>send</h3>
-        <p><strong>What it means:</strong> send is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract.</p>
+        <p class="concept-definition">send is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract.</p>
       </article><article class="concept-card" data-subtopic="Uvicorn">
         <span>04</span>
         <h3>Uvicorn</h3>
-        <p><strong>What it means:</strong> Uvicorn is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application.</p>
+        <p class="concept-definition">Uvicorn is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application.</p>
       </article><article class="concept-card" data-subtopic="Starlette">
         <span>05</span>
         <h3>Starlette</h3>
-        <p><strong>What it means:</strong> Starlette supplies the ASGI web layer beneath FastAPI: routing, requests, responses, middleware, WebSockets, static files, and test infrastructure.</p>
+        <p class="concept-definition">Starlette supplies the ASGI web layer beneath FastAPI: routing, requests, responses, middleware, WebSockets, static files, and test infrastructure.</p>
       </article><article class="concept-card" data-subtopic="request lifecycle">
         <span>06</span>
         <h3>request lifecycle</h3>
-        <p><strong>What it means:</strong> The request lifecycle is the ordered path from accepted network data through routing, validation, dependencies, endpoint work, response sending, and cleanup.</p>
+        <p class="concept-definition">The request lifecycle is the ordered path from accepted network data through routing, validation, dependencies, endpoint work, response sending, and cleanup.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Status, headers, and body become observable to the client.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Trace one valid request and one failure while recording every ASGI event.</p><p><strong>Then inspect:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p></div>
+    <div class="diagnostic-note"><p>Trace one valid request and one failure while recording every ASGI event.</p><p>Look for: Scope fields, middleware order, dependency calls, send events, and client response.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Write a tiny raw ASGI application and middleware, then compare its event trace with the same request handled by FastAPI.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -138,7 +138,7 @@ async def app(scope, receive, send):
     await send({&quot;type&quot;: &quot;http.response.body&quot;, &quot;body&quot;: body})
 
 # Trace scope → receive events → middleware → route → send events.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -150,7 +150,7 @@ async def app(scope, receive, send):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> HTTP bytes reach Uvicorn → Events enter the application → Dependencies and business logic run → ASGI send emits wire events. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>HTTP bytes reach Uvicorn → Events enter the application → Dependencies and business logic run → ASGI send emits wire events. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -175,14 +175,14 @@ async def app(scope, receive, send):
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
-        <p><strong>Worked answer criteria:</strong> One HTTP scope belongs to one request even when a socket carries many requests. This raw app reads only one event and ignores the body; it supplies neither lifespan nor WebSockets. Response start precedes body, and a successful send is not proof that the remote client consumed it.</p>
-        <p><strong>Evidence to explain:</strong> Scope fields, middleware order, dependency calls, send events, and client response.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
+        <p class="worked-answer">One HTTP scope belongs to one request even when a socket carries many requests. This raw app reads only one event and ignores the body; it supplies neither lifespan nor WebSockets. Response start precedes body, and a successful send is not proof that the remote client consumed it.</p>
+        <p>Look for: Scope fields, middleware order, dependency calls, send events, and client response.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>

@@ -269,11 +269,26 @@
     }
   }
 
+  function scrollActiveLessonIntoView() {
+    const active = lessonNav.querySelector(".nav-lesson.active");
+    if (!active) return; // Search may hide the current lesson.
+    const sidebar = lessonNav.closest(".sidebar");
+    const item = active.getBoundingClientRect();
+    const panel = sidebar.getBoundingClientRect();
+    sidebar.scrollTop += item.top - panel.top - (sidebar.clientHeight - item.height) / 2;
+    // On narrow screens the catalog scrolls horizontally instead.
+    const nav = lessonNav.getBoundingClientRect();
+    lessonNav.scrollLeft += item.left - nav.left - (lessonNav.clientWidth - item.width) / 2;
+  }
+
   function render() {
     renderNav();
     renderLesson();
     updateResumeButton();
-    window.requestAnimationFrame(updateReadingProgress);
+    window.requestAnimationFrame(() => {
+      updateReadingProgress();
+      scrollActiveLessonIntoView();
+    });
   }
 
   function moveLinear(offset) {

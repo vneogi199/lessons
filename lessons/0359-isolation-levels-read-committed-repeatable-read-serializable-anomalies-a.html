@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Compare statement and transaction snapshots, write conflict detection, predicate dependencies, serialization graphs, and safe retry after SQLSTATE 40001.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Compare statement and transaction snapshots, write conflict detection, predicate dependencies, serialization graphs, and safe retry after SQLSTATE 40001.</p>
+    <p class="concept-intro">Compare statement and transaction snapshots, write conflict detection, predicate dependencies, serialization graphs, and safe retry after SQLSTATE 40001.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Isolation levels">
         <span>01</span>
         <h3>Isolation levels</h3>
-        <p><strong>What it means:</strong> An isolation level defines which concurrent histories a transaction may observe. Stronger levels prevent more anomalies but can abort work that must be retried.</p>
+        <p class="concept-definition">An isolation level defines which concurrent histories a transaction may observe. Stronger levels prevent more anomalies but can abort work that must be retried.</p>
       </article><article class="concept-card" data-subtopic="Read Committed">
         <span>02</span>
         <h3>Read Committed</h3>
-        <p><strong>What it means:</strong> In PostgreSQL Read Committed, an ordinary SELECT sees a snapshot taken when that statement starts. A later statement in the same transaction can see newly committed changes.</p>
+        <p class="concept-definition">In PostgreSQL Read Committed, an ordinary SELECT sees a snapshot taken when that statement starts. A later statement in the same transaction can see newly committed changes.</p>
       </article><article class="concept-card" data-subtopic="Repeatable Read">
         <span>03</span>
         <h3>Repeatable Read</h3>
-        <p><strong>What it means:</strong> PostgreSQL Repeatable Read uses a transaction snapshot for ordinary queries. It prevents changing snapshots but can still allow serialization anomalies such as write skew.</p>
+        <p class="concept-definition">PostgreSQL Repeatable Read uses a transaction snapshot for ordinary queries. It prevents changing snapshots but can still allow serialization anomalies such as write skew.</p>
       </article><article class="concept-card" data-subtopic="Serializable">
         <span>04</span>
         <h3>Serializable</h3>
-        <p><strong>What it means:</strong> Serializable transactions must have an outcome consistent with some serial execution. PostgreSQL can abort a transaction to preserve that guarantee, so callers must be able to retry the whole transaction.</p>
+        <p class="concept-definition">Serializable transactions must have an outcome consistent with some serial execution. PostgreSQL can abort a transaction to preserve that guarantee, so callers must be able to retry the whole transaction.</p>
       </article><article class="concept-card" data-subtopic="anomalies">
         <span>05</span>
         <h3>anomalies</h3>
-        <p><strong>What it means:</strong> Transaction anomalies are surprising outcomes permitted by an isolation level, such as stale reads or conflicting concurrent decisions.</p>
+        <p class="concept-definition">Transaction anomalies are surprising outcomes permitted by an isolation level, such as stale reads or conflicting concurrent decisions.</p>
       </article><article class="concept-card" data-subtopic="SSI">
         <span>06</span>
         <h3>SSI</h3>
-        <p><strong>What it means:</strong> Serializable Snapshot Isolation detects dangerous dependency patterns and may abort transactions to preserve serializable behavior.</p>
+        <p class="concept-definition">Serializable Snapshot Isolation detects dangerous dependency patterns and may abort transactions to preserve serializable behavior.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run two conflicting transactions and predict the wait, error, or visible value.</p><p><strong>Then inspect:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
+    <div class="diagnostic-note"><p>Run two conflicting transactions and predict the wait, error, or visible value.</p><p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce nonrepeatable reads, write skew, and serialization failure with coordinated sessions and then protect the invariant.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -131,7 +131,7 @@ COMMIT; -- one transaction can fail with SQLSTATE 40001
 -- Retry the complete transaction with fresh reads and bounded backoff.
 -- PostgreSQL Serializable uses dependency tracking to reject unsafe outcomes;
 -- it does not serialize execution by running one transaction at a time.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -143,7 +143,7 @@ COMMIT; -- one transaction can fail with SQLSTATE 40001
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -168,14 +168,14 @@ COMMIT; -- one transaction can fail with SQLSTATE 40001
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Compare statement and transaction snapshots, write conflict detection, predicate dependencies, serialization graphs, and safe retry after SQLSTATE 40001.</p>
-        <p><strong>Worked answer criteria:</strong> Both serializable transactions must overlap to expose the intended write-skew dependency. Retrying only UPDATE is insufficient: reread the count in a fresh transaction. An empty update after the invariant recheck is a business outcome, not a serialization error. Serializable does not execute one transaction at a time.</p>
-        <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Compare statement and transaction snapshots, write conflict detection, predicate dependencies, serialization graphs, and safe retry after SQLSTATE 40001.</p>
+        <p class="worked-answer">Both serializable transactions must overlap to expose the intended write-skew dependency. Retrying only UPDATE is insufficient: reread the count in a fresh transaction. An empty update after the invariant recheck is a business outcome, not a serialization error. Serializable does not execute one transaction at a time.</p>
+        <p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

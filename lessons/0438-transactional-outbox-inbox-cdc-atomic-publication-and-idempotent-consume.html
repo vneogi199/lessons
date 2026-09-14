@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
+    <p class="concept-intro">Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Transactional outbox">
         <span>01</span>
         <h3>Transactional outbox</h3>
-        <p><strong>What it means:</strong> A transactional outbox commits the business change and an event record in the same local database transaction, closing the dual-write loss gap.</p>
+        <p class="concept-definition">A transactional outbox commits the business change and an event record in the same local database transaction, closing the dual-write loss gap.</p>
       </article><article class="concept-card" data-subtopic="inbox">
         <span>02</span>
         <h3>inbox</h3>
-        <p><strong>What it means:</strong> An inbox records an incoming event identity in the same transaction as the consumer&#039;s local effect, making redelivery locally duplicate-safe.</p>
+        <p class="concept-definition">An inbox records an incoming event identity in the same transaction as the consumer&#039;s local effect, making redelivery locally duplicate-safe.</p>
       </article><article class="concept-card" data-subtopic="CDC">
         <span>03</span>
         <h3>CDC</h3>
-        <p><strong>What it means:</strong> Change data capture exposes database changes for downstream processing, with position, schema, and delivery semantics.</p>
+        <p class="concept-definition">Change data capture exposes database changes for downstream processing, with position, schema, and delivery semantics.</p>
       </article><article class="concept-card" data-subtopic="atomic publication">
         <span>04</span>
         <h3>atomic publication</h3>
-        <p><strong>What it means:</strong> Atomic publication couples state change and event intent so a crash cannot silently leave only one committed; outbox patterns require a reliable relay.</p>
+        <p class="concept-definition">Atomic publication couples state change and event intent so a crash cannot silently leave only one committed; outbox patterns require a reliable relay.</p>
       </article><article class="concept-card" data-subtopic="idempotent consumers">
         <span>05</span>
         <h3>idempotent consumers</h3>
-        <p><strong>What it means:</strong> An idempotent consumer makes repeated delivery of the same logical event safe. Its deduplication record and local state change should share an atomic boundary.</p>
+        <p class="concept-definition">An idempotent consumer makes repeated delivery of the same logical event safe. Its deduplication record and local state change should share an atomic boundary.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash at every boundary before and after the side effect and acknowledgement.</p><p><strong>Then inspect:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
+    <div class="diagnostic-note"><p>Crash at every boundary before and after the side effect and acknowledgement.</p><p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build an outbox relay and inbox consumer, crash each step, and prove no committed intent is lost and no duplicate business effect survives.</p>
-    <p><strong>Core and extension:</strong> Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
+    <p class="lab-scope">Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
 
 
 
@@ -156,7 +156,7 @@ COMMIT;
 -- Ack only after commit; consumer retries still require a retention contract.
 -- Run new/duplicate/mismatched/missing-target cases on a real database.
 -- https://www.postgresql.org/docs/current/queries-with.html</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -168,7 +168,7 @@ COMMIT;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -193,14 +193,14 @@ COMMIT;
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
-        <p><strong>Worked answer criteria:</strong> The SQL fragments require separate parameter sets, schemas and an explicit transaction adapter. The outbox closes the local state/intent gap, not the broker publication/relay-checkpoint gap. A zero-row producer update emits no event; reconcile why. Consumer target existence and canonical duplicate comparison are required contracts, and the relay/CDC position, schema evolution and retention still need implementation.</p>
-        <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
+        <p class="worked-answer">The SQL fragments require separate parameter sets, schemas and an explicit transaction adapter. The outbox closes the local state/intent gap, not the broker publication/relay-checkpoint gap. A zero-row producer update emits no event; reconcile why. Consumer target existence and canonical duplicate comparison are required contracts, and the relay/CDC position, schema evolution and retention still need implementation.</p>
+        <p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

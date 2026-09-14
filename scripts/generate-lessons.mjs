@@ -17627,12 +17627,12 @@ function subtopicBreakdownMarkup(lesson) {
   const items = lessonSubtopics(lesson.title);
   return `<section class="concept-section" data-subtopic-count="${items.length}">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> ${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
+    <p class="concept-intro">${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
     <div class="concept-grid">
       ${items.map((term, index) => `<article class="concept-card" data-subtopic="${escapeHtml(term)}">
         <span>${String(index + 1).padStart(2, "0")}</span>
         <h3>${escapeHtml(term)}</h3>
-        <p><strong>What it means:</strong> ${escapeHtml(simpleConceptExplanation(term, lesson))}</p>
+        <p class="concept-definition">${escapeHtml(simpleConceptExplanation(term, lesson))}</p>
       </article>`).join("")}
     </div>
   </section>`;
@@ -17648,7 +17648,7 @@ function mechanismWalkthroughMarkup(diagram) {
         <p>${escapeHtml(stage.detail)}</p>
       </article>`).join("")}
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> ${escapeHtml(diagram.probe)}</p><p><strong>Then inspect:</strong> ${escapeHtml(diagram.evidence)}</p></div>
+    <div class="diagnostic-note"><p>${escapeHtml(diagram.probe)}</p><p>Look for: ${escapeHtml(diagram.evidence)}</p></div>
   </section>`;
 }
 
@@ -17660,7 +17660,7 @@ function codeReadingGuideMarkup(lesson, diagram) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> ${escapeHtml(diagram.stages.map((stage) => stage.name).join(" → "))}. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>${escapeHtml(diagram.stages.map((stage) => stage.name).join(" → "))}. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>`;
 }
 
@@ -17725,7 +17725,7 @@ function lessonHtml(lesson, profile) {
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.explanation ? `\n      <p>${escapeHtml(profile.explanation)}</p>` : ""}
-      <p class="analogy"><strong>Analogy:</strong> ${escapeHtml(profile.analogy)}</p>
+      <p class="analogy">${escapeHtml(profile.analogy)}</p>
     </section>
 
     <aside class="card blackboard">
@@ -17750,11 +17750,11 @@ function lessonHtml(lesson, profile) {
 
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
-    <p>${escapeHtml(sentence(lesson.practical))}</p>${profile.labScope ? `\n    <p><strong>Core and extension:</strong> ${escapeHtml(profile.labScope)}</p>` : ""}
-${REUSE_PURPOSE[lesson.number] ? `<p><strong>Distinct exercise:</strong> ${escapeHtml(REUSE_PURPOSE[lesson.number])}</p>` : ""}
-${lesson.trackId === "typescript" ? `<p><strong>Before you run:</strong> ${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
-${lesson.trackId === "data-systems" && Number(lesson.number) < 381 ? `<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>` : ""}
-${["cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? `<p><strong>Lab scope:</strong> Infrastructure snippets are recipes or fragments, not a supplied deployment. Resolve placeholders, required files, tool versions, identity, region or cluster context, and application configuration first. Use an isolated learning environment with a cost limit and cleanup plan. Inspect commands before running: some create resources, publish images, change permissions, or alter data. Never paste them into a production session. Local content checks do not establish that the integration works.</p>` : ""}
+    <p>${escapeHtml(sentence(lesson.practical))}</p>${profile.labScope ? `\n    <p class="lab-scope">${escapeHtml(profile.labScope)}</p>` : ""}
+${REUSE_PURPOSE[lesson.number] ? `<p>${escapeHtml(REUSE_PURPOSE[lesson.number])}</p>` : ""}
+${lesson.trackId === "typescript" ? `<p>${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
+${lesson.trackId === "data-systems" && Number(lesson.number) < 381 ? `<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>` : ""}
+${["cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? `<p>Infrastructure snippets are recipes or fragments, not a supplied deployment. Resolve placeholders, required files, tool versions, identity, region or cluster context, and application configuration first. Use an isolated learning environment with a cost limit and cleanup plan. Inspect commands before running: some create resources, publish images, change permissions, or alter data. Never paste them into a production session. Local content checks do not establish that the integration works.</p>` : ""}
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
       <li><span>${exerciseSpecification ? "Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code." : "Run the smallest working example in its required environment and save the result."}</span></li>
@@ -17762,12 +17762,12 @@ ${["cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? `<p
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
     <pre aria-label="Starter code"><code>${escapeHtml(profile.code)}</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review">
     <h2>Understand, challenge, verify</h2>
-    <p><strong>Plain model:</strong> ${escapeHtml(typescriptReviewFor(lesson)[0])}</p>
+    <p>${escapeHtml(typescriptReviewFor(lesson)[0])}</p>
     <details><summary>Senior reasoning checkpoint — answer before opening</summary>
       <p>${escapeHtml(typescriptReviewFor(lesson)[1])}</p>
     </details>
@@ -17791,13 +17791,13 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace ${escapeHtml(traceSubject)}. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="${escapeHtml(lesson.trackId)}">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> ${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p><strong>Worked answer criteria:</strong> ${escapeHtml(profile.checkpoint)}</p>` : ""}
-        <p><strong>Evidence to explain:</strong> ${escapeHtml(sentence(d.evidence))}</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p class="worked-answer">${escapeHtml(profile.checkpoint)}</p>` : ""}
+        <p>Look for: ${escapeHtml(sentence(d.evidence))}</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Worked track case: ${escapeHtml(senior.title)} ↗</a></p>
       </details>
     </div>

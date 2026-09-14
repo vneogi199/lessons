@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
+    <p class="concept-intro">Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Deadlocks">
         <span>01</span>
         <h3>Deadlocks</h3>
-        <p><strong>What it means:</strong> A deadlock is a cycle in which every transaction waits for another in the same cycle. PostgreSQL detects the cycle and aborts one participant so progress can resume.</p>
+        <p class="concept-definition">A deadlock is a cycle in which every transaction waits for another in the same cycle. PostgreSQL detects the cycle and aborts one participant so progress can resume.</p>
       </article><article class="concept-card" data-subtopic="serialization failures">
         <span>02</span>
         <h3>serialization failures</h3>
-        <p><strong>What it means:</strong> Serialization failures require retrying the complete transaction with fresh reads, not only the final statement.</p>
+        <p class="concept-definition">Serialization failures require retrying the complete transaction with fresh reads, not only the final statement.</p>
       </article><article class="concept-card" data-subtopic="timeouts">
         <span>03</span>
         <h3>timeouts</h3>
-        <p><strong>What it means:</strong> A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
+        <p class="concept-definition">A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
       </article><article class="concept-card" data-subtopic="retry budgets">
         <span>04</span>
         <h3>retry budgets</h3>
-        <p><strong>What it means:</strong> Retry budgets bound total repeated work and time so contention does not become a retry storm.</p>
+        <p class="concept-definition">Retry budgets bound total repeated work and time so contention does not become a retry storm.</p>
       </article><article class="concept-card" data-subtopic="idempotent transactions">
         <span>05</span>
         <h3>idempotent transactions</h3>
-        <p><strong>What it means:</strong> An idempotent transaction preserves one logical operation&#039;s intended effect across retries, typically using an atomic scoped identity and saved outcome. Atomicity of each attempt alone does not prevent two separately committed attempts from duplicating effects.</p>
+        <p class="concept-definition">An idempotent transaction preserves one logical operation&#039;s intended effect across retries, typically using an atomic scoped identity and saved outcome. Atomicity of each attempt alone does not prevent two separately committed attempts from duplicating effects.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run two conflicting transactions and predict the wait, error, or visible value.</p><p><strong>Then inspect:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
+    <div class="diagnostic-note"><p>Run two conflicting transactions and predict the wait, error, or visible value.</p><p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
   </section>
 
   
@@ -105,10 +105,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Reproduce a deadlock, eliminate inconsistent lock order, and add bounded jittered retries around the whole transaction.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -137,7 +137,7 @@ def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
 # add a caller deadline/cancellation and bound statements/locks within that budget.
 # Avoid deadlocks by locking accounts in stable ID order. Isolation alone cannot
 # repair missing business rules: a retry must recheck sufficient funds/invariants.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -149,7 +149,7 @@ def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -174,14 +174,14 @@ def retry_transaction(run_transaction, *, attempts=4, pause=time.sleep):
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
-        <p><strong>Worked answer criteria:</strong> The helper retries only 40001 and 40P01 with at most ten attempts. Each adapter call must roll back and begin fresh; the stable operation key survives attempts. Backoff is jittered but there is no caller deadline or cancellation. Existing fake-error checks establish control flow, not a reproduced database deadlock.</p>
-        <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Build wait-for cycles, observe deadlock victim selection, classify retryable SQLSTATEs, and preserve an external request identity across attempts.</p>
+        <p class="worked-answer">The helper retries only 40001 and 40P01 with at most ten attempts. Each adapter call must roll back and begin fresh; the stable operation key survives attempts. Backoff is jittered but there is no caller deadline or cancellation. Existing fake-error checks establish control flow, not a reproduced database deadlock.</p>
+        <p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

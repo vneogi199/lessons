@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
-      <p class="analogy"><strong>Analogy:</strong> Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
+    <p class="concept-intro">Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Transform streams">
         <span>01</span>
         <h3>Transform streams</h3>
-        <p><strong>What it means:</strong> A Transform is a Duplex whose output derives from input chunks. Its callback controls when each input is complete and may return data or failure.</p>
+        <p class="concept-definition">A Transform is a Duplex whose output derives from input chunks. Its callback controls when each input is complete and may return data or failure.</p>
       </article><article class="concept-card" data-subtopic="pipeline">
         <span>02</span>
         <h3>pipeline</h3>
-        <p><strong>What it means:</strong> stream.pipeline owns a connected chain, propagates errors and cancellation, destroys affected stages, and provides one completion signal.</p>
+        <p class="concept-definition">stream.pipeline owns a connected chain, propagates errors and cancellation, destroys affected stages, and provides one completion signal.</p>
       </article><article class="concept-card" data-subtopic="finished">
         <span>03</span>
         <h3>finished</h3>
-        <p><strong>What it means:</strong> stream.finished waits for a stream&#039;s completion or premature close and helps make lifecycle ownership explicit.</p>
+        <p class="concept-definition">stream.finished waits for a stream&#039;s completion or premature close and helps make lifecycle ownership explicit.</p>
       </article><article class="concept-card" data-subtopic="error propagation">
         <span>04</span>
         <h3>error propagation</h3>
-        <p><strong>What it means:</strong> Node errors travel through synchronous throws, callback arguments, EventEmitter error events, Promise rejection, streams, workers, and process exit; each boundary needs ownership.</p>
+        <p class="concept-definition">Node errors travel through synchronous throws, callback arguments, EventEmitter error events, Promise rejection, streams, workers, and process exit; each boundary needs ownership.</p>
       </article><article class="concept-card" data-subtopic="cancellation">
         <span>05</span>
         <h3>cancellation</h3>
-        <p><strong>What it means:</strong> Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
+        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
       </article><article class="concept-card" data-subtopic="composition">
         <span>06</span>
         <h3>composition</h3>
-        <p><strong>What it means:</strong> Composition builds behavior from collaborating parts with explicit ownership and contracts, rather than inheriting all behavior from a base class.</p>
+        <p class="concept-definition">Composition builds behavior from collaborating parts with explicit ownership and contracts, rather than inheriting all behavior from a base class.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow the destination and confirm memory stays bounded.</p><p><strong>Then inspect:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p></div>
+    <div class="diagnostic-note"><p>Slow the destination and confirm memory stays bounded.</p><p>Look for: Chunk sizes, writable return values, drain events, RSS, and close/error order.</p></div>
   </section>
 
   
@@ -109,8 +109,8 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a gzip file pipeline with AbortSignal, checksums, atomic output, and injected failure.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
-<p><strong>Distinct exercise:</strong> Run the compression recipe only in a disposable directory with input.ndjson. Inject source, transform and destination failures separately; verify all pipeline stages close and no incomplete output is published. It creates/replaces files, not a read-only demo.</p>
+    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+<p>Run the compression recipe only in a disposable directory with input.ndjson. Inject source, transform and destination failures separately; verify all pipeline stages close and no incomplete output is published. It creates/replaces files, not a read-only demo.</p>
 
 
 
@@ -144,7 +144,7 @@ async function gzipFile(source, target, signal) {
 // prevents that, but successful concurrent replacements still have last-writer wins.
 // ponytail: replacement is not crash-durability proof; add file/directory fsync
 // and platform-specific failure tests when persistence across power loss matters.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -156,7 +156,7 @@ async function gzipFile(source, target, signal) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -181,14 +181,14 @@ async function gzipFile(source, target, signal) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
-        <p><strong>Worked answer criteria:</strong> Unique staging avoids another call&#039;s temporary file, while rename permits last-writer wins. Pipeline failure cannot undo external effects. Cleanup failure may coexist with the original error; preserve both when that distinction matters. The fixture does not supply checksums or crash-durability proof.</p>
-        <p><strong>Evidence to explain:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Coordinate multi-stage stream ownership so one failure destroys the chain, completion is awaited, and abort releases every resource.</p>
+        <p class="worked-answer">Unique staging avoids another call&#039;s temporary file, while rename permits last-writer wins. Pipeline failure cannot undo external effects. Cleanup failure may coexist with the original error; preserve both when that distinction matters. The fixture does not supply checksums or crash-durability proof.</p>
+        <p>Look for: Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
+    <p class="concept-intro">Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Logical replication">
         <span>01</span>
         <h3>Logical replication</h3>
-        <p><strong>What it means:</strong> Logical replication decodes committed row changes and publishes selected tables to subscribers. Schema evolution and duplicate-safe consumption remain explicit responsibilities.</p>
+        <p class="concept-definition">Logical replication decodes committed row changes and publishes selected tables to subscribers. Schema evolution and duplicate-safe consumption remain explicit responsibilities.</p>
       </article><article class="concept-card" data-subtopic="publications">
         <span>02</span>
         <h3>publications</h3>
-        <p><strong>What it means:</strong> Publications describe which eligible database changes are made available through logical replication.</p>
+        <p class="concept-definition">Publications describe which eligible database changes are made available through logical replication.</p>
       </article><article class="concept-card" data-subtopic="subscriptions">
         <span>03</span>
         <h3>subscriptions</h3>
-        <p><strong>What it means:</strong> Subscriptions consume publication changes and apply them to a target database.</p>
+        <p class="concept-definition">Subscriptions consume publication changes and apply them to a target database.</p>
       </article><article class="concept-card" data-subtopic="decoding">
         <span>04</span>
         <h3>decoding</h3>
-        <p><strong>What it means:</strong> Logical decoding translates WAL changes into a logical change stream under a plugin and slot contract.</p>
+        <p class="concept-definition">Logical decoding translates WAL changes into a logical change stream under a plugin and slot contract.</p>
       </article><article class="concept-card" data-subtopic="replication identity">
         <span>05</span>
         <h3>replication identity</h3>
-        <p><strong>What it means:</strong> Replica identity supplies the row-identifying information needed for supported logical updates and deletes.</p>
+        <p class="concept-definition">Replica identity supplies the row-identifying information needed for supported logical updates and deletes.</p>
       </article><article class="concept-card" data-subtopic="CDC">
         <span>06</span>
         <h3>CDC</h3>
-        <p><strong>What it means:</strong> Change data capture exposes committed data changes for downstream processing, with explicit position and schema-evolution handling.</p>
+        <p class="concept-definition">Change data capture exposes committed data changes for downstream processing, with explicit position and schema-evolution handling.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Stop the relevant process at one precise point and predict the last recoverable commit.</p><p><strong>Then inspect:</strong> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p></div>
+    <div class="diagnostic-note"><p>Stop the relevant process at one precise point and predict the last recoverable commit.</p><p>Look for: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Stream a table into a subscriber or local CDC consumer and prove duplicate-safe resume from a recorded position.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -138,7 +138,7 @@ SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
 -- Provision compatible subscriber tables first; DDL and sequence state are not
 -- automatically replicated. Inspect slot retention, conflicts and resync needs.
 -- If building a separate event consumer, commit its receipt and effect together.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -150,7 +150,7 @@ SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Backend creates a database change → Log record reaches required durability → Recovery or replica reapplies history → Restored state serves invariants. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Backend creates a database change → Log record reaches required durability → Recovery or replica reapplies history → Restored state serves invariants. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -175,14 +175,14 @@ SELECT slot_name, active, confirmed_flush_lsn FROM pg_replication_slots;
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace logical replication. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
-        <p><strong>Worked answer criteria:</strong> Publisher and subscriber commands run on separate configured databases. Replica identity FULL can increase traffic and apply cost; it does not replicate DDL or sequence state. The subscription owns its slot, and the slot diagnostic belongs on the publisher. Row-change replication is not an atomic external business-event consumer.</p>
-        <p><strong>Evidence to explain:</strong> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Convert WAL changes into logical row events, filter published tables, identify updates and deletes, manage slots and acknowledgements, and handle schema separately.</p>
+        <p class="worked-answer">Publisher and subscriber commands run on separate configured databases. Replica identity FULL can increase traffic and apply cost; it does not replicate DDL or sequence state. The subscription owns its slot, and the slot diagnostic belongs on the publisher. Row-change replication is not an atomic external business-event consumer.</p>
+        <p>Look for: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

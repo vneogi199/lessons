@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
+    <p class="concept-intro">Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="VACUUM">
         <span>01</span>
         <h3>VACUUM</h3>
-        <p><strong>What it means:</strong> VACUUM makes dead tuple space reusable, maintains visibility information, and freezes old transaction IDs. It normally does not shrink the table file.</p>
+        <p class="concept-definition">VACUUM makes dead tuple space reusable, maintains visibility information, and freezes old transaction IDs. It normally does not shrink the table file.</p>
       </article><article class="concept-card" data-subtopic="autovacuum">
         <span>02</span>
         <h3>autovacuum</h3>
-        <p><strong>What it means:</strong> Autovacuum schedules vacuum and analyze work to manage dead versions, statistics, and transaction-age safety.</p>
+        <p class="concept-definition">Autovacuum schedules vacuum and analyze work to manage dead versions, statistics, and transaction-age safety.</p>
       </article><article class="concept-card" data-subtopic="ANALYZE">
         <span>03</span>
         <h3>ANALYZE</h3>
-        <p><strong>What it means:</strong> ANALYZE collects planner statistics. In EXPLAIN ANALYZE, ANALYZE means actually execute the statement and report measured execution; use caution with writes and side effects.</p>
+        <p class="concept-definition">ANALYZE collects planner statistics. In EXPLAIN ANALYZE, ANALYZE means actually execute the statement and report measured execution; use caution with writes and side effects.</p>
       </article><article class="concept-card" data-subtopic="freezing">
         <span>04</span>
         <h3>freezing</h3>
-        <p><strong>What it means:</strong> Freezing marks sufficiently old tuple transaction information so it remains safe across transaction-ID wraparound.</p>
+        <p class="concept-definition">Freezing marks sufficiently old tuple transaction information so it remains safe across transaction-ID wraparound.</p>
       </article><article class="concept-card" data-subtopic="transaction ID wraparound">
         <span>05</span>
         <h3>transaction ID wraparound</h3>
-        <p><strong>What it means:</strong> Transaction-ID wraparound can make old visibility information ambiguous unless vacuum freezing advances safely.</p>
+        <p class="concept-definition">Transaction-ID wraparound can make old visibility information ambiguous unless vacuum freezing advances safely.</p>
       </article><article class="concept-card" data-subtopic="maintenance tuning">
         <span>06</span>
         <h3>maintenance tuning</h3>
-        <p><strong>What it means:</strong> Maintenance tuning adjusts vacuum, analyze, and related work based on churn, age, locking, and measured resource pressure.</p>
+        <p class="concept-definition">Maintenance tuning adjusts vacuum, analyze, and related work based on churn, age, locking, and measured resource pressure.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Dead tuples, page reuse, index cleanup, all-visible bits, and query plans reveal impact.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Hold an old snapshot while updating rows, then compare cleanup before and after it ends.</p><p><strong>Then inspect:</strong> Tuple versions, n_dead_tup, xmin horizon, relfrozenxid age, visibility map, sizes, and vacuum log.</p></div>
+    <div class="diagnostic-note"><p>Hold an old snapshot while updating rows, then compare cleanup before and after it ends.</p><p>Look for: Tuple versions, n_dead_tup, xmin horizon, relfrozenxid age, visibility map, sizes, and vacuum log.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Create dead tuples, inspect maintenance statistics, tune one table, and prove that an old transaction delays cleanup.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
-<p><strong>Distinct exercise:</strong> Focus on maintenance ownership: hold an old snapshot in a separate test session, run vacuum and inspect what can be reclaimed. Release it and compare. Explain ANALYZE versus VACUUM and why ordinary vacuum does not generally shrink the file to its minimum size.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+<p>Focus on maintenance ownership: hold an old snapshot in a separate test session, run vacuum and inspect what can be reclaimed. Release it and compare. Explain ANALYZE versus VACUUM and why ordinary vacuum does not generally shrink the file to its minimum size.</p>
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -135,7 +135,7 @@ ALTER TABLE events SET (
 );
 
 -- Check for old transactions and replication slots before blaming autovacuum.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -147,7 +147,7 @@ ALTER TABLE events SET (
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Writes leave current and dead tuple versions → Autovacuum selects maintenance work → Vacuum prunes and freezes safely → Space and visibility metadata improve. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Writes leave current and dead tuple versions → Autovacuum selects maintenance work → Vacuum prunes and freezes safely → Space and visibility metadata improve. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -172,14 +172,14 @@ ALTER TABLE events SET (
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace database maintenance. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
-        <p><strong>Worked answer criteria:</strong> Dead-tuple counts are estimates and scale factors combine with other thresholds. Small per-table factors are a fixture, not a universal tuning preset. Long snapshots and slot horizons can retain required versions. VACUUM is not VACUUM FULL, and wraparound safety is distinct from immediate query speed.</p>
-        <p><strong>Evidence to explain:</strong> Tuple versions, n_dead_tup, xmin horizon, relfrozenxid age, visibility map, sizes, and vacuum log.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
+        <p class="worked-answer">Dead-tuple counts are estimates and scale factors combine with other thresholds. Small per-table factors are a fixture, not a universal tuning preset. Long snapshots and slot horizons can retain required versions. VACUUM is not VACUUM FULL, and wraparound safety is distinct from immediate query speed.</p>
+        <p>Look for: Tuple versions, n_dead_tup, xmin horizon, relfrozenxid age, visibility map, sizes, and vacuum log.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
