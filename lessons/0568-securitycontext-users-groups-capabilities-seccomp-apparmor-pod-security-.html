@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace untrusted input crossing a boundary</h2>
+      <h2>Trace Kubernetes desired state and observed behavior</h2>
       <ol class="trace-flow" data-flow="kubernetes-policy" aria-label="Mechanism trace: User or workload calls the API then RBAC evaluates allowed actions then Policy validates or mutates object then Node runtime applies the spec. Experiment: Attempt one forbidden API action and one policy-violating Pod.">
         <li class="trace-stage"><span>01 · IDENTITY</span><strong>User or workload calls the API</strong><small>TLS, token, verb, resource, namespace, and object enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><strong>RBAC evaluates allowed actions</strong><small>Bindings connect subjects to additive role rules.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADMIT</span><strong>Policy validates or mutates object</strong><small>Security and organizational constraints apply before persistence.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ENFORCE</span><strong>Node runtime applies the spec</strong><small>Identity, secret projection, and kernel controls become observable.</small></li>
       </ol>
@@ -63,7 +63,7 @@
       </article><article class="concept-card" data-subtopic="groups">
         <span>03</span>
         <h3>groups</h3>
-        <p><strong>What it means:</strong> RBAC groups collect authenticated subjects under identity-provider or authentication conventions.</p>
+        <p><strong>What it means:</strong> SecurityContext groups are Linux process group IDs and supported supplemental or filesystem group settings. They govern runtime file access and are distinct from authenticated RBAC groups.</p>
       </article><article class="concept-card" data-subtopic="capabilities">
         <span>04</span>
         <h3>capabilities</h3>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Harden a workload to restricted standards with non-root, read-only filesystem, dropped capabilities, and seccomp.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
 
 
 
@@ -163,7 +164,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace untrusted input crossing a boundary from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace Kubernetes desired state and observed behavior from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Attempt one forbidden API action and one policy-violating Pod.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: auth can-i, audit event, admission response, stored object, runtime identity, and denial.</p></article>
@@ -174,19 +175,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain defense in depth from admission to runtime and host kernel.</li>
-      <li>Trace untrusted input crossing a boundary for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace Kubernetes desired state and observed behavior for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you harden a workload to restricted standards with non-root, read-only filesystem, dropped capabilities, and seccomp, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Map Pod declarations into runtime identity and kernel restrictions while admission enforces cluster policy.</p>
+        <p><strong>Worked answer criteria:</strong> This is a spec fragment with a placeholder digest, not a runnable Deployment. UID/GID here are Linux runtime identities, not RBAC users/groups. Memory-backed /tmp contributes to memory use, and read-only root does not make mounts read-only. Admission acceptance and effective seccomp/capability restrictions need separate evidence.</p>
         <p><strong>Evidence to explain:</strong> auth can-i, audit event, admission response, stored object, runtime identity, and denial.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>

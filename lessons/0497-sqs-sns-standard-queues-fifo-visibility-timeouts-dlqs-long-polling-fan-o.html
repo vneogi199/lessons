@@ -59,31 +59,31 @@
       </article><article class="concept-card" data-subtopic="SNS">
         <span>02</span>
         <h3>SNS</h3>
-        <p><strong>What it means:</strong> SNS is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Amazon SNS publishes notifications to independently configured subscriptions. Endpoint type, topic type, retries and subscription filtering determine delivery semantics.</p>
       </article><article class="concept-card" data-subtopic="standard queues">
         <span>03</span>
         <h3>standard queues</h3>
-        <p><strong>What it means:</strong> standard queues is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> SQS standard queues provide at-least-once delivery and best-effort ordering under the service contract. Repeated or out-of-order deliveries require application-level handling.</p>
       </article><article class="concept-card" data-subtopic="FIFO">
         <span>04</span>
         <h3>FIFO</h3>
-        <p><strong>What it means:</strong> FIFO is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> SQS FIFO queues order work within message groups and provide bounded producer deduplication. Visibility expiry can still repeat processing; external business effects need their own duplicate protection.</p>
       </article><article class="concept-card" data-subtopic="visibility timeouts">
         <span>05</span>
         <h3>visibility timeouts</h3>
-        <p><strong>What it means:</strong> visibility timeouts is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> A visibility timeout temporarily hides a received SQS message from normal delivery. It does not stop the worker when it expires; successful processing must delete the correct delivery receipt.</p>
       </article><article class="concept-card" data-subtopic="DLQs">
         <span>06</span>
         <h3>DLQs</h3>
-        <p><strong>What it means:</strong> DLQs is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Dead-letter queues retain messages redirected after configured delivery failures. Retention, alarms, ownership and authorized redrive are necessary to recover useful work.</p>
       </article><article class="concept-card" data-subtopic="long polling">
         <span>07</span>
         <h3>long polling</h3>
-        <p><strong>What it means:</strong> long polling is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> SQS long polling waits for available messages up to a configured duration instead of repeatedly returning empty immediately. Client timeouts must permit the wait, and processing still needs bounded concurrency.</p>
       </article><article class="concept-card" data-subtopic="fan-out">
         <span>08</span>
         <h3>fan-out</h3>
-        <p><strong>What it means:</strong> fan-out is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Fan-out sends one publication to multiple independent consumers or subscriptions. Each branch has its own delivery, failure, authorization and cost implications.</p>
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>09</span>
         <h3>idempotency</h3>
@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build an idempotent background pipeline with SNS fan-out, SQS buffering, DLQ alarms, and poison-message replay.</p>
+    <p><strong>Core and extension:</strong> Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
 
 
 
@@ -197,6 +198,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow publication, durable storage, delivery, visibility, acknowledgement, retry, duplicate handling, and dead-letter redrive.</p>
+        <p><strong>Worked answer criteria:</strong> The template creates a standard queue and DLQ with 60-second visibility, 20-second long polling and maxReceiveCount five; it implements neither SNS nor FIFO. Fourteen-day DLQ retention is configured, while source retention is defaulted. A receive count is not a guaranteed business-attempt counter. Delete only after durable success and protect redrive from repeating effects.</p>
         <p><strong>Evidence to explain:</strong> Message ID, receive count, offset, queue age, workflow history, DLQ, and business state.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

@@ -86,6 +86,7 @@ for (const [number, key] of Object.entries({
   "0366":"database-query", "0371":"postgres-pool", "0376":"postgres-access",
   "0377":"postgres-diagnostics", "0378":"postgres-diagnostics",
   "0508":"operations-diagnosis", "0509":"operations-diagnosis",
+  "0500":"aws-evidence-response", "0501":"aws-evidence-response",
   "0520":"operations-diagnosis", "0522":"operations-diagnosis",
   "0571":"operations-diagnosis", "0572":"operations-diagnosis",
   "0595":"rag-ingestion", "0615":"ai-authority-boundary",
@@ -293,7 +294,13 @@ asyncio.run(check())
   if (lesson.number === "0446") assert.ok(html.includes("Shard rebalancing moves data"), "shard rebalancing must not inherit consumer-only ownership");
   if (lesson.number === "0447") assert.ok(html.includes("logical election epochs") && html.includes("executions allowed by the stated fault model"), "Raft terms and safety must state protocol scope");
   if (lesson.number === "0469") assert.ok(html.includes("Reliability observability uses metrics"), "reliability must not inherit admin-only observability");
-  if (Number(lesson.number) >= 475 && Number(lesson.number) <= 480) assert.ok(!html.includes("is one AWS or cloud responsibility"), "reviewed cloud definitions must explain their mechanism");
+  if (lesson.trackId === "cloud-aws") assert.ok(!html.includes("is one AWS or cloud responsibility"), "reviewed cloud definitions must explain their mechanism");
+  if (lesson.number === "0499") assert.ok(html.includes("Stream partitions are ordered subdivisions"), "stream partitions must not inherit AWS IAM partition meaning");
+  if (lesson.number === "0528") assert.ok(html.includes("writable layer records that container"), "writable layers must explain container-owned state");
+  if (lesson.number === "0542") assert.ok(html.includes("registry repository is a named collection") && html.includes("Registry garbage collection reclaims stored content"), "registry terms must not inherit domain/memory meanings");
+  const kubernetesTerms = { "0550": "Kubernetes garbage collection removes dependent API objects", "0551": "Pending Pods have been accepted", "0554": "Readiness gates require additional named Pod status conditions", "0560": "An ingress controller watches routing configuration", "0562": "NetworkPolicy ingress means inbound traffic", "0568": "SecurityContext groups are Linux process group IDs", "0569": "Scaling limits bound replica or node growth" };
+  if (kubernetesTerms[lesson.number]) assert.ok(html.includes(kubernetesTerms[lesson.number]), `${lesson.id}: contextual Kubernetes definition regressed`);
+  if (lesson.trackId === "kubernetes") assert.ok(!html.includes("Trace a database transaction"), "Kubernetes traces must not inherit SQL titles");
   if (lesson.number === "0476") assert.ok(html.includes("independent IAM boundaries"), "AWS partitions must not mean network partitions");
   if (lesson.number === "0431") assert.ok(html.includes("Trace dependency isolation and recovery"), "breaker trace must not describe installation");
   if (Number(lesson.number) >= 381 && Number(lesson.number) <= 395) {
@@ -315,6 +322,15 @@ asyncio.run(check())
   if (["0589", "0600", "0603", "0604"].includes(lesson.number)) {
     execFileSync(python, ["-I", "-c", decode(code)], { timeout: 10000, stdio: "pipe" });
   }
+  if (lesson.number === "0593") {
+    const guard = decode(code).split("\n").find(line => line.includes('return new Response("Bad cursor"') && line.includes("exec(cursor)"));
+    assert.ok(guard, "resume must reject noncanonical cursor strings before conversion");
+    const validate = new Function("cursor", `${guard}\nreturn null;`);
+    for (const cursor of ["0", "1", "42"]) assert.equal(validate(cursor), null);
+    for (const cursor of ["1\n", "1\r", "01", "-1", "1.0", " 1", ""]) assert.equal(validate(cursor).status, 400);
+  }
+  if (lesson.number === "0601") assert.ok(decode(code).includes('-X POST "$base/collections/$collection/points/delete?wait=true"'), "Qdrant point deletion must use its POST delete endpoint");
+  if (lesson.number === "0599") assert.equal((decode(code).match(/WHERE tenant_id = 7 AND embedding_model = 'demo-v1'/g) || []).length, 2, "exact and planned vector queries must retain the same model filter");
   if (lesson.number === "0607") {
     const requests = [
       "{bad", "[]", JSON.stringify({ jsonrpc: "2.0", id: true, method: "tools/list" }),
@@ -1114,7 +1130,7 @@ assert.equal(unresolvedReuse.length, 0, "Every reused starter needs a reviewed, 
 const lines = [
   "# Curriculum content review — senior full-stack AI engineering",
   "",
-  "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-11.",
+  "Target confirmed by the learner: senior interviews, around ten years of experience. Review updated: 2026-09-14.",
   "",
   "## Verdict",
   "",
@@ -1122,7 +1138,7 @@ const lines = [
   "",
   "The curriculum-wide definition and shared-starter review pass is complete: generic title-term definitions are replaced, every retained reused starter has a distinct exercise, and unrelated generic starters have been replaced by concrete experiments or explicitly scoped integration assignments. This remains a depth library, not a fully executed or certified senior interview course. An experiment specification is not a supplied working application.",
   "",
-  `All ${rows.length} generated lesson files across ${manifest.tracks.length} tracks were inspected by the content audit for term definitions, starter-code reuse, and senior-practice links. The curriculum topics, generator's shared teaching paths, representative explanations, and selected technical claims received manual review. This is not a line-by-line factual certification of every explanation, nor an execution test of every embedded lab. The appendix records a result for every lesson; absence of an automated flag is not a quality pass.`,
+  `All ${rows.length} generated lesson files across ${manifest.tracks.length} tracks were inspected by the content audit for term definitions, starter-code reuse, and senior-practice links. Individual content review is documented in REVIEW-EVIDENCE.md and revision-pinned in the manual ledger; consult the generated checklist for any later changed-content rechecks. The review covered starters, effective definitions, diagrams, worked criteria and senior practice. It is not a line-by-line factual certification or execution of every embedded lab. The appendix records structural results; passing automation alone never grants content sign-off.`,
   "",
   "## Findings and changes",
   "",
@@ -1130,7 +1146,7 @@ const lines = [
   "",
   "1. **Assessment does not establish knowledge.** All 644 lessons originally used the same three orientation answers and claimed mastery after the obvious choice. The current progress interaction is explicitly labelled as orientation only, and the handoff no longer claims practical work was completed. Written rehearsal, a reasoning checkpoint, and 28 authored track cases now add feedback and changed constraints. Replacing the progress mechanism with written self-assessment remains a learner choice.",
   `2. **Placeholder definitions replaced throughout the catalog.** The initial complete audit found 1,892 generic fallback definitions in 458 lessons. Exact corrections and shared vocabulary now leave ${missingCount} fallback definitions in ${missingLessons} lessons. The audit prevents their reintroduction across all 644 lessons. Concrete wording is not itself proof of factual correctness or sufficient depth; contextual review still matters.`,
-  "3. **Loose matching selected the wrong subject.** A term such as TypeScript's `in` could match unrelated catalog text. Exact definitions now take priority, and fallback matching uses the longest whole phrase. All 46 JavaScript lessons now have concrete definitions for their title-level terms. Primitive values and async functions have dedicated mechanism traces rather than inheriting property-lookup or lexical-binding traces. Broader diagram routing still deserves lesson-specific review.",
+  "3. **Loose matching selected the wrong subject.** A term such as TypeScript's `in` could match unrelated catalog text. Exact definitions now take priority, and fallback matching uses the longest whole phrase. Individual review also corrected contextual meanings and trace labels across API, cloud, containers, Kubernetes, AI and interviews. Targeted regressions protect discovered routing and definition errors; reused diagrams explicitly state their scope where the exercise extends beyond them.",
   "Quality/reliability follow-up: 0465–0469 now link to topic-specific testing, threat-modeling, supply-chain and SLO sources instead of a single ASVS landing page. 0469 executes synthetic event-budget threshold, invalid/no-data and unequal-traffic aggregation checks. It distinguishes whole-window consumption from burn-rate alerting and does not verify production telemetry or incident response.",
   `4. **Starter reuse is now intentional and scoped.** Initially 230 lessons shared an identical starter. Currently ${sharedLessons} retain shared mechanisms, each with reviewed lesson-specific practice and limits; ${unresolvedReuse.length} reuse cases remain unexplained. Infrastructure, advanced React, AI and capstone placeholders now give concrete setup, a changed condition and expected evidence where a ready-made implementation is not supplied. These assignments still require the learner's implementation and appropriate environment.`,
   "5. **Senior reasoning needed a worked example.** Every track now has a concrete scenario, a reasoned answer, a changed constraint, feedback criteria, and a primary-source link. Lessons link to their track's case rather than repeating the full case in 644 pages. These cases supplement the topic-specific exercises; they are not 644 individually authored interview answers.",

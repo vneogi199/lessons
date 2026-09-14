@@ -101,6 +101,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement allowlisted tools with validation, idempotency, audit logs, and approval gates.</p>
+    <p><strong>Core and extension:</strong> Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
 
 
 
@@ -126,7 +127,7 @@ TOOLS = {&quot;lookup_order&quot;: {&quot;handler&quot;: lookup_order, &quot;nee
 def execute_tool(call: dict, completed: dict, audit: list, approved_intent=None) -&gt; dict:
     if not isinstance(call, dict): raise ValueError(&quot;call object required&quot;)
     name = call.get(&quot;name&quot;)
-    if name not in TOOLS:
+    if not isinstance(name, str) or name not in TOOLS:
         raise ValueError(&quot;tool not allowed&quot;)
     tool = TOOLS[name]
     key = call.get(&quot;idempotency_key&quot;)
@@ -154,6 +155,9 @@ else: raise AssertionError(&quot;changed intent replayed&quot;)
 result = execute_tool(call, completed, audit)
 result[&quot;status&quot;] = &quot;tampered&quot;
 assert execute_tool(call, completed, audit)[&quot;status&quot;] == &quot;packed&quot;
+try: execute_tool({**call, &quot;name&quot;: []}, completed, audit)
+except ValueError: pass
+else: raise AssertionError(&quot;non-string tool name accepted&quot;)
 
 # The model proposes structured data; application code validates, authorizes,
 # executes, deduplicates, and records the result. This single-threaded, in-memory
@@ -203,6 +207,7 @@ assert execute_tool(call, completed, audit)[&quot;status&quot;] == &quot;packed&
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Separate model proposals from trusted application execution and side effects.</p>
+        <p><strong>Worked answer criteria:</strong> The read-only fake returns packed for A-42, deduplicates one in-memory key and returns a defensive copy. Changed intent and non-string tool names fail. No current tool requires approval, so test that branch separately before claiming an approval system. Authenticate and authorize before lookup; durable scoped receipts, expiry and atomic external-effect recovery remain integration work.</p>
         <p><strong>Evidence to explain:</strong> Request version, raw response, parse error, retry/fallback, latency, cost, and final action.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#ai-application-engineering">Worked track case: Valid JSON requests an invalid action ↗</a></p>

@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Generate insert-update-delete churn, inspect segments and filter selectivity, force maintenance, compare recall and tail latency before and after compaction, then restore a snapshot and verify tenant isolation.</p>
+    <p><strong>Core and extension:</strong> Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
 
 
 
@@ -143,7 +144,7 @@ curl -fsS -X PUT &quot;$base/collections/$collection&quot; \
 curl -fsS -X PUT &quot;$base/collections/$collection/points?wait=true&quot; \
   -H &#039;content-type: application/json&#039; \
   -d &#039;{&quot;points&quot;:[{&quot;id&quot;:1,&quot;vector&quot;:[1,0,0],&quot;payload&quot;:{&quot;tenant&quot;:&quot;a&quot;}},{&quot;id&quot;:2,&quot;vector&quot;:[0,1,0],&quot;payload&quot;:{&quot;tenant&quot;:&quot;b&quot;}}]}&#039;
-curl -fsS -X DELETE &quot;$base/collections/$collection/points?wait=true&quot; \
+curl -fsS -X POST &quot;$base/collections/$collection/points/delete?wait=true&quot; \
   -H &#039;content-type: application/json&#039; -d &#039;{&quot;points&quot;:[2]}&#039;
 
 # Inspect segment, optimizer, and indexed-vector counts before and after churn.
@@ -196,6 +197,7 @@ curl -fsS &quot;$base/collections/$collection/snapshots&quot;
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow writes through a durability log and mutable state into immutable segments, vector and payload indexes, tombstones, background merge, shard routing, replica acknowledgment, snapshot, and crash recovery.</p>
+        <p><strong>Worked answer criteria:</strong> The deletion request uses POST /points/delete, not DELETE /points. These commands create and mutate a collection and snapshot; none run in this review. Requesting replication two on a single local node does not demonstrate two failure domains. wait=true does not by itself establish every durability/consistency guarantee. Supply churn, replica failures and an actual restore before claiming those results.</p>
         <p><strong>Evidence to explain:</strong> WAL sequence, segment versions, tombstone count, optimizer state, shard/replica status, recall, p95 latency, and restored point IDs.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#retrieval-rag">Worked track case: Relevant retrieval leaks another tenant&#039;s data ↗</a></p>

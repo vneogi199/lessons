@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an object&#039;s lifetime</h2>
+      <h2>Trace an image build and delivery</h2>
       <ol class="trace-flow" data-flow="docker-image-build" aria-label="Mechanism trace: Builder receives declared inputs then BuildKit evaluates dependencies then Layers and config form a manifest then Registry and policy inspect output. Experiment: Change one dependency and predict exactly which build nodes invalidate.">
         <li class="trace-stage"><span>01 · CONTEXT</span><strong>Builder receives declared inputs</strong><small>Dockerfile, context, base digests, args, and mounts enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD GRAPH</span><strong>BuildKit evaluates dependencies</strong><small>Cache keys decide which operations execute or reuse output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMAGE</span><strong>Layers and config form a manifest</strong><small>Content digests identify immutable platform artifacts.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Registry and policy inspect output</strong><small>SBOM, provenance, signature, scan, and test attach evidence.</small></li>
       </ol>
@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="repositories">
         <span>02</span>
         <h3>repositories</h3>
-        <p><strong>What it means:</strong> A repository exposes persistence operations in terms of a domain contract, including transaction and failure expectations.</p>
+        <p><strong>What it means:</strong> A registry repository is a named collection of image manifests, blobs and references governed by registry access and retention rules. It is unrelated to a domain-model persistence repository.</p>
       </article><article class="concept-card" data-subtopic="tags">
         <span>03</span>
         <h3>tags</h3>
@@ -83,7 +83,7 @@
       </article><article class="concept-card" data-subtopic="garbage collection">
         <span>08</span>
         <h3>garbage collection</h3>
-        <p><strong>What it means:</strong> Garbage collection reclaims memory that is no longer needed under the runtime&#039;s reachability rules. Its timing is not a dependable way to close external resources.</p>
+        <p><strong>What it means:</strong> Registry garbage collection reclaims stored content no longer retained by the registry&#039;s reference and policy rules. Coordinate it with uploads and rollback retention; removing a tag and reclaiming shared blobs are different operations.</p>
       </article><article class="concept-card" data-subtopic="retention">
         <span>09</span>
         <h3>retention</h3>
@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Publish by immutable digest, restrict access, test tag movement, and define safe retention.</p>
+    <p><strong>Core and extension:</strong> Core: predict the specified image/runtime experiment and compare the worked criteria without installing or invoking Docker. Extension: use an existing authorized disposable daemon, verified images and bounded fixtures to collect actual build, isolation, shutdown and restore evidence. Recipes do not represent completed container labs.</p>
 
 
 
@@ -160,7 +161,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an object&#039;s lifetime from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an image build and delivery from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one dependency and predict exactly which build nodes invalidate.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p></article>
@@ -171,19 +172,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain why deploying latest is unsafe and how digest pinning changes rollback.</li>
-      <li>Trace an object&#039;s lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an image build and delivery for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you publish by immutable digest, restrict access, test tag movement, and define safe retention, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an image build and delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="docker">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow manifests and blobs through content-addressed upload, tag mutation, authentication, authorization, and cleanup.</p>
+        <p><strong>Worked answer criteria:</strong> A moved tag resolves to new content while the retained digest selects the original manifest if still available. Registry repositories and blob garbage collection have storage meanings, not domain repositories or language memory GC. Preserve index/platform identities and all content required for rollback before testing retention in an isolated registry.</p>
         <p><strong>Evidence to explain:</strong> Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#docker">Worked track case: The container ignores graceful shutdown ↗</a></p>

@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a reconciliation cycle</h2>
+      <h2>Trace Kubernetes desired state and observed behavior</h2>
       <ol class="trace-flow" data-flow="kubernetes-api-reconcile" aria-label="Mechanism trace: Client submits desired API state then Request is authorized and stored then Controller or node agent acts then Reality is reported through the API. Experiment: Change one spec field and watch API, controller, scheduler, and node evidence.">
         <li class="trace-stage"><span>01 · APPLY</span><strong>Client submits desired API state</strong><small>Identity, object version, spec, and field ownership enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · API SERVER</span><strong>Request is authorized and stored</strong><small>Admission, validation, conversion, etcd, and watch events apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Controller or node agent acts</strong><small>Observed state is moved toward the declared spec.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Reality is reported through the API</strong><small>Conditions, events, resources, and data-plane behavior show progress.</small></li>
       </ol>
@@ -125,6 +125,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Package an application with safe defaults, schema validation, environment overlays, rendering tests, and rollback.</p>
+    <p><strong>Core and extension:</strong> Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
 
 
 
@@ -164,7 +165,7 @@
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a reconciliation cycle from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace Kubernetes desired state and observed behavior from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one spec field and watch API, controller, scheduler, and node evidence.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p></article>
@@ -175,19 +176,20 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Compare Helm and Kustomize and explain template complexity and secret-management risks.</li>
-      <li>Trace a reconciliation cycle for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace Kubernetes desired state and observed behavior for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you package an application with safe defaults, schema validation, environment overlays, rendering tests, and rollback, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a reconciliation cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace reusable templates or patches into rendered API objects, release state, upgrades, rollback, and ownership conflicts.</p>
+        <p><strong>Worked answer criteria:</strong> Inspect rendered manifests and hook resources, not only values. A selector change may be invalid for an existing workload even when YAML parses. Helm release state and rollback do not cover every external effect. Pin existing chart/tool inputs and avoid dependency downloads; validate secret handling and competing field ownership before applying.</p>
         <p><strong>Evidence to explain:</strong> Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>

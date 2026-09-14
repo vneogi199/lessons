@@ -1,5 +1,15 @@
 # Teaching and Product Notes
 
+- All 644 lessons across 28 tracks have individual content sign-offs as of 2026-09-14: 644 complete, zero pending, zero changed revisions. Completed the remaining AI and interview review with 68 worked checkpoints and targeted code/terminology fixes; senior scope remains approximately ten years of experience. Content, catalog, 9,372 local links and TypeScript checks pass. Teach guided explanation/attempt/feedback/delayed recall; existing helpers and stdlib checks avoided new dependencies. Nothing installed, committed, pushed or deployed. Live browser/framework/data/cloud/provider/GitHub Pages verification remains separate and unclaimed. Historical progress entries below are superseded by this completion entry.
+
+- Kubernetes individually reviewed through 0576 on 2026-09-14: 576 complete, 68 pending. Thirty worked checkpoints, contextual terminology and trace corrections validated locally. No installations or cluster operations. AI 0577–0617 read; AI improvements/sign-off and interviews remain.
+
+- DevOps/Docker individual review completed through 0546 on 2026-09-13: 546 complete, 98 pending. Added 40 checkpoints; corrected migration prerequisite order, writable-layer/registry/image terminology and trace titles. Local validation/link suite passes; no installs, builds or infrastructure mutations. Next pending 0547 (Kubernetes); read through 0552.
+
+- AWS individual review completed through 0506 on 2026-09-13: 506 complete, 138 pending. Replaced cloud placeholder definitions, added concrete worked criteria and corrected stream-partition meaning and telemetry/security diagrams. Local audit/catalog/link checks pass. No installations or cloud executions. Next pending 0507 (DevOps); read through 0512.
+
+- Individual review signed off through 0480 on 2026-09-13 (480 complete, 164 pending). Quality/security checkpoints and AWS foundation terminology improved; audit-hash newline guard and contextual regressions pass. AWS 0481–0484 starters/terms/diagrams read but pending changes and sign-off. No installations or external integrations.
+
 - Individual API/distributed/domain/event review completed through 0464 on 2026-09-13. Added 44 checkpoints, corrected network diagram routing, capacity/acknowledgement/2PC/Raft/sharding terminology and canonical Kafka offset newline rejection. Local models, catalog and 9,372 links pass; no installation or live protocol/infrastructure testing. 464 signed off; next pending 0465 (quality/reliability).
 
 - API individual review completed through 0420 on 2026-09-13. Added 24 worked checkpoints, fixed newline acceptance in ID/webhook/precondition guards and HTTP whitespace handling, and corrected log terminology/testing diagram routing. Local review, catalog and link validation pass; no installations or live integrations. Next pending: 0421; 420 signed off, 224 pending.

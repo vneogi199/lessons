@@ -36,7 +36,7 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace a diagnostic experiment</h2>
+      <h2>Trace an AWS architecture decision</h2>
       <ol class="trace-flow" data-flow="aws-architecture-change" aria-label="Mechanism trace: Workload constraint becomes design then IaC forms a dependency graph then AWS APIs change real resources then Telemetry and cost test the design. Experiment: Review a destructive or failing change and verify recovery without console drift.">
         <li class="trace-stage"><span>01 · REQUIREMENT</span><strong>Workload constraint becomes design</strong><small>Security, reliability, performance, cost, and operations are stated.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>IaC forms a dependency graph</strong><small>Accounts, Regions, services, quotas, and replacement risk become explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><strong>AWS APIs change real resources</strong><small>Partial failure and rollback behavior must be observed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry and cost test the design</strong><small>Review, game days, drift, and incidents drive the next change.</small></li>
       </ol>
@@ -59,15 +59,15 @@
       </article><article class="concept-card" data-subtopic="CDK">
         <span>02</span>
         <h3>CDK</h3>
-        <p><strong>What it means:</strong> CDK is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS CDK expresses infrastructure in supported programming languages and synthesizes CloudFormation templates. Generated resources still need review for permissions, replacement and deployment behavior.</p>
       </article><article class="concept-card" data-subtopic="stacks">
         <span>03</span>
         <h3>stacks</h3>
-        <p><strong>What it means:</strong> stacks is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> A CloudFormation stack groups resources managed through one template and lifecycle. Cross-stack references and shared data can constrain independent updates or deletion.</p>
       </article><article class="concept-card" data-subtopic="change sets">
         <span>04</span>
         <h3>change sets</h3>
-        <p><strong>What it means:</strong> change sets is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> CloudFormation change sets preview supported resource changes before execution. They can expose replacements but do not guarantee successful deployment or safe application data migration.</p>
       </article><article class="concept-card" data-subtopic="dependencies">
         <span>05</span>
         <h3>dependencies</h3>
@@ -75,7 +75,7 @@
       </article><article class="concept-card" data-subtopic="custom resources">
         <span>06</span>
         <h3>custom resources</h3>
-        <p><strong>What it means:</strong> custom resources is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> CloudFormation custom resources delegate lifecycle actions to a supplied provider. That provider must report completion and handle retries, updates, deletion and stable physical identity correctly.</p>
       </article><article class="concept-card" data-subtopic="drift">
         <span>07</span>
         <h3>drift</h3>
@@ -83,7 +83,7 @@
       </article><article class="concept-card" data-subtopic="infrastructure testing">
         <span>08</span>
         <h3>infrastructure testing</h3>
-        <p><strong>What it means:</strong> infrastructure testing is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Infrastructure testing checks template shape, policy intent, planned changes and actual deployed behavior at appropriate boundaries. Static validation alone cannot verify live routing or restore capability.</p>
       </article>
     </div>
   </section>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Define a multi-stack application, inspect the change set, test policies, simulate failure, and recover without console edits.</p>
+    <p><strong>Core and extension:</strong> Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
 
 
 
@@ -150,7 +151,7 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a diagnostic experiment from input to output.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an AWS architecture decision from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Review a destructive or failing change and verify recovery without console drift.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
       <article><h3>Guessing</h3><p>Check the system instead: Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p></article>
@@ -161,19 +162,20 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Explain declarative IaC, stack boundaries, replacement risk, custom resources, and drift.</li>
-      <li>Trace a diagnostic experiment for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace an AWS architecture decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you define a multi-stack application, inspect the change set, test policies, simulate failure, and recover without console edits, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace an AWS architecture decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Follow desired infrastructure through synthesis, dependency ordering, provider API calls, rollback, state recording, and drift detection.</p>
+        <p><strong>Worked answer criteria:</strong> create-change-set creates a control-plane artifact but does not execute the stack update. Wait for change-set completion before interpreting its details. Drift detection is also asynchronous and covers supported recorded properties, not every external state. The production-like name and missing template are placeholders; assess replacements, data retention and custom-resource recovery before any authorized deployment.</p>
         <p><strong>Evidence to explain:</strong> Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

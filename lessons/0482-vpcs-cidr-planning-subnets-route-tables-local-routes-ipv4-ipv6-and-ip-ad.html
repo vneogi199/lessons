@@ -55,11 +55,11 @@
       <article class="concept-card" data-subtopic="VPCs">
         <span>01</span>
         <h3>VPCs</h3>
-        <p><strong>What it means:</strong> VPCs is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> A VPC is a logically isolated regional virtual network with address ranges, subnets and routing. It spans Availability Zones; reachable paths still require routes, addresses and security controls.</p>
       </article><article class="concept-card" data-subtopic="CIDR planning">
         <span>02</span>
         <h3>CIDR planning</h3>
-        <p><strong>What it means:</strong> CIDR planning is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> CIDR planning allocates nonoverlapping address ranges with room for growth and connected networks. Prefix length determines range size; AWS reserves addresses and service interfaces consume capacity.</p>
       </article><article class="concept-card" data-subtopic="subnets">
         <span>03</span>
         <h3>subnets</h3>
@@ -67,23 +67,23 @@
       </article><article class="concept-card" data-subtopic="route tables">
         <span>04</span>
         <h3>route tables</h3>
-        <p><strong>What it means:</strong> route tables is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> VPC route tables map destination prefixes to targets for associated subnets or gateways. Longest matching prefix generally selects the route; reachability also depends on the target, return path and filtering.</p>
       </article><article class="concept-card" data-subtopic="local routes">
         <span>05</span>
         <h3>local routes</h3>
-        <p><strong>What it means:</strong> local routes is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Local VPC routes provide connectivity for associated VPC address ranges. They do not bypass security groups or network ACLs; appliance-routing designs can alter supported local-route behavior.</p>
       </article><article class="concept-card" data-subtopic="IPv4">
         <span>06</span>
         <h3>IPv4</h3>
-        <p><strong>What it means:</strong> IPv4 is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IPv4 uses 32-bit addresses. In a VPC, private addressing and internet-reachable public addressing have different routing/NAT requirements; a public subnet does not give every workload a public address.</p>
       </article><article class="concept-card" data-subtopic="IPv6">
         <span>07</span>
         <h3>IPv6</h3>
-        <p><strong>What it means:</strong> IPv6 is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IPv6 uses 128-bit addresses and has distinct routing and egress controls. A workload&#039;s address family, assigned address scope and route determine reachability; do not assume an IPv4 NAT design covers IPv6.</p>
       </article><article class="concept-card" data-subtopic="IP address management">
         <span>08</span>
         <h3>IP address management</h3>
-        <p><strong>What it means:</strong> IP address management is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> IP address management allocates, tracks and monitors network address space across accounts and Regions. It helps prevent overlap and exhaustion but does not itself configure every workload route.</p>
       </article>
     </div>
   </section>
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Design a three-AZ VPC with non-overlapping public, private application, and isolated data subnets.</p>
+    <p><strong>Core and extension:</strong> Core: trace the supplied tabletop or configuration fragment and explain an expected failure plus its evidence. Extension: supply the missing resources in an authorized isolated AWS account and measure behavior, costs and recovery. No cloud command, credential, deployment or installation is executed by this content review.</p>
 
 
 
@@ -182,6 +183,7 @@ Resources:
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace a packet decision through longest-prefix routing and subnet-level address allocation inside a regional network boundary.</p>
+        <p><strong>Worked answer criteria:</strong> The template creates two subnets in one hard-coded AZ, not the three-AZ topology requested in the extension. It creates no explicit route tables or internet path; the main route table applies by default. Each /20 spans 4,096 IPv4 addresses before reservations. Use nonoverlapping ranges and verify AZ identity/account mapping before expanding the design.</p>
         <p><strong>Evidence to explain:</strong> DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

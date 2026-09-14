@@ -59,11 +59,11 @@
       </article><article class="concept-card" data-subtopic="sort keys">
         <span>02</span>
         <h3>sort keys</h3>
-        <p><strong>What it means:</strong> sort keys is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> A DynamoDB sort key orders items sharing one partition-key value and supports range-oriented access patterns. It participates in item identity for a composite primary key.</p>
       </article><article class="concept-card" data-subtopic="indexes">
         <span>03</span>
         <h3>indexes</h3>
-        <p><strong>What it means:</strong> indexes is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> DynamoDB secondary indexes expose alternate key access paths with projection, capacity and consistency implications. Global and local secondary indexes have different creation and read-consistency rules.</p>
       </article><article class="concept-card" data-subtopic="capacity">
         <span>04</span>
         <h3>capacity</h3>
@@ -71,7 +71,7 @@
       </article><article class="concept-card" data-subtopic="adaptive behavior">
         <span>05</span>
         <h3>adaptive behavior</h3>
-        <p><strong>What it means:</strong> adaptive behavior is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> DynamoDB adaptive capacity redistributes supported capacity toward uneven demand within service limits. A permanently hot key and query fan-out still require an appropriate data model.</p>
       </article><article class="concept-card" data-subtopic="consistency">
         <span>06</span>
         <h3>consistency</h3>
@@ -83,7 +83,7 @@
       </article><article class="concept-card" data-subtopic="TTL">
         <span>08</span>
         <h3>TTL</h3>
-        <p><strong>What it means:</strong> TTL is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Time to live expresses expiry, but service semantics differ: DynamoDB asynchronously deletes eligible items, while Redis expiry governs key visibility under its clock and access rules. Enforce business expiry explicitly where delayed cleanup is unacceptable.</p>
       </article><article class="concept-card" data-subtopic="streams">
         <span>09</span>
         <h3>streams</h3>
@@ -121,6 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Model idempotent job state and tenant queries, then load-test skew and repair a hot-partition design.</p>
+    <p><strong>Core and extension:</strong> Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
 
 
 
@@ -184,6 +185,7 @@
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Map access patterns to partitions and trace request routing, capacity consumption, hot keys, index propagation, and stream records.</p>
+        <p><strong>Worked answer criteria:</strong> A tenant-only key concentrates a large tenant&#039;s traffic; bucketing spreads writes but increases queries and aggregation. DynamoDB TTL is asynchronous cleanup, so business reads must enforce expiry if required. GSI reads are eventual; state the chosen table/index and global-table mode before claiming stronger consistency. Transactions do not remove partition-key or capacity constraints.</p>
         <p><strong>Evidence to explain:</strong> Request metrics, throttles, query or key, replica state, audit event, and restored data.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>

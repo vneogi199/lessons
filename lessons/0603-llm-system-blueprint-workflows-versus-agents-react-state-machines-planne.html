@@ -113,6 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement the same task as a fixed workflow and a bounded ReAct agent, then compare reliability, cost, failure handling, and trace evidence.</p>
+    <p><strong>Core and extension:</strong> Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
 
 
 
@@ -136,7 +137,7 @@ def run_react(model, question: str, max_steps: int = 3) -&gt; str:
     messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]
     for _ in range(max_steps):
         decision = model(messages)  # reason, then propose a tool call or final answer
-        if not isinstance(decision, dict) or decision.get(&quot;type&quot;) not in {&quot;final&quot;, &quot;tool&quot;}:
+        if not isinstance(decision, dict) or decision.get(&quot;type&quot;) not in (&quot;final&quot;, &quot;tool&quot;):
             raise ValueError(&quot;invalid decision shape&quot;)
         if decision[&quot;type&quot;] == &quot;final&quot;:
             if not isinstance(decision.get(&quot;answer&quot;), str): raise ValueError(&quot;answer string required&quot;)
@@ -160,6 +161,9 @@ else: raise AssertionError(&quot;step budget exceeded&quot;)
 try: run_react(lambda _: {&quot;type&quot;: &quot;other&quot;}, &quot;test&quot;)
 except ValueError: pass
 else: raise AssertionError(&quot;invalid decision accepted&quot;)
+try: run_react(lambda _: {&quot;type&quot;: []}, &quot;test&quot;)
+except ValueError: pass
+else: raise AssertionError(&quot;non-string decision type accepted&quot;)
 # Messages/decisions use this fixture&#039;s own schema, not a provider wire format.
 # A step budget does not bound one blocked call; real gateways also need elapsed
 # time, input/output size, spend and tool-effect authorization budgets.
@@ -210,6 +214,7 @@ else: raise AssertionError(&quot;invalid decision accepted&quot;)
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace an LLM system from input and context assembly through model decisions, validated and authorized tool execution, observations, state and memory updates, stopping conditions, output, evaluation, and telemetry; separate deterministic orchestration from model-selected ReAct loops.</p>
+        <p><strong>Worked answer criteria:</strong> The scripted model uses two decisions: lookup then final. max_steps one permits lookup but exhausts before final; invalid decision kinds fail before dispatch. These messages are fixture data, not provider wire messages. Compare a direct lookup workflow with the loop; step count does not bound a blocked model call, output size, spend or external authority.</p>
         <p><strong>Evidence to explain:</strong> Messages, selected context, tool proposal, authorization, observation, state update, step count, stop reason, latency, cost, and trace.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#agents">Worked track case: A checkpoint replays a successful tool call ↗</a></p>

@@ -36,14 +36,14 @@
 
     <aside class="card blackboard">
       <span class="section-label">03 · Blackboard system trace</span>
-      <h2>Trace an AWS service request</h2>
-      <ol class="trace-flow" data-flow="aws-service-request" aria-label="Mechanism trace: A workload requests AWS capability then AWS validates and configures then Managed resources perform work then Outcome enters operations. Experiment: Change one identity, Region, quota, or dependency and predict the API and workload outcome.">
-        <li class="trace-stage"><span>01 · CALLER</span><strong>A workload requests AWS capability</strong><small>Account, role, Region, endpoint, and parameters identify intent.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROL PLANE</span><strong>AWS validates and configures</strong><small>Authorization, quotas, desired state, and service scope apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DATA PLANE</span><strong>Managed resources perform work</strong><small>Compute, storage, network, and scaling boundaries execute.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Outcome enters operations</strong><small>Response, telemetry, audit, cost, and failure behavior prove reality.</small></li>
+      <h2>Trace AWS evidence and response</h2>
+      <ol class="trace-flow" data-flow="aws-evidence-response" aria-label="Mechanism trace: Collect the relevant service evidence then Test a failure or threat hypothesis then An owner applies a bounded action then Confirm recovery and preserve evidence. Experiment: Keep process health green while requests fail, then remove one telemetry source and reassess the conclusion.">
+        <li class="trace-stage"><span>01 · OBSERVE</span><strong>Collect the relevant service evidence</strong><small>Metrics, logs, traces, API activity and resource state have different coverage and timing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INTERPRET</span><strong>Test a failure or threat hypothesis</strong><small>Eligibility, aggregation, missing data, identity and change history constrain the conclusion.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RESPOND</span><strong>An owner applies a bounded action</strong><small>Alert routing, investigation, mitigation and rollback require an explicit decision.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Confirm recovery and preserve evidence</strong><small>User outcomes, safe retained records and owned follow-up checks establish the result.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one identity, Region, quota, or dependency and predict the API and workload outcome.</strong>
-        <small><b>Inspect:</b> AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</small>
+        <strong>Keep process health green while requests fail, then remove one telemetry source and reassess the conclusion.</strong>
+        <small><b>Inspect:</b> Eligible events, dimensions, missing data, activity records, findings, timeline, response owner and recovery signal.</small>
       </div>
     </aside>
   </div>
@@ -63,27 +63,27 @@
       </article><article class="concept-card" data-subtopic="alarms">
         <span>03</span>
         <h3>alarms</h3>
-        <p><strong>What it means:</strong> alarms is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> CloudWatch alarms evaluate configured metric periods and missing-data rules to enter alarm states and invoke actions. An alarm definition does not create its underlying custom metric or response procedure.</p>
       </article><article class="concept-card" data-subtopic="dashboards">
         <span>04</span>
         <h3>dashboards</h3>
-        <p><strong>What it means:</strong> dashboards is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Dashboards present selected telemetry in a shared operational view. Useful panels expose user outcomes, workload and uncertainty; visual availability does not ensure someone responds.</p>
       </article><article class="concept-card" data-subtopic="Logs Insights">
         <span>05</span>
         <h3>Logs Insights</h3>
-        <p><strong>What it means:</strong> Logs Insights is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> CloudWatch Logs Insights queries selected log data and time ranges. Field structure, retention, scan volume and access controls determine its diagnostic value and cost.</p>
       </article><article class="concept-card" data-subtopic="X-Ray">
         <span>06</span>
         <h3>X-Ray</h3>
-        <p><strong>What it means:</strong> X-Ray is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> AWS X-Ray collects distributed trace evidence for supported instrumentation and services. Sampling and propagation gaps limit completeness; traces are not a durable business audit ledger.</p>
       </article><article class="concept-card" data-subtopic="OpenTelemetry">
         <span>07</span>
         <h3>OpenTelemetry</h3>
-        <p><strong>What it means:</strong> OpenTelemetry is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> OpenTelemetry defines vendor-neutral telemetry APIs, SDKs and collection protocols. Instrumentation, propagation, sampling and exporter configuration determine what evidence reaches a backend.</p>
       </article><article class="concept-card" data-subtopic="correlation">
         <span>08</span>
         <h3>correlation</h3>
-        <p><strong>What it means:</strong> correlation is one AWS or cloud responsibility. Ask which account, identity, Region, network, service, data, quota, cost, and failure boundary owns it, then identify the AWS API evidence that proves the behavior.</p>
+        <p><strong>What it means:</strong> Correlation links observations across requests, spans, jobs and service events using safe identifiers. Shared identifiers help investigation but do not prove causality or complete delivery by themselves.</p>
       </article>
     </div>
   </section>
@@ -92,24 +92,24 @@
     <span class="section-label">05 · Detailed mechanism</span>
     <div class="walkthrough-grid">
       <article>
-        <span>01 · CALLER</span>
-        <h3>A workload requests AWS capability</h3>
-        <p>Account, role, Region, endpoint, and parameters identify intent.</p>
+        <span>01 · OBSERVE</span>
+        <h3>Collect the relevant service evidence</h3>
+        <p>Metrics, logs, traces, API activity and resource state have different coverage and timing.</p>
       </article><article>
-        <span>02 · CONTROL PLANE</span>
-        <h3>AWS validates and configures</h3>
-        <p>Authorization, quotas, desired state, and service scope apply.</p>
+        <span>02 · INTERPRET</span>
+        <h3>Test a failure or threat hypothesis</h3>
+        <p>Eligibility, aggregation, missing data, identity and change history constrain the conclusion.</p>
       </article><article>
-        <span>03 · DATA PLANE</span>
-        <h3>Managed resources perform work</h3>
-        <p>Compute, storage, network, and scaling boundaries execute.</p>
+        <span>03 · RESPOND</span>
+        <h3>An owner applies a bounded action</h3>
+        <p>Alert routing, investigation, mitigation and rollback require an explicit decision.</p>
       </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Outcome enters operations</h3>
-        <p>Response, telemetry, audit, cost, and failure behavior prove reality.</p>
+        <span>04 · VERIFY</span>
+        <h3>Confirm recovery and preserve evidence</h3>
+        <p>User outcomes, safe retained records and owned follow-up checks establish the result.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Change one identity, Region, quota, or dependency and predict the API and workload outcome.</p><p><strong>Then inspect:</strong> AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</p></div>
+    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Keep process health green while requests fail, then remove one telemetry source and reassess the conclusion.</p><p><strong>Then inspect:</strong> Eligible events, dimensions, missing data, activity records, findings, timeline, response owner and recovery signal.</p></div>
   </section>
 
   
@@ -117,6 +117,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Instrument a request across ALB, ECS, database, and model call with bounded-cardinality metrics and actionable alarms.</p>
+    <p><strong>Core and extension:</strong> Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
 
 
 
@@ -146,16 +147,16 @@
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> A workload requests AWS capability → AWS validates and configures → Managed resources perform work → Outcome enters operations. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p><strong>Conceptual mechanism:</strong> Collect the relevant service evidence → Test a failure or threat hypothesis → An owner applies a bounded action → Confirm recovery and preserve evidence. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
     <span class="section-label">08 · Common mistakes</span>
     <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an AWS service request from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one identity, Region, quota, or dependency and predict the API and workload outcome.</p></article>
+      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace AWS evidence and response from input to output.</p></article>
+      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Keep process health green while requests fail, then remove one telemetry source and reassess the conclusion.</p></article>
       <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</p></article>
+      <article><h3>Guessing</h3><p>Check the system instead: Eligible events, dimensions, missing data, activity records, findings, timeline, response owner and recovery signal.</p></article>
     </div>
   </section>
 
@@ -163,20 +164,21 @@
     <span class="section-label">09 · Interview rehearsal</span>
     <ol class="interview-questions">
       <li>Design observability around symptoms, causes, SLOs, and cost rather than collecting everything.</li>
-      <li>Trace an AWS service request for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Trace AWS evidence and response for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
       <li>How would you instrument a request across ALB, ECS, database, and model call with bounded-cardinality metrics and actionable alarms, and which evidence would prove the result?</li>
       <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an AWS service request. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace AWS evidence and response. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
       <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p><strong>Mechanism checkpoint:</strong> Trace telemetry production, dimensions, ingestion, aggregation, querying, alarm state, trace context, and retention cost.</p>
-        <p><strong>Evidence to explain:</strong> AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</p>
+        <p><strong>Worked answer criteria:</strong> The alarm references a custom burn-rate metric that must already be calculated and published. Five 60-second evaluations with an Average statistic are not a complete multi-window alert. Aggregate eligible/bad counts before fleet ratios, and define weighting if per-period traffic differs. Configure action targets and missing/no-traffic behavior; this command supplies no instrumentation or incident response.</p>
+        <p><strong>Evidence to explain:</strong> Eligible events, dimensions, missing data, activity records, findings, timeline, response owner and recovery signal.</p>
         <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
       </details>
