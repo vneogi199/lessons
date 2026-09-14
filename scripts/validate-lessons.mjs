@@ -104,6 +104,13 @@ for (const [index, lesson] of manifest.lessons.entries()) {
     if (interviewQuestionCount !== 4) {
       failures.push(`${lesson.id}: expected 4 interview questions, found ${interviewQuestionCount}`);
     }
+    if (lesson.trackId === "computer-science") {
+      const dsaQuestionBank = html.match(/<section class="card dsa-question-bank">([\s\S]*?)<\/section>/)?.[1] || "";
+      const dsaQuestionCount = (dsaQuestionBank.match(/https:\/\/leetcode\.com\/problems\//g) || []).length;
+      if (!dsaQuestionBank || dsaQuestionCount < 4) {
+        failures.push(`${lesson.id}: expected a DSA question bank with at least 4 LeetCode questions`);
+      }
+    }
     if (!html.includes(`"id":"${lesson.id}"`)) failures.push(`${lesson.id}: embedded ID mismatch`);
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
     if (scripts.length !== 1) failures.push(`${lesson.id}: expected exactly one inline script`);
