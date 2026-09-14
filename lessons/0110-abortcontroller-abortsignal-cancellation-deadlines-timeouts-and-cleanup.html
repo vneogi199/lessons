@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Treat abort as cooperative one-way notification, compose signals, distinguish timeout rejection from underlying cancellation, and release listeners and resources.</p>
-      <p class="analogy"><strong>Analogy:</strong> JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Treat abort as cooperative one-way notification, compose signals, distinguish timeout rejection from underlying cancellation, and release listeners and resources.</p>
+    <p class="concept-intro">Treat abort as cooperative one-way notification, compose signals, distinguish timeout rejection from underlying cancellation, and release listeners and resources.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="AbortController">
         <span>01</span>
         <h3>AbortController</h3>
-        <p><strong>What it means:</strong> AbortController owns an AbortSignal and broadcasts one abort reason. Cooperating APIs must observe the signal and perform their own prompt cleanup.</p>
+        <p class="concept-definition">AbortController owns an AbortSignal and broadcasts one abort reason. Cooperating APIs must observe the signal and perform their own prompt cleanup.</p>
       </article><article class="concept-card" data-subtopic="AbortSignal">
         <span>02</span>
         <h3>AbortSignal</h3>
-        <p><strong>What it means:</strong> An AbortSignal communicates an abort request to participating APIs. The operation must support the signal; observing abort does not undo effects already committed.</p>
+        <p class="concept-definition">An AbortSignal communicates an abort request to participating APIs. The operation must support the signal; observing abort does not undo effects already committed.</p>
       </article><article class="concept-card" data-subtopic="cancellation">
         <span>03</span>
         <h3>cancellation</h3>
-        <p><strong>What it means:</strong> Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
+        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
       </article><article class="concept-card" data-subtopic="deadlines">
         <span>04</span>
         <h3>deadlines</h3>
-        <p><strong>What it means:</strong> A deadline limits the total time available to an operation tree. Each child should receive the remaining budget rather than starting a fresh full timeout.</p>
+        <p class="concept-definition">A deadline limits the total time available to an operation tree. Each child should receive the remaining budget rather than starting a fresh full timeout.</p>
       </article><article class="concept-card" data-subtopic="timeouts">
         <span>05</span>
         <h3>timeouts</h3>
-        <p><strong>What it means:</strong> A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
+        <p class="concept-definition">A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
       </article><article class="concept-card" data-subtopic="cleanup">
         <span>06</span>
         <h3>cleanup</h3>
-        <p><strong>What it means:</strong> Cleanup releases resources owned by an operation, including listeners, timers, and connections. Give normal completion, failure, and cancellation the same explicit cleanup responsibility.</p>
+        <p class="concept-definition">Cleanup releases resources owned by an operation, including listeners, timers, and connections. Give normal completion, failure, and cancellation the same explicit cleanup responsibility.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Order, errors, and UI timing expose the scheduling model.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Mix a timer, resolved promise, and synchronous log; predict exact output order.</p><p><strong>Then inspect:</strong> Console order, task timestamps, unhandled rejection, and render timing.</p></div>
+    <div class="diagnostic-note"><p>Mix a timer, resolved promise, and synchronous log; predict exact output order.</p><p>Look for: Console order, task timestamps, unhandled rejection, and render timing.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a cancellable fetch workflow with one deadline, child operations, cleanup, and a distinguishable abort result.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
+    <p class="lab-scope">Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
 
 
 
@@ -142,7 +142,7 @@ const controller = new AbortController();
 const pending = fetchJson(&quot;/api/projects&quot;, { timeoutMs: 1000, parentSignal: controller.signal });
 controller.abort(&quot;navigation&quot;);
 await pending.catch(error =&gt; console.assert(error.name === &quot;AbortError&quot;));</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -154,7 +154,7 @@ await pending.catch(error =&gt; console.assert(error.name === &quot;AbortError&q
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Synchronous code runs → Async work registers continuation → Event loop chooses ready work → Continuation observes state. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Synchronous code runs → Async work registers continuation → Event loop chooses ready work → Continuation observes state. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -179,14 +179,14 @@ await pending.catch(error =&gt; console.assert(error.name === &quot;AbortError&q
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Treat abort as cooperative one-way notification, compose signals, distinguish timeout rejection from underlying cancellation, and release listeners and resources.</p>
-        <p><strong>Worked answer criteria:</strong> Abort is cooperative and cannot undo a remote commit. The relative URL requires a browser origin; supply an absolute URL for Node. This wrapper normalizes all observed aborts to AbortError, so inspect the original signal reason if timeout versus navigation matters. A coincident aborted signal is not proof that it caused every caught error.</p>
-        <p><strong>Evidence to explain:</strong> Console order, task timestamps, unhandled rejection, and render timing.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Treat abort as cooperative one-way notification, compose signals, distinguish timeout rejection from underlying cancellation, and release listeners and resources.</p>
+        <p class="worked-answer">Abort is cooperative and cannot undo a remote commit. The relative URL requires a browser origin; supply an absolute URL for Node. This wrapper normalizes all observed aborts to AbortError, so inspect the original signal reason if timeout versus navigation matters. A coincident aborted signal is not proof that it caused every caught error.</p>
+        <p>Look for: Console order, task timestamps, unhandled rejection, and render timing.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>

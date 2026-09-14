@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow a change into WAL buffers, durable log records, data pages, checkpoint metadata, redo, and group commit under different synchronous_commit choices.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow a change into WAL buffers, durable log records, data pages, checkpoint metadata, redo, and group commit under different synchronous_commit choices.</p>
+    <p class="concept-intro">Follow a change into WAL buffers, durable log records, data pages, checkpoint metadata, redo, and group commit under different synchronous_commit choices.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="WAL">
         <span>01</span>
         <h3>WAL</h3>
-        <p><strong>What it means:</strong> Write-ahead logging records a change durably before the corresponding data page is allowed to reach storage. Recovery replays WAL after the last safe checkpoint.</p>
+        <p class="concept-definition">Write-ahead logging records a change durably before the corresponding data page is allowed to reach storage. Recovery replays WAL after the last safe checkpoint.</p>
       </article><article class="concept-card" data-subtopic="LSNs">
         <span>02</span>
         <h3>LSNs</h3>
-        <p><strong>What it means:</strong> Log sequence numbers identify positions in PostgreSQL&#039;s write-ahead log and help compare replication or recovery progress.</p>
+        <p class="concept-definition">Log sequence numbers identify positions in PostgreSQL&#039;s write-ahead log and help compare replication or recovery progress.</p>
       </article><article class="concept-card" data-subtopic="commit durability">
         <span>03</span>
         <h3>commit durability</h3>
-        <p><strong>What it means:</strong> Commit durability states which acknowledged commits survive a failure under WAL flush and replication settings.</p>
+        <p class="concept-definition">Commit durability states which acknowledged commits survive a failure under WAL flush and replication settings.</p>
       </article><article class="concept-card" data-subtopic="checkpoints">
         <span>04</span>
         <h3>checkpoints</h3>
-        <p><strong>What it means:</strong> Checkpoints establish recovery progress by coordinating dirty-page persistence and WAL recovery boundaries.</p>
+        <p class="concept-definition">Checkpoints establish recovery progress by coordinating dirty-page persistence and WAL recovery boundaries.</p>
       </article><article class="concept-card" data-subtopic="full-page writes">
         <span>05</span>
         <h3>full-page writes</h3>
-        <p><strong>What it means:</strong> Full-page writes log page images as required to protect recovery from torn-page writes after checkpoints.</p>
+        <p class="concept-definition">Full-page writes log page images as required to protect recovery from torn-page writes after checkpoints.</p>
       </article><article class="concept-card" data-subtopic="crash recovery">
         <span>06</span>
         <h3>crash recovery</h3>
-        <p><strong>What it means:</strong> Crash recovery replays necessary WAL from a recovery point to restore a consistent database state.</p>
+        <p class="concept-definition">Crash recovery replays necessary WAL from a recovery point to restore a consistent database state.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Stop the relevant process at one precise point and predict the last recoverable commit.</p><p><strong>Then inspect:</strong> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p></div>
+    <div class="diagnostic-note"><p>Stop the relevant process at one precise point and predict the last recoverable commit.</p><p>Look for: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Correlate a transaction with LSN movement, checkpoint activity, WAL volume, and a controlled crash-recovery test.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -134,7 +134,7 @@ FROM pg_stat_checkpointer;
 CHECKPOINT;
 -- In an isolated environment only: terminate the server uncleanly, restart,
 -- inspect recovery logs, and verify the committed row and uncommitted absence.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -146,7 +146,7 @@ CHECKPOINT;
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Backend creates a database change → Log record reaches required durability → Recovery or replica reapplies history → Restored state serves invariants. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Backend creates a database change → Log record reaches required durability → Recovery or replica reapplies history → Restored state serves invariants. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -171,14 +171,14 @@ CHECKPOINT;
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow a change into WAL buffers, durable log records, data pages, checkpoint metadata, redo, and group commit under different synchronous_commit choices.</p>
-        <p><strong>Worked answer criteria:</strong> LSN movement can include concurrent cluster activity and does not isolate one transaction&#039;s WAL bytes. pg_stat_checkpointer requires the stated newer version. CHECKPOINT is an operational action, not proof that backups or replication are healthy. A crash drill must verify committed and uncommitted outcomes in a disposable instance.</p>
-        <p><strong>Evidence to explain:</strong> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow a change into WAL buffers, durable log records, data pages, checkpoint metadata, redo, and group commit under different synchronous_commit choices.</p>
+        <p class="worked-answer">LSN movement can include concurrent cluster activity and does not isolate one transaction&#039;s WAL bytes. pg_stat_checkpointer requires the stated newer version. CHECKPOINT is an operational action, not proof that backups or replication are healthy. A crash drill must verify committed and uncommitted outcomes in a disposable instance.</p>
+        <p>Look for: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

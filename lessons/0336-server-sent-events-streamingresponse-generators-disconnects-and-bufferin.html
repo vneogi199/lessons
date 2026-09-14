@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
+    <p class="concept-intro">Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Server-sent events">
         <span>01</span>
         <h3>Server-sent events</h3>
-        <p><strong>What it means:</strong> Server-sent events keep an HTTP response open so the server can push text events to the browser. The channel is one-way and needs heartbeats and proxy-buffering controls.</p>
+        <p class="concept-definition">Server-sent events keep an HTTP response open so the server can push text events to the browser. The channel is one-way and needs heartbeats and proxy-buffering controls.</p>
       </article><article class="concept-card" data-subtopic="StreamingResponse">
         <span>02</span>
         <h3>StreamingResponse</h3>
-        <p><strong>What it means:</strong> StreamingResponse sends chunks as an iterator produces them instead of building the whole body first. The generator must handle cancellation, cleanup, and slow clients.</p>
+        <p class="concept-definition">StreamingResponse sends chunks as an iterator produces them instead of building the whole body first. The generator must handle cancellation, cleanup, and slow clients.</p>
       </article><article class="concept-card" data-subtopic="generators">
         <span>03</span>
         <h3>generators</h3>
-        <p><strong>What it means:</strong> A generator produces one value at a time and can preserve local state between values.</p>
+        <p class="concept-definition">A generator produces one value at a time and can preserve local state between values.</p>
       </article><article class="concept-card" data-subtopic="disconnects">
         <span>04</span>
         <h3>disconnects</h3>
-        <p><strong>What it means:</strong> A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</p>
+        <p class="concept-definition">A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</p>
       </article><article class="concept-card" data-subtopic="buffering">
         <span>05</span>
         <h3>buffering</h3>
-        <p><strong>What it means:</strong> Buffering stores data temporarily before sending or processing it and can increase memory use and response delay.</p>
+        <p class="concept-definition">Buffering stores data temporarily before sending or processing it and can increase memory use and response delay.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Tasks, generators, subscriptions, and sockets stop.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow or disconnect the client mid-stream and predict which cleanup runs.</p><p><strong>Then inspect:</strong> Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p></div>
+    <div class="diagnostic-note"><p>Slow or disconnect the client mid-stream and predict which cleanup runs.</p><p>Look for: Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Stream typed server events with heartbeats, disconnect detection, proxy-safe headers, and a cancellation test.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -138,7 +138,7 @@ async def stream_events(request: Request, project_id: UUID):
     # Integration prerequisite: authorize this principal for project_id before streaming.
     return StreamingResponse(event_stream(request, project_id), media_type=&quot;text/event-stream&quot;,
         headers={&quot;Cache-Control&quot;: &quot;no-cache&quot;, &quot;X-Accel-Buffering&quot;: &quot;no&quot;})</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -150,7 +150,7 @@ async def stream_events(request: Request, project_id: UUID):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Client opens a long-lived channel → Application owns connection state → Messages or chunks move → Resources are released. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Client opens a long-lived channel → Application owns connection state → Messages or chunks move → Resources are released. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -175,14 +175,14 @@ async def stream_events(request: Request, project_id: UUID):
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a streamed event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
-        <p><strong>Worked answer criteria:</strong> The timeout scope exits before each yield, and metadata rejects framing controls. Heartbeats aid idle connections but do not guarantee delivery or replay. Empty data may dispatch no event; define event JSON and size contracts. Last-Event-ID recovery and proxy buffering need separate server/client tests.</p>
-        <p><strong>Evidence to explain:</strong> Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Understand chunked HTTP responses, async generator suspension, proxy buffering, heartbeat frames, cancellation, cleanup, and backpressure limits.</p>
+        <p class="worked-answer">The timeout scope exits before each yield, and metadata rejects framing controls. Heartbeats aid idle connections but do not guarantee delivery or replay. Empty data may dispatch no event; define event JSON and size contracts. Last-Event-ID recovery and proxy buffering need separate server/client tests.</p>
+        <p>Look for: Handshake, chunk timing, queue depth, disconnect event, and active resource count.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>

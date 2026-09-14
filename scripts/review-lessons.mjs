@@ -147,12 +147,13 @@ await writeFile(join(root, "TYPESCRIPT-CONTENT-REVIEW.md"), tsReport.join("\n"))
 for (const lesson of manifest.lessons) {
   const path = lesson.path.replace(/^\.\.\/\.\.\//, "");
   const html = await readFile(join(root, path), "utf8");
-  const terms = [...html.matchAll(/data-subtopic="([^"]+)"[\s\S]*?<p><strong>What it means:<\/strong> ([\s\S]*?)<\/p>/g)];
+  const terms = [...html.matchAll(/data-subtopic="([^"]+)"[\s\S]*?<p class="concept-definition">([\s\S]*?)<\/p>/g)];
   const missing = terms.filter(([, , definition]) => /is one part of|is one responsibility|is a technical term/.test(definition)).map(([, term]) => decode(term));
   const code = (html.match(/<pre aria-label="Starter code"><code>([\s\S]*?)<\/code>/)?.[1] || "").trim();
   assert.ok(!/(?:\/\/|#) Lesson focus:/.test(code), `${lesson.id}: practice annotations must not corrupt copied code`);
-  assert.ok(html.includes("<strong>Practice notes:</strong>"), `${lesson.id}: retain prediction and observation outside code`);
-  assert.ok(html.includes("<strong>Tomorrow, without notes:</strong>"), `${lesson.id}: include delayed recall and corrective practice`);
+  assert.ok(html.includes('class="practice-notes"'), `${lesson.id}: retain prediction and observation outside code`);
+  assert.ok(html.includes("Tomorrow, without notes, explain"), `${lesson.id}: include delayed recall and corrective practice`);
+  assert.ok(!/<strong>(?:What it means|How they connect|Mechanism checkpoint|Worked answer criteria|Depth check):<\/strong>/.test(html), `${lesson.id}: repetitive prose labels returned`);
   assert.ok(!html.includes("Which approach best demonstrates mastery"), `${lesson.id}: orientation is not a knowledge assessment`);
   if (lesson.trackId === "kubernetes") {
     assert.ok(!/^kubectl /m.test(decode(code)) || !/^apiVersion:|^resources:|^spec:/m.test(decode(code)), `${lesson.id}: do not mix executable shell commands with YAML`);
@@ -210,7 +211,7 @@ for attempts in [0, -1, 11, True, 1.5]:
     assert.ok(!/^#|^psql |^ps |^hostssl /m.test(decode(code)), `${lesson.id}: SQL must not contain shell/INI syntax`);
   }
   if (lesson.trackId === "fastapi") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing FastAPI checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing FastAPI checkpoint`);
     assert.ok(html.includes("Core: trace the supplied FastAPI example"), `${lesson.id}: missing FastAPI scope`);
   }
   if (lesson.number === "0330") {
@@ -268,7 +269,7 @@ asyncio.run(check())
 `], { timeout: 10000, stdio: "pipe" });
   }
   if (lesson.trackId === "python") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing Python checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing Python checkpoint`);
     assert.ok(html.includes("Core: inspect the supplied Python fixture"), `${lesson.id}: missing Python scope`);
     const definitions = { "0274": "Python containers hold objects", "0276": "Named tuples are tuple subclasses", "0290": "Multiprocessing start methods", "0295": "Testing properties are rules" };
     if (definitions[lesson.number]) assert.ok(html.includes(definitions[lesson.number]), `${lesson.id}: incorrect contextual definition`);
@@ -283,7 +284,7 @@ asyncio.run(check())
     }
   }
   if (Number(lesson.number) >= 397 && Number(lesson.number) <= 420) {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing API checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing API checkpoint`);
     assert.ok(html.includes("Core: predict the supplied contract"), `${lesson.id}: missing API scope`);
     if (lesson.number === "0419") assert.ok(html.includes("Diagnostic logs are timestamped event records"), "API logs must not inherit broker-log definition");
   }
@@ -304,13 +305,13 @@ asyncio.run(check())
   if (lesson.number === "0476") assert.ok(html.includes("independent IAM boundaries"), "AWS partitions must not mean network partitions");
   if (lesson.number === "0431") assert.ok(html.includes("Trace dependency isolation and recovery"), "breaker trace must not describe installation");
   if (Number(lesson.number) >= 381 && Number(lesson.number) <= 395) {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing Redis checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing Redis checkpoint`);
     assert.ok(html.includes("Core: predict the explicitly stated Redis fixture"), `${lesson.id}: missing Redis scope`);
     const terms = { "0381": "Redis logical databases are numbered keyspaces", "0382": "A Redis connection carries an ordered protocol stream", "0385": "not a guaranteed maximum error" };
     if (terms[lesson.number]) assert.ok(html.includes(terms[lesson.number]), `${lesson.id}: incorrect Redis definition`);
   }
   if (Number(lesson.number) >= 346 && Number(lesson.number) <= 380) {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing database checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing database checkpoint`);
     assert.ok(html.includes("Core: trace this independent database fixture"), `${lesson.id}: missing database scope`);
     const terms = { "0360": "They do not block writers", "0361": "Atomicity of each attempt alone", "0362": "posting list of tuple locations", "0367": "A hash join builds a hash table", "0372": "Partition routing chooses a child relation", "0375": "A physical base backup copies" };
     if (terms[lesson.number]) assert.ok(html.includes(terms[lesson.number]), `${lesson.id}: wrong contextual database definition`);
@@ -704,7 +705,7 @@ assert not run_one(db, "worker", NS(is_set=lambda: True))
   }
   if (REUSE_PURPOSE[lesson.number]) assert.ok(decode(html).includes(REUSE_PURPOSE[lesson.number]), `${lesson.id}: missing distinct exercise`);
   if (lesson.trackId === "web-platform") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing browser checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing browser checkpoint`);
     assert.ok(html.includes("Browser-only exercise:"), `${lesson.id}: missing browser scope`);
     if (lesson.number === "0053") {
       assert.match(decode(code), /\.back \{[^}]*height: 4rem/);
@@ -714,17 +715,17 @@ assert not run_one(db, "worker", NS(is_set=lambda: True))
     }
   }
   if (lesson.trackId === "systems-foundations") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing systems checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing systems checkpoint`);
     assert.ok(html.includes("Core: run the local Python standard-library fixture"), `${lesson.id}: missing systems scope`);
   }
   if (lesson.trackId === "software-design") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing design checkpoint`);
-    assert.ok(html.includes("Core and extension:"), `${lesson.id}: missing design scope`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing design checkpoint`);
+    assert.ok(html.includes('class="lab-scope"'), `${lesson.id}: missing design scope`);
     assert.ok(html.includes("Trace a requirement-driven code change</h2>"), `${lesson.id}: unrelated trace subject`);
   }
   if (Number(lesson.number) <= 5) {
-    assert.ok(html.includes("Core and extension:"), `${lesson.id}: missing bounded lab scope`);
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing specific interview feedback`);
+    assert.ok(html.includes('class="lab-scope"'), `${lesson.id}: missing bounded lab scope`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing specific interview feedback`);
     assert.ok(!html.includes("Treat the development environment like an airport"), `${lesson.id}: generic analogy returned`);
     if (["0003", "0005"].includes(lesson.number)) assert.ok(html.includes("The specification itself is not executable code."));
   }
@@ -989,7 +990,7 @@ server.close();
     javascriptChecks.push(lesson.number);
   }
   if (lesson.trackId === "react") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.number}: missing React feedback`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.number}: missing React feedback`);
     assert.ok(html.includes("not standalone files"), `${lesson.number}: missing integration scope`);
     if (lesson.number === "0177") runInNewContext(decode(code).split("function Wizard")[0] + `
       const answered=reducer(initialState,{type:"answered",value:"yes"});
@@ -1001,7 +1002,7 @@ server.close();
     if (lesson.number === "0203") assert.ok(html.includes("Trace a render and commit cycle</h2>"));
   }
   if (lesson.trackId === "computer-science") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing algorithm checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing algorithm checkpoint`);
     assert.ok(html.includes("Trace an algorithm execution</h2>"), `${lesson.id}: unrelated algorithm trace`);
     const probe = {
       "0023": `console.assert(lowerBound([1,2,2,5],6)===4); const huge=new Proxy({length:2**31+2},{get:(target,key)=>key==="length"?target.length:Number(key)}); console.assert(lowerBound(huge,2**31)===2**31);`,
@@ -1033,7 +1034,7 @@ server.close();
     algorithmChecks.push({ number: lesson.number, checks });
   }
   if (lesson.trackId === "lld-machine-coding") {
-    assert.ok(html.includes("Worked answer criteria:"), `${lesson.id}: missing machine-coding checkpoint`);
+    assert.ok(html.includes('class="worked-answer"'), `${lesson.id}: missing machine-coding checkpoint`);
     const probe = {
       "0068": `
 for value in (True, 1.5, float("nan"), 0):

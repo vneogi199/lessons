@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
+    <p class="concept-intro">Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Table locks">
         <span>01</span>
         <h3>Table locks</h3>
-        <p><strong>What it means:</strong> Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate table locks; compare the compatibility matrix rather than inferring behavior from the name.</p>
+        <p class="concept-definition">Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate table locks; compare the compatibility matrix rather than inferring behavior from the name.</p>
       </article><article class="concept-card" data-subtopic="row locks">
         <span>02</span>
         <h3>row locks</h3>
-        <p><strong>What it means:</strong> Row locks coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.</p>
+        <p class="concept-definition">Row locks coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.</p>
       </article><article class="concept-card" data-subtopic="predicate locks">
         <span>03</span>
         <h3>predicate locks</h3>
-        <p><strong>What it means:</strong> PostgreSQL SSI predicate locks track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.</p>
+        <p class="concept-definition">PostgreSQL SSI predicate locks track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.</p>
       </article><article class="concept-card" data-subtopic="advisory locks">
         <span>04</span>
         <h3>advisory locks</h3>
-        <p><strong>What it means:</strong> Advisory locks coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.</p>
+        <p class="concept-definition">Advisory locks coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.</p>
       </article><article class="concept-card" data-subtopic="wait queues">
         <span>05</span>
         <h3>wait queues</h3>
-        <p><strong>What it means:</strong> Wait queues hold operations blocked on unavailable resources such as locks.</p>
+        <p class="concept-definition">Wait queues hold operations blocked on unavailable resources such as locks.</p>
       </article><article class="concept-card" data-subtopic="NOWAIT">
         <span>06</span>
         <h3>NOWAIT</h3>
-        <p><strong>What it means:</strong> NOWAIT requests immediate failure rather than waiting for certain unavailable locks.</p>
+        <p class="concept-definition">NOWAIT requests immediate failure rather than waiting for certain unavailable locks.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Run two conflicting transactions and predict the wait, error, or visible value.</p><p><strong>Then inspect:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
+    <div class="diagnostic-note"><p>Run two conflicting transactions and predict the wait, error, or visible value.</p><p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p></div>
   </section>
 
   
@@ -109,10 +109,10 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Observe blocked sessions with pg_locks and pg_stat_activity and implement a bounded worker claim using FOR UPDATE SKIP LOCKED.</p>
-    <p><strong>Core and extension:</strong> Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
 
-<p><strong>Database lab scope:</strong> Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
+<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
     <ol class="steps">
       <li><span>Predict the state changes and one likely failure.</span></li>
@@ -136,7 +136,7 @@ WHERE a.datname = current_database() AND a.pid &lt;&gt; pg_backend_pid();
 SELECT locktype, mode, granted, relation::regclass, transactionid
 FROM pg_locks WHERE pid = $1 ORDER BY granted, locktype, mode;
 COMMIT;</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -148,7 +148,7 @@ COMMIT;</code></pre>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Choose the isolation boundary → Statements acquire versions or locks → Constraints and conflicts resolve → Publish one atomic outcome. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -173,14 +173,14 @@ COMMIT;</code></pre>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
-        <p><strong>Worked answer criteria:</strong> SKIP LOCKED omits contended rows and therefore changes selection fairness and snapshot completeness. This fragment only locks rows, then releases them at commit; it does not persist a job claim. SSI predicate locks track conflicts without ordinary blocking, while advisory locks require all participants to follow the same convention.</p>
-        <p><strong>Evidence to explain:</strong> Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Examine lock modes, compatibility, heavyweight and row-level representations, acquisition order, waiter behavior, and transaction-scoped release.</p>
+        <p class="worked-answer">SKIP LOCKED omits contended rows and therefore changes selection fairness and snapshot completeness. This fragment only locks rows, then releases them at commit; it does not persist a job claim. SSI predicate locks track conflicts without ordinary blocking, while advisory locks require all participants to follow the same convention.</p>
+        <p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

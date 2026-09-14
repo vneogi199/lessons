@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Define the transaction owner, follow flush versus commit, rollback on failure, isolation anomalies, retry boundaries, and post-commit side effects.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Define the transaction owner, follow flush versus commit, rollback on failure, isolation anomalies, retry boundaries, and post-commit side effects.</p>
+    <p class="concept-intro">Define the transaction owner, follow flush versus commit, rollback on failure, isolation anomalies, retry boundaries, and post-commit side effects.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Transactions">
         <span>01</span>
         <h3>Transactions</h3>
-        <p><strong>What it means:</strong> A transaction groups database changes into one atomic outcome. Commit makes them durable together; rollback removes the uncommitted work after failure.</p>
+        <p class="concept-definition">A transaction groups database changes into one atomic outcome. Commit makes them durable together; rollback removes the uncommitted work after failure.</p>
       </article><article class="concept-card" data-subtopic="unit of work">
         <span>02</span>
         <h3>unit of work</h3>
-        <p><strong>What it means:</strong> A unit of work owns one transaction across all repositories used by a business operation. This keeps multi-step invariants inside one commit or rollback boundary.</p>
+        <p class="concept-definition">A unit of work owns one transaction across all repositories used by a business operation. This keeps multi-step invariants inside one commit or rollback boundary.</p>
       </article><article class="concept-card" data-subtopic="commit">
         <span>03</span>
         <h3>commit</h3>
-        <p><strong>What it means:</strong> Commit asks the database to make all changes in the current transaction durable and visible according to isolation rules.</p>
+        <p class="concept-definition">Commit asks the database to make all changes in the current transaction durable and visible according to isolation rules.</p>
       </article><article class="concept-card" data-subtopic="rollback">
         <span>04</span>
         <h3>rollback</h3>
-        <p><strong>What it means:</strong> Rollback discards uncommitted database changes and returns the transaction or session to a usable state.</p>
+        <p class="concept-definition">Rollback discards uncommitted database changes and returns the transaction or session to a usable state.</p>
       </article><article class="concept-card" data-subtopic="retries">
         <span>05</span>
         <h3>retries</h3>
-        <p><strong>What it means:</strong> A retry repeats an operation after a transient failure under a defined attempt, delay, and idempotency policy.</p>
+        <p class="concept-definition">A retry repeats an operation after a transient failure under a defined attempt, delay, and idempotency policy.</p>
       </article><article class="concept-card" data-subtopic="consistency">
         <span>06</span>
         <h3>consistency</h3>
-        <p><strong>What it means:</strong> Consistency states which data invariants and visibility guarantees must hold before and after an operation.</p>
+        <p class="concept-definition">Consistency states which data invariants and visibility guarantees must hold before and after an operation.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Only then should the API publish success or failure.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Force the second database operation to fail and verify nothing partially commits.</p><p><strong>Then inspect:</strong> SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p></div>
+    <div class="diagnostic-note"><p>Force the second database operation to fail and verify nothing partially commits.</p><p>Look for: SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement an atomic use case with uniqueness conflicts, rollback, safe retry, and an outbox record in the same transaction.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -141,7 +141,7 @@ async def execute_with_retry(operation, attempts: int = 3):
         except SerializationError:
             if attempt == attempts - 1: raise
             await anyio.sleep(0.05 * (2 ** attempt))</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -153,7 +153,7 @@ async def execute_with_retry(operation, attempts: int = 3):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Validated command enters → One unit owns DB conversation → Statements enforce invariants → Commit or rollback completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Validated command enters → One unit owns DB conversation → Statements enforce invariants → Commit or rollback completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -178,14 +178,14 @@ async def execute_with_retry(operation, attempts: int = 3):
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Define the transaction owner, follow flush versus commit, rollback on failure, isolation anomalies, retry boundaries, and post-commit side effects.</p>
-        <p><strong>Worked answer criteria:</strong> Flush obtains IDs and checks statements inside the transaction; leaving begin normally commits. Retry must create a fresh whole transaction and classify the driver&#039;s actual serialization failure, not assume an undefined exception name catches it. External effects belong after commit or in the outbox; attempts alone do not impose a total deadline.</p>
-        <p><strong>Evidence to explain:</strong> SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Define the transaction owner, follow flush versus commit, rollback on failure, isolation anomalies, retry boundaries, and post-commit side effects.</p>
+        <p class="worked-answer">Flush obtains IDs and checks statements inside the transaction; leaving begin normally commits. Retry must create a fresh whole transaction and classify the driver&#039;s actual serialization failure, not assume an undefined exception name catches it. External effects belong after commit or in the outbox; attempts alone do not impose a total deadline.</p>
+        <p>Look for: SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>

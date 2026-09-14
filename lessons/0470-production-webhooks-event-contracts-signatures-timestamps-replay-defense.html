@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
-      <p class="analogy"><strong>Analogy:</strong> Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
+      <p class="analogy">Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,44 +50,44 @@
 
   <section class="concept-section" data-subtopic-count="9">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
+    <p class="concept-intro">Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Production webhooks">
         <span>01</span>
         <h3>Production webhooks</h3>
-        <p><strong>What it means:</strong> A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.</p>
+        <p class="concept-definition">A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.</p>
       </article><article class="concept-card" data-subtopic="event contracts">
         <span>02</span>
         <h3>event contracts</h3>
-        <p><strong>What it means:</strong> An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.</p>
+        <p class="concept-definition">An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.</p>
       </article><article class="concept-card" data-subtopic="signatures">
         <span>03</span>
         <h3>signatures</h3>
-        <p><strong>What it means:</strong> Webhook verification checks the provider&#039;s signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key signatures. Use the provider&#039;s verifier and preserve the original bytes.</p>
+        <p class="concept-definition">Webhook verification checks the provider&#039;s signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key signatures. Use the provider&#039;s verifier and preserve the original bytes.</p>
       </article><article class="concept-card" data-subtopic="timestamps">
         <span>04</span>
         <h3>timestamps</h3>
-        <p><strong>What it means:</strong> A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.</p>
+        <p class="concept-definition">A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.</p>
       </article><article class="concept-card" data-subtopic="replay defense">
         <span>05</span>
         <h3>replay defense</h3>
-        <p><strong>What it means:</strong> A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.</p>
+        <p class="concept-definition">A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.</p>
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>06</span>
         <h3>idempotency</h3>
-        <p><strong>What it means:</strong> Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
+        <p class="concept-definition">Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
       </article><article class="concept-card" data-subtopic="retries">
         <span>07</span>
         <h3>retries</h3>
-        <p><strong>What it means:</strong> Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
+        <p class="concept-definition">Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
       </article><article class="concept-card" data-subtopic="ordering">
         <span>08</span>
         <h3>ordering</h3>
-        <p><strong>What it means:</strong> Ordering describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</p>
+        <p class="concept-definition">Ordering describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</p>
       </article><article class="concept-card" data-subtopic="secret rotation">
         <span>09</span>
         <h3>secret rotation</h3>
-        <p><strong>What it means:</strong> Secret rotation replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.</p>
+        <p class="concept-definition">Secret rotation replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.</p>
       </article>
     </div>
   </section>
@@ -113,7 +113,7 @@
         <p>Atomic receipts or a provider&#039;s idempotency contract must protect the effect; delivery deduplication alone is insufficient.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one.</p><p><strong>Then inspect:</strong> Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p></div>
+    <div class="diagnostic-note"><p>Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one.</p><p>Look for: Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p></div>
   </section>
 
   
@@ -121,7 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build both sides of a signed webhook, persist the event before acknowledging it, reject stale or altered requests, retry failures, deduplicate repeated delivery, and rotate secrets safely.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
+    <p class="lab-scope">Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -160,7 +160,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
 // A timestamp window does not suppress in-window replay. Order workers by domain
 // version or reconcile current provider state, not delivery arrival time.
 // Keep endpoint secrets out of code/logs; record IDs and error categories only.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -172,7 +172,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Provider records event and delivery → Raw body crosses HTTP → Consumer authenticates and persists → Worker guards repeated effects. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Provider records event and delivery → Raw body crosses HTTP → Consumer authenticates and persists → Worker guards repeated effects. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -197,14 +197,14 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a webhook event delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="quality-security">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
-        <p><strong>Worked answer criteria:</strong> The SDK verifies provider-specific original bytes; the local HMAC lesson is not a compatible replacement. Multiple signatures are not the same as configuring every active secret. Keep the clock/tolerance and account/live-mode checks explicit, return success only after durable acceptance, and define oversize-read failure handling. Timestamp freshness alone permits in-window replay; ordering and worker effects remain separate contracts.</p>
-        <p><strong>Evidence to explain:</strong> Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
+        <p class="worked-answer">The SDK verifies provider-specific original bytes; the local HMAC lesson is not a compatible replacement. Multiple signatures are not the same as configuring every active secret. Keep the clock/tolerance and account/live-mode checks explicit, return success only after durable acceptance, and define oversize-read failure handling. Timestamp freshness alone permits in-window replay; ordering and worker effects remain separate contracts.</p>
+        <p>Look for: Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
     </div>

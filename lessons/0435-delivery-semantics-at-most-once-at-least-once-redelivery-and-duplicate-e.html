@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Place the acknowledgement before or after the side effect and show how each crash window trades message loss against duplicate work.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Place the acknowledgement before or after the side effect and show how each crash window trades message loss against duplicate work.</p>
+    <p class="concept-intro">Place the acknowledgement before or after the side effect and show how each crash window trades message loss against duplicate work.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Delivery semantics">
         <span>01</span>
         <h3>Delivery semantics</h3>
-        <p><strong>What it means:</strong> Delivery semantics describe message-delivery guarantees under failures, not automatically the number of external business effects.</p>
+        <p class="concept-definition">Delivery semantics describe message-delivery guarantees under failures, not automatically the number of external business effects.</p>
       </article><article class="concept-card" data-subtopic="at-most-once">
         <span>02</span>
         <h3>at-most-once</h3>
-        <p><strong>What it means:</strong> At-most-once processing avoids duplicates by acknowledging before or instead of retrying, which allows loss when failure occurs.</p>
+        <p class="concept-definition">At-most-once processing avoids duplicates by acknowledging before or instead of retrying, which allows loss when failure occurs.</p>
       </article><article class="concept-card" data-subtopic="at-least-once">
         <span>03</span>
         <h3>at-least-once</h3>
-        <p><strong>What it means:</strong> At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.</p>
+        <p class="concept-definition">At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.</p>
       </article><article class="concept-card" data-subtopic="redelivery">
         <span>04</span>
         <h3>redelivery</h3>
-        <p><strong>What it means:</strong> Redelivery retries message delivery after uncertain or failed processing and can repeat previously completed effects.</p>
+        <p class="concept-definition">Redelivery retries message delivery after uncertain or failed processing and can repeat previously completed effects.</p>
       </article><article class="concept-card" data-subtopic="duplicate effects">
         <span>05</span>
         <h3>duplicate effects</h3>
-        <p><strong>What it means:</strong> Duplicate effects occur when repeated attempts apply a business action more than intended; deduplicate at the authoritative effect boundary.</p>
+        <p class="concept-definition">Duplicate effects occur when repeated attempts apply a business action more than intended; deduplicate at the authoritative effect boundary.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash at every boundary before and after the side effect and acknowledgement.</p><p><strong>Then inspect:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
+    <div class="diagnostic-note"><p>Crash at every boundary before and after the side effect and acknowledgement.</p><p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Crash a consumer at every boundary around processing and acknowledgement and verify the claimed delivery semantics against business state.</p>
-    <p><strong>Core and extension:</strong> Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
+    <p class="lab-scope">Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
 
 
 
@@ -138,7 +138,7 @@ async function consume(record, database, broker) {
 // broker.ack must acknowledge this delivery only (or a contiguous completed
 // offset prefix), never skip unfinished earlier work. An ack error after commit
 // means replay is possible; it does not justify undoing the committed effect.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -150,7 +150,7 @@ async function consume(record, database, broker) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -175,14 +175,14 @@ async function consume(record, database, broker) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Place the acknowledgement before or after the side effect and show how each crash window trades message loss against duplicate work.</p>
-        <p><strong>Worked answer criteria:</strong> The database adapter must atomically claim the tenant/logical-consumer identity, compare duplicate intent and commit the local effect. The code&#039;s false claim branch relies on that adapter contract. Acknowledging after commit allows redelivery, not a second committed local effect while the inbox is retained. Retention expiry, catastrophic storage loss and external side effects remain outside that guarantee.</p>
-        <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Place the acknowledgement before or after the side effect and show how each crash window trades message loss against duplicate work.</p>
+        <p class="worked-answer">The database adapter must atomically claim the tenant/logical-consumer identity, compare duplicate intent and commit the local effect. The code&#039;s false claim branch relies on that adapter contract. Acknowledging after commit allows redelivery, not a second committed local effect while the inbox is retained. Retention expiry, catastrophic storage loss and external side effects remain outside that guarantee.</p>
+        <p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

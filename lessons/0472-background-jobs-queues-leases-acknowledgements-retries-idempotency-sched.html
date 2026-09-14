@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
-      <p class="analogy"><strong>Analogy:</strong> Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
+      <p class="analogy">Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,44 +50,44 @@
 
   <section class="concept-section" data-subtopic-count="9">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
+    <p class="concept-intro">Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Background jobs">
         <span>01</span>
         <h3>Background jobs</h3>
-        <p><strong>What it means:</strong> A background job is durable work executed outside the request that created it. The user-facing request stores intent, while workers process that intent later.</p>
+        <p class="concept-definition">A background job is durable work executed outside the request that created it. The user-facing request stores intent, while workers process that intent later.</p>
       </article><article class="concept-card" data-subtopic="queues">
         <span>02</span>
         <h3>queues</h3>
-        <p><strong>What it means:</strong> A queue stores ready work between producers and consumers, absorbs bursts, and exposes lag, delivery, retry, and dead-letter state.</p>
+        <p class="concept-definition">A queue stores ready work between producers and consumers, absorbs bursts, and exposes lag, delivery, retry, and dead-letter state.</p>
       </article><article class="concept-card" data-subtopic="leases">
         <span>03</span>
         <h3>leases</h3>
-        <p><strong>What it means:</strong> A lease temporarily assigns a job to one worker until a deadline. If the worker disappears, expiry makes the unacknowledged job available again.</p>
+        <p class="concept-definition">A lease temporarily assigns a job to one worker until a deadline. If the worker disappears, expiry makes the unacknowledged job available again.</p>
       </article><article class="concept-card" data-subtopic="acknowledgements">
         <span>04</span>
         <h3>acknowledgements</h3>
-        <p><strong>What it means:</strong> An acknowledgement tells the queue that processing completed and the delivery can be removed. A crash before acknowledgement normally causes redelivery.</p>
+        <p class="concept-definition">An acknowledgement tells the queue that processing completed and the delivery can be removed. A crash before acknowledgement normally causes redelivery.</p>
       </article><article class="concept-card" data-subtopic="retries">
         <span>05</span>
         <h3>retries</h3>
-        <p><strong>What it means:</strong> Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
+        <p class="concept-definition">Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
       </article><article class="concept-card" data-subtopic="idempotency">
         <span>06</span>
         <h3>idempotency</h3>
-        <p><strong>What it means:</strong> Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
+        <p class="concept-definition">Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
       </article><article class="concept-card" data-subtopic="scheduling">
         <span>07</span>
         <h3>scheduling</h3>
-        <p><strong>What it means:</strong> Job scheduling makes work eligible at a future time while preserving durable identity, cancellation, and behavior after downtime.</p>
+        <p class="concept-definition">Job scheduling makes work eligible at a future time while preserving durable identity, cancellation, and behavior after downtime.</p>
       </article><article class="concept-card" data-subtopic="dead letters">
         <span>08</span>
         <h3>dead letters</h3>
-        <p><strong>What it means:</strong> A dead-letter store isolates jobs that exhausted attempts or cannot succeed, preserving error context for inspection, repair, replay, or deliberate discard.</p>
+        <p class="concept-definition">A dead-letter store isolates jobs that exhausted attempts or cannot succeed, preserving error context for inspection, repair, replay, or deliberate discard.</p>
       </article><article class="concept-card" data-subtopic="worker shutdown">
         <span>09</span>
         <h3>worker shutdown</h3>
-        <p><strong>What it means:</strong> Worker shutdown stops claiming new jobs, gives in-flight work a deadline to finish, and safely releases or lets leases expire before the process exits.</p>
+        <p class="concept-definition">Worker shutdown stops claiming new jobs, gives in-flight work a deadline to finish, and safely releases or lets leases expire before the process exits.</p>
       </article>
     </div>
   </section>
@@ -113,7 +113,7 @@
         <p>Crash recovery, exponential backoff, poison work, lag, and business outcome remain inspectable.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash after the business effect but before acknowledgment, wait for the lease to expire, and let another worker receive the same job.</p><p><strong>Then inspect:</strong> Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</p></div>
+    <div class="diagnostic-note"><p>Crash after the business effect but before acknowledgment, wait for the lease to expire, and let another worker receive the same job.</p><p>Look for: Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</p></div>
   </section>
 
   
@@ -121,7 +121,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a database-backed worker, crash it after a side effect, recover the expired lease, prove idempotency, move poison work aside, and stop without losing in-flight state.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
+    <p class="lab-scope">Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
 
 
 
@@ -180,7 +180,7 @@ def run_one(db, worker, stopping):
 # reconciliation. Lease expiry does not stop a paused worker from performing I/O.
 # Integration test: pause attempt A past expiry, reclaim as B, resume A; A must
 # not delete, retry or extend B&#039;s lease. Verify effect deduplication separately.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -192,7 +192,7 @@ def run_one(db, worker, stopping):
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Transaction makes work durable → One worker reserves delivery → Handler applies an idempotent effect → Acknowledge, retry, or dead-letter. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Transaction makes work durable → One worker reserves delivery → Handler applies an idempotent effect → Acknowledge, retry, or dead-letter. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -217,14 +217,14 @@ def run_one(db, worker, stopping):
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a background job delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="quality-security">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
-        <p><strong>Worked answer criteria:</strong> The claim adapter must commit before work; now() is transaction time and long claim transactions consume the lease. A unique attempt token protects settling B&#039;s lease from stale A, not A&#039;s external I/O. The shown delay reaches 1,024 seconds, not 3,600, and supplies neither jitter nor a maximum attempt policy. Heartbeats, shutdown hooks and exception/receipt adapters are required extensions.</p>
-        <p><strong>Evidence to explain:</strong> Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow a committed job through durable enqueue, reservation or visibility lease, execution, heartbeat, acknowledgment, retry, duplicate delivery, dead-letter handling, and graceful worker termination.</p>
+        <p class="worked-answer">The claim adapter must commit before work; now() is transaction time and long claim transactions consume the lease. A unique attempt token protects settling B&#039;s lease from stale A, not A&#039;s external I/O. The shown delay reaches 1,024 seconds, not 3,600, and supplies neither jitter nor a maximum attempt policy. Heartbeats, shutdown hooks and exception/receipt adapters are required extensions.</p>
+        <p>Look for: Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
     </div>

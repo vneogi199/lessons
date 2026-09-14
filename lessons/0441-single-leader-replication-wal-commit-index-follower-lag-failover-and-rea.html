@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
+    <p class="concept-intro">Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Single-leader replication">
         <span>01</span>
         <h3>Single-leader replication</h3>
-        <p><strong>What it means:</strong> Single-leader replication orders writes through one leader and replays its log on followers that may serve reads with explicit freshness limits.</p>
+        <p class="concept-definition">Single-leader replication orders writes through one leader and replays its log on followers that may serve reads with explicit freshness limits.</p>
       </article><article class="concept-card" data-subtopic="WAL">
         <span>02</span>
         <h3>WAL</h3>
-        <p><strong>What it means:</strong> Write-ahead logging records recovery information before corresponding durable state changes are considered complete.</p>
+        <p class="concept-definition">Write-ahead logging records recovery information before corresponding durable state changes are considered complete.</p>
       </article><article class="concept-card" data-subtopic="commit index">
         <span>03</span>
         <h3>commit index</h3>
-        <p><strong>What it means:</strong> A replicated-log commit index marks the prefix considered committed under the protocol&#039;s rules.</p>
+        <p class="concept-definition">A replicated-log commit index marks the prefix considered committed under the protocol&#039;s rules.</p>
       </article><article class="concept-card" data-subtopic="follower lag">
         <span>04</span>
         <h3>follower lag</h3>
-        <p><strong>What it means:</strong> Follower lag means a replica has not received or applied the leader&#039;s latest progress, affecting reads and recovery.</p>
+        <p class="concept-definition">Follower lag means a replica has not received or applied the leader&#039;s latest progress, affecting reads and recovery.</p>
       </article><article class="concept-card" data-subtopic="failover">
         <span>05</span>
         <h3>failover</h3>
-        <p><strong>What it means:</strong> Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
+        <p class="concept-definition">Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
       </article><article class="concept-card" data-subtopic="read scaling">
         <span>06</span>
         <h3>read scaling</h3>
-        <p><strong>What it means:</strong> Read scaling distributes reads while preserving the chosen freshness and consistency contract.</p>
+        <p class="concept-definition">Read scaling distributes reads while preserving the chosen freshness and consistency contract.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Partition one replica group immediately after a write acknowledgement, then read from every side.</p><p><strong>Then inspect:</strong> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p></div>
+    <div class="diagnostic-note"><p>Partition one replica group immediately after a write acknowledgement, then read from every side.</p><p>Look for: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Simulate leader writes, delayed followers, acknowledged positions, failover, and read-your-writes routing with measured data-loss and staleness windows.</p>
-    <p><strong>Core and extension:</strong> Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
+    <p class="lab-scope">Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
 
 
 
@@ -142,7 +142,7 @@ async function write(command) {
 // appliedIndex can provide session freshness, but linearizable reads additionally
 // require current-authority proof; a deposed leader may have an old applied prefix.
 // Failover must preserve every committed entry, not merely elect any available node.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -154,7 +154,7 @@ async function write(command) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Operation targets replicated state → Leaders or quorums coordinate versions → Lag, conflict, or partition intervenes → Read, repair, failover, or merge completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Operation targets replicated state → Leaders or quorums coordinate versions → Lag, conflict, or partition intervenes → Read, repair, failover, or merge completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -179,14 +179,14 @@ async function write(command) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
-        <p><strong>Worked answer criteria:</strong> The serialized write sketch omits durable append, election and current-term commit rules; majority responses alone do not implement consensus. A session freshness token needs cluster/stream identity and an applied position, while linearizable reads also need current authority. Test acknowledged-write preservation through failover rather than treating any newly reachable node as a safe leader.</p>
-        <p><strong>Evidence to explain:</strong> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
+        <p class="worked-answer">The serialized write sketch omits durable append, election and current-term commit rules; majority responses alone do not implement consensus. A session freshness token needs cluster/stream identity and an applied position, while linearizable reads also need current authority. Test acknowledged-write preservation through failover rather than treating any newly reachable node as a safe leader.</p>
+        <p>Look for: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

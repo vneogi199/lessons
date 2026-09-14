@@ -1,5 +1,7 @@
 # Teaching and Product Notes
 
+- Readability cleanup on 2026-09-14 applied to all 644 lessons: removed repetitive paragraph subtitles in the shared template and retained topic headings, explanatory depth, code and warnings. Exact before/after transformation verified every page; revision pins refreshed for this presentation-only change. Content/catalog/link checks pass. Ponytail guided one shared-template change with existing checks, no dependencies or installation. No deployment performed.
+
 - All 644 lessons across 28 tracks have individual content sign-offs as of 2026-09-14: 644 complete, zero pending, zero changed revisions. Completed the remaining AI and interview review with 68 worked checkpoints and targeted code/terminology fixes; senior scope remains approximately ten years of experience. Content, catalog, 9,372 local links and TypeScript checks pass. Teach guided explanation/attempt/feedback/delayed recall; existing helpers and stdlib checks avoided new dependencies. Nothing installed, committed, pushed or deployed. Live browser/framework/data/cloud/provider/GitHub Pages verification remains separate and unclaimed. Historical progress entries below are superseded by this completion entry.
 
 - Kubernetes individually reviewed through 0576 on 2026-09-14: 576 complete, 68 pending. Thirty worked checkpoints, contextual terminology and trace corrections validated locally. No installations or cluster operations. AI 0577–0617 read; AI improvements/sign-off and interviews remain.

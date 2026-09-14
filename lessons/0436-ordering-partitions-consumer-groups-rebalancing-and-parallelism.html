@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Preserve order only inside the selected partition while assigning partitions to consumers, moving ownership, pausing delivery, and controlling work that outlives a rebalance.</p>
-      <p class="analogy"><strong>Analogy:</strong> A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Preserve order only inside the selected partition while assigning partitions to consumers, moving ownership, pausing delivery, and controlling work that outlives a rebalance.</p>
+    <p class="concept-intro">Preserve order only inside the selected partition while assigning partitions to consumers, moving ownership, pausing delivery, and controlling work that outlives a rebalance.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Ordering">
         <span>01</span>
         <h3>Ordering</h3>
-        <p><strong>What it means:</strong> Ordering specifies which events or operations must be observed in sequence. State the scope: one connection, key, partition, or the entire system.</p>
+        <p class="concept-definition">Ordering specifies which events or operations must be observed in sequence. State the scope: one connection, key, partition, or the entire system.</p>
       </article><article class="concept-card" data-subtopic="partitions">
         <span>02</span>
         <h3>partitions</h3>
-        <p><strong>What it means:</strong> A broker partition is an ordered subdivision of a message log. Partitioning permits parallel consumers, but ordering is usually guaranteed only within one partition, not across the whole topic. It is different from a network partition, where nodes cannot communicate.</p>
+        <p class="concept-definition">A broker partition is an ordered subdivision of a message log. Partitioning permits parallel consumers, but ordering is usually guaranteed only within one partition, not across the whole topic. It is different from a network partition, where nodes cannot communicate.</p>
       </article><article class="concept-card" data-subtopic="consumer groups">
         <span>03</span>
         <h3>consumer groups</h3>
-        <p><strong>What it means:</strong> A consumer group divides topic partitions among members so each partition has one active owner within that group.</p>
+        <p class="concept-definition">A consumer group divides topic partitions among members so each partition has one active owner within that group.</p>
       </article><article class="concept-card" data-subtopic="rebalancing">
         <span>04</span>
         <h3>rebalancing</h3>
-        <p><strong>What it means:</strong> Rebalancing changes partition or work ownership among consumers and must coordinate in-flight work and position tracking.</p>
+        <p class="concept-definition">Rebalancing changes partition or work ownership among consumers and must coordinate in-flight work and position tracking.</p>
       </article><article class="concept-card" data-subtopic="parallelism">
         <span>05</span>
         <h3>parallelism</h3>
-        <p><strong>What it means:</strong> Parallelism executes work simultaneously; preserving order usually limits parallelism within the required ordering scope.</p>
+        <p class="concept-definition">Parallelism executes work simultaneously; preserving order usually limits parallelism within the required ordering scope.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Crash at every boundary before and after the side effect and acknowledgement.</p><p><strong>Then inspect:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
+    <div class="diagnostic-note"><p>Crash at every boundary before and after the side effect and acknowledgement.</p><p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Partition by aggregate identity, scale a consumer group, trigger rebalances, and prove per-key order without globally serializing throughput.</p>
-    <p><strong>Core and extension:</strong> Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
+    <p class="lab-scope">Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
 
 
 
@@ -132,7 +132,7 @@ async function handlePartition(records, ownershipSignal) {
 // On rebalance: stop fetching, abort or drain old work, commit only completed
 // positions, release ownership, then start the newly assigned partitions.
 // More consumers than partitions add no consumer-group parallelism.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -144,7 +144,7 @@ async function handlePartition(records, ownershipSignal) {
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Producer emits identified intent or fact → Durable channel stores and assigns → Consumer creates a local effect → Ack, commit, retry, quarantine, or replay. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -169,14 +169,14 @@ async function handlePartition(records, ownershipSignal) {
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Preserve order only inside the selected partition while assigning partitions to consumers, moving ownership, pausing delivery, and controlling work that outlives a rebalance.</p>
-        <p><strong>Worked answer criteria:</strong> stableHash, partitionCount, handleInOrder and commit are missing adapters. Specify unsigned hash mapping and positive partition count. Checking ownership only before handle does not fence a late effect or commit after revocation; drain or fence at the effect/commit authority. Partition changes need migration, and extra consumers cannot split one hot key while retaining its serial order.</p>
-        <p><strong>Evidence to explain:</strong> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Preserve order only inside the selected partition while assigning partitions to consumers, moving ownership, pausing delivery, and controlling work that outlives a rebalance.</p>
+        <p class="worked-answer">stableHash, partitionCount, handleInOrder and commit are missing adapters. Specify unsigned hash mapping and positive partition count. Checking ownership only before handle does not fence a late effect or commit after revocation; drain or fence at the effect/commit authority. Partition changes need migration, and extra consumers cannot split one hot key while retaining its serial order.</p>
+        <p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

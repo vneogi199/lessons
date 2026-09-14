@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Understand byte storage, slab allocation, zero-filled versus unsafe allocation, view semantics, encoding boundaries, and maximum-size risks.</p>
-      <p class="analogy"><strong>Analogy:</strong> Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,36 +50,36 @@
 
   <section class="concept-section" data-subtopic-count="7">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Understand byte storage, slab allocation, zero-filled versus unsafe allocation, view semantics, encoding boundaries, and maximum-size risks.</p>
+    <p class="concept-intro">Understand byte storage, slab allocation, zero-filled versus unsafe allocation, view semantics, encoding boundaries, and maximum-size risks.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Buffer">
         <span>01</span>
         <h3>Buffer</h3>
-        <p><strong>What it means:</strong> Buffer is Node&#039;s byte-oriented Uint8Array subclass for binary I/O. Encoding converts bytes to text; the Buffer itself is not a string.</p>
+        <p class="concept-definition">Buffer is Node&#039;s byte-oriented Uint8Array subclass for binary I/O. Encoding converts bytes to text; the Buffer itself is not a string.</p>
       </article><article class="concept-card" data-subtopic="encodings">
         <span>02</span>
         <h3>encodings</h3>
-        <p><strong>What it means:</strong> An encoding maps values such as text into bytes and back. Both sides must agree on the encoding and malformed-input policy.</p>
+        <p class="concept-definition">An encoding maps values such as text into bytes and back. Both sides must agree on the encoding and malformed-input policy.</p>
       </article><article class="concept-card" data-subtopic="allocation">
         <span>03</span>
         <h3>allocation</h3>
-        <p><strong>What it means:</strong> Buffer allocation must choose initialized or unsafe memory and a bounded size. Unsafe allocation can expose prior process memory if bytes are read before overwrite.</p>
+        <p class="concept-definition">Buffer allocation must choose initialized or unsafe memory and a bounded size. Unsafe allocation can expose prior process memory if bytes are read before overwrite.</p>
       </article><article class="concept-card" data-subtopic="pooling">
         <span>04</span>
         <h3>pooling</h3>
-        <p><strong>What it means:</strong> Small Buffer allocations may use slices of an internal slab. The visible view can have a nonzero byte offset inside a larger underlying ArrayBuffer.</p>
+        <p class="concept-definition">Small Buffer allocations may use slices of an internal slab. The visible view can have a nonzero byte offset inside a larger underlying ArrayBuffer.</p>
       </article><article class="concept-card" data-subtopic="slices">
         <span>05</span>
         <h3>slices</h3>
-        <p><strong>What it means:</strong> Buffer subarray and modern slice behavior create views sharing storage. Mutating either view affects the same bytes unless an explicit copy is made.</p>
+        <p class="concept-definition">Buffer subarray and modern slice behavior create views sharing storage. Mutating either view affects the same bytes unless an explicit copy is made.</p>
       </article><article class="concept-card" data-subtopic="copies">
         <span>06</span>
         <h3>copies</h3>
-        <p><strong>What it means:</strong> Copies allocate independent storage, while views may share backing memory and observe each other&#039;s mutations.</p>
+        <p class="concept-definition">Copies allocate independent storage, while views may share backing memory and observe each other&#039;s mutations.</p>
       </article><article class="concept-card" data-subtopic="binary safety">
         <span>07</span>
         <h3>binary safety</h3>
-        <p><strong>What it means:</strong> Binary safety preserves exact bytes, bounds, and ownership without accidental text conversion or exposure of uninitialized data.</p>
+        <p class="concept-definition">Binary safety preserves exact bytes, bounds, and ownership without accidental text conversion or exposure of uninitialized data.</p>
       </article>
     </div>
   </section>
@@ -105,7 +105,7 @@
         <p>A copy, view, clone, or transfer determines later mutation.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Mutate a sliced Buffer and compare it with an explicit copy and transferred ArrayBuffer.</p><p><strong>Then inspect:</strong> byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p></div>
+    <div class="diagnostic-note"><p>Mutate a sliced Buffer and compare it with an explicit copy and transferred ArrayBuffer.</p><p>Look for: byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p></div>
   </section>
 
   
@@ -113,8 +113,8 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Parse a length-prefixed binary message with bounds checks and demonstrate slice aliasing versus copying.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
-<p><strong>Distinct exercise:</strong> Run the byte-frame example as a Node ES module. Explain copy versus view ownership, reject a truncated or oversized frame, and show why allocUnsafe requires complete initialization before exposure.</p>
+    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+<p>Run the byte-frame example as a Node ES module. Explain copy versus view ownership, reject a truncated or oversized frame, and show why allocUnsafe requires complete initialization before exposure.</p>
 
 
 
@@ -145,7 +145,7 @@ view[0] = 0x48;
 console.assert(copy[0] !== view[0]);
 
 const exactArrayBuffer = frame.buffer.slice(frame.byteOffset, frame.byteOffset + frame.byteLength);</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -157,7 +157,7 @@ const exactArrayBuffer = frame.buffer.slice(frame.byteOffset, frame.byteOffset +
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Input enters a bounded buffer → Code reads through one typed view → Protocol bounds are enforced → Owned output crosses the boundary. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Input enters a bounded buffer → Code reads through one typed view → Protocol bounds are enforced → Owned output crosses the boundary. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -182,14 +182,14 @@ const exactArrayBuffer = frame.buffer.slice(frame.byteOffset, frame.byteOffset +
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Understand byte storage, slab allocation, zero-filled versus unsafe allocation, view semantics, encoding boundaries, and maximum-size risks.</p>
-        <p><strong>Worked answer criteria:</strong> The frame decoder requires a Buffer and exact declared length within 1024 bytes. subarray aliases storage; Buffer.from(view) copies. A high-level string conversion may replace invalid encoding, so choose a strict policy if bytes must be valid text. The fixture does not exercise unsafe allocation.</p>
-        <p><strong>Evidence to explain:</strong> byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Understand byte storage, slab allocation, zero-filled versus unsafe allocation, view semantics, encoding boundaries, and maximum-size risks.</p>
+        <p class="worked-answer">The frame decoder requires a Buffer and exact declared length within 1024 bytes. subarray aliases storage; Buffer.from(view) copies. A high-level string conversion may replace invalid encoding, so choose a strict policy if bytes must be valid text. The fixture does not exercise unsafe allocation.</p>
+        <p>Look for: byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

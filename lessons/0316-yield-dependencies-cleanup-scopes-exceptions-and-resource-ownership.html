@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,24 +50,24 @@
 
   <section class="concept-section" data-subtopic-count="4">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
+    <p class="concept-intro">Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Yield dependencies">
         <span>01</span>
         <h3>Yield dependencies</h3>
-        <p><strong>What it means:</strong> A yield dependency acquires a resource before yield and releases it afterward. Nested cleanup runs in reverse order, which makes ownership of sessions, locks, and clients explicit.</p>
+        <p class="concept-definition">A yield dependency acquires a resource before yield and releases it afterward. Nested cleanup runs in reverse order, which makes ownership of sessions, locks, and clients explicit.</p>
       </article><article class="concept-card" data-subtopic="cleanup scopes">
         <span>02</span>
         <h3>cleanup scopes</h3>
-        <p><strong>What it means:</strong> A yield dependency&#039;s scope determines when cleanup runs. Function-scoped cleanup runs after the path operation and before sending the response; request-scoped cleanup runs after the response is sent. Verify support and behavior in the installed FastAPI version.</p>
+        <p class="concept-definition">A yield dependency&#039;s scope determines when cleanup runs. Function-scoped cleanup runs after the path operation and before sending the response; request-scoped cleanup runs after the response is sent. Verify support and behavior in the installed FastAPI version.</p>
       </article><article class="concept-card" data-subtopic="exceptions">
         <span>03</span>
         <h3>exceptions</h3>
-        <p><strong>What it means:</strong> An exception interrupts normal Python control flow and moves to a matching handler or cleanup boundary.</p>
+        <p class="concept-definition">An exception interrupts normal Python control flow and moves to a matching handler or cleanup boundary.</p>
       </article><article class="concept-card" data-subtopic="resource ownership">
         <span>04</span>
         <h3>resource ownership</h3>
-        <p><strong>What it means:</strong> Resource ownership states which scope creates, uses, and closes a database session, file, lock, client, or connection.</p>
+        <p class="concept-definition">Resource ownership states which scope creates, uses, and closes a database session, file, lock, client, or connection.</p>
       </article>
     </div>
   </section>
@@ -93,7 +93,7 @@
         <p>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.</p><p><strong>Then inspect:</strong> Dependency call log, cache reuse, exception path, and resource-close events.</p></div>
+    <div class="diagnostic-note"><p>Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.</p><p>Look for: Dependency call log, cache reuse, exception path, and resource-close events.</p></div>
   </section>
 
   
@@ -101,7 +101,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Manage a session and lock with nested yield dependencies, deliberately fail each phase, and verify cleanup ordering.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -132,7 +132,7 @@ async def unit_of_work(
     await uow.commit()
 
 UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)]</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -144,7 +144,7 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Endpoint declares requirements → FastAPI solves prerequisites → Values are acquired and cached → Yield resources close in reverse. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Endpoint declares requirements → FastAPI solves prerequisites → Values are acquired and cached → Yield resources close in reverse. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -169,14 +169,14 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a dependency lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
-        <p><strong>Worked answer criteria:</strong> Function-scoped exit commits before response sending; the dependent session can remain request-scoped. Confirm the installed version supports scope. Exceptions thrown through yield skip the following commit; rollback and close still need adapter and cancellation evidence. Prefer an explicit use-case transaction when hidden exit commits obscure ownership.</p>
-        <p><strong>Evidence to explain:</strong> Dependency call log, cache reuse, exception path, and resource-close events.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
+        <p class="worked-answer">Function-scoped exit commits before response sending; the dependent session can remain request-scoped. Confirm the installed version supports scope. Exceptions thrown through yield skip the following commit; rollback and close still need adapter and cancellation evidence. Prefer an explicit use-case transaction when hidden exit commits obscure ownership.</p>
+        <p>Look for: Dependency call log, cache reuse, exception path, and resource-close events.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>

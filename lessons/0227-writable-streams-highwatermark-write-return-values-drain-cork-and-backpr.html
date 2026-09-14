@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
-      <p class="analogy"><strong>Analogy:</strong> Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
+    <p class="concept-intro">Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Writable streams">
         <span>01</span>
         <h3>Writable streams</h3>
-        <p><strong>What it means:</strong> A Writable accepts chunks into an internal queue and reports completion after its sink handles them. Its write return value communicates pressure.</p>
+        <p class="concept-definition">A Writable accepts chunks into an internal queue and reports completion after its sink handles them. Its write return value communicates pressure.</p>
       </article><article class="concept-card" data-subtopic="highWaterMark">
         <span>02</span>
         <h3>highWaterMark</h3>
-        <p><strong>What it means:</strong> highWaterMark is an internal queue threshold that triggers backpressure signals. It is not a strict total-memory limit for the process.</p>
+        <p class="concept-definition">highWaterMark is an internal queue threshold that triggers backpressure signals. It is not a strict total-memory limit for the process.</p>
       </article><article class="concept-card" data-subtopic="write return values">
         <span>03</span>
         <h3>write return values</h3>
-        <p><strong>What it means:</strong> A false return from writable.write signals backpressure: stop writing until drain rather than treating false as write failure.</p>
+        <p class="concept-definition">A false return from writable.write signals backpressure: stop writing until drain rather than treating false as write failure.</p>
       </article><article class="concept-card" data-subtopic="drain">
         <span>04</span>
         <h3>drain</h3>
-        <p><strong>What it means:</strong> After write returns false, drain signals that the buffered writes have drained and the producer may resume. It is not a durability acknowledgment or merely an arbitrary drop below highWaterMark.</p>
+        <p class="concept-definition">After write returns false, drain signals that the buffered writes have drained and the producer may resume. It is not a durability acknowledgment or merely an arbitrary drop below highWaterMark.</p>
       </article><article class="concept-card" data-subtopic="cork">
         <span>05</span>
         <h3>cork</h3>
-        <p><strong>What it means:</strong> Writable corking buffers writes until matching uncork calls or end. It does not automatically uncork on the next tick; callers often schedule uncork with process.nextTick to batch writes for _writev.</p>
+        <p class="concept-definition">Writable corking buffers writes until matching uncork calls or end. It does not automatically uncork on the next tick; callers often schedule uncork with process.nextTick to batch writes for _writev.</p>
       </article><article class="concept-card" data-subtopic="backpressure">
         <span>06</span>
         <h3>backpressure</h3>
-        <p><strong>What it means:</strong> Backpressure makes an upstream producer slow down when downstream capacity is full, preventing queues and memory from growing with total input.</p>
+        <p class="concept-definition">Backpressure makes an upstream producer slow down when downstream capacity is full, preventing queues and memory from growing with total input.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Slow the destination and confirm memory stays bounded.</p><p><strong>Then inspect:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p></div>
+    <div class="diagnostic-note"><p>Slow the destination and confirm memory stays bounded.</p><p>Look for: Chunk sizes, writable return values, drain events, RSS, and close/error order.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build a slow destination and prove respecting false from write keeps memory bounded.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -137,7 +137,7 @@ await once(sink, &quot;finish&quot;);
 
 console.log({ writableLength: sink.writableLength, destroyed: sink.destroyed });
 // Ignoring false allows the JavaScript-side write queue to grow with input.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -149,7 +149,7 @@ console.log({ writableLength: sink.writableLength, destroyed: sink.destroyed });
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Bytes arrive in chunks → Readable state holds data → Transform or destination pulls → Pipeline completes or destroys. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -174,14 +174,14 @@ console.log({ writableLength: sink.writableLength, destroyed: sink.destroyed });
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
-        <p><strong>Worked answer criteria:</strong> False means pause admission, not failed write. highWaterMark limits a queue threshold rather than total process memory. The slow fixture has no injected sink failure; robust use also owns errors and premature close. Corking requires matching uncork or end; scheduling uncork next tick is caller behavior.</p>
-        <p><strong>Evidence to explain:</strong> Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Follow writes into internal queues, thresholds signalling producer slowdown, drain notification, batching, and finalization.</p>
+        <p class="worked-answer">False means pause admission, not failed write. highWaterMark limits a queue threshold rather than total process memory. The slow fixture has no injected sink failure; robust use also owns errors and premature close. Corking requires matching uncork or end; scheduling uncork next tick is caller behavior.</p>
+        <p>Look for: Chunk sizes, writable return values, drain events, RSS, and close/error order.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

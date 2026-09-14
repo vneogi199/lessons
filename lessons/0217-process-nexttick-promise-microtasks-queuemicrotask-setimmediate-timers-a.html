@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Compare the next-tick queue, V8 microtask checkpoints, libuv phases, timer thresholds, and how recursively queued work can starve I/O.</p>
-      <p class="analogy"><strong>Analogy:</strong> Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,32 +50,32 @@
 
   <section class="concept-section" data-subtopic-count="6">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Compare the next-tick queue, V8 microtask checkpoints, libuv phases, timer thresholds, and how recursively queued work can starve I/O.</p>
+    <p class="concept-intro">Compare the next-tick queue, V8 microtask checkpoints, libuv phases, timer thresholds, and how recursively queued work can starve I/O.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="process.nextTick">
         <span>01</span>
         <h3>process.nextTick</h3>
-        <p><strong>What it means:</strong> process.nextTick queues work for Node&#039;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p>
+        <p class="concept-definition">process.nextTick queues work for Node&#039;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p>
       </article><article class="concept-card" data-subtopic="Promise microtasks">
         <span>02</span>
         <h3>Promise microtasks</h3>
-        <p><strong>What it means:</strong> Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p>
+        <p class="concept-definition">Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p>
       </article><article class="concept-card" data-subtopic="queueMicrotask">
         <span>03</span>
         <h3>queueMicrotask</h3>
-        <p><strong>What it means:</strong> queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p>
+        <p class="concept-definition">queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p>
       </article><article class="concept-card" data-subtopic="setImmediate">
         <span>04</span>
         <h3>setImmediate</h3>
-        <p><strong>What it means:</strong> setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
+        <p class="concept-definition">setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
       </article><article class="concept-card" data-subtopic="timers">
         <span>05</span>
         <h3>timers</h3>
-        <p><strong>What it means:</strong> Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
+        <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
       </article><article class="concept-card" data-subtopic="starvation">
         <span>06</span>
         <h3>starvation</h3>
-        <p><strong>What it means:</strong> Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
+        <p class="concept-definition">Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
       </article>
     </div>
   </section>
@@ -101,7 +101,7 @@
         <p>Latency and event-loop delay become observable.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Add one blocking CPU loop and compare callback timing before and after.</p><p><strong>Then inspect:</strong> Event-loop delay, async trace, worker identity, callback order, and latency.</p></div>
+    <div class="diagnostic-note"><p>Add one blocking CPU loop and compare callback timing before and after.</p><p>Look for: Event-loop delay, async trace, worker identity, callback order, and latency.</p></div>
   </section>
 
   
@@ -109,7 +109,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Build an ordering matrix and reproduce then repair nextTick or microtask starvation.</p>
-    <p><strong>Core and extension:</strong> Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
 
 
 
@@ -136,7 +136,7 @@ function unsafeLoop() {
 }
 unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmediate
 </code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -148,7 +148,7 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> JavaScript schedules work → Node delegates eligible work → Completion becomes ready → Main thread handles completion. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>JavaScript schedules work → Node delegates eligible work → Completion becomes ready → Main thread handles completion. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -173,14 +173,14 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Compare the next-tick queue, V8 microtask checkpoints, libuv phases, timer thresholds, and how recursively queued work can starve I/O.</p>
-        <p><strong>Worked answer criteria:</strong> ESM evaluation already runs in microtask context, so do not apply CommonJS top-level nextTick ordering blindly. The 100000-iteration chain is a bounded starvation demonstration, not an infinite loop. Chunking via setImmediate yields opportunities but does not create CPU parallelism.</p>
-        <p><strong>Evidence to explain:</strong> Event-loop delay, async trace, worker identity, callback order, and latency.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Compare the next-tick queue, V8 microtask checkpoints, libuv phases, timer thresholds, and how recursively queued work can starve I/O.</p>
+        <p class="worked-answer">ESM evaluation already runs in microtask context, so do not apply CommonJS top-level nextTick ordering blindly. The 100000-iteration chain is a bounded starvation demonstration, not an infinite loop. Chunking via setImmediate yields opportunities but does not create CPU parallelism.</p>
+        <p>Look for: Event-loop delay, async trace, worker identity, callback order, and latency.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

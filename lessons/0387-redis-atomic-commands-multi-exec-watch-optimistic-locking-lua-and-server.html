@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Compare per-command atomicity, queued transaction execution, WATCH invalidation, lack of rollback, deterministic server-side logic, script cache, and blocking duration.</p>
-      <p class="analogy"><strong>Analogy:</strong> A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,36 +50,36 @@
 
   <section class="concept-section" data-subtopic-count="7">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Compare per-command atomicity, queued transaction execution, WATCH invalidation, lack of rollback, deterministic server-side logic, script cache, and blocking duration.</p>
+    <p class="concept-intro">Compare per-command atomicity, queued transaction execution, WATCH invalidation, lack of rollback, deterministic server-side logic, script cache, and blocking duration.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Redis atomic commands">
         <span>01</span>
         <h3>Redis atomic commands</h3>
-        <p><strong>What it means:</strong> An atomic Redis command applies without interleaved command effects, but may still fail or lack the desired persistence guarantee.</p>
+        <p class="concept-definition">An atomic Redis command applies without interleaved command effects, but may still fail or lack the desired persistence guarantee.</p>
       </article><article class="concept-card" data-subtopic="MULTI">
         <span>02</span>
         <h3>MULTI</h3>
-        <p><strong>What it means:</strong> MULTI queues Redis commands and EXEC runs the queue without other client commands interleaving. It does not provide relational rollback after runtime command errors.</p>
+        <p class="concept-definition">MULTI queues Redis commands and EXEC runs the queue without other client commands interleaving. It does not provide relational rollback after runtime command errors.</p>
       </article><article class="concept-card" data-subtopic="EXEC">
         <span>03</span>
         <h3>EXEC</h3>
-        <p><strong>What it means:</strong> Redis EXEC runs the commands queued by MULTI. Other clients do not interleave commands during execution, but a runtime error in one command does not roll back successful commands.</p>
+        <p class="concept-definition">Redis EXEC runs the commands queued by MULTI. Other clients do not interleave commands during execution, but a runtime error in one command does not roll back successful commands.</p>
       </article><article class="concept-card" data-subtopic="WATCH">
         <span>04</span>
         <h3>WATCH</h3>
-        <p><strong>What it means:</strong> WATCH provides optimistic locking by making EXEC abort if a watched key changed before the transaction executes.</p>
+        <p class="concept-definition">WATCH provides optimistic locking by making EXEC abort if a watched key changed before the transaction executes.</p>
       </article><article class="concept-card" data-subtopic="optimistic locking">
         <span>05</span>
         <h3>optimistic locking</h3>
-        <p><strong>What it means:</strong> Optimistic locking detects changes before committing conditional work; Redis WATCH requires retries when watched keys change.</p>
+        <p class="concept-definition">Optimistic locking detects changes before committing conditional work; Redis WATCH requires retries when watched keys change.</p>
       </article><article class="concept-card" data-subtopic="Lua">
         <span>06</span>
         <h3>Lua</h3>
-        <p><strong>What it means:</strong> A Redis Lua script runs atomically on the server and can combine reads and writes without races. Long scripts block other command execution.</p>
+        <p class="concept-definition">A Redis Lua script runs atomically on the server and can combine reads and writes without races. Long scripts block other command execution.</p>
       </article><article class="concept-card" data-subtopic="server-side functions">
         <span>07</span>
         <h3>server-side functions</h3>
-        <p><strong>What it means:</strong> Server-side functions execute registered logic near data under Redis execution rules and must avoid unbounded server blocking.</p>
+        <p class="concept-definition">Server-side functions execute registered logic near data under Redis execution rules and must avoid unbounded server blocking.</p>
       </article>
     </div>
   </section>
@@ -105,7 +105,7 @@
         <p>Reply, latency, memory, key state, and errors expose the result.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Increase one value or batch size and predict event-loop occupancy and buffer growth.</p><p><strong>Then inspect:</strong> RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p></div>
+    <div class="diagnostic-note"><p>Increase one value or batch size and predict event-loop occupancy and buffer growth.</p><p>Look for: RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p></div>
   </section>
 
   
@@ -113,7 +113,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Implement a conditional balance update with WATCH and an atomic rate operation with Lua, then force conflicts and script errors.</p>
-    <p><strong>Core and extension:</strong> Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
 
 
@@ -150,7 +150,7 @@ EVAL &quot;local n=redis.call(&#039;INCR&#039;,KEYS[1]); if n==1 then redis.call
 # command errors do not roll back earlier successful commands. Lua scripts
 # also do not undo earlier writes after a runtime error. Validate before writes.
 # https://redis.io/docs/latest/develop/using-commands/transactions/</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -162,7 +162,7 @@ EVAL &quot;local n=redis.call(&#039;INCR&#039;,KEYS[1]); if n==1 then redis.call
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Client frames one or more commands → Redis parses and schedules work → Data structure changes atomically → Ordered evidence returns. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Client frames one or more commands → Redis parses and schedules work → Data structure changes atomically → Ordered evidence returns. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -187,14 +187,14 @@ EVAL &quot;local n=redis.call(&#039;INCR&#039;,KEYS[1]); if n==1 then redis.call
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a Redis command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Compare per-command atomicity, queued transaction execution, WATCH invalidation, lack of rollback, deterministic server-side logic, script cache, and blocking duration.</p>
-        <p><strong>Worked answer criteria:</strong> The deliberate transaction leaves balance:42 at 500 despite the later type error. Queue-time errors and WATCH invalidation have different outcomes. Lua also does not undo earlier writes on runtime failure. The script counts attempts in a first-hit window; it does not reject excess work or implement a sliding window.</p>
-        <p><strong>Evidence to explain:</strong> RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Compare per-command atomicity, queued transaction execution, WATCH invalidation, lack of rollback, deterministic server-side logic, script cache, and blocking duration.</p>
+        <p class="worked-answer">The deliberate transaction leaves balance:42 at 500 despite the later type error. Queue-time errors and WATCH invalidation have different outcomes. Lua also does not undo earlier writes on runtime failure. The script counts attempts in a first-hit window; it does not reject excess work or implement a sliding window.</p>
+        <p>Look for: RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

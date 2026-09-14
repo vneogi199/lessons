@@ -31,7 +31,7 @@
     <section class="card">
       <span class="section-label">02 · Mental model</span>
       <p>Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
-      <p class="analogy"><strong>Analogy:</strong> A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
@@ -50,28 +50,28 @@
 
   <section class="concept-section" data-subtopic-count="5">
     <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro"><strong>How they connect:</strong> Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
+    <p class="concept-intro">Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Cancellation">
         <span>01</span>
         <h3>Cancellation</h3>
-        <p><strong>What it means:</strong> Cancellation asks in-flight async work to stop at an await point. Correct code lets it propagate, releases resources in finally blocks, and avoids publishing partial results.</p>
+        <p class="concept-definition">Cancellation asks in-flight async work to stop at an await point. Correct code lets it propagate, releases resources in finally blocks, and avoids publishing partial results.</p>
       </article><article class="concept-card" data-subtopic="timeouts">
         <span>02</span>
         <h3>timeouts</h3>
-        <p><strong>What it means:</strong> A timeout limits how long an operation may wait before the application cancels or abandons that operation.</p>
+        <p class="concept-definition">A timeout limits how long an operation may wait before the application cancels or abandons that operation.</p>
       </article><article class="concept-card" data-subtopic="task groups">
         <span>03</span>
         <h3>task groups</h3>
-        <p><strong>What it means:</strong> A task group gives parallel child tasks one lifetime. If one fails or the parent is cancelled, the group coordinates cancellation and waits for cleanup before leaving.</p>
+        <p class="concept-definition">A task group gives parallel child tasks one lifetime. If one fails or the parent is cancelled, the group coordinates cancellation and waits for cleanup before leaving.</p>
       </article><article class="concept-card" data-subtopic="disconnects">
         <span>04</span>
         <h3>disconnects</h3>
-        <p><strong>What it means:</strong> A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</p>
+        <p class="concept-definition">A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</p>
       </article><article class="concept-card" data-subtopic="structured concurrency">
         <span>05</span>
         <h3>structured concurrency</h3>
-        <p><strong>What it means:</strong> Structured concurrency keeps child tasks inside a parent scope that owns their completion, failure, cancellation, and cleanup.</p>
+        <p class="concept-definition">Structured concurrency keeps child tasks inside a parent scope that owns their completion, failure, cancellation, and cleanup.</p>
       </article>
     </div>
   </section>
@@ -97,7 +97,7 @@
         <p>Task groups own child completion and failures. Cleanup can exceed the nominal timeout, and remote effects may require reconciliation.</p>
       </article>
     </div>
-    <div class="diagnostic-note"><p><strong>Try to break it:</strong> Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.</p><p><strong>Then inspect:</strong> Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p></div>
+    <div class="diagnostic-note"><p>Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.</p><p>Look for: Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p></div>
   </section>
 
   
@@ -105,7 +105,7 @@
   <section class="card lab">
     <span class="section-label">06 · Practical lab</span>
     <p>Run bounded parallel upstream calls with AnyIO task groups, deadlines, partial failure policy, and client-disconnect cancellation.</p>
-    <p><strong>Core and extension:</strong> Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
 
 
@@ -133,7 +133,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
     return Dashboard.model_validate(results)
 
 # Cancellation propagates through the task group and each awaited operation.</code></pre>
-    <p><strong>Practice notes:</strong> Record your prediction, observation, and revised model separately from the snippet.</p>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
@@ -145,7 +145,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
       <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
     </ol>
-    <p><strong>Conceptual mechanism:</strong> Keep child work inside a bounded scope → Connect timeout and abandonment policy → Let cancellation reach cooperative waits → Wait for children and account for outcomes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
+    <p>Keep child work inside a bounded scope → Connect timeout and abandonment policy → Let cancellation reach cooperative waits → Wait for children and account for outcomes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
   </section>
 
   <section class="card common-mistakes">
@@ -170,14 +170,14 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
-      <p><strong>Senior follow-up:</strong> Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p><strong>Tomorrow, without notes:</strong> Explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p><strong>Mechanism checkpoint:</strong> Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
-        <p><strong>Worked answer criteria:</strong> Three named tasks bound this fan-out. AnyIO cancellation is cooperative and cleanup may outlast the nominal deadline; remote effects may already exist. The starter implements all-or-fail aggregation, not partial results or an explicit disconnect watcher. Never share one mutable database session among the children.</p>
-        <p><strong>Evidence to explain:</strong> Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p>
-        <p><strong>Depth check:</strong> A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
+        <p class="worked-answer">Three named tasks bound this fan-out. AnyIO cancellation is cooperative and cleanup may outlast the nominal deadline; remote effects may already exist. The starter implements all-or-fail aggregation, not partial results or an explicit disconnect watcher. Never share one mutable database session among the children.</p>
+        <p>Look for: Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
