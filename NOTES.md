@@ -191,6 +191,8 @@ Added reference/rfq-interview-mcqs.html: 28 single-best-answer questions with re
 
 ## Curriculum-wide MCQs — 2026-09-22
 
+History-audit follow-up: fixed the generator's escaped null-character example for lesson 0231, added a null-byte regression guard to the existing validator (not run), and expanded root ignore rules for secrets, dependencies, caches, databases and exported progress. Refreshed checklist counts, track counts and all per-lesson statuses to show 644 changed revisions without modifying historical sign-offs. Only generation and read-only inspection were performed; historical commits remain untouched.
+
 With explicit permission to run the lesson generator, regenerated all 644 lessons with 1,927 additional MCQs. Most are concept-matching and mechanism-reconstruction recall questions based on existing lesson content; two single-topic lessons have authored scenario questions. These are not 1,927 independently authored senior interview scenarios. Every title-derived term participates in a matching or scenario question; this does not imply assessment of every detail in starter code or linked extension guides.
 
 Teach shaped balanced option lengths, hidden answers, explanations for distractors and follow-up recall. Ponytail reused the lesson generator, native radio buttons and details; no quiz framework or dependency added. Clarified eight overlapping definitions so they can support meaningful distinctions. Manifest mcqCount and mcqUncoveredTerms expose generated coverage; no unresolved title-derived terms remain. Existing progress events and orientation semantics are unchanged.
