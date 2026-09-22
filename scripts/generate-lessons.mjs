@@ -6738,7 +6738,7 @@ import { fileURLToPath } from "node:url";
 const uploadRoot = resolve("/srv/uploads");
 
 function safePath(filename) {
-  if (typeof filename !== "string" || filename.includes("\0")) throw new TypeError("invalid filename");
+  if (typeof filename !== "string" || filename.includes("\\0")) throw new TypeError("invalid filename");
   const target = resolve(uploadRoot, filename);
   const fromRoot = relative(uploadRoot, target);
   if (fromRoot === "" || fromRoot.startsWith("..") || isAbsolute(fromRoot)) {

@@ -62,6 +62,7 @@ for (const [index, lesson] of manifest.lessons.entries()) {
   try {
     await access(absolutePath);
     const html = await readFile(absolutePath, "utf8");
+    if (html.includes("\0")) failures.push(`${lesson.id}: literal null byte in generated HTML; escape it in the generator`);
     const revision = createHash("sha256").update(html).digest("hex").slice(0, 12);
     if (lesson.revision !== revision) failures.push(`${lesson.id}: lesson revision does not match its content`);
     for (const fragment of requiredFragments) {
