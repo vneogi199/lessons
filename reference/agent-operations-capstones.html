@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agent operations and FDE capstones</title><style>:root{color-scheme:dark}body{background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui;margin:0}main{max-width:960px;margin:auto;padding:30px 24px}a,summary{color:#79e8ff}section{border:1px solid #3b526c;padding:24px;margin:24px 0;border-radius:8px}pre{overflow:auto;background:#101722;padding:18px;font-size:14px}summary{cursor:pointer}a:focus-visible,summary:focus-visible{outline:2px solid}h1,h2,h3{line-height:1.3}details{border-left:2px solid;padding:12px}@media print{:root{color-scheme:light}body,pre{background:white;color:black}a,summary{color:black}pre{white-space:pre-wrap}details::details-content{content-visibility:visible}}</style></head><body><main>
+<a href="../index.html">Curriculum</a><h1>Agent operations and FDE capstones</h1><p>These are implementation guides and interview exercises, not deployed products. SDK recipes require an existing approved environment. No packages, accounts or resources are created by reading this page. Attempt one section, compare the feedback, then explain the failure case from memory tomorrow. Ask your teacher about unclear tradeoffs.</p>
+<nav><a href="#advanced-langgraph">Graphs</a> · <a href="#managed-memory">Memory</a> · <a href="#gateway-routing">Gateways</a> · <a href="#evaluation-ops">Evaluation</a> · <a href="#trace-dashboard">Tracing</a> · <a href="#omniguard">OmniGuard</a> · <a href="#auditmesh">AuditMesh</a></nav>
+<section id="advanced-langgraph"><h2>Parallel work without conflicting state</h2><p>A router selects work; a supervisor coordinates specialists; a subgraph encapsulates a workflow. None automatically makes the result more accurate. Give each branch an owned result key and merge deltas, not entire stale state snapshots. A reducer must define what concurrent updates mean.</p>
+<pre><code data-python="offline">def merge(left, right):
+    result = dict(left)
+    for key, value in right.items():
+        if key in result and result[key] != value:
+            raise ValueError("conflicting branch result")
+        result[key] = value
+    return result
+
+assert merge({"policy": "ok"}, {"evidence": "missing"}) == {
+    "policy": "ok", "evidence": "missing"}
+assert merge({"a": 1}, {"a": 1}) == {"a": 1}
+try:
+    merge({"a": 1}, {"a": 2})
+except ValueError:
+    pass
+else:
+    raise AssertionError("conflict accepted")</code></pre>
+<p>In the following integration recipe, reuse merge above. The child runs two async nodes concurrently; its join waits for both. The parent routes denied requests directly to END. Real nodes must enforce authorization themselves as well.</p>
+<pre><code data-python="integration">from typing import Annotated, TypedDict
+from langgraph.graph import StateGraph, START, END
+
+class State(TypedDict):
+    allowed: bool
+    findings: Annotated[dict, merge]
+
+async def policy(state):
+    return {"findings": {"policy": "reviewed"}}
+
+async def evidence(state):
+    return {"findings": {"evidence": "missing signature"}}
+
+def joined(state):
+    return {}
+
+child = StateGraph(State)
+child.add_node("policy", policy)
+child.add_node("evidence", evidence)
+child.add_node("joined", joined)
+child.add_edge(START, "policy")
+child.add_edge(START, "evidence")
+child.add_edge(["policy", "evidence"], "joined")
+child.add_edge("joined", END)
+parent = StateGraph(State)
+parent.add_node("review", child.compile())
+parent.add_conditional_edges(START,
+    lambda state: "review" if state["allowed"] else END)
+parent.add_edge("review", END)
+graph = parent.compile()
+# In an async test: result = await graph.ainvoke(
+#     {"allowed": True, "findings": {}})
+# Assert both findings; repeat with allowed=False and expect none.</code></pre>
+<p>For dynamic map-reduce, send bounded work items to workers and reduce outputs by stable item ID. Cap concurrency and total work; async is not a rate limiter. Use a persistent checkpointer for recovery, tenant-scoped thread IDs and explicit approval interrupts. Resumed nodes may rerun: move effects behind durable idempotency records. A recursion limit stops graph transitions, not an already-running external request.</p>
+<p>Attempt: one child times out after the other finishes. Specify partial-result policy, retry ownership and approval behavior.</p><details><summary>Compare your answer</summary><p>Do not silently call the missing evidence a pass. Persist branch outcomes, retry only safe failed work within a deadline, and mark the review incomplete. Approval must bind to the final evidence version. Last-writer-wins would conceal conflicting findings.</p></details><p>Source: <a href="https://docs.langchain.com/oss/python/langgraph/use-subgraphs">LangGraph subgraphs</a> and <a href="https://docs.langchain.com/oss/python/langgraph/graph-api">graph API</a>.</p></section>
+<section id="managed-memory"><h2>Managed agents and trustworthy memory</h2><p>Short-term state belongs to a run; semantic memory stores reusable facts; episodic memory records a past event and outcome. Retrieval similarity is not truth or permission. Store tenant, owner, source, version, timestamp, expiry and deletion lineage alongside every memory. Verify access before ranking and again before returning evidence.</p><ol><li>Choose an approved Bedrock model and agent execution role. Restrict its permissions to required knowledge bases and action resources.</li><li>Create the agent with explicit instructions. Define action groups with precise schemas; use Lambda or return-control execution with server-side validation.</li><li>Attach a knowledge base only after reviewing source permissions, embedding/index configuration and ingestion outcomes. Test one allowed document and one forbidden document.</li><li>Prepare the agent, create a reviewed version/alias, then invoke the alias in an isolated test client. Record model, agent and corpus versions with the result.</li><li>Test missing evidence, stale memory, unavailable tools, approval denial and a malicious retrieved instruction. Inspect traces without exporting sensitive payloads.</li><li>Remove disposable resources and verify retained storage/logs and billing. Do not run this provisioning exercise without account authorization.</li></ol><p>Attempt: yesterday's memory says a customer is eligible, but today's policy changed. Compare keyword, semantic and recency filters on a fixed fixture.</p><details><summary>Compare your answer</summary><p>Recompute against the current authoritative policy. Keep the historical episode as an episode, not a current entitlement. Tombstones and version filters must also invalidate caches; a high vector score cannot revive deleted evidence.</p></details><p>Source: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/agents-create.html">Bedrock agent creation</a>. Continue with <a href="enterprise-ai-practice.html#episodic-memory">episodic-memory practice</a>.</p></section>
+<section id="gateway-routing"><h2>Provider gateways, retries and fallback policy</h2><p>LiteLLM and Portkey can centralize provider credentials and routing. Applications receive scoped gateway credentials, not every provider key. Assign project/model permissions, quotas and rotation ownership. A fallback must satisfy the same data-region, tool and structured-output requirements; a cheaper model is not automatically a compatible replacement.</p><ol><li>Register two approved deployments under stable aliases. Keep provider keys in the gateway's secret store.</li><li>Create a restricted client key and route a synthetic request. Confirm unauthorized aliases fail.</li><li>Configure one fallback, bounded retries and a total request deadline. Avoid multiplying SDK, gateway and worker retries.</li><li>Inject 429, timeout and invalid-schema responses. Honor Retry-After when feasible; use capped exponential backoff with jitter for retryable failures. Do not retry authorization errors.</li><li>Track every billed attempt and which route served the answer. Test key revocation and gateway failure. Treat budget alerts as alerts unless an independently tested admission check enforces a cap.</li></ol>
+<pre><code data-python="offline">def permitted_fallback(candidate, required_region, required_features):
+    return (candidate["region"] == required_region
+            and required_features &lt;= candidate["features"])
+
+primary_contract = {"tools", "json_schema"}
+assert permitted_fallback({"region": "eu", "features": primary_contract},
+                          "eu", primary_contract)
+assert not permitted_fallback({"region": "us", "features": primary_contract},
+                              "eu", primary_contract)
+assert not permitted_fallback({"region": "eu", "features": {"tools"}},
+                              "eu", primary_contract)</code></pre>
+<p>Attempt: the provider timed out after executing a charge tool. Should model fallback run the charge again?</p><details><summary>Compare your answer</summary><p>No. Recover the durable operation result using its idempotency key, or reconcile uncertain execution before resuming. Provider failover does not undo external effects. Preserve the approved payload hash across retries.</p></details><p>Sources: <a href="https://docs.litellm.ai/docs/proxy/virtual_keys">LiteLLM keys</a>, <a href="https://docs.litellm.ai/docs/proxy/reliability">fallbacks</a>, <a href="https://portkey.ai/docs/product/ai-gateway/fallbacks">Portkey fallbacks</a>.</p></section>
+<section id="evaluation-ops"><h2>Evaluation that can block a bad release</h2><p>Build a versioned dataset with question, permitted sources, reference answer, expected action or abstention, and slice labels. Generate candidate questions from source documents, then have a reviewer check answerability and citations. Split by document family before generation to avoid near-duplicate leakage. Include unanswerable, conflicting, stale and forbidden-document questions.</p><p>RAGAS faithfulness assesses whether response claims are supported by retrieved evidence; answer relevance assesses responsiveness. Context precision concerns relevant retrieval placement, while context recall concerns reference evidence coverage. These are different failure signals, not interchangeable accuracy percentages. Select the reference-based or reference-free variant deliberately and record judge/embedding versions.</p><ol><li>Run baseline and candidate on identical held-out questions and permissions. Save raw outcomes with dataset, prompt, index and model revision.</li><li>Score deterministic constraints first: schema validity, exact normalized fields, tool arguments, authorization violations and citations.</li><li>Apply a calibrated judge rubric to semantic quality. Blind model identity, define supported/partial/unsupported examples, review disagreements and repeat noisy scores.</li><li>Compare paired differences, failure slices and uncertainty, not just averages. Set acceptance thresholds before inspecting candidate scores.</li><li>Publish a CI artifact with counts, errors, latency and cost. A missing score is not a zero-quality answer or an invisible row: report evaluation coverage separately.</li></ol>
+<pre><code data-python="offline">def release_gate(rows):
+    if not rows or any(row["score"] is None for row in rows):
+        return False
+    return (all(not row["permission_leak"] for row in rows)
+            and sum(row["score"] for row in rows) / len(rows) &gt;= 0.8)
+
+assert release_gate([{"score": 0.9, "permission_leak": False}])
+assert not release_gate([{"score": None, "permission_leak": False}])
+assert not release_gate([{"score": 1.0, "permission_leak": True}])
+# Illustrative gate, not a statistically sufficient production release policy.</code></pre>
+<p>Attempt: relevance improves while faithfulness drops. Identify which pipeline stage to inspect first.</p><details><summary>Compare your answer</summary><p>Inspect retrieved evidence and generated claims together. Better topical retrieval can still supply contradictory or insufficient evidence; generation may also invent unsupported details. Add claim-level examples before changing the judge threshold.</p></details><p>Sources: <a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/">RAGAS metrics</a>, <a href="https://docs.ragas.io/en/stable/getstarted/rag_testset_generation/">synthetic testsets</a>. Use the <a href="enterprise-ai-practice.html#ragas">RAGAS recipe</a> in an approved environment.</p></section>
+<section id="trace-dashboard"><h2>Trace the request, not private reasoning</h2><p>Create a root request span with children for retrieval, reranking, model attempts, tools and approvals. Record versions, safe operation IDs, outcomes and durations. Propagate trace context across queues and async work. Do not log hidden chain-of-thought, keys, raw PII or unrestricted tool payloads. Use redacted inputs and observable decisions to debug behavior.</p>
+<pre><code data-python="integration">from opentelemetry import trace
+tracer = trace.get_tracer("curriculum.agent")
+
+async def traced_lookup(lookup, query, scope):
+    # Configure the SDK/exporter once in the service, not per request.
+    with tracer.start_as_current_span("retrieval") as span:
+        span.set_attribute("app.retrieval.version", "fixture-v1")
+        rows = await lookup(query, scope)
+        span.set_attribute("app.retrieval.count", len(rows))
+        return rows</code></pre>
+<p>Build panels for request success, p50/p95 end-to-end latency, time to first token, retrieval latency, tool failures, evaluation drift, tokens and cost per successful task. Count retries and failed attempts. Calculate cost using provider-reported usage and a versioned rate table, distinguishing cached tokens and other billed modalities. Parallel span durations do not sum to wall-clock latency.</p><p>Use pseudonymous session IDs in access-controlled traces, not high-cardinality metric labels. Track completion and repeat failure by session with retention limits. Export redacted traces via an approved collector; turn reviewed failures into evaluation cases with consent and lineage. Sampling can hide rare failures, so reconcile dashboard totals against unsampled request counters.</p><p>Attempt: a cheap model halves per-call cost but doubles retries and increases abandonment.</p><details><summary>Compare your answer</summary><p>Compare cost per successful user task, including retries, tool work and human handling. Report abandonment separately; dividing only by completed calls hides the product regression. Alert on a service objective with a runbook, not every noisy span.</p></details><p>Source: <a href="https://opentelemetry.io/docs/languages/python/instrumentation/">OpenTelemetry Python instrumentation</a>.</p></section>
+<section id="omniguard"><h2>OmniGuard: secure AI integration capstone</h2><p>Deliver a bounded internal assistant that answers policy questions with citations and retrieves approved financial totals through parameterized SQL Server templates. It must abstain when evidence or permission is missing. This is a build brief; no application or cloud deployment is supplied by the curriculum.</p><ol><li><strong>Discovery:</strong> interview a business owner, security reviewer and operator. Record the current workflow, data owners, volume, pain points, prohibited actions and acceptance authority. Classify public/internal/confidential/restricted fields and allowed processing regions.</li><li><strong>Statement of work:</strong> specify one corpus, one SQL view, two user roles and a read-only MVP. Exclude arbitrary SQL, autonomous writes and unsupported formats. List dependencies, retention, deletion, availability assumptions and change control.</li><li><strong>Architecture:</strong> verified OAuth identity → server-side RBAC → Presidio/NeMo controls → permission-filtered hybrid retrieval or typed SQL intent → grounded response. Guardrails supplement authorization; they do not replace it. Use <a href="enterprise-security-labs.html#enterprise-sql">SQL boundaries</a> and <a href="enterprise-security-labs.html#presidio">PII practice</a>.</li><li><strong>Build:</strong> implement the <a href="api-cloud-delivery-labs.html#python-api-llm">FastAPI request lifecycle</a>, replace the mock identity with verified identity, add approved source connectors and denial fixtures, then containerize. Use the <a href="api-cloud-delivery-labs.html#ecs-delivery">delivery checklist</a> only in an authorized account.</li><li><strong>UAT:</strong> the business reviewer submits an answerable policy question and verifies citations; a restricted user repeats it and must receive no restricted content; the data owner checks an exact SQL total; an operator injects provider failure and confirms safe error handling. Record expected/actual, evidence, owner and signoff for each case.</li><li><strong>Executive review:</strong> estimate annual benefit as eligible task volume × measured time saved × loaded hourly cost, minus operating/support/change costs. Show adoption assumptions and sensitivity. Present residual risk and incident ownership to the CISO rather than claiming zero leakage from a small test.</li></ol><p>Deliver discovery notes, data-flow diagram, SOW, threat model, source inventory, reproducible test dataset, UAT runbook, Docker configuration, release/rollback checklist and a cost worksheet. Demonstrate a denied request and a failed dependency before the happy path.</p><details><summary>Interview review</summary><p>If asked why this is not an unrestricted agent, explain that the MVP's value is read-only verified answers. Measured demand and a separately approved control design would justify write capabilities. A signed UAT document does not certify regulatory compliance.</p></details></section>
+<section id="auditmesh"><h2>AuditMesh: multi-agent compliance workflow</h2><p>Map five manual steps: gather evidence → map controls → assess gaps → obtain approval → create a ticket and report. Measure handling time and waiting time separately. A model suggests findings; an authorized reviewer owns the compliance decision.</p><ol><li>Build a LangGraph supervisor with separate evidence and policy workers, a deterministic join, an approval interrupt and a ticketing node. Use the <a href="#advanced-langgraph">conflict-safe graph</a>; do not let the critic's opinion become proof.</li><li>Define a custom MCP server exposing one narrow Jira action: create an approved gap ticket with project allowlist, bounded text and durable operation ID. The host owns user consent; its client connects to the server; the server verifies token audience/scopes and enforces resource permissions. Never accept arbitrary upstream URLs or pass client tokens blindly downstream.</li><li>Persist the proposed payload and its hash before presenting approval. The server verifies reviewer role, tenant, expiry and unchanged payload, then atomically marks the operation approved. On retries, reuse the operation ID and reconcile uncertain Jira creation.</li><li>Build a Streamlit or Gradio approval screen backed by this service. Display evidence, proposed action, destination and consequences. Browser state is not authorization. Reject stale approvals and changed payloads.</li><li>Define an illustrative interactive p95 target of 8 seconds excluding human waiting; allocate retrieval/model/tool time and measure under load. Set token and dollar budgets per task, cap loops, and stop queued work through a tested kill switch.</li><li>Hand off dashboards, on-call ownership, escalation rules, revoked-access procedure, retention policy and replay instructions. Train operators with duplicate-ticket, stale-approval, leaked-secret and unavailable-Jira tabletop drills.</li></ol>
+<pre><code data-python="integration">import streamlit as st
+
+def approval_ui(backend, operation_id):
+    # backend uses the authenticated server session; no client-supplied actor.
+    pending = backend.get_pending(operation_id)
+    st.json(pending["display_payload"])
+    with st.form("approve_operation"):
+        confirmed = st.checkbox("I reviewed the evidence and destination")
+        submitted = st.form_submit_button("Approve this exact operation")
+    if submitted and confirmed:
+        # Backend checks role, tenant, expiry, payload hash and replay atomically.
+        backend.approve(operation_id, expected_hash=pending["payload_hash"])
+        st.success("Approval recorded; check execution status separately.")</code></pre>
+<p>The backend methods above are a contract to implement, not a supplied secure service. Add authenticated session handling, CSRF protection appropriate to the hosting setup, authorization and durable operation storage before real use. Approval is distinct from successful Jira execution.</p><p>Deliver a five-step process map, graph/state diagram, MCP trust-boundary diagram, approval UI, failure tests, token/cost/trace dashboard and operator training script. UAT must include a denied reviewer, duplicate callback, changed payload, tool timeout and kill-switch activation.</p><details><summary>Interview review</summary><p>A supervisor reduces coordination work, not accountability. Separate evidence collection from decisions and external effects. If two agents disagree, preserve provenance and route for review instead of voting a compliance assertion into existence.</p></details><p>Sources: <a href="https://modelcontextprotocol.io/docs/learn/architecture">MCP architecture</a>, <a href="https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices">MCP security</a>, <a href="https://docs.streamlit.io/develop/api-reference/execution-flow/st.form">Streamlit forms</a>.</p></section>
+</main></body></html>

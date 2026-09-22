@@ -1,5 +1,121 @@
 # Individual content review evidence
 
+## 0289 · Asyncio/thread-pool integration extension, 2026-09-20
+
+Reviewed to_thread versus explicit run_in_executor, context copying, worker error propagation, cancellation of an already-running thread and thread-safe loop notification. The extracted stdlib example verifies copied context, ValueError at await and worker completion after Future cancellation. Pool ownership/shutdown occurs outside the loop; dependency deadlines and overload accounting remain explicit design obligations. Parent lesson changes only by its extension link.
+
+## 0291 · Executor selection and lifetime extension, 2026-09-20
+
+Reviewed the same shared integration extension, emphasizing bounded admission versus max_workers, cancellation releasing capacity too early, blocking library deadlines, nested-pool deadlocks and conventional-GIL CPU tradeoffs. No network, SDK or production capacity test is claimed. Parent lesson changes only by its extension link.
+
+## 0508 · Linux user/group practice extension, 2026-09-20
+
+Reviewed preflight identity/path inspection, append versus replace supplementary groups, process credential refresh, dedicated service identities, ownership, 0640/2750 modes, umask and positive/negative access tests. Commands are explicitly isolated-VM recipes; Bash syntax only is checked, never executed. Stdlib arithmetic tests cover masks and owner/group/other class selection, explicitly excluding ACLs/capabilities/root/path checks. No system accounts, permissions or services changed. Parent lesson changes only by its extension link.
+
+## 0342 · Gunicorn/Uvicorn extension, 2026-09-20
+
+Reviewed protocol versus process-manager roles, release-dependent native ASGI support, pool/memory multiplication, streaming and graceful shutdown. Commands are provisioned exercises, not executed deployments. Existing lesson changes only by an extension link.
+
+## 0416 · SAML extension, 2026-09-20
+
+Reviewed federation validation versus application authorization, replay/request correlation, trusted keys, XML signature pitfalls and document revocation. OWASP-backed rejection exercise uses no homemade cryptographic validator. No identity-provider integration executed; link-only parent change.
+
+## 0586 · vLLM extension, 2026-09-20
+
+Reviewed model/API compatibility boundaries, prefill/decode, weight-memory lower bound versus total memory, capacity experiments, privacy and operating cost. No model download, GPU or serving run; link-only parent change.
+
+## 0587 · CoT terminology extension, 2026-09-20
+
+Reviewed explicit chain-of-thought terminology against the original paper and current official reasoning guidance. Distinguishes explanations from private reasoning and observable evidence; deterministic arithmetic feedback, no model evaluation claimed. Link-only parent change.
+
+## 0594 · RAG extension, 2026-09-20
+
+Reviewed offline/online paths, ingestion versus retrieval versus context versus generation failures, source lineage and permission revocation. Original worked case and delayed-recall task; no retrieval service invoked. Link-only parent change.
+
+## 0595 · Parent–child retrieval and ETL/ELT extensions, 2026-09-20
+
+Reviewed parent expansion, ACL/version checks, deduplication and context-budget tradeoffs. Offline assertions reject stale/missing/cross-tenant parents. ETL/ELT includes transformation placement, source revisions, tombstones, replay and deletion propagation; offline assertions prevent late resurrection. Fixtures explicitly omit distributed storage and real authorization. Existing PDF link preserved.
+
+## 0597 · RAGAS extension, 2026-09-20
+
+Reviewed required evaluation fields, faithfulness versus correctness, context recall, judge calibration, error coverage and held-out slices. Ragas recipe is parsed only; no judge/model calls or numerical quality claims. Link-only parent change.
+
+## 0598 · PageIndex-style extension, 2026-09-20
+
+Reviewed tree navigation, original-page evidence, cross-branch recovery, permissions, version invalidation and fair hybrid-retrieval comparison. Tree exercise has worked feedback; no PageIndex runtime or benchmark executed. Earlier Self-RAG and active-web-search links preserved.
+
+## 0599 · Pinecone extension, 2026-09-20
+
+Reviewed index contract, dimensions, namespace scope, metadata filtering, eventual visibility and stale-chunk cleanup. Synthetic two-dimensional SDK recipe is syntax-checked, not executed. Existing Chroma link preserved; no cloud records written.
+
+## 0603 · OpenAI and Claude Agent SDK extensions, 2026-09-20
+
+Reviewed OpenAI Agent/Runner/tool recipe, task-outcome checks and timeout/remote-effect boundary. Claude exercise explicitly distinguishes pre-approval from exclusive tool exposure and service enforcement from runtime callbacks. Official docs checked; SDK snippet parsed only, permission attacks described for an isolated provisioned lab. Link-only parent change.
+
+## 0604 · Episodic-memory extension, 2026-09-20
+
+Reviewed semantic/procedural/episodic distinction, verified outcomes including failures, expiry/version/tenant eligibility and source invalidation. Offline filter asserts stale, unverified and cross-tenant exclusions while preserving a verified failed attempt. No semantic quality or actual access-control certification. Existing DuckDB link preserved.
+
+## 0610 · Deep Agents extension, 2026-09-20
+
+Reviewed planning/delegation versus authorization, built-in capability inventory, default subagents and comparative evaluation. Construction recipe syntax-checked only; no model/runtime started. Existing CrewAI link preserved.
+
+## 0611 · Kill-switch extension, 2026-09-20
+
+Reviewed generation fencing, queued work after resume, check-to-effect races, receiver-side evidence and irreversible committed effects. Sequential fixture rejects stale jobs before and after resume. Distributed-stop drill remains unexecuted; fixture is explicitly not a distributed implementation. Link-only parent change.
+
+## 0001 · Linux terminal extension, 2026-09-20
+
+Reviewed navigation, inspection, quoting, stream/redirection semantics, exit codes, pipefail, process signals and permission cautions against Ubuntu and Bash primary documentation. The extracted read-only Bash fixture verifies a space-containing value, two matching log lines and failure propagation; no network/file writes. File mutation, SSH and process termination examples are explanatory only, not executed. Platform-specific Linux behavior is not certified by the macOS-hosted Bash check. Existing lesson changed only by its extension link.
+
+## 0285 · Pandas deep dive, 2026-09-20
+
+Reviewed nine sequential examples against current primary Pandas docs: explicit nullable dtypes/CSV IDs, label alignment, single-step assignment, missing-value rejection counts, many-to-one merge validation, known totals versus row counts, transform, reshape, UTC/resampling/windows and typed frame comparison. Manually derived regional totals 375/500, duplicate-join total 1,250, two-day daily totals 375/750 and weighted chunk mean 90 versus incorrect 75. The examples include declared output dtypes and negative join tests. All blocks parse, but Pandas is absent and no runtime pass is claimed. Added --run-pandas for future execution in an already provisioned environment. Existing standard-library lesson is preserved and links to this extension.
+
+## 0595 · Brief PDF-processing extension, 2026-09-20
+
+Reviewed extractable text versus images/OCR, layout/table failures, source/page/version provenance and isolated worker resource limits using pypdf's primary extraction documentation. Adapter rejects encrypted/over-page-limit documents and flags empty text without claiming that nonempty text is correct. It is syntax-checked only; no pypdf installation, PDF parsing or OCR execution. The brief exercise includes text, scanned and multi-column examples for future manual comparison. Existing ingestion content is unchanged beyond the new link.
+
+These extensions use Teach's attempt/feedback/recall pattern without recording learner mastery. scripts/check-data-preparation.py checks three links, parses ten Python blocks and runs the read-only Bash fixture. All 644 lessons validate; 9,474 local URLs resolve at root and two deployment subpaths. SDK/runtime, browser rendering and deployment remain unverified. Revision pins reflect the manually reviewed link additions, not automated promotion of unreviewed content.
+
+## 0396 · MongoDB extension, 2026-09-19
+
+Reviewed the new link and MongoDB section against official modeling/BSON/index/aggregation/transaction/replication/sharding/change-stream docs. Checked fixture total 375, compound equality/sort index, conditional version update, transaction callback side-effect warning, replica-versus-shard distinction and effect-before-checkpoint reasoning. Offline replay fixture passes; mongosh commands, query plans, replica failover and CDC integration remain unexecuted. Existing lesson content is unchanged.
+
+## 0588 · Pydantic AI extension, 2026-09-19
+
+Reviewed runtime dependency identity versus model-controlled arguments, output validation versus semantic authorization, TestModel's limits and request blocking against official docs. Python recipe parses, but SDK behavior has not been executed. Worked checkpoint rejects another tenant's validly shaped evidence ID. Existing lesson content is unchanged except its extension card.
+
+## 0596 · HyDE extension, 2026-09-19
+
+Reviewed the distinction between invented retrieval representations and source evidence against the HyDE paper. Cosine fixture demonstrates drift, not measured model quality; assertions pass. Checked held-out comparison procedure and 14/20 versus 16/20 arithmetic, including five gained/three lost cases. Preserved the earlier cross-encoder extension and its verification limits.
+
+## 0598 · Self-RAG and active-search extensions, 2026-09-19
+
+Reviewed trained reflection-token method versus prompted critique using the authors' paper/site; the bounded-controller fixture passes and is explicitly not a reproduction. Search exercise checks source/effective-date differences, unsupported citations, prompt injection and transport-versus-answer success. OWASP sources ground DNS/redirect/egress and tool-permission boundaries. No network adapter or model evaluation was executed.
+
+## 0599 · ChromaDB extension, 2026-09-19
+
+Reviewed explicit-embedding persistence/query recipe against official client/collection/query docs, including no default embedding model, model-space compatibility and authenticated filtering. Syntax checks pass. Expected tenant-isolation/reopen/dimension-error integration checks are specified, not reported as executed. Stale-chunk retirement, rollback and recovery tradeoffs are covered.
+
+## 0602 · Neo4j, GraphRAG, KAG and LightRAG extensions, 2026-09-19
+
+Reviewed Cypher identity constraints, parameter binding, plan inspection and source-carrying edges; graph framework distinctions against Neo4j, Microsoft GraphRAG, OpenSPG and LightRAG primary docs. Verified the two-hop evidence join and three-valued fictional eligibility oracle with stdlib assertions. LightRAG comparison includes entity collision, no-answer and source deletion checks; it is an integration specification, not an executed deployment. No universal performance or groundedness guarantee is claimed.
+
+## 0604 · DuckDB extension, 2026-09-19
+
+Reviewed the adapter's owned SQL, bound values, trusted tenant/path, read-only snapshot and disabled external access against the official DB API/security docs. Syntax check passes; no DuckDB connection or query was run. Discusses typed file ingestion, monetary units, resource isolation and why read-only/SELECT checks are insufficient. Existing lesson content is unchanged apart from its extension card.
+
+## 0610 · CrewAI extension, 2026-09-19
+
+Reviewed the two-worker recipe against current official agents/tasks docs. Explicit model configuration, narrow read-only tool, bounded iterations, disabled delegation/memory and task context are source-reviewed and syntax-checked, not SDK-executed. Added whole-run budgets, memory scoping, redacted tracing, single-agent comparison and a worked delegation decision.
+
+All 12 extensions include practice, failure cases, revealed interview feedback and delayed recall. Five offline fixtures pass via scripts/check-ai-data-extensions.py; four Python integration recipes receive AST checks only. All 644 generated lessons validate and 9,453 local links resolve at root and two GitHub Pages subpaths. The complete content-review command reports 644 recorded, zero pending and zero changed revisions; the existing cross-encoder and TypeScript checks also pass. Existing unrelated edits are preserved. No installation, provider/database execution or deployment; browser rendering and framework compatibility remain unverified. Revision updates are manual delta sign-offs, not automatic promotions from structural checks.
+
+## 0596 · Cross-encoder extension, 2026-09-19
+
+Added a linked deep dive covering pair scoring, bi-encoder comparison, logits, truncation, batching, candidate limits, latency/cost arithmetic, fallback, and held-out retrieval evaluation. Reviewed against official Sentence Transformers usage and evaluator documentation, including the always_rerank_positives evaluation pitfall. The offline Python fixture checks improved and degraded reciprocal rank, unchanged precision, missing candidates, ties, empty inputs and malformed scores. Catalog and local-link checks pass. The real-model adapter is an exercise for an existing environment; no model, package installation or live inference was run. Teach supplies prediction, revealed feedback and delayed recall; Ponytail reuses lesson 0596 without renumbering the catalog.
+
 Readability-only recheck, 2026-09-14, all 0001–0644: removed repeated paragraph prefixes such as “What it means,” “How they connect,” “Mechanism checkpoint,” “Worked answer criteria” and other template labels. Definitions now follow their topic heading directly. Useful headings, all substantive explanations, code, diagrams, scope warnings and interview criteria remain. Delayed recall is a natural sentence; evidence prompts retain “Look for” so lists retain context. Compared each generated page's fingerprint against the exact expected presentation transformation of its previously reviewed page: 644 matched, zero unexpected changes. Updated revision pins without claiming a new technical or learner assessment. Definition/checkpoint validators now inspect semantic classes rather than requiring reader-visible labels. Content audit, catalog validation and 9,372 local links pass; no installations or live deployment.
 
 AI and interview lessons 0577–0644 individually reviewed 2026-09-14: all starters, effective definitions, diagrams and specific practice/interview prompts inspected; 68 worked checkpoints added. Local content/catalog/link checks and TypeScript checks passed, including 26 selected TypeScript lesson snippets and 17 additional design/service/stream snippets. Fixed cursor full-string validation, malformed tool/decision inputs, Qdrant delete endpoint, missing embedding-model predicate and sparse numeric arrays. No packages, model calls, SQL/extensions, clusters, deployment or public profile/outreach actions ran. Framework, provider and browser integration remain unverified. Teach supplied prediction, worked feedback and delayed changed-prompt recall; these authoring sign-offs are not learner mastery.
@@ -2578,3 +2694,134 @@ Bits: Single Number, Missing Number, Sum of Two Integers, Bitwise AND of Numbers
 ## 0050 · DSA question coverage
 
 Interview core: Two Sum, LRU Cache, Design Add and Search Words Data Structure, Number of Islands, Course Schedule, Merge Intervals. Questions were selected to exercise the lesson's core pattern and senior-level explanation of constraints, invariants, complexity and tradeoffs.
+# Syllabus extension review addendum
+
+## 2026-09-21 · Syllabus extension delta review
+
+Reviewed the added lesson links and reference teaching boundaries: mock versus integration, permission enforcement versus model judgment, replay versus effects, and coverage versus deployed applications. Corrected the context-window arithmetic fixture and malformed Slack timestamp handling. Reused the existing extension renderer and HTML parser; no dependencies added.
+
+## 0267 · Syllabus extension review
+
+Python basics through a validated LLM API (`reference/api-cloud-delivery-labs.html#python-api-llm`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0296 · Syllabus extension review
+
+Fixtures, mocking, coverage and IDE debugging (`reference/api-cloud-delivery-labs.html#developer-workflow`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0303 · Syllabus extension review
+
+Routes, models, errors, secrets and background tasks (`reference/api-cloud-delivery-labs.html#python-api-llm`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0327 · Syllabus extension review
+
+Entra groups and retrieval authorization (`reference/enterprise-security-labs.html#entra-rbac`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0337 · Syllabus extension review
+
+GraphQL schemas, resolvers and N+1 batching (`reference/api-cloud-delivery-labs.html#graphql`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0343 · Syllabus extension review
+
+Path and header API versioning (`reference/api-cloud-delivery-labs.html#versioning`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0470 · Syllabus extension review
+
+Slack, Teams and Jira integration (`reference/enterprise-security-labs.html#collaboration-connectors`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0491 · Syllabus extension review
+
+Containers, ECS and GitHub Actions delivery (`reference/api-cloud-delivery-labs.html#ecs-delivery`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0504 · Syllabus extension review
+
+Billing console and budget thresholds (`reference/api-cloud-delivery-labs.html#billing`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0505 · Syllabus extension review
+
+Bedrock guardrail configuration (`reference/enterprise-security-labs.html#bedrock-guardrails`); Managed agents, knowledge bases and memory (`reference/agent-operations-capstones.html#managed-memory`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0506 · Syllabus extension review
+
+Provisioning walkthrough and least privilege (`reference/api-cloud-delivery-labs.html#aws-provisioning`); OmniGuard secure integration capstone (`reference/agent-operations-capstones.html#omniguard`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0586 · Syllabus extension review
+
+CLIP, ColPali and visual retrieval (`reference/retrieval-document-labs.html#visual-retrieval`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0587 · Syllabus extension review
+
+Token budgets, sliding windows and compression (`reference/retrieval-document-labs.html#context-budget`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0588 · Syllabus extension review
+
+Nested schemas, discriminated unions and validation (`reference/retrieval-document-labs.html#typed-output`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0589 · Syllabus extension review
+
+Validated parallel tools and result history (`reference/retrieval-document-labs.html#parallel-tools`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0594 · Syllabus extension review
+
+BM25, dense retrieval and reciprocal rank fusion (`reference/retrieval-document-labs.html#hybrid-implementation`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0595 · Syllabus extension review
+
+OCR, tables, charts and page coordinates (`reference/retrieval-document-labs.html#document-layout`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0596 · Syllabus extension review
+
+Reranker API integration and safe fallback (`reference/retrieval-document-labs.html#reranker-api`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0602 · Syllabus extension review
+
+Graph modeling, AuraDB and Neptune (`reference/retrieval-document-labs.html#graph-modeling`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0604 · Syllabus extension review
+
+WSDL, Zeep and safe SOAP boundaries (`reference/enterprise-security-labs.html#soap`); SQL Server, Oracle and constrained Text-to-SQL (`reference/enterprise-security-labs.html#enterprise-sql`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0606 · Syllabus extension review
+
+Subgraphs, async branches and conflict-safe reduction (`reference/agent-operations-capstones.html#advanced-langgraph`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0610 · Syllabus extension review
+
+AuditMesh multi-agent compliance capstone (`reference/agent-operations-capstones.html#auditmesh`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0611 · Syllabus extension review
+
+LiteLLM, Portkey and bounded failover (`reference/agent-operations-capstones.html#gateway-routing`); Span-level traces, sessions and cost dashboards (`reference/agent-operations-capstones.html#trace-dashboard`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0612 · Syllabus extension review
+
+Synthetic datasets, judges and release gates (`reference/agent-operations-capstones.html#evaluation-ops`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0615 · Syllabus extension review
+
+NeMo, Colang and guardrail testing (`reference/enterprise-security-labs.html#nemo`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+
+## 0617 · Syllabus extension review
+
+PII detection, redaction and scoped reversal (`reference/enterprise-security-labs.html#presidio`). Reviewed the linked content delta and its stated prerequisites/failure exercises; SDK/cloud execution remains unverified.
+## 0285 · Numerical-data extension review — 2026-09-21
+
+Reviewed six added links and their reference content: array shape/axis contracts, view versus copy ownership, broadcasting versus np.vectorize, masked divide output initialization, zero-vector cosine behavior, peak-memory versus kernel timing, temporal leakage and as-of availability, Polars null/order/cardinality and lazy/streaming limits, and SQL null aggregation parity. Examples use synthetic data and assertions. NumPy/Pandas/Polars are not installed in the checked interpreter; their examples are syntax-only. The SQLite semantic oracle executes locally and is explicitly not PostgreSQL performance evidence.
+## 0168 · AI Engineer extension delta review — 2026-09-21
+
+Reviewed the added reference link and original teaching content: code validation is distinguished from effect execution, synthetic benchmark arithmetic from measured provider evidence, project briefs from delivered apps, and adaptation from current knowledge retrieval. Exercises contain assertions, failure cases and explicit remaining integration requirements. Existing lesson body preserved; three new stdlib fixtures pass.
+
+## 0602 · AI Engineer extension delta review — 2026-09-21
+
+Reviewed the added reference link and original teaching content: code validation is distinguished from effect execution, synthetic benchmark arithmetic from measured provider evidence, project briefs from delivered apps, and adaptation from current knowledge retrieval. Exercises contain assertions, failure cases and explicit remaining integration requirements. Existing lesson body preserved; three new stdlib fixtures pass.
+
+## 0606 · AI Engineer extension delta review — 2026-09-21
+
+Reviewed the added reference link and original teaching content: code validation is distinguished from effect execution, synthetic benchmark arithmetic from measured provider evidence, project briefs from delivered apps, and adaptation from current knowledge retrieval. Exercises contain assertions, failure cases and explicit remaining integration requirements. Existing lesson body preserved; three new stdlib fixtures pass.
+
+## 0614 · AI Engineer extension delta review — 2026-09-21
+
+Reviewed the added reference link and original teaching content: code validation is distinguished from effect execution, synthetic benchmark arithmetic from measured provider evidence, project briefs from delivered apps, and adaptation from current knowledge retrieval. Exercises contain assertions, failure cases and explicit remaining integration requirements. Existing lesson body preserved; three new stdlib fixtures pass.
+
+## 0620 · AI Engineer extension delta review — 2026-09-21
+
+Reviewed the added reference link and original teaching content: code validation is distinguished from effect execution, synthetic benchmark arithmetic from measured provider evidence, project briefs from delivered apps, and adaptation from current knowledge retrieval. Exercises contain assertions, failure cases and explicit remaining integration requirements. Existing lesson body preserved; three new stdlib fixtures pass.

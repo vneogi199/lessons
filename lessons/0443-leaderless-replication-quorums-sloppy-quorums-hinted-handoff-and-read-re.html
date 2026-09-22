@@ -187,6 +187,50 @@ console.assert(overlap(quorumWrite, quorumRead).length === 0);
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] temporarily stores updates intended for unavailable replicas and forwards them later.</li><li>[concept] sends reads and writes to multiple replicas and resolves versioned responses without a permanent write leader.</li><li>[concept] require intersecting participant sets under a protocol; simple count formulas alone do not prove linearizability.</li><li>[concept] may use temporary substitute nodes, affecting intersection and consistency assumptions.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Leaderless replication: 2; quorums: 4; sloppy quorums: 3; hinted handoff: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Leaderless replication: 2; quorums: 1; sloppy quorums: 3; hinted handoff: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Leaderless replication: 3; quorums: 2; sloppy quorums: 4; hinted handoff: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Leaderless replication: 2; quorums: 3; sloppy quorums: 4; hinted handoff: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Leaderless replication: 2; quorums: 3; sloppy quorums: 4; hinted handoff: 1</p>
+        <ul><li>A. “quorums” matches explanation 3, not 4. “sloppy quorums” matches explanation 4, not 3.</li><li>B. “quorums” matches explanation 3, not 1. “sloppy quorums” matches explanation 4, not 3. “hinted handoff” matches explanation 1, not 4.</li><li>C. “Leaderless replication” matches explanation 2, not 3. “quorums” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Leaderless replication: Leaderless replication sends reads and writes to multiple replicas and resolves versioned responses without a permanent write leader.</p><p>quorums: Quorums require intersecting participant sets under a protocol; simple count formulas alone do not prove linearizability.</p><p>sloppy quorums: Sloppy quorums may use temporary substitute nodes, affecting intersection and consistency assumptions.</p><p>hinted handoff: Hinted handoff temporarily stores updates intended for unavailable replicas and forwards them later.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] reconciles divergent replica data discovered during reads, under the system&#39;s conflict rules.</li><li>[concept] temporarily stores updates intended for unavailable replicas and forwards them later.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. hinted handoff: 1; read repair: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. hinted handoff: 2; read repair: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> hinted handoff: 2; read repair: 1</p>
+        <ul><li>A. “hinted handoff” matches explanation 2, not 1. “read repair” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>hinted handoff: Hinted handoff temporarily stores updates intended for unavailable replicas and forwards them later.</p><p>read repair: Read repair reconciles divergent replica data discovered during reads, under the system&#39;s conflict rules.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Leaders or quorums coordinate versions: Log position, acknowledgements, causal metadata, and topology govern visibility.</li><li>Lag, conflict, or partition intervenes: Some nodes respond, reject, diverge, or remain uncertain according to policy.</li><li>Read, repair, failover, or merge completes: History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</li><li>Operation targets replicated state: Required consistency, session token, version, and deadline define acceptable outcomes.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Lag, conflict, or partition intervenes”, not “Read, repair, failover, or merge completes”.</li><li>C. At position 2, the trace uses “Leaders or quorums coordinate versions”, not “Lag, conflict, or partition intervenes”.</li><li>D. At position 2, the trace uses “Leaders or quorums coordinate versions”, not “Read, repair, failover, or merge completes”.</li></ul>
+        <p>Operation targets replicated state: Required consistency, session token, version, and deadline define acceptable outcomes.</p><p>Leaders or quorums coordinate versions: Log position, acknowledgements, causal metadata, and topology govern visibility.</p><p>Lag, conflict, or partition intervenes: Some nodes respond, reject, diverge, or remain uncertain according to policy.</p><p>Read, repair, failover, or merge completes: History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</p>
+        <p>Partition one replica group immediately after a write acknowledgement, then read from every side. Evidence to inspect: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
+      </details>
+    </article>
+    <p><a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noreferrer">Review the lesson source: Dynamo: version reconciliation, quorum-like replication and partitioning</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

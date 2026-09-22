@@ -70,7 +70,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0001 · Terminal, processes, files, permissions, environment variables, signals, and exit codes](lessons/0001-terminal-processes-files-permissions-environment-variables-signals-and-e.html) | Recorded pass | [2026-09-11](REVIEW-EVIDENCE.md) |
+| [0001 · Terminal, processes, files, permissions, environment variables, signals, and exit codes](lessons/0001-terminal-processes-files-permissions-environment-variables-signals-and-e.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0002 · Git object model and collaborative workflows](lessons/0002-git-object-model-and-collaborative-workflows.html) | Recorded pass | [2026-09-11](REVIEW-EVIDENCE.md) |
 | [0003 · Dependency management and reproducible environments](lessons/0003-dependency-management-and-reproducible-environments.html) | Recorded pass | [2026-09-11](REVIEW-EVIDENCE.md) |
 | [0004 · Debugging as hypothesis testing](lessons/0004-debugging-as-hypothesis-testing.html) | Recorded pass | [2026-09-11](REVIEW-EVIDENCE.md) |
@@ -272,7 +272,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0165 · Compiler API, AST traversal, symbols, types, transforms, language service, and tooling](lessons/0165-compiler-api-ast-traversal-symbols-types-transforms-language-service-and.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
 | [0166 · Type-checker performance, extendedDiagnostics, generateTrace, instantiation depth, project size, and editor latency](lessons/0166-type-checker-performance-extendeddiagnostics-generatetrace-instantiation.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
 | [0167 · TypeScript upgrades, release notes, deprecations, strictness migration, dependency types, and compatibility](lessons/0167-typescript-upgrades-release-notes-deprecations-strictness-migration-depe.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
-| [0168 · Safe AI-assisted TypeScript, generated code, type constraints, validation, tests, review, and provenance](lessons/0168-safe-ai-assisted-typescript-generated-code-type-constraints-validation-t.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
+| [0168 · Safe AI-assisted TypeScript, generated code, type constraints, validation, tests, review, and provenance](lessons/0168-safe-ai-assisted-typescript-generated-code-type-constraints-validation-t.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0169 · TypeScript architecture, domain modeling, ports, adapters, dependency direction, and change cost](lessons/0169-typescript-architecture-domain-modeling-ports-adapters-dependency-direct.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
 | [0170 · TypeScript production architecture capstone, full-stack contracts, reliability, security, observability, and evolution](lessons/0170-typescript-production-architecture-capstone-full-stack-contracts-reliabi.html) | Recorded pass | [2026-09-06](TYPESCRIPT-CONTENT-REVIEW.md) |
 
@@ -386,7 +386,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0264 · Strings, Unicode, bytes, bytearray, encoding, and text boundaries](lessons/0264-strings-unicode-bytes-bytearray-encoding-and-text-boundaries.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0265 · Lists, tuples, ranges, slicing, unpacking, copying, and sequence costs](lessons/0265-lists-tuples-ranges-slicing-unpacking-copying-and-sequence-costs.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0266 · Dictionaries, sets, hashing, equality, collisions, and insertion order](lessons/0266-dictionaries-sets-hashing-equality-collisions-and-insertion-order.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0267 · Control flow, loops, comprehensions, assignment expressions, and pattern matching](lessons/0267-control-flow-loops-comprehensions-assignment-expressions-and-pattern-mat.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0267 · Control flow, loops, comprehensions, assignment expressions, and pattern matching](lessons/0267-control-flow-loops-comprehensions-assignment-expressions-and-pattern-mat.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0268 · Functions, parameters, defaults, positional-only, keyword-only, args, and kwargs](lessons/0268-functions-parameters-defaults-positional-only-keyword-only-args-and-kwar.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0269 · First-class functions, closures, lambdas, partials, and callable objects](lessons/0269-first-class-functions-closures-lambdas-partials-and-callable-objects.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0270 · Exceptions, chaining, custom errors, groups, notes, cleanup, and failure design](lessons/0270-exceptions-chaining-custom-errors-groups-notes-cleanup-and-failure-desig.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -404,18 +404,18 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0282 · Type hints, unions, narrowing, aliases, Literal, Never, and static analysis](lessons/0282-type-hints-unions-narrowing-aliases-literal-never-and-static-analysis.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0283 · Generics, type parameters, protocols, variance, overloads, and ParamSpec](lessons/0283-generics-type-parameters-protocols-variance-overloads-and-paramspec.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0284 · Runtime validation, parsing, schemas, serialization, and typed API boundaries](lessons/0284-runtime-validation-parsing-schemas-serialization-and-typed-api-boundarie.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0285 · Standard library, pathlib, files, JSON, CSV, datetime, zones, and resources](lessons/0285-standard-library-pathlib-files-json-csv-datetime-zones-and-resources.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0285 · Standard library, pathlib, files, JSON, CSV, datetime, zones, and resources](lessons/0285-standard-library-pathlib-files-json-csv-datetime-zones-and-resources.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0286 · Regular expressions, parsing, subprocesses, environment, signals, and OS boundaries](lessons/0286-regular-expressions-parsing-subprocesses-environment-signals-and-os-boun.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0287 · Asyncio event loop, coroutines, awaitables, tasks, futures, and cooperative scheduling](lessons/0287-asyncio-event-loop-coroutines-awaitables-tasks-futures-and-cooperative-s.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0288 · TaskGroup, cancellation, timeouts, queues, semaphores, and backpressure](lessons/0288-taskgroup-cancellation-timeouts-queues-semaphores-and-backpressure.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0289 · Threads, the GIL, locks, conditions, thread safety, and free-threaded builds](lessons/0289-threads-the-gil-locks-conditions-thread-safety-and-free-threaded-builds.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0289 · Threads, the GIL, locks, conditions, thread safety, and free-threaded builds](lessons/0289-threads-the-gil-locks-conditions-thread-safety-and-free-threaded-builds.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0290 · Multiprocessing, process pools, IPC, shared memory, start methods, and pickling](lessons/0290-multiprocessing-process-pools-ipc-shared-memory-start-methods-and-pickli.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0291 · Concurrency selection, async, threads, processes, executors, and distributed workers](lessons/0291-concurrency-selection-async-threads-processes-executors-and-distributed-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0291 · Concurrency selection, async, threads, processes, executors, and distributed workers](lessons/0291-concurrency-selection-async-threads-processes-executors-and-distributed-.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0292 · Memory management, reference counting, cyclic GC, weak references, and finalization](lessons/0292-memory-management-reference-counting-cyclic-gc-weak-references-and-final.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0293 · Copying, serialization, pickle, JSON, object graphs, and trust boundaries](lessons/0293-copying-serialization-pickle-json-object-graphs-and-trust-boundaries.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0294 · Performance, complexity, profiling, benchmarking, caching, and optimization](lessons/0294-performance-complexity-profiling-benchmarking-caching-and-optimization.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0295 · Testing, unittest, pytest concepts, fixtures, mocking, properties, and determinism](lessons/0295-testing-unittest-pytest-concepts-fixtures-mocking-properties-and-determi.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0296 · Debugging, tracebacks, pdb, logging, warnings, metrics, and observability](lessons/0296-debugging-tracebacks-pdb-logging-warnings-metrics-and-observability.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0296 · Debugging, tracebacks, pdb, logging, warnings, metrics, and observability](lessons/0296-debugging-tracebacks-pdb-logging-warnings-metrics-and-observability.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0297 · Packaging, pyproject.toml, build backends, source distributions, wheels, and metadata](lessons/0297-packaging-pyproject-toml-build-backends-source-distributions-wheels-and-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0298 · Dependencies, virtual environments, lock files, reproducibility, publishing, and supply chain](lessons/0298-dependencies-virtual-environments-lock-files-reproducibility-publishing-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0299 · Native extensions, C API, stable ABI, FFI, buffer protocol, and performance boundaries](lessons/0299-native-extensions-c-api-stable-abi-ffi-buffer-protocol-and-performance-b.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -427,7 +427,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0303 · FastAPI setup, CLI, project anatomy, typing, and development workflow](lessons/0303-fastapi-setup-cli-project-anatomy-typing-and-development-workflow.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0303 · FastAPI setup, CLI, project anatomy, typing, and development workflow](lessons/0303-fastapi-setup-cli-project-anatomy-typing-and-development-workflow.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0304 · ASGI scope, receive, send, Uvicorn, Starlette, and request lifecycle](lessons/0304-asgi-scope-receive-send-uvicorn-starlette-and-request-lifecycle.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0305 · FastAPI application configuration, metadata, docs, and OpenAPI lifecycle](lessons/0305-fastapi-application-configuration-metadata-docs-and-openapi-lifecycle.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0306 · Path operations, HTTP methods, routing order, status codes, and semantics](lessons/0306-path-operations-http-methods-routing-order-status-codes-and-semantics.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -451,7 +451,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0324 · Transactions, unit of work, commit, rollback, retries, and consistency](lessons/0324-transactions-unit-of-work-commit-rollback-retries-and-consistency.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0325 · BackgroundTasks, durable jobs, idempotency, queues, and outbox delivery](lessons/0325-backgroundtasks-durable-jobs-idempotency-queues-and-outbox-delivery.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0326 · OAuth2, password hashing, bearer tokens, JWT validation, and identity](lessons/0326-oauth2-password-hashing-bearer-tokens-jwt-validation-and-identity.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0327 · Security scopes, authorization, tenant boundaries, and object permissions](lessons/0327-security-scopes-authorization-tenant-boundaries-and-object-permissions.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0327 · Security scopes, authorization, tenant boundaries, and object permissions](lessons/0327-security-scopes-authorization-tenant-boundaries-and-object-permissions.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0328 · Cookie sessions, CSRF, SameSite, secure attributes, and browser clients](lessons/0328-cookie-sessions-csrf-samesite-secure-attributes-and-browser-clients.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0329 · CORS, trusted hosts, HTTPS redirects, proxy headers, and origin policy](lessons/0329-cors-trusted-hosts-https-redirects-proxy-headers-and-origin-policy.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0330 · HTTP middleware, pure ASGI middleware, ordering, context, and request IDs](lessons/0330-http-middleware-pure-asgi-middleware-ordering-context-and-request-ids.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -461,13 +461,13 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0334 · APIRouter, multi-file applications, sub-applications, mounts, and root paths](lessons/0334-apirouter-multi-file-applications-sub-applications-mounts-and-root-paths.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0335 · WebSockets, handshake, connection management, dependencies, and backpressure](lessons/0335-websockets-handshake-connection-management-dependencies-and-backpressure.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0336 · Server-sent events, StreamingResponse, generators, disconnects, and buffering](lessons/0336-server-sent-events-streamingresponse-generators-disconnects-and-bufferin.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0337 · Static files, templates, HTML responses, and GraphQL integration boundaries](lessons/0337-static-files-templates-html-responses-and-graphql-integration-boundaries.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0337 · Static files, templates, HTML responses, and GraphQL integration boundaries](lessons/0337-static-files-templates-html-responses-and-graphql-integration-boundaries.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0338 · TestClient, dependency overrides, lifespan, fixtures, and deterministic tests](lessons/0338-testclient-dependency-overrides-lifespan-fixtures-and-deterministic-test.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0339 · Async integration tests, HTTPX transports, real databases, and contract tests](lessons/0339-async-integration-tests-httpx-transports-real-databases-and-contract-tes.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0340 · Structured logging, metrics, tracing, health, readiness, and diagnostics](lessons/0340-structured-logging-metrics-tracing-health-readiness-and-diagnostics.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0341 · Performance profiling, serialization, validation cost, pools, and workers](lessons/0341-performance-profiling-serialization-validation-cost-pools-and-workers.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0342 · Containers, workers, proxies, migrations, health checks, and graceful deployment](lessons/0342-containers-workers-proxies-migrations-health-checks-and-graceful-deploym.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0343 · API versioning, deprecation, compatibility, schema evolution, and rollout](lessons/0343-api-versioning-deprecation-compatibility-schema-evolution-and-rollout.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0342 · Containers, workers, proxies, migrations, health checks, and graceful deployment](lessons/0342-containers-workers-proxies-migrations-health-checks-and-graceful-deploym.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
+| [0343 · API versioning, deprecation, compatibility, schema evolution, and rollout](lessons/0343-api-versioning-deprecation-compatibility-schema-evolution-and-rollout.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0344 · Custom APIRoute, custom request handling, schema hooks, and framework internals](lessons/0344-custom-apiroute-custom-request-handling-schema-hooks-and-framework-inter.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0345 · FastAPI production architecture capstone](lessons/0345-fastapi-production-architecture-capstone.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 
@@ -525,7 +525,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0393 · Cache-aside, write-through, invalidation, stampedes, stale data, negative caching, and consistency](lessons/0393-cache-aside-write-through-invalidation-stampedes-stale-data-negative-cac.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0394 · Distributed locks, fencing tokens, rate limiting, queues, delayed work, and correctness boundaries](lessons/0394-distributed-locks-fencing-tokens-rate-limiting-queues-delayed-work-and-c.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0395 · Redis security, ACLs, TLS, protected mode, command controls, observability, latency, and memory diagnostics](lessons/0395-redis-security-acls-tls-protected-mode-command-controls-observability-la.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0396 · Data systems production architecture capstone, PostgreSQL, Redis, CDC, recovery, performance, and operations](lessons/0396-data-systems-production-architecture-capstone-postgresql-redis-cdc-recov.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0396 · Data systems production architecture capstone, PostgreSQL, Redis, CDC, recovery, performance, and operations](lessons/0396-data-systems-production-architecture-capstone-postgresql-redis-cdc-recov.html) | Recorded pass | [2026-09-19](REVIEW-EVIDENCE.md) |
 
 ## API Design and Distributed Systems Complete Deep Dive
 
@@ -550,7 +550,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0413 · GraphQL schema, resolvers, N+1, batching, complexity, and federation](lessons/0413-graphql-schema-resolvers-n-1-batching-complexity-and-federation.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0414 · Webhooks, signatures, timestamps, retries, replay protection, and event evolution](lessons/0414-webhooks-signatures-timestamps-retries-replay-protection-and-event-evolu.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0415 · SSE, WebSockets, bidirectional streams, heartbeats, backpressure, and reconnects](lessons/0415-sse-websockets-bidirectional-streams-heartbeats-backpressure-and-reconne.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0416 · Authentication, authorization, scopes, tenant isolation, delegation, and audit](lessons/0416-authentication-authorization-scopes-tenant-isolation-delegation-and-audi.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0416 · Authentication, authorization, scopes, tenant isolation, delegation, and audit](lessons/0416-authentication-authorization-scopes-tenant-isolation-delegation-and-audi.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0417 · API gateways, reverse proxies, routing, quotas, rate limits, and policy placement](lessons/0417-api-gateways-reverse-proxies-routing-quotas-rate-limits-and-policy-place.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0418 · API security, threat modeling, injection, SSRF, mass assignment, and abuse resistance](lessons/0418-api-security-threat-modeling-injection-ssrf-mass-assignment-and-abuse-re.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0419 · API observability, correlation, trace context, metrics, logs, and audit events](lessons/0419-api-observability-correlation-trace-context-metrics-logs-and-audit-event.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -614,7 +614,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0467 · Threat modeling, secure design, authentication, authorization, and secrets](lessons/0467-threat-modeling-secure-design-authentication-authorization-and-secrets.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0468 · Web, API, dependency, and supply-chain security](lessons/0468-web-api-dependency-and-supply-chain-security.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0469 · Reliability targets, observability, incidents, and postmortems](lessons/0469-reliability-targets-observability-incidents-and-postmortems.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0470 · Production webhooks, event contracts, signatures, timestamps, replay defense, idempotency, retries, ordering, and secret rotation](lessons/0470-production-webhooks-event-contracts-signatures-timestamps-replay-defense.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0470 · Production webhooks, event contracts, signatures, timestamps, replay defense, idempotency, retries, ordering, and secret rotation](lessons/0470-production-webhooks-event-contracts-signatures-timestamps-replay-defense.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0471 · Application file storage, direct uploads, presigned URLs, multipart transfer, validation, malware scanning, metadata, lifecycle, and delivery](lessons/0471-application-file-storage-direct-uploads-presigned-urls-multipart-transfe.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0472 · Background jobs, queues, leases, acknowledgements, retries, idempotency, scheduling, dead letters, and worker shutdown](lessons/0472-background-jobs-queues-leases-acknowledgements-retries-idempotency-sched.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0473 · Audit logs, actors, actions, targets, outcomes, correlation, tamper evidence, retention, privacy, and investigation](lessons/0473-audit-logs-actors-actions-targets-outcomes-correlation-tamper-evidence-r.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -640,7 +640,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0488 · EC2 instance families, AMIs, user data, metadata, IMDSv2, placement, Auto Scaling, and lifecycle](lessons/0488-ec2-instance-families-amis-user-data-metadata-imdsv2-placement-auto-scal.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0489 · EBS, instance store, EFS, FSx, snapshots, encryption, performance, attachment, and durability](lessons/0489-ebs-instance-store-efs-fsx-snapshots-encryption-performance-attachment-a.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0490 · S3 buckets, objects, consistency, versioning, lifecycle, replication, events, policies, and data protection](lessons/0490-s3-buckets-objects-consistency-versioning-lifecycle-replication-events-p.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0491 · ECR, ECS task definitions, services, capacity providers, Fargate, EC2 launch type, and deployments](lessons/0491-ecr-ecs-task-definitions-services-capacity-providers-fargate-ec2-launch-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0491 · ECR, ECS task definitions, services, capacity providers, Fargate, EC2 launch type, and deployments](lessons/0491-ecr-ecs-task-definitions-services-capacity-providers-fargate-ec2-launch-.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0492 · Lambda execution environments, handlers, cold starts, concurrency, event sources, layers, and failure semantics](lessons/0492-lambda-execution-environments-handlers-cold-starts-concurrency-event-sou.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0493 · API Gateway HTTP APIs, REST APIs, WebSocket APIs, integrations, authorizers, throttling, and stages](lessons/0493-api-gateway-http-apis-rest-apis-websocket-apis-integrations-authorizers-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0494 · RDS, Aurora, Multi-AZ, read replicas, backups, failover, parameter groups, IAM auth, and RDS Proxy](lessons/0494-rds-aurora-multi-az-read-replicas-backups-failover-parameter-groups-iam-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -653,16 +653,16 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | [0501 · CloudTrail, AWS Config, GuardDuty, Security Hub, Detective, audit trails, detection, and response](lessons/0501-cloudtrail-aws-config-guardduty-security-hub-detective-audit-trails-dete.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0502 · CloudFormation, CDK, stacks, change sets, dependencies, custom resources, drift, and infrastructure testing](lessons/0502-cloudformation-cdk-stacks-change-sets-dependencies-custom-resources-drif.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0503 · AWS reliability, Well-Architected pillars, quotas, multi-AZ design, backups, disaster recovery, RTO, and RPO](lessons/0503-aws-reliability-well-architected-pillars-quotas-multi-az-design-backups-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0504 · AWS cost models, tags, CUR, Cost Explorer, Budgets, rightsizing, Savings Plans, Spot, and FinOps](lessons/0504-aws-cost-models-tags-cur-cost-explorer-budgets-rightsizing-savings-plans.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0505 · Amazon Bedrock, SageMaker, model access, inference, agents, knowledge bases, guardrails, evaluation, and AI security](lessons/0505-amazon-bedrock-sagemaker-model-access-inference-agents-knowledge-bases-g.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0506 · Cloud and AWS production architecture capstone, full-stack AI delivery, security, reliability, cost, and incident defense](lessons/0506-cloud-and-aws-production-architecture-capstone-full-stack-ai-delivery-se.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0504 · AWS cost models, tags, CUR, Cost Explorer, Budgets, rightsizing, Savings Plans, Spot, and FinOps](lessons/0504-aws-cost-models-tags-cur-cost-explorer-budgets-rightsizing-savings-plans.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0505 · Amazon Bedrock, SageMaker, model access, inference, agents, knowledge bases, guardrails, evaluation, and AI security](lessons/0505-amazon-bedrock-sagemaker-model-access-inference-agents-knowledge-bases-g.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0506 · Cloud and AWS production architecture capstone, full-stack AI delivery, security, reliability, cost, and incident defense](lessons/0506-cloud-and-aws-production-architecture-capstone-full-stack-ai-delivery-se.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 
 ## DevOps Complete Deep Dive
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
 | [0507 · DevOps principles, CALMS, flow, feedback, learning, ownership, and socio-technical systems](lessons/0507-devops-principles-calms-flow-feedback-learning-ownership-and-socio-techn.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
-| [0508 · Linux processes, systemd, services, users, permissions, signals, limits, and resource diagnosis](lessons/0508-linux-processes-systemd-services-users-permissions-signals-limits-and-re.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
+| [0508 · Linux processes, systemd, services, users, permissions, signals, limits, and resource diagnosis](lessons/0508-linux-processes-systemd-services-users-permissions-signals-limits-and-re.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0509 · Networking diagnostics, DNS, routing, TCP, TLS, HTTP, proxies, load balancers, and timeouts](lessons/0509-networking-diagnostics-dns-routing-tcp-tls-http-proxies-load-balancers-a.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0510 · Shell automation, strict mode, quoting, pipes, exit codes, idempotency, traps, and portable scripts](lessons/0510-shell-automation-strict-mode-quoting-pipes-exit-codes-idempotency-traps-.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
 | [0511 · Git workflows, trunk-based development, branches, pull requests, reviews, rebasing, releases, and recovery](lessons/0511-git-workflows-trunk-based-development-branches-pull-requests-reviews-reb.html) | Recorded pass | [2026-09-13](REVIEW-EVIDENCE.md) |
@@ -765,10 +765,10 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0586 · Model APIs, messages, instructions, multimodal inputs, streaming, and provider abstraction](lessons/0586-model-apis-messages-instructions-multimodal-inputs-streaming-and-provide.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0587 · Prompt design, context engineering, examples, delimiters, and prompt versioning](lessons/0587-prompt-design-context-engineering-examples-delimiters-and-prompt-version.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0588 · Structured outputs, schemas, parsing, validation, and repair](lessons/0588-structured-outputs-schemas-parsing-validation-and-repair.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0589 · Tool calling, execution boundaries, permissions, and human approval](lessons/0589-tool-calling-execution-boundaries-permissions-and-human-approval.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0586 · Model APIs, messages, instructions, multimodal inputs, streaming, and provider abstraction](lessons/0586-model-apis-messages-instructions-multimodal-inputs-streaming-and-provide.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0587 · Prompt design, context engineering, examples, delimiters, and prompt versioning](lessons/0587-prompt-design-context-engineering-examples-delimiters-and-prompt-version.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0588 · Structured outputs, schemas, parsing, validation, and repair](lessons/0588-structured-outputs-schemas-parsing-validation-and-repair.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0589 · Tool calling, execution boundaries, permissions, and human approval](lessons/0589-tool-calling-execution-boundaries-permissions-and-human-approval.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0590 · Latency, cost, caching, fallbacks, rate limits, and model routing](lessons/0590-latency-cost-caching-fallbacks-rate-limits-and-model-routing.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0591 · AI frontend streaming, fetch streams, SSE, event framing, incremental state, cancellation, reconnection, and backpressure](lessons/0591-ai-frontend-streaming-fetch-streams-sse-event-framing-incremental-state-.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0592 · Generative UI, structured message parts, tool calls, human approval, optimistic state, errors, and accessibility](lessons/0592-generative-ui-structured-message-parts-tool-calls-human-approval-optimis.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
@@ -778,40 +778,40 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0594 · Information retrieval fundamentals, lexical search, dense retrieval, and hybrid search](lessons/0594-information-retrieval-fundamentals-lexical-search-dense-retrieval-and-hy.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0595 · Ingestion, parsing, cleaning, metadata, chunking, and indexing](lessons/0595-ingestion-parsing-cleaning-metadata-chunking-and-indexing.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0596 · Query rewriting, filtering, reranking, context assembly, and citations](lessons/0596-query-rewriting-filtering-reranking-context-assembly-and-citations.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0597 · RAG evaluation, golden sets, retrieval metrics, answer metrics, and regression testing](lessons/0597-rag-evaluation-golden-sets-retrieval-metrics-answer-metrics-and-regressi.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0598 · Advanced retrieval, freshness, permissions, and operational failure modes](lessons/0598-advanced-retrieval-freshness-permissions-and-operational-failure-modes.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0599 · Vector database data model, embeddings, dimensions, distance metrics, metadata, filtering, upserts, deletes, and query execution](lessons/0599-vector-database-data-model-embeddings-dimensions-distance-metrics-metada.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0594 · Information retrieval fundamentals, lexical search, dense retrieval, and hybrid search](lessons/0594-information-retrieval-fundamentals-lexical-search-dense-retrieval-and-hy.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0595 · Ingestion, parsing, cleaning, metadata, chunking, and indexing](lessons/0595-ingestion-parsing-cleaning-metadata-chunking-and-indexing.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0596 · Query rewriting, filtering, reranking, context assembly, and citations](lessons/0596-query-rewriting-filtering-reranking-context-assembly-and-citations.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0597 · RAG evaluation, golden sets, retrieval metrics, answer metrics, and regression testing](lessons/0597-rag-evaluation-golden-sets-retrieval-metrics-answer-metrics-and-regressi.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
+| [0598 · Advanced retrieval, freshness, permissions, and operational failure modes](lessons/0598-advanced-retrieval-freshness-permissions-and-operational-failure-modes.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
+| [0599 · Vector database data model, embeddings, dimensions, distance metrics, metadata, filtering, upserts, deletes, and query execution](lessons/0599-vector-database-data-model-embeddings-dimensions-distance-metrics-metada.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
 | [0600 · Vector index internals, exact search, HNSW graphs, IVF lists, product quantization, recall, memory, and build cost](lessons/0600-vector-index-internals-exact-search-hnsw-graphs-ivf-lists-product-quanti.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0601 · Vector database storage internals, segments, write-ahead logs, tombstones, compaction, filtering plans, sharding, replication, and recovery](lessons/0601-vector-database-storage-internals-segments-write-ahead-logs-tombstones-c.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0602 · Portfolio Project 2 — evaluated knowledge product](lessons/0602-portfolio-project-2-evaluated-knowledge-product.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0602 · Portfolio Project 2 — evaluated knowledge product](lessons/0602-portfolio-project-2-evaluated-knowledge-product.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 
 ## Agents and Durable AI Workflows
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0603 · LLM system blueprint, workflows versus agents, ReAct, state machines, planners, and control loops](lessons/0603-llm-system-blueprint-workflows-versus-agents-react-state-machines-planne.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0604 · Tool design, descriptions, schemas, state, memory, and context management](lessons/0604-tool-design-descriptions-schemas-state-memory-and-context-management.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0603 · LLM system blueprint, workflows versus agents, ReAct, state machines, planners, and control loops](lessons/0603-llm-system-blueprint-workflows-versus-agents-react-state-machines-planne.html) | Recorded pass | [2026-09-20](REVIEW-EVIDENCE.md) |
+| [0604 · Tool design, descriptions, schemas, state, memory, and context management](lessons/0604-tool-design-descriptions-schemas-state-memory-and-context-management.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0605 · LangChain v1 agents, models, messages, tools, middleware, structured output, streaming, and tracing](lessons/0605-langchain-v1-agents-models-messages-tools-middleware-structured-output-s.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0606 · LangGraph StateGraph, Pydantic state schemas, nodes, edges, reducers, checkpoints, interrupts, and durable execution](lessons/0606-langgraph-stategraph-pydantic-state-schemas-nodes-edges-reducers-checkpo.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0606 · LangGraph StateGraph, Pydantic state schemas, nodes, edges, reducers, checkpoints, interrupts, and durable execution](lessons/0606-langgraph-stategraph-pydantic-state-schemas-nodes-edges-reducers-checkpo.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0607 · Model Context Protocol architecture, hosts, clients, servers, JSON-RPC, initialization, capabilities, tools, resources, prompts, and lifecycle](lessons/0607-model-context-protocol-architecture-hosts-clients-servers-json-rpc-initi.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0608 · MCP transports, Streamable HTTP, sessions, authorization, consent, security, testing, and observability](lessons/0608-mcp-transports-streamable-http-sessions-authorization-consent-security-t.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0609 · Checkpoints, retries, idempotency, human-in-the-loop, and recovery](lessons/0609-checkpoints-retries-idempotency-human-in-the-loop-and-recovery.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0610 · Multi-agent patterns, coordination costs, and failure containment](lessons/0610-multi-agent-patterns-coordination-costs-and-failure-containment.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0611 · Agent evaluation, traces, budgets, security, and stopping conditions](lessons/0611-agent-evaluation-traces-budgets-security-and-stopping-conditions.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0610 · Multi-agent patterns, coordination costs, and failure containment](lessons/0610-multi-agent-patterns-coordination-costs-and-failure-containment.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0611 · Agent evaluation, traces, budgets, security, and stopping conditions](lessons/0611-agent-evaluation-traces-budgets-security-and-stopping-conditions.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 
 ## AI Evaluations, Observability, and Safety
 
 | Lesson | Content status | Individual evidence |
 | --- | --- | --- |
-| [0612 · Evaluation objectives, datasets, rubrics, baselines, and slices](lessons/0612-evaluation-objectives-datasets-rubrics-baselines-and-slices.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0612 · Evaluation objectives, datasets, rubrics, baselines, and slices](lessons/0612-evaluation-objectives-datasets-rubrics-baselines-and-slices.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0613 · Deterministic checks, model graders, human review, and judge calibration](lessons/0613-deterministic-checks-model-graders-human-review-and-judge-calibration.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0614 · LLM benchmarking, representative datasets, baselines, repetitions, quality metrics, latency, cost, and statistical uncertainty](lessons/0614-llm-benchmarking-representative-datasets-baselines-repetitions-quality-m.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0615 · Prompt injection, data exfiltration, tool abuse, and untrusted content](lessons/0615-prompt-injection-data-exfiltration-tool-abuse-and-untrusted-content.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0614 · LLM benchmarking, representative datasets, baselines, repetitions, quality metrics, latency, cost, and statistical uncertainty](lessons/0614-llm-benchmarking-representative-datasets-baselines-repetitions-quality-m.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
+| [0615 · Prompt injection, data exfiltration, tool abuse, and untrusted content](lessons/0615-prompt-injection-data-exfiltration-tool-abuse-and-untrusted-content.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0616 · AI traces, quality monitoring, drift, feedback, and incident response](lessons/0616-ai-traces-quality-monitoring-drift-feedback-and-incident-response.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0617 · Privacy, fairness, compliance, model risk, and product boundaries](lessons/0617-privacy-fairness-compliance-model-risk-and-product-boundaries.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0617 · Privacy, fairness, compliance, model risk, and product boundaries](lessons/0617-privacy-fairness-compliance-model-risk-and-product-boundaries.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 
 ## Production Capstone
 
@@ -819,7 +819,7 @@ Continue pending lessons in catalog order, reusing prior evidence rather than re
 | --- | --- | --- |
 | [0618 · Product discovery, users, success metrics, constraints, and architecture](lessons/0618-product-discovery-users-success-metrics-constraints-and-architecture.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 | [0619 · End-to-end implementation across React, Node.js or FastAPI, data, and AI](lessons/0619-end-to-end-implementation-across-react-node-js-or-fastapi-data-and-ai.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
-| [0620 · Quality, security, evaluation, observability, deployment, and operations](lessons/0620-quality-security-evaluation-observability-deployment-and-operations.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
+| [0620 · Quality, security, evaluation, observability, deployment, and operations](lessons/0620-quality-security-evaluation-observability-deployment-and-operations.html) | Recorded pass | [2026-09-21](REVIEW-EVIDENCE.md) |
 | [0621 · Portfolio narrative, demo, case study, and architecture defense](lessons/0621-portfolio-narrative-demo-case-study-and-architecture-defense.html) | Recorded pass | [2026-09-14](REVIEW-EVIDENCE.md) |
 
 ## International Interviews and Relocation Readiness Complete Module

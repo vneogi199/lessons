@@ -195,6 +195,50 @@ async def latest(): return &quot;/reports/current&quot;</code></pre>
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A response class converts application data into an HTTP status, headers, media type, and body bytes.</li><li>A [concept] response sends body chunks incrementally. Its generator and resources must remain valid for the stream&#39;s lifetime, and disconnects or errors must release them.</li><li>FileResponse sends a server-side file as an HTTP response, with metadata and supported range handling. Authorize the selected path and keep the file available for the response lifetime; this is different from parsing an uploaded file.</li><li>A redirect response gives the client a status code and a Location header for another URL.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Response classes: 1; streaming: 2; files: 3; redirects: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Response classes: 1; streaming: 2; files: 4; redirects: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Response classes: 1; streaming: 3; files: 4; redirects: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Response classes: 1; streaming: 4; files: 3; redirects: 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> Response classes: 1; streaming: 2; files: 3; redirects: 4</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “files” matches explanation 3, not 4. “redirects” matches explanation 4, not 3.</li><li>C. “streaming” matches explanation 2, not 3. “files” matches explanation 3, not 4. “redirects” matches explanation 4, not 2.</li><li>D. “streaming” matches explanation 2, not 4. “redirects” matches explanation 4, not 2.</li></ul>
+        <p>Response classes: A response class converts application data into an HTTP status, headers, media type, and body bytes.</p><p>streaming: A streaming response sends body chunks incrementally. Its generator and resources must remain valid for the stream&#39;s lifetime, and disconnects or errors must release them.</p><p>files: FileResponse sends a server-side file as an HTTP response, with metadata and supported range handling. Authorize the selected path and keep the file available for the response lifetime; this is different from parsing an uploaded file.</p><p>redirects: A redirect response gives the client a status code and a Location header for another URL.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] are name-value data a browser can attach automatically to matching requests. Their domain, path, Secure, HttpOnly, SameSite, and expiry rules shape both security and behavior.</li><li>[concept] carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. cookies: 1; headers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. cookies: 2; headers: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> cookies: 1; headers: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “cookies” matches explanation 1, not 2. “headers” matches explanation 2, not 1.</li></ul>
+        <p>cookies: Cookies are name-value data a browser can attach automatically to matching requests. Their domain, path, Secure, HttpOnly, SameSite, and expiry rules shape both security and behavior.</p><p>headers: Headers carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Start the response, then send body events: Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</li><li>Release resources on completion or failure: Close owned files and generators and test client disconnects with the actual server stack.</li><li>Choose the response representation: Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</li><li>Create the body or stream: JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 2, the trace uses “Create the body or stream”, not “Start the response, then send body events”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Create the body or stream”, not “Release resources on completion or failure”.</li><li>D. At position 1, the trace uses “Choose the response representation”, not “Create the body or stream”.</li></ul>
+        <p>Choose the response representation: Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</p><p>Create the body or stream: JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</p><p>Start the response, then send body events: Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</p><p>Release resources on completion or failure: Close owned files and generators and test client disconnects with the actual server stack.</p>
+        <p>Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk. Evidence to inspect: Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</p>
+      </details>
+    </article>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

@@ -192,6 +192,50 @@ await pending.catch(error =&gt; console.assert(error.name === &quot;AbortError&q
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</li><li>A deadline limits the total time available to an operation tree. Each child should receive the remaining budget rather than starting a fresh full timeout.</li><li>[concept] owns an AbortSignal and broadcasts one abort reason. Cooperating APIs must observe the signal and perform their own prompt cleanup.</li><li>An [concept] communicates an abort request to participating APIs. The operation must support the signal; observing abort does not undo effects already committed.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. AbortController: 3; AbortSignal: 4; cancellation: 2; deadlines: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. AbortController: 3; AbortSignal: 1; cancellation: 2; deadlines: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. AbortController: 3; AbortSignal: 4; cancellation: 1; deadlines: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. AbortController: 3; AbortSignal: 2; cancellation: 1; deadlines: 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> AbortController: 3; AbortSignal: 4; cancellation: 1; deadlines: 2</p>
+        <ul><li>A. “cancellation” matches explanation 1, not 2. “deadlines” matches explanation 2, not 1.</li><li>B. “AbortSignal” matches explanation 4, not 1. “cancellation” matches explanation 1, not 2. “deadlines” matches explanation 2, not 4.</li><li>C. Every concept matches its explanation.</li><li>D. “AbortSignal” matches explanation 4, not 2. “deadlines” matches explanation 2, not 4.</li></ul>
+        <p>AbortController: AbortController owns an AbortSignal and broadcasts one abort reason. Cooperating APIs must observe the signal and perform their own prompt cleanup.</p><p>AbortSignal: An AbortSignal communicates an abort request to participating APIs. The operation must support the signal; observing abort does not undo effects already committed.</p><p>cancellation: Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p><p>deadlines: A deadline limits the total time available to an operation tree. Each child should receive the remaining budget rather than starting a fresh full timeout.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</li><li>[concept] releases resources owned by an operation, including listeners, timers, and connections. Give normal completion, failure, and cancellation the same explicit [concept] responsibility.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. timeouts: 1; cleanup: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. timeouts: 2; cleanup: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> timeouts: 1; cleanup: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “timeouts” matches explanation 1, not 2. “cleanup” matches explanation 2, not 1.</li></ul>
+        <p>timeouts: A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p><p>cleanup: Cleanup releases resources owned by an operation, including listeners, timers, and connections. Give normal completion, failure, and cancellation the same explicit cleanup responsibility.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Async work registers continuation: Promise reactions and tasks enter different queues.</li><li>Event loop chooses ready work: Microtasks drain before the next task and render opportunity.</li><li>Continuation observes state: Order, errors, and UI timing expose the scheduling model.</li><li>Synchronous code runs: Calls execute until the stack becomes empty.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 1 → 2 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. At position 2, the trace uses “Async work registers continuation”, not “Event loop chooses ready work”.</li><li>B. At position 2, the trace uses “Async work registers continuation”, not “Continuation observes state”.</li><li>C. At position 1, the trace uses “Synchronous code runs”, not “Async work registers continuation”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
+        <p>Synchronous code runs: Calls execute until the stack becomes empty.</p><p>Async work registers continuation: Promise reactions and tasks enter different queues.</p><p>Event loop chooses ready work: Microtasks drain before the next task and render opportunity.</p><p>Continuation observes state: Order, errors, and UI timing expose the scheduling model.</p>
+        <p>Mix a timer, resolved promise, and synchronous log; predict exact output order. Evidence to inspect: Console order, task timestamps, unhandled rejection, and render timing.</p>
+      </details>
+    </article>
+    <p><a href="https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript Promise specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

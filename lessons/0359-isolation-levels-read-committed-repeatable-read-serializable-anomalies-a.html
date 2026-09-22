@@ -181,6 +181,50 @@ COMMIT; -- one transaction can fail with SQLSTATE 40001
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] transactions must have an outcome consistent with some serial execution. PostgreSQL can abort a transaction to preserve that guarantee, so callers must be able to retry the whole transaction.</li><li>An isolation level defines which concurrent histories a transaction may observe. Stronger levels prevent more anomalies but can abort work that must be retried.</li><li>In PostgreSQL [concept], an ordinary SELECT sees a snapshot taken when that statement starts. A later statement in the same transaction can see newly committed changes.</li><li>PostgreSQL [concept] uses a transaction snapshot for ordinary queries. It prevents changing snapshots but can still allow serialization anomalies such as write skew.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Isolation levels: 2; Read Committed: 4; Repeatable Read: 3; Serializable: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Isolation levels: 2; Read Committed: 1; Repeatable Read: 3; Serializable: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Isolation levels: 3; Read Committed: 2; Repeatable Read: 4; Serializable: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Isolation levels: 2; Read Committed: 3; Repeatable Read: 4; Serializable: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Isolation levels: 2; Read Committed: 3; Repeatable Read: 4; Serializable: 1</p>
+        <ul><li>A. “Read Committed” matches explanation 3, not 4. “Repeatable Read” matches explanation 4, not 3.</li><li>B. “Read Committed” matches explanation 3, not 1. “Repeatable Read” matches explanation 4, not 3. “Serializable” matches explanation 1, not 4.</li><li>C. “Isolation levels” matches explanation 2, not 3. “Read Committed” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Isolation levels: An isolation level defines which concurrent histories a transaction may observe. Stronger levels prevent more anomalies but can abort work that must be retried.</p><p>Read Committed: In PostgreSQL Read Committed, an ordinary SELECT sees a snapshot taken when that statement starts. A later statement in the same transaction can see newly committed changes.</p><p>Repeatable Read: PostgreSQL Repeatable Read uses a transaction snapshot for ordinary queries. It prevents changing snapshots but can still allow serialization anomalies such as write skew.</p><p>Serializable: Serializable transactions must have an outcome consistent with some serial execution. PostgreSQL can abort a transaction to preserve that guarantee, so callers must be able to retry the whole transaction.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Serializable Snapshot Isolation detects dangerous dependency patterns and may abort transactions to preserve serializable behavior.</li><li>Transaction [concept] are surprising outcomes permitted by an isolation level, such as stale reads or conflicting concurrent decisions.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. anomalies: 1; SSI: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. anomalies: 2; SSI: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> anomalies: 2; SSI: 1</p>
+        <ul><li>A. “anomalies” matches explanation 2, not 1. “SSI” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>anomalies: Transaction anomalies are surprising outcomes permitted by an isolation level, such as stale reads or conflicting concurrent decisions.</p><p>SSI: Serializable Snapshot Isolation detects dangerous dependency patterns and may abort transactions to preserve serializable behavior.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Statements acquire versions or locks: Concurrent transactions may conflict.</li><li>Constraints and conflicts resolve: The engine can wait, abort, commit, or require retry.</li><li>Publish one atomic outcome: Visibility follows the reader&#39;s snapshot. Crash durability also depends on WAL flush and replication settings.</li><li>Choose the isolation boundary: Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Constraints and conflicts resolve”, not “Publish one atomic outcome”.</li><li>C. At position 2, the trace uses “Statements acquire versions or locks”, not “Constraints and conflicts resolve”.</li><li>D. At position 2, the trace uses “Statements acquire versions or locks”, not “Publish one atomic outcome”.</li></ul>
+        <p>Choose the isolation boundary: Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</p><p>Statements acquire versions or locks: Concurrent transactions may conflict.</p><p>Constraints and conflicts resolve: The engine can wait, abort, commit, or require retry.</p><p>Publish one atomic outcome: Visibility follows the reader&#39;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
+        <p>Run two conflicting transactions and predict the wait, error, or visible value. Evidence to inspect: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

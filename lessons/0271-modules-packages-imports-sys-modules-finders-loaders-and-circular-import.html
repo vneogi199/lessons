@@ -79,7 +79,7 @@
       </article><article class="concept-card" data-subtopic="circular imports">
         <span>07</span>
         <h3>circular imports</h3>
-        <p class="concept-definition">Import searches for a module, creates its object, places it in sys.modules, and asks a loader to execute it. Early cache insertion is why cycles see partially initialized modules.</p>
+        <p class="concept-definition">Circular imports form a dependency cycle while modules are being initialized. Python registers a module before executing its body, so another module can encounter it before a requested attribute exists. Moving shared contracts out of the cycle addresses the dependency rather than repeatedly clearing the import cache.</p>
       </article>
     </div>
   </section>
@@ -193,6 +193,50 @@ print({
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] caches imported module objects by name and affects later imports and partially initialized circular imports.</li><li>A module is an object with a namespace, usually initialized by executing one source file. Import normally creates it once per interpreter and caches it in sys.[concept].</li><li>A package organizes modules under a dotted import namespace. Its filesystem layout, distribution metadata, and public import API are related but separate concerns.</li><li>Import searches for a module, creates its object, places it in sys.modules, and asks a loader to execute it. Early cache insertion is why cycles see partially initialized modules.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Modules: 2; packages: 4; imports: 3; sys.modules: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Modules: 2; packages: 1; imports: 3; sys.modules: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Modules: 3; packages: 2; imports: 4; sys.modules: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Modules: 2; packages: 3; imports: 4; sys.modules: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Modules: 2; packages: 3; imports: 4; sys.modules: 1</p>
+        <ul><li>A. “packages” matches explanation 3, not 4. “imports” matches explanation 4, not 3.</li><li>B. “packages” matches explanation 3, not 1. “imports” matches explanation 4, not 3. “sys.modules” matches explanation 1, not 4.</li><li>C. “Modules” matches explanation 2, not 3. “packages” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Modules: A module is an object with a namespace, usually initialized by executing one source file. Import normally creates it once per interpreter and caches it in sys.modules.</p><p>packages: A package organizes modules under a dotted import namespace. Its filesystem layout, distribution metadata, and public import API are related but separate concerns.</p><p>imports: Import searches for a module, creates its object, places it in sys.modules, and asks a loader to execute it. Early cache insertion is why cycles see partially initialized modules.</p><p>sys.modules: sys.modules caches imported module objects by name and affects later imports and partially initialized circular imports.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] form a dependency cycle while modules are being initialized. Python registers a module before executing its body, so another module can encounter it before a requested attribute exists. Moving shared contracts out of the cycle addresses the dependency rather than repeatedly clearing the import cache.</li><li>Import [concept] locate module specifications using the configured import machinery.</li><li>Import [concept] create or execute modules according to a module specification.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. finders: 3; loaders: 2; circular imports: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. finders: 1; loaders: 2; circular imports: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. finders: 2; loaders: 1; circular imports: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. finders: 2; loaders: 3; circular imports: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> finders: 2; loaders: 3; circular imports: 1</p>
+        <ul><li>A. “finders” matches explanation 2, not 3. “loaders” matches explanation 3, not 2.</li><li>B. “finders” matches explanation 2, not 1. “loaders” matches explanation 3, not 2. “circular imports” matches explanation 1, not 3.</li><li>C. “loaders” matches explanation 3, not 1. “circular imports” matches explanation 1, not 3.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>finders: Import finders locate module specifications using the configured import machinery.</p><p>loaders: Import loaders create or execute modules according to a module specification.</p><p>circular imports: Circular imports form a dependency cycle while modules are being initialized. Python registers a module before executing its body, so another module can encounter it before a requested attribute exists. Moving shared contracts out of the cycle addresses the dependency rather than repeatedly clearing the import cache.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>A name receives the module: Callers observe exports or a partially initialized cycle.</li><li>Code requests a module: The import name and current package define the search.</li><li>sys.modules is checked: An existing module object can satisfy the import immediately.</li><li>A spec chooses the loader: The module is created, cached early, then executed.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “A spec chooses the loader”, not “A name receives the module”.</li><li>C. At position 2, the trace uses “sys.modules is checked”, not “A spec chooses the loader”.</li><li>D. At position 2, the trace uses “sys.modules is checked”, not “A name receives the module”.</li></ul>
+        <p>Code requests a module: The import name and current package define the search.</p><p>sys.modules is checked: An existing module object can satisfy the import immediately.</p><p>A spec chooses the loader: The module is created, cached early, then executed.</p><p>A name receives the module: Callers observe exports or a partially initialized cycle.</p>
+        <p>Import the same module twice, then create a small circular import. Evidence to inspect: sys.modules identity, module spec, execution log, bound names, and failure traceback.</p>
+      </details>
+    </article>
+    <p><a href="https://docs.python.org/3/reference/import.html" target="_blank" rel="noreferrer">Review the lesson source: Python import system reference</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

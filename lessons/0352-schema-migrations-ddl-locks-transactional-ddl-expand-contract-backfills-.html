@@ -186,6 +186,50 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A schema migration is a controlled transition between compatible data contracts. Safe production changes account for locks, rewrites, application versions, backfills, validation, and rollback.</li><li>A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</li><li>Many PostgreSQL schema changes participate in transactions, but command-specific exceptions and locking behavior still matter.</li><li>[concept] first adds a compatible new shape, lets old and new code coexist, migrates data and traffic, and removes the old shape only after evidence says it is unused.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Schema migrations: 1; DDL locks: 2; transactional DDL: 3; expand-contract: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Schema migrations: 1; DDL locks: 2; transactional DDL: 4; expand-contract: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Schema migrations: 1; DDL locks: 3; transactional DDL: 4; expand-contract: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Schema migrations: 1; DDL locks: 4; transactional DDL: 3; expand-contract: 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> Schema migrations: 1; DDL locks: 2; transactional DDL: 3; expand-contract: 4</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “transactional DDL” matches explanation 3, not 4. “expand-contract” matches explanation 4, not 3.</li><li>C. “DDL locks” matches explanation 2, not 3. “transactional DDL” matches explanation 3, not 4. “expand-contract” matches explanation 4, not 2.</li><li>D. “DDL locks” matches explanation 2, not 4. “expand-contract” matches explanation 4, not 2.</li></ul>
+        <p>Schema migrations: A schema migration is a controlled transition between compatible data contracts. Safe production changes account for locks, rewrites, application versions, backfills, validation, and rollback.</p><p>DDL locks: A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p><p>transactional DDL: Many PostgreSQL schema changes participate in transactions, but command-specific exceptions and locking behavior still matter.</p><p>expand-contract: Expand-contract first adds a compatible new shape, lets old and new code coexist, migrates data and traffic, and removes the old shape only after evidence says it is unused.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</li><li>Zero-downtime schema change uses compatible staged changes and bounded locks rather than assuming DDL is operationally free.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. backfills: 1; zero-downtime change: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. backfills: 2; zero-downtime change: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> backfills: 1; zero-downtime change: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “backfills” matches explanation 1, not 2. “zero-downtime change” matches explanation 2, not 1.</li></ul>
+        <p>backfills: A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</p><p>zero-downtime change: Zero-downtime schema change uses compatible staged changes and bounded locks rather than assuming DDL is operationally free.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Old and new code share the data: Lock time, validation, backfill progress, rejected cases, and final shape prove safety.</li><li>Business rule becomes a data model: Entities, keys, types, cardinality, and lifecycle state the meaning.</li><li>Schema records the invariant: Columns, constraints, relations, indexes, and compatible migrations make it executable.</li><li>Concurrent writes challenge the rule: Database enforcement decides which outcomes may commit.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. At position 2, the trace uses “Schema records the invariant”, not “Concurrent writes challenge the rule”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Schema records the invariant”, not “Old and new code share the data”.</li><li>D. At position 1, the trace uses “Business rule becomes a data model”, not “Schema records the invariant”.</li></ul>
+        <p>Business rule becomes a data model: Entities, keys, types, cardinality, and lifecycle state the meaning.</p><p>Schema records the invariant: Columns, constraints, relations, indexes, and compatible migrations make it executable.</p><p>Concurrent writes challenge the rule: Database enforcement decides which outcomes may commit.</p><p>Old and new code share the data: Lock time, validation, backfill progress, rejected cases, and final shape prove safety.</p>
+        <p>Submit two individually valid writes that violate the invariant only when combined. Evidence to inspect: Constraint result, lock wait, committed rows, migration lock time, backfill checkpoint, and compatibility test.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

@@ -211,6 +211,50 @@ async function loadProject(tenant, id, version, redis, database) {
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] caching updates the cache as part of the write path under a defined failure and ordering policy.</li><li>[concept] prevents stale cached data from being served after a relevant change. Coordinate keys, versions, and races explicitly.</li><li>Cache [concept] occur when many misses trigger duplicate expensive work; coordination and expiry spreading can reduce them.</li><li>[concept] reads the cache first, loads a miss from the authoritative store, and writes the result back. The application owns invalidation, stampede control, and outage fallback.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Cache-aside: 4; write-through: 2; invalidation: 1; stampedes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Cache-aside: 4; write-through: 1; invalidation: 2; stampedes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Cache-aside: 4; write-through: 3; invalidation: 1; stampedes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Cache-aside: 1; write-through: 4; invalidation: 2; stampedes: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Cache-aside: 4; write-through: 1; invalidation: 2; stampedes: 3</p>
+        <ul><li>A. “write-through” matches explanation 1, not 2. “invalidation” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “write-through” matches explanation 1, not 3. “invalidation” matches explanation 2, not 1. “stampedes” matches explanation 3, not 2.</li><li>D. “Cache-aside” matches explanation 4, not 1. “write-through” matches explanation 1, not 4.</li></ul>
+        <p>Cache-aside: Cache-aside reads the cache first, loads a miss from the authoritative store, and writes the result back. The application owns invalidation, stampede control, and outage fallback.</p><p>write-through: Write-through caching updates the cache as part of the write path under a defined failure and ordering policy.</p><p>invalidation: Invalidation prevents stale cached data from being served after a relevant change. Coordinate keys, versions, and races explicitly.</p><p>stampedes: Cache stampedes occur when many misses trigger duplicate expensive work; coordination and expiry spreading can reduce them.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] stores absence or failure results briefly to avoid repeated work, with careful invalidation and error classification.</li><li>[concept] specifies which combinations and orderings of observations are permitted. Name the model instead of treating [concept] as a boolean.</li><li>[concept] reflects an earlier state; define which staleness is acceptable and how clients detect or recover from it.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. stale data: 1; negative caching: 3; consistency: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. stale data: 3; negative caching: 1; consistency: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. stale data: 2; negative caching: 3; consistency: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. stale data: 3; negative caching: 2; consistency: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> stale data: 3; negative caching: 1; consistency: 2</p>
+        <ul><li>A. “stale data” matches explanation 3, not 1. “negative caching” matches explanation 1, not 3.</li><li>B. Every concept matches its explanation.</li><li>C. “stale data” matches explanation 3, not 2. “negative caching” matches explanation 1, not 3. “consistency” matches explanation 2, not 1.</li><li>D. “negative caching” matches explanation 1, not 2. “consistency” matches explanation 2, not 1.</li></ul>
+        <p>stale data: Stale data reflects an earlier state; define which staleness is acceptable and how clients detect or recover from it.</p><p>negative caching: Negative caching stores absence or failure results briefly to avoid repeated work, with careful invalidation and error classification.</p><p>consistency: Consistency specifies which combinations and orderings of observations are permitted. Name the model instead of treating consistency as a boolean.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Delay, duplicate, expiry, or outage occurs: Old owners, missed acknowledgements, stale values, and retries challenge correctness.</li><li>Durable system accepts or rejects effect: Idempotency, fencing, version, fallback, and business state close the proof.</li><li>Application names a cache or coordination operation: Key design, event identity, owner token, TTL, and source of truth enter.</li><li>Atomic primitive changes shared state: Entry, pending owner, lease, counter, or cached value becomes visible.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 3, the trace uses “Delay, duplicate, expiry, or outage occurs”, not “Durable system accepts or rejects effect”.</li><li>B. At position 2, the trace uses “Atomic primitive changes shared state”, not “Delay, duplicate, expiry, or outage occurs”.</li><li>C. This reproduces the lesson’s trace.</li><li>D. At position 2, the trace uses “Atomic primitive changes shared state”, not “Durable system accepts or rejects effect”.</li></ul>
+        <p>Application names a cache or coordination operation: Key design, event identity, owner token, TTL, and source of truth enter.</p><p>Atomic primitive changes shared state: Entry, pending owner, lease, counter, or cached value becomes visible.</p><p>Delay, duplicate, expiry, or outage occurs: Old owners, missed acknowledgements, stale values, and retries challenge correctness.</p><p>Durable system accepts or rejects effect: Idempotency, fencing, version, fallback, and business state close the proof.</p>
+        <p>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed. Evidence to inspect: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SENIOR_CASES, TERM_CORRECTIONS, COMMON_TERMS, REUSE_PURPOSE } from "./senior-content.mjs";
 import { typescriptReviewFor, typescriptSourceFor } from "./typescript-review.mjs";
+import { lessonMcqs, mcqMarkup } from "./lesson-mcqs.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const roadmapPath = join(root, "roadmap.yaml");
@@ -17682,6 +17683,17 @@ function beginnerTrackContext(lesson) {
 }
 
 function simpleConceptExplanation(term, lesson) {
+  const distinctions = {
+    "0070:association": "An association links instances of classes and can specify roles and multiplicity. Unlike composition, the association alone does not require exclusive whole-part ownership or coupled destruction.",
+    "0071:protocols": "A structural protocol specifies the attributes and operations a compatible object must provide. Python Protocol supports static structural typing without requiring implementations to inherit from it; a matching shape alone does not establish behavioral substitutability.",
+    "0139:readonly arrays": "A readonly array type permits reading and iteration but prohibits element assignment and mutating methods through that typed reference. It does not freeze the runtime array or make nested element objects immutable.",
+    "0141:contextual inference": "Contextual inference uses an expression's expected surrounding type, such as a callback parameter type supplied by a function signature. It complements inference from an initializer rather than requiring an explicit annotation on every local parameter.",
+    "0141:inference failures": "Inference failures occur when available constraints do not establish the intended type relationship or precision. Inspect the inferred type and simplify the boundary or add a justified annotation; an assertion can hide a mismatch without establishing runtime correctness.",
+    "0151:const enums": "Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.",
+    "0271:circular imports": "Circular imports form a dependency cycle while modules are being initialized. Python registers a module before executing its body, so another module can encounter it before a requested attribute exists. Moving shared contracts out of the cycle addresses the dependency rather than repeatedly clearing the import cache.",
+    "0330:pure asgi middleware": "Pure ASGI middleware wraps the scope, receive and send interface directly rather than adapting through BaseHTTPMiddleware's request-response interface. Keep per-request state inside the call, pass unsupported scope types through, and preserve message ordering and streaming."
+  };
+  if (distinctions[`${lesson.number}:${term.toLowerCase()}`]) return distinctions[`${lesson.number}:${term.toLowerCase()}`];
   if (lesson.trackId === "python") {
     if (term.toLowerCase() === "containers") return "Python containers hold objects and expose operations such as membership, iteration or indexed lookup. A list, set and dictionary have different protocols and costs; this is unrelated to operating-system containers.";
     if (term.toLowerCase() === "start methods") return "Multiprocessing start methods control how a child process begins: spawn starts a fresh interpreter, fork copies the parent process state, and forkserver asks a server process to fork. Availability and defaults depend on platform and Python version; choose an explicit compatible context.";
@@ -17888,11 +17900,87 @@ function commonMistakesMarkup(diagram, traceSubject) {
   </section>`;
 }
 
+function mcqsFor(lesson, diagram = diagramFor(lesson)) {
+  return lessonMcqs(lesson, diagram, lessonSubtopics(lesson.title).map(term => ({
+    term, definition: simpleConceptExplanation(term, lesson)
+  })));
+}
+
 function lessonHtml(lesson, profile) {
   const d = diagramFor(lesson);
   const senior = SENIOR_CASES[lesson.trackId];
   const traceSubject = traceSubjectFor(lesson);
   const dsaMarkup = dsaQuestionMarkup(lesson);
+  const extensions = {
+    "0001": [["terminal", "Linux terminal basics: navigation, files, pipes and safe commands", "data-preparation-and-terminal.html"]],
+    "0285": [["pandas", "Pandas in depth: clean, join, group, reshape and test data", "data-preparation-and-terminal.html"]],
+    "0289": [["async-executors", "Asyncio and thread pools: context, cancellation and capacity", "data-preparation-and-terminal.html"]],
+    "0291": [["async-executors", "Integrate blocking work with asyncio safely", "data-preparation-and-terminal.html"]],
+    "0342": [["gunicorn", "Gunicorn and Uvicorn: workers, capacity and shutdown", "enterprise-ai-practice.html"]],
+    "0396": [["mongodb", "MongoDB: documents, indexes, transactions and scaling"]],
+    "0416": [["saml", "SAML: federation, validation and application access", "enterprise-ai-practice.html"]],
+    "0508": [["linux-users", "Linux users and groups: permission and access-testing walkthrough", "data-preparation-and-terminal.html"]],
+    "0586": [["vllm", "vLLM: model serving, capacity and operational tradeoffs", "enterprise-ai-practice.html"]],
+    "0587": [["chain-of-thought", "Chain-of-thought terminology and verifiable explanations", "enterprise-ai-practice.html"]],
+    "0588": [["pydantic-ai", "Pydantic AI: typed outputs, dependencies and testing"]],
+    "0594": [["rag", "RAG: retrieval, generation and failure diagnosis", "enterprise-ai-practice.html"]],
+    "0595": [["pdf", "PDF processing: text extraction, OCR routing and page evidence", "data-preparation-and-terminal.html"], ["parent-child", "Parent–child retrieval: context expansion without access leaks", "enterprise-ai-practice.html"], ["etl-elt", "ETL versus ELT: ingestion, replay and deletion", "enterprise-ai-practice.html"]],
+    "0596": [["hyde", "HyDE: hypothetical documents and query drift"]],
+    "0597": [["ragas", "RAGAS: evaluation metrics, calibration and failure slices", "enterprise-ai-practice.html"]],
+    "0598": [["self-rag", "Self-RAG: reflection signals and stopping policies"], ["active-web-search", "Active web search: freshness, citations and security"], ["pageindex", "Vectorless/PageIndex-style retrieval for long documents", "enterprise-ai-practice.html"]],
+    "0599": [["chromadb", "ChromaDB: collections, persistence and filtered retrieval"], ["pinecone", "Pinecone: indexes, namespaces and filtered retrieval", "enterprise-ai-practice.html"]],
+    "0602": [["neo4j", "Neo4j: Cypher, traversals and evidence"], ["graphrag", "GraphRAG: entity linking and grounded multi-hop answers"], ["kag", "KAG: rule-aware retrieval and exact decisions"], ["lightrag", "LightRAG: retrieval modes and index lifecycle"]],
+    "0603": [["openai-agents", "OpenAI Agents SDK: tools, runs and outcome checks", "enterprise-ai-practice.html"], ["claude-agents", "Claude Agent SDK: tools and runtime permissions", "enterprise-ai-practice.html"]],
+    "0604": [["duckdb", "DuckDB: analytical SQL behind a safe tool boundary"], ["episodic-memory", "Episodic memory: verified experiences and stale-memory tests", "enterprise-ai-practice.html"]],
+    "0610": [["crewai", "CrewAI: bounded tasks, delegation and tracing"], ["deep-agents", "Deep Agents: planning, delegation and capability boundaries", "enterprise-ai-practice.html"]],
+    "0611": [["kill-switch", "Operational kill switches: queued work, fencing and recovery", "enterprise-ai-practice.html"]]
+  }[lesson.number] || [];
+  const syllabusLabs = [
+    ["0620", "pathway", "AI Engineer practical learning pathway", "ai-engineer-practice.html"],
+    ["0168", "code-review", "Own and test AI-generated code", "ai-engineer-practice.html"],
+    ["0614", "benchmark", "Compare models using failures, quality, latency and cost", "ai-engineer-practice.html"],
+    ["0602", "rag-project", "Build an evaluated, permission-aware knowledge assistant", "ai-engineer-practice.html"],
+    ["0606", "agent-project", "Build a work-order triage workflow with approval", "ai-engineer-practice.html"],
+    ["0620", "advanced", "Serving, LoRA, ML judgment and controlled releases", "ai-engineer-practice.html"],
+    ["0285", "numpy-arrays", "NumPy arrays, axes, dtypes and memory ownership", "numerical-data-engineering.html"],
+    ["0285", "vectorization", "NumPy vectorization, broadcasting and safe numerical operations", "numerical-data-engineering.html"],
+    ["0285", "numpy-performance", "Benchmarking and bounded-memory vectorization", "numerical-data-engineering.html"],
+    ["0285", "pandas-windows", "Pandas temporal features, windows and as-of joins", "numerical-data-engineering.html"],
+    ["0285", "polars", "Polars expressions, joins, lazy plans and streaming", "numerical-data-engineering.html"],
+    ["0285", "sql-parity", "SQL parity and choosing a data engine", "numerical-data-engineering.html"],
+    ["0267", "python-api-llm", "Python basics through a validated LLM API", "api-cloud-delivery-labs.html"],
+    ["0303", "python-api-llm", "Routes, models, errors, secrets and background tasks", "api-cloud-delivery-labs.html"],
+    ["0337", "graphql", "GraphQL schemas, resolvers and N+1 batching", "api-cloud-delivery-labs.html"],
+    ["0343", "versioning", "Path and header API versioning", "api-cloud-delivery-labs.html"],
+    ["0296", "developer-workflow", "Fixtures, mocking, coverage and IDE debugging", "api-cloud-delivery-labs.html"],
+    ["0506", "aws-provisioning", "Provisioning walkthrough and least privilege", "api-cloud-delivery-labs.html"],
+    ["0504", "billing", "Billing console and budget thresholds", "api-cloud-delivery-labs.html"],
+    ["0491", "ecs-delivery", "Containers, ECS and GitHub Actions delivery", "api-cloud-delivery-labs.html"],
+    ["0587", "context-budget", "Token budgets, sliding windows and compression", "retrieval-document-labs.html"],
+    ["0588", "typed-output", "Nested schemas, discriminated unions and validation", "retrieval-document-labs.html"],
+    ["0589", "parallel-tools", "Validated parallel tools and result history", "retrieval-document-labs.html"],
+    ["0594", "hybrid-implementation", "BM25, dense retrieval and reciprocal rank fusion", "retrieval-document-labs.html"],
+    ["0596", "reranker-api", "Reranker API integration and safe fallback", "retrieval-document-labs.html"],
+    ["0602", "graph-modeling", "Graph modeling, AuraDB and Neptune", "retrieval-document-labs.html"],
+    ["0586", "visual-retrieval", "CLIP, ColPali and visual retrieval", "retrieval-document-labs.html"],
+    ["0595", "document-layout", "OCR, tables, charts and page coordinates", "retrieval-document-labs.html"],
+    ["0470", "collaboration-connectors", "Slack, Teams and Jira integration", "enterprise-security-labs.html"],
+    ["0604", "soap", "WSDL, Zeep and safe SOAP boundaries", "enterprise-security-labs.html"],
+    ["0604", "enterprise-sql", "SQL Server, Oracle and constrained Text-to-SQL", "enterprise-security-labs.html"],
+    ["0327", "entra-rbac", "Entra groups and retrieval authorization", "enterprise-security-labs.html"],
+    ["0617", "presidio", "PII detection, redaction and scoped reversal", "enterprise-security-labs.html"],
+    ["0615", "nemo", "NeMo, Colang and guardrail testing", "enterprise-security-labs.html"],
+    ["0505", "bedrock-guardrails", "Bedrock guardrail configuration", "enterprise-security-labs.html"],
+    ["0606", "advanced-langgraph", "Subgraphs, async branches and conflict-safe reduction", "agent-operations-capstones.html"],
+    ["0505", "managed-memory", "Managed agents, knowledge bases and memory", "agent-operations-capstones.html"],
+    ["0611", "gateway-routing", "LiteLLM, Portkey and bounded failover", "agent-operations-capstones.html"],
+    ["0612", "evaluation-ops", "Synthetic datasets, judges and release gates", "agent-operations-capstones.html"],
+    ["0611", "trace-dashboard", "Span-level traces, sessions and cost dashboards", "agent-operations-capstones.html"],
+    ["0506", "omniguard", "OmniGuard secure integration capstone", "agent-operations-capstones.html"],
+    ["0610", "auditmesh", "AuditMesh multi-agent compliance capstone", "agent-operations-capstones.html"]
+  ];
+  extensions.push(...syllabusLabs.filter(([number]) => number === lesson.number).map(([, ...link]) => link));
+const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul>${extensions.map(([anchor, title, file = "ai-data-extensions.html"]) => `<li><a href="../reference/${file}#${anchor}">${title}</a></li>`).join("")}</ul></section>` : "";
   const exerciseSpecification = /^(?:#|\/\/) (?:Exercise|Experiment|Integration exercise)/.test(profile.code);
   const options = [
     "Trace mechanisms and verify evidence",
@@ -17955,7 +18043,7 @@ function lessonHtml(lesson, profile) {
     </aside>
   </div>
 
-  ${subtopicBreakdownMarkup(lesson)}${dsaMarkup ? `\n  ${dsaMarkup}\n` : "\n"}
+  ${subtopicBreakdownMarkup(lesson)}${lesson.number === "0596" ? '\n  <section class="card"><h2>Cross-encoder reranking</h2><p>Score query–passage pairs jointly, batch candidate scoring, and measure whether ranking quality earns its latency and cost. <a href="../reference/cross-encoder-reranking.html">Open the deep dive, offline exercise and senior interview checkpoints</a>.</p></section>' : ""}${extensionMarkup ? `\n  ${extensionMarkup}` : ""}${dsaMarkup ? `\n  ${dsaMarkup}\n` : "\n"}
   ${mechanismWalkthroughMarkup(d)}
 
   ${dsaApproachMarkup(lesson)}
@@ -18014,6 +18102,8 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
       </details>
     </div>
   </section>
+
+  ${mcqMarkup(mcqsFor(lesson, d), profile)}
 
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
@@ -18297,6 +18387,7 @@ async function generate() {
         path: `lessons/${filename}`
       };
       const profile = teachingProfileFor(lesson, TRACK_PROFILES[track.id]);
+      const mcqs = mcqsFor(lesson);
       const html = lessonHtml(lesson, profile);
       const revision = createHash("sha256").update(html).digest("hex").slice(0, 12);
       await writeFile(join(lessonsDirectory, filename), html, "utf8");
@@ -18315,6 +18406,8 @@ async function generate() {
         duration: lesson.duration,
         path: lesson.path,
         revision,
+        mcqCount: mcqs.questions.length,
+        mcqUncoveredTerms: mcqs.uncoveredTerms,
         sourceLabel: profile.sourceLabel,
         sourceUrl: profile.sourceUrl
       });

@@ -186,6 +186,50 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</li><li>[concept] schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</li><li>[concept] schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</li><li>[concept] queues work for Node&#39;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. process.nextTick: 4; Promise microtasks: 2; queueMicrotask: 1; setImmediate: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. process.nextTick: 4; Promise microtasks: 1; queueMicrotask: 2; setImmediate: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. process.nextTick: 4; Promise microtasks: 3; queueMicrotask: 1; setImmediate: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. process.nextTick: 1; Promise microtasks: 4; queueMicrotask: 2; setImmediate: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> process.nextTick: 4; Promise microtasks: 1; queueMicrotask: 2; setImmediate: 3</p>
+        <ul><li>A. “Promise microtasks” matches explanation 1, not 2. “queueMicrotask” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “Promise microtasks” matches explanation 1, not 3. “queueMicrotask” matches explanation 2, not 1. “setImmediate” matches explanation 3, not 2.</li><li>D. “process.nextTick” matches explanation 4, not 1. “Promise microtasks” matches explanation 1, not 4.</li></ul>
+        <p>process.nextTick: process.nextTick queues work for Node&#39;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p><p>Promise microtasks: Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p><p>queueMicrotask: queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p><p>setImmediate: setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</li><li>Node [concept] schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. timers: 1; starvation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. timers: 2; starvation: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> timers: 2; starvation: 1</p>
+        <ul><li>A. “timers” matches explanation 2, not 1. “starvation” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>timers: Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p><p>starvation: Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Main thread handles completion: Latency and event-loop delay become observable.</li><li>JavaScript schedules work: The main thread initiates I/O, timers, or CPU work.</li><li>Node delegates eligible work: OS readiness, libuv, workers, or another process executes it.</li><li>Completion becomes ready: Loop phases and microtasks determine callback order.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. At position 3, the trace uses “Completion becomes ready”, not “Main thread handles completion”.</li><li>B. At position 2, the trace uses “Node delegates eligible work”, not “Completion becomes ready”.</li><li>C. This reproduces the lesson’s trace.</li><li>D. At position 2, the trace uses “Node delegates eligible work”, not “Main thread handles completion”.</li></ul>
+        <p>JavaScript schedules work: The main thread initiates I/O, timers, or CPU work.</p><p>Node delegates eligible work: OS readiness, libuv, workers, or another process executes it.</p><p>Completion becomes ready: Loop phases and microtasks determine callback order.</p><p>Main thread handles completion: Latency and event-loop delay become observable.</p>
+        <p>Add one blocking CPU loop and compare callback timing before and after. Evidence to inspect: Event-loop delay, async trace, worker identity, callback order, and latency.</p>
+      </details>
+    </article>
+    <p><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Review the lesson source: Node.js event loop guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

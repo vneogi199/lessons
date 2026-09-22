@@ -79,6 +79,7 @@
       </article>
     </div>
   </section>
+  <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/data-preparation-and-terminal.html#async-executors">Integrate blocking work with asyncio safely</a></li></ul></section>
 
   <section class="card mechanism-walkthrough">
     <span class="section-label">05 · Detailed mechanism</span>
@@ -194,6 +195,50 @@ assert choose(Work(False, False, True, False)) is Boundary.PROCESS</code></pre>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] are operating-system execution units with their own resource and address-space context; they may contain multiple threads.</li><li>Choose async tasks, threads, or processes from workload, isolation, cancellation, and serialization costs rather than a universal preference.</li><li>[concept] Python structures cooperative concurrency through coroutines and await; it does not automatically parallelize CPU computation.</li><li>[concept] share one process and memory while the OS schedules them independently. Shared mutable invariants still require synchronization.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Concurrency selection: 2; async: 4; threads: 3; processes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Concurrency selection: 2; async: 1; threads: 3; processes: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Concurrency selection: 3; async: 2; threads: 4; processes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Concurrency selection: 2; async: 3; threads: 4; processes: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Concurrency selection: 2; async: 3; threads: 4; processes: 1</p>
+        <ul><li>A. “async” matches explanation 3, not 4. “threads” matches explanation 4, not 3.</li><li>B. “async” matches explanation 3, not 1. “threads” matches explanation 4, not 3. “processes” matches explanation 1, not 4.</li><li>C. “Concurrency selection” matches explanation 2, not 3. “async” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Concurrency selection: Choose async tasks, threads, or processes from workload, isolation, cancellation, and serialization costs rather than a universal preference.</p><p>async: Async Python structures cooperative concurrency through coroutines and await; it does not automatically parallelize CPU computation.</p><p>threads: Threads share one process and memory while the OS schedules them independently. Shared mutable invariants still require synchronization.</p><p>processes: Processes are operating-system execution units with their own resource and address-space context; they may contain multiple threads.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] execute tasks across processes or hosts and require explicit retry, duplicate, and version contracts.</li><li>[concept] submit work to threads or processes behind futures, with queueing, shutdown, and result-transfer costs.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. executors: 1; distributed workers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. executors: 2; distributed workers: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> executors: 2; distributed workers: 1</p>
+        <ul><li>A. “executors” matches explanation 2, not 1. “distributed workers” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>executors: Executors submit work to threads or processes behind futures, with queueing, shutdown, and result-transfer costs.</p><p>distributed workers: Distributed workers execute tasks across processes or hosts and require explicit retry, duplicate, and version contracts.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Work waits or consumes CPU: Cancellation and synchronization shape interleaving.</li><li>Result, error, or cancellation returns: The owner waits for cleanup before continuing.</li><li>A callable or coroutine is created: Its wait pattern and CPU cost determine a boundary.</li><li>Loop, thread, or process owns it: The scheduler decides when execution can progress.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Work waits or consumes CPU”, not “Result, error, or cancellation returns”.</li><li>C. At position 2, the trace uses “Loop, thread, or process owns it”, not “Work waits or consumes CPU”.</li><li>D. At position 2, the trace uses “Loop, thread, or process owns it”, not “Result, error, or cancellation returns”.</li></ul>
+        <p>A callable or coroutine is created: Its wait pattern and CPU cost determine a boundary.</p><p>Loop, thread, or process owns it: The scheduler decides when execution can progress.</p><p>Work waits or consumes CPU: Cancellation and synchronization shape interleaving.</p><p>Result, error, or cancellation returns: The owner waits for cleanup before continuing.</p>
+        <p>Run the workload once normally and once with blocking, cancellation, or worker failure. Evidence to inspect: Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p>
+      </details>
+    </article>
+    <p><a href="https://docs.python.org/3/library/asyncio.html" target="_blank" rel="noreferrer">Review the lesson source: Python asyncio reference</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

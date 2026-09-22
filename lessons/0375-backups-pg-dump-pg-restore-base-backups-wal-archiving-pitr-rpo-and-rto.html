@@ -189,6 +189,50 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A physical base backup copies a consistent PostgreSQL cluster starting point together with required recovery information. Further point-in-time recovery needs an unbroken suitable WAL history and compatible server setup; this is not a selective logical pg_dump archive.</li><li>A backup is an independently retained copy that can restore data after loss or corruption. Its value is proven by recovery drills against stated RPO and RTO targets.</li><li>[concept] creates a logical database backup; a successful dump is not proof that the restore meets recovery objectives.</li><li>[concept] loads supported archive-format dumps with options for selecting and ordering restored objects.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Backups: 2; pg_dump: 4; pg_restore: 3; base backups: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Backups: 2; pg_dump: 1; pg_restore: 3; base backups: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Backups: 3; pg_dump: 2; pg_restore: 4; base backups: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Backups: 2; pg_dump: 3; pg_restore: 4; base backups: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Backups: 2; pg_dump: 3; pg_restore: 4; base backups: 1</p>
+        <ul><li>A. “pg_dump” matches explanation 3, not 4. “pg_restore” matches explanation 4, not 3.</li><li>B. “pg_dump” matches explanation 3, not 1. “pg_restore” matches explanation 4, not 3. “base backups” matches explanation 1, not 4.</li><li>C. “Backups” matches explanation 2, not 3. “pg_dump” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Backups: A backup is an independently retained copy that can restore data after loss or corruption. Its value is proven by recovery drills against stated RPO and RTO targets.</p><p>pg_dump: pg_dump creates a logical database backup; a successful dump is not proof that the restore meets recovery objectives.</p><p>pg_restore: pg_restore loads supported archive-format dumps with options for selecting and ordering restored objects.</p><p>base backups: A physical base backup copies a consistent PostgreSQL cluster starting point together with required recovery information. Further point-in-time recovery needs an unbroken suitable WAL history and compatible server setup; this is not a selective logical pg_dump archive.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Recovery time objective is the target time to restore acceptable service after an incident. Test the complete restore and verification path.</li><li>[concept] retains completed log segments for recovery beyond a base backup.</li><li>Point-in-time recovery restores a base backup and replays archived WAL to a selected recovery target.</li><li>Recovery point objective is the maximum acceptable loss of recent data, expressed as time. Backup success alone does not prove the target is met.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. WAL archiving: 2; PITR: 4; RPO: 3; RTO: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. WAL archiving: 2; PITR: 1; RPO: 3; RTO: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. WAL archiving: 3; PITR: 2; RPO: 4; RTO: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. WAL archiving: 2; PITR: 3; RPO: 4; RTO: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> WAL archiving: 2; PITR: 3; RPO: 4; RTO: 1</p>
+        <ul><li>A. “PITR” matches explanation 3, not 4. “RPO” matches explanation 4, not 3.</li><li>B. “PITR” matches explanation 3, not 1. “RPO” matches explanation 4, not 3. “RTO” matches explanation 1, not 4.</li><li>C. “WAL archiving” matches explanation 2, not 3. “PITR” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>WAL archiving: WAL archiving retains completed log segments for recovery beyond a base backup.</p><p>PITR: Point-in-time recovery restores a base backup and replays archived WAL to a selected recovery target.</p><p>RPO: Recovery point objective is the maximum acceptable loss of recent data, expressed as time. Backup success alone does not prove the target is met.</p><p>RTO: Recovery time objective is the target time to restore acceptable service after an incident. Test the complete restore and verification path.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Recovery or replica reapplies history: Redo, timelines, slots, targets, and schema compatibility govern progress.</li><li>Restored state serves invariants: Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</li><li>Backend creates a database change: Transaction identity and modified buffers define the candidate outcome.</li><li>Log record reaches required durability: LSNs, flush policy, checkpoints, archive, and sender positions advance.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Recovery or replica reapplies history”, not “Restored state serves invariants”.</li><li>C. At position 2, the trace uses “Log record reaches required durability”, not “Recovery or replica reapplies history”.</li><li>D. At position 2, the trace uses “Log record reaches required durability”, not “Restored state serves invariants”.</li></ul>
+        <p>Backend creates a database change: Transaction identity and modified buffers define the candidate outcome.</p><p>Log record reaches required durability: LSNs, flush policy, checkpoints, archive, and sender positions advance.</p><p>Recovery or replica reapplies history: Redo, timelines, slots, targets, and schema compatibility govern progress.</p><p>Restored state serves invariants: Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</p>
+        <p>Stop the relevant process at one precise point and predict the last recoverable commit. Evidence to inspect: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/maintenance.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL maintenance documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

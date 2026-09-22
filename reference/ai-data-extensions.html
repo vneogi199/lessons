@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI and data systems — senior deep dives</title>
+<style>
+:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.75 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:32px 24px 80px}a,summary{color:#79e8ff}h1,h2,h3{line-height:1.3;color:#f7fbff}h1{font-size:clamp(28px,5vw,42px)}h2{font-size:27px}h3{font-size:20px}section{margin:32px 0;padding:24px;border:1px solid #3b526c;border-radius:8px;scroll-margin-top:20px}pre{overflow:auto;padding:18px;background:#101722;font:14px/1.65 ui-monospace,monospace}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}summary{cursor:pointer}details{margin:18px 0;padding:12px;border-left:2px solid #79e8ff}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff;outline-offset:4px}li{margin:7px 0}.note{padding:15px;border-left:3px solid #ffd277;background:#17191d}.muted{color:#aabbd0}nav ul{columns:2;padding-left:24px}@media(max-width:600px){nav ul{columns:1}section{padding:16px}main{padding:20px 16px}}@media print{:root{color-scheme:light}body{background:#fff;color:#111;font-size:11pt}main{max-width:none;padding:0}h1,h2,h3,a,summary,.muted{color:#111}section{border-color:#777}pre,.note{background:#fff;white-space:pre-wrap;overflow-wrap:anywhere}details::details-content{content-visibility:visible}nav{display:none}h2,h3{break-after:avoid}}
+</style></head><body><main>
+<header><p><a href="../index.html">Curriculum</a> · Senior interview extensions · Reviewed 19 September 2026</p>
+<h1>AI and data systems: the remaining deep dives</h1>
+<p>Build the judgment to choose a database, defend a retrieval architecture, and contain an agent's failures. Each topic has a short mechanism explanation, a concrete exercise and a worked checkpoint. Study one at a time; the parent lessons supply the broader foundations.</p>
+<p class="note">No installation is needed to read or do the tabletop exercises. The five blocks marked “offline check” run with Python's standard library through <code>python3 scripts/check-ai-data-extensions.py</code>. Framework examples require an already provisioned, isolated learning environment and compatible pinned versions; they have not been integration-tested here. Do not run them against production. Model-backed experiments can incur costs. Completion of the content is not evidence of learner mastery.</p>
+</header>
+<nav aria-label="Topics"><ul>
+<li><a href="#chromadb">ChromaDB</a></li><li><a href="#neo4j">Neo4j</a></li><li><a href="#crewai">CrewAI</a></li><li><a href="#pydantic-ai">Pydantic AI</a></li><li><a href="#duckdb">DuckDB</a></li><li><a href="#graphrag">GraphRAG</a></li><li><a href="#kag">KAG</a></li><li><a href="#lightrag">LightRAG</a></li><li><a href="#self-rag">Self-RAG</a></li><li><a href="#hyde">HyDE</a></li><li><a href="#active-web-search">Active web search</a></li><li><a href="#mongodb">MongoDB</a></li>
+</ul></nav>
+
+<section id="chromadb"><h2>ChromaDB: make retrieval reproducible</h2>
+<p>A collection stores IDs, vectors, documents and metadata. Your embedding model defines the vector space; the database searches that space. Changing the model while keeping the same dimension still changes the meaning of the coordinates. Treat model revision, normalization, distance metric and chunking version as an index contract, not incidental settings.</p>
+<p><code>PersistentClient</code> keeps a local database directory across processes; an ephemeral client does not. For a shared service, use a server-backed deployment with authentication, controlled network access, backup/restore and capacity monitoring. A local persistence directory is not a high-availability strategy. See <a href="https://docs.trychroma.com/reference/python/client">client choices</a> and <a href="https://docs.trychroma.com/docs/collections/manage-collections">collection lifecycle</a>.</p>
+<h3>Retrieve only the allowed tenant's records</h3>
+<p>In an existing Chroma Python environment, run this in a scratch working directory. It creates <code>chroma-learning</code>. The hand-written two-dimensional vectors test plumbing, not semantic quality. Explicit embeddings and <code>embedding_function=None</code> avoid an implicit embedding-model download.</p>
+<pre><code data-python="integration">import chromadb
+
+client = chromadb.PersistentClient(path="./chroma-learning")
+docs = client.get_or_create_collection("tenant_fixture", embedding_function=None)
+docs.upsert(
+    ids=["a:policy:v1", "b:policy:v1"],
+    embeddings=[[1.0, 0.0], [0.0, 1.0]],
+    documents=["Tenant A policy", "Tenant B policy"],
+    metadatas=[{"tenant": "a", "version": 1}, {"tenant": "b", "version": 1}],
+)
+# In a service, tenant comes from authenticated identity, not the model.
+tenant = "a"
+result = docs.query(query_embeddings=[[0.0, 1.0]], n_results=1,
+                    where={"tenant": tenant}, include=["documents", "metadatas"])
+assert result["ids"] == [["a:policy:v1"]]
+assert result["metadatas"][0][0]["tenant"] == tenant
+</code></pre>
+<p>The nearest unfiltered vector belongs to B, but the filter must exclude it. Repeat in a fresh process using the same path and <code>get_collection</code>, without upserting first: the records should still exist. Change the query to three dimensions and expect rejection; try an absent tenant and expect an empty result. <code>where</code> filters metadata; <code>where_document</code> filters document text. Neither substitutes for authorization. See <a href="https://docs.trychroma.com/docs/querying-collections/query-and-get">query/get behavior</a>.</p>
+<p>Stable IDs make upserts repeatable, but do not automatically remove chunks left behind when a source becomes shorter. Maintain a per-document chunk manifest; publish a complete new index generation and retire stale chunks. Apply permission changes before exposing results and invalidate caches. Compare filtered recall against an exact authorized baseline; also measure ingestion lag, p95 latency under concurrency and recovery time.</p>
+<details><summary>Interview checkpoint: why did a model upgrade silently break retrieval?</summary><p>Dimension validation only catches shape errors. Two models can emit equally sized vectors in incompatible spaces. Build a separate collection for the new model, re-embed documents, evaluate fixed queries and switch the query encoder and collection together. Keep the old generation for rollback. Do not mix vectors or assume a successful API call proves retrieval quality.</p></details>
+<p>Tomorrow, reconstruct the index contract and explain why a metadata filter chosen by an LLM is not a security boundary. <a href="../lessons/0599-vector-database-data-model-embeddings-dimensions-distance-metrics-metada.html">Return to lesson 0599</a>.</p>
+</section>
+
+<section id="neo4j"><h2>Neo4j: traverse relationships without inventing them</h2>
+<p>A property graph stores nodes with labels and properties, and directed typed relationships with their own properties. Model an entity separately from the evidence asserting a relationship. “Team A owns service X” should retain a source/version, rather than becoming an untraceable edge. A Cypher pattern describes a shape to match; it is not a request to search every possible path.</p>
+<p>Use immutable scoped keys, not display names, for identity. A uniqueness constraint protects concurrent writes; <code>MERGE</code> alone does not make arbitrary properties unique. Split node merges from relationship merges so an existing node is reused. Parameterize values; do not execute model-generated Cypher with write credentials. Read <a href="https://neo4j.com/docs/cypher-manual/current/clauses/merge/">MERGE semantics</a>.</p>
+<h3>Answer “who owns this service?” with evidence</h3>
+<p>These Cypher statements target an isolated existing Neo4j database. Bind <code>$tenant</code>, <code>$service</code>, <code>$team</code>, <code>$source</code> and <code>$version</code> through the driver or your Cypher client. Example values: a, checkout, payments, handbook-7, 1.</p>
+<pre><code>// Execute separately. Creation requires appropriate schema privileges.
+CREATE CONSTRAINT service_key IF NOT EXISTS
+FOR (s:Service) REQUIRE (s.tenant, s.id) IS UNIQUE;
+CREATE CONSTRAINT team_key IF NOT EXISTS
+FOR (t:Team) REQUIRE (t.tenant, t.id) IS UNIQUE;
+
+MERGE (s:Service {tenant: $tenant, id: $service})
+MERGE (t:Team {tenant: $tenant, id: $team})
+MERGE (t)-[:OWNS {source: $source, version: $version}]-&gt;(s);
+
+MATCH (s:Service {tenant: $tenant, id: $service})
+      &lt;-[r:OWNS]-(t:Team {tenant: $tenant})
+RETURN t.id AS team, r.source AS source, r.version AS version
+ORDER BY team, source LIMIT 20;</code></pre>
+<p>Add another service with the same name under tenant B. Query A and confirm no B result appears. The constraint-backed index locates the starting service; expansion follows adjacent edges. Use <code>EXPLAIN</code> to inspect a plan and <code>PROFILE</code> only for safe queries because it executes them. Check actual rows and database accesses; an index cannot make an unbounded dense traversal cheap. For multi-hop retrieval, bound relationship types, depth, fan-out and time. See <a href="https://neo4j.com/docs/cypher-manual/current/indexes/search-performance-indexes/using-indexes/">index use</a>.</p>
+<p>For a GraphRAG path, resolve a query mention to a service key, fetch ownership evidence, then retrieve the corresponding authorized source passage. Ask the generator to answer from that passage and cite it. Neo4j's <a href="https://neo4j.com/docs/neo4j-graphrag-python/current/">GraphRAG package</a> also offers retrieval components, but a graph result is still only as trustworthy as ingestion and provenance. Do not expose arbitrary traversal as an unrestricted agent tool.</p>
+<details><summary>Interview checkpoint: two teams own checkout—pick the newest?</summary><p>First determine whether ownership is multi-valued, whether the timestamps represent validity or ingestion, and whether sources conflict. A new ingestion timestamp does not establish authority. Return both with provenance or apply an explicit effective-date/authority policy. Retire obsolete evidence during ingestion; <code>MERGE</code> does not retract a previous fact.</p></details>
+<p>Tomorrow, sketch a two-hop dependency query and identify where authorization, source validation and path limits apply. Continue with <a href="#graphrag">GraphRAG</a>.</p>
+</section>
+
+<section id="crewai"><h2>CrewAI: give every worker a bounded job</h2>
+<p>An agent bundles a role, model behavior and tools; a task specifies the work and expected artifact; a crew coordinates tasks. A sequential crew passes through declared work in order. Delegation adds model-selected collaboration, not a deterministic scheduler. Use a Flow or ordinary application code for strict routing, approvals and restart behavior. Consult <a href="https://docs.crewai.com/en/concepts/agents">agents</a> and <a href="https://docs.crewai.com/en/concepts/tasks">tasks</a>.</p>
+<h3>Separate evidence gathering from writing</h3>
+<p>This integration recipe requires CrewAI and an explicitly configured, approved model in <code>CREWAI_MODEL</code>. Running kickoff calls that provider. It is intentionally read-only, with delegation and memory disabled. The lookup tool has no file, shell or network capability.</p>
+<pre><code data-python="integration">import os
+from crewai import Agent, Task, Crew, Process
+from crewai.tools import tool
+
+@tool("policy_lookup")
+def policy_lookup() -&gt; str:
+    """Return the approved training policy with its evidence ID."""
+    return "P1: Trial refunds are available within seven days."
+
+model = os.environ["CREWAI_MODEL"]
+researcher = Agent(role="Policy researcher", goal="Return supported claims and IDs",
+    backstory="You check the supplied policy, not general knowledge.",
+    llm=model, tools=[policy_lookup], allow_delegation=False, max_iter=3)
+writer = Agent(role="Policy writer", goal="Explain only supplied claims",
+    backstory="You cite evidence and state uncertainty.",
+    llm=model, tools=[], allow_delegation=False, max_iter=3)
+research = Task(description="Find the trial refund window using policy_lookup.",
+    expected_output="A claim and evidence ID, or an explicit unknown.", agent=researcher)
+draft = Task(description="Answer the refund question using only the research.",
+    expected_output="One sentence with its evidence ID.", agent=writer, context=[research])
+crew = Crew(agents=[researcher, writer], tasks=[research, draft],
+            process=Process.sequential, memory=False, verbose=False)
+# With an approved provider budget, run: result = crew.kickoff()
+</code></pre>
+<p>First predict the allowed tool calls and expected sentence: “Trial refunds are available within seven days [P1].” Then remove the policy fixture and require an unknown, not a fabricated rule. Evaluate supported claims and actual tool traces, not only pleasant wording. Compare the crew with one agent using the same evidence; two agents need to earn their extra calls.</p>
+<p>Memory can retain useful context but also stale facts, injected instructions or another tenant's data. If enabled later, define tenant scope, consent, expiry, deletion and source versioning in the memory backend. Do not equate model memory with your application's authoritative state. Keep tool authorization in application code: a role description or <code>allow_delegation=False</code> is not access control.</p>
+<p>Trace run/task/agent IDs, model and tool durations, token usage, retries and terminal outcomes. Redact prompts and tool payloads before export, and review the configured tracing destination. Enforce a total request/time/spend budget outside individual agents; per-agent iteration limits do not bound the whole crew. Test a slow tool, duplicate task delivery and a worker that returns unsupported claims. Approval and idempotency belong at the side-effect boundary.</p>
+<details><summary>Interview checkpoint: should the writer be allowed to delegate?</summary><p>Not for this fixed handoff. Delegation creates another path, budget and permission surface without adding necessary information. If research genuinely needs specialization, give the manager an allowlisted set of workers, bounded depth and an explicit output contract. Save trace evidence showing that improved correctness justifies the cost.</p></details>
+<p>Tomorrow, explain why adding a critic cannot guarantee truth. <a href="../lessons/0610-multi-agent-patterns-coordination-costs-and-failure-containment.html">Return to lesson 0610</a>.</p>
+</section>
+
+<section id="pydantic-ai"><h2>Pydantic AI: valid shapes are not valid decisions</h2>
+<p>A typed agent declares its dependency and output contracts. Tool signatures describe inputs; validation catches malformed arguments and outputs. Dependencies carry trusted runtime services or identity into tools without asking the model to supply credentials. None of this proves that an answer is true or a caller is authorized. See <a href="https://pydantic.dev/docs/ai/core-concepts/dependencies/">dependency injection</a> and <a href="https://pydantic.dev/docs/ai/examples/getting-started/pydantic-model/">structured output</a>.</p>
+<h3>Keep the account identity out of model-controlled arguments</h3>
+<p>In an existing Pydantic AI environment, this example uses <code>TestModel</code>, not a provider. The dependency is a trusted fixture; a real service must derive it from authenticated identity. The test checks plumbing and schema conformance, not whether an LLM reasons correctly.</p>
+<pre><code data-python="integration">from dataclasses import dataclass
+from typing import Literal
+from pydantic import BaseModel, ConfigDict
+from pydantic_ai import Agent, RunContext, models
+from pydantic_ai.models.test import TestModel
+
+@dataclass
+class Deps:
+    tenant: str
+    policies: dict[str, str]
+
+class Answer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["answered", "unknown"]
+    evidence_ids: list[str]
+
+agent = Agent(TestModel(), deps_type=Deps, output_type=Answer,
+              instructions="Use policy evidence; otherwise return unknown.")
+
+@agent.tool
+def policy(ctx: RunContext[Deps]) -&gt; str:
+    """Read the authenticated tenant's policy fixture."""
+    return ctx.deps.policies.get(ctx.deps.tenant, "No policy available")
+
+previous = models.ALLOW_MODEL_REQUESTS
+models.ALLOW_MODEL_REQUESTS = False
+try:
+    result = agent.run_sync("What is our policy?",
+        deps=Deps("a", {"a": "A1: seven days", "b": "B1: thirty days"}))
+    assert isinstance(result.output, Answer)
+finally:
+    models.ALLOW_MODEL_REQUESTS = previous
+</code></pre>
+<p>Now design a deterministic <code>FunctionModel</code> test that requests the tool, then emits an unknown status. Assert which tool ran, which tenant it read, and that no B1 evidence escaped. Add malformed status, extra fields and invented evidence IDs. Output validation should reject schema violations; application checks must independently reject IDs absent from authorized tool results. In a real provider test, additionally measure correct tool selection, argument correctness, supported answers, retries and latency. See <a href="https://pydantic.dev/docs/ai/guides/testing/">testing models and request blocking</a>.</p>
+<p>Decide what to do after validation fails: a bounded repair attempt, a typed failure or human review. Unlimited retries can spend indefinitely and cannot manufacture missing evidence. Tool execution needs timeouts and idempotency for writes even when its arguments validate. Keep secrets in server-side clients; dependency injection does not mean those values must be serialized into model context.</p>
+<details><summary>Interview checkpoint: the output is valid JSON and cites B1—is it safe?</summary><p>No. B1 belongs to another tenant in the fixture. Validate citation membership against this run's authorized evidence, not the entire database. A structurally correct output can still be unauthorized, unsupported or inconsistent with its own status. Test those semantic invariants independently of the schema and model.</p></details>
+<p>Tomorrow, name one failure caught by typing, one caught by runtime schema validation, and one requiring an authorization check. <a href="../lessons/0588-structured-outputs-schemas-parsing-validation-and-repair.html">Return to lesson 0588</a>.</p>
+</section>
+
+<section id="duckdb"><h2>DuckDB: let an agent request a report, not arbitrary SQL</h2>
+<p>DuckDB runs an analytical SQL engine inside a process. Column-oriented, vectorized execution suits scans and aggregations over local datasets; it is not a replacement for a high-concurrency transactional service. A database file persists tables. CSV/Parquet readers can query file-backed data, but inferred types, changing files and external access affect reproducibility and security. Read the <a href="https://duckdb.org/docs/current/clients/python/dbapi">Python DB API</a>.</p>
+<h3>Expose one typed analytical operation</h3>
+<p>An ingestion job under a trusted identity prepares a snapshot with <code>spend(tenant VARCHAR, category VARCHAR, amount_cents BIGINT)</code>. For CSV, explicitly validate types before publishing; quarantine bad rows. For Parquet, record file hashes/schema and use an approved path, never a model-selected URL. The following adapter assumes that existing snapshot and an already available DuckDB package.</p>
+<pre><code data-python="integration">import duckdb
+
+def category_total(snapshot_path: str, authenticated_tenant: str, category: str) -&gt; int:
+    # snapshot_path is application configuration, never an agent argument.
+    if category not in {"food", "travel"}:
+        raise ValueError("unsupported category")
+    connection = duckdb.connect(snapshot_path, read_only=True,
+        config={"enable_external_access": "false"})
+    try:
+        row = connection.execute(
+            "SELECT coalesce(sum(amount_cents), 0) FROM spend "
+            "WHERE tenant = ? AND category = ?",
+            [authenticated_tenant, category],
+        ).fetchone()
+        return int(row[0])
+    finally:
+        connection.close()
+</code></pre>
+<p>For tenant A's food rows of 125 and 250 cents, and B's food row of 999 cents, predict 375 for A and zero for a tenant with no rows. Save the typed result and snapshot version as evidence; the LLM can explain it but must not recompute the sum. Mixed currencies need a currency dimension, not an unqualified total. Decimal money or integer minor units avoids binary floating-point surprises.</p>
+<p>Parameter binding protects data values, not an arbitrary query supplied by a model. A query starting with SELECT can still read files or exhaust resources. Read-only mode prevents database writes, not every external effect. Disable external access, deny unnecessary filesystem/network access at the process boundary, and enforce memory/time/result limits. Keep extension loading and privileged ingestion outside the agent process. These are layered controls, not a claim that a SQL engine is a sandbox. See <a href="https://duckdb.org/docs/current/operations_manual/securing_duckdb/overview">DuckDB's security model</a>.</p>
+<details><summary>Interview checkpoint: why not accept “safe SELECT” text?</summary><p>You would need to constrain tables, functions, file readers, joins, complexity and privileges—not just the first keyword. For two report types, map a validated operation enum to owned SQL and bind values. If ad-hoc analysis is genuinely required, isolate the worker and dataset, bound resources, parse and authorize the query structure, and test exfiltration and denial-of-service cases.</p></details>
+<p>In a provisioned lab, test the adapter with missing files, unsupported categories, another tenant and an interrupted long query. Compare results to hand-computed fixtures and preserve query plans for large scans. Tomorrow, explain why read-only and parameterized are separate protections. <a href="../lessons/0604-tool-design-descriptions-schemas-state-memory-and-context-management.html">Return to lesson 0604</a>.</p>
+</section>
+
+<section id="graphrag"><h2>GraphRAG: connect facts, retain their source</h2>
+<p>Graph-assisted RAG retrieves relationships as well as passages. Microsoft GraphRAG is a particular implementation: it extracts entities/relationships, forms communities and builds community reports. Local search is entity-centered; global search uses community reports for corpus-wide questions. This is different from simply adding a Neo4j lookup tool. Read the <a href="https://microsoft.github.io/graphrag/">architecture</a> and <a href="https://microsoft.github.io/graphrag/query/overview/">query modes</a>.</p>
+<p>An ingestion pipeline preserves source/version/span IDs, extracts candidate entities and relations, resolves aliases, validates facts and writes the graph plus passage index. Entity linking is the decision that two mentions represent the same thing. “Mercury” might be a service, planet or company; merge by stable identifiers and context, not name alone. Ambiguous links should remain unresolved or reviewed. Missing edges limit recall; false edges can make a persuasive but false answer.</p>
+<h3>Trace a two-hop answer</h3>
+<p>Fixture: source S1 says team Payments owns Checkout. S2 says Checkout depends on Ledger. S3 says team Risk owns Ledger. Query: “Which downstream service owner should Payments contact?” A bounded traversal follows Checkout → Ledger → Risk; the answer needs S2 and S3, not an uncited graph assertion. S1 only establishes the starting team's service.</p>
+<pre><code data-python="offline"># Offline check: evidence-preserving join, not a GraphRAG implementation.
+dependencies = [("checkout", "ledger", "S2")]
+owners = [("ledger", "risk", "S3")]
+def contacts(service, authorized_sources):
+    return [(target, team, [dep_source, owner_source])
+            for origin, target, dep_source in dependencies
+            for owned, team, owner_source in owners
+            if origin == service and owned == target
+            and {dep_source, owner_source} &lt;= authorized_sources]
+
+assert contacts("checkout", {"S2", "S3"}) == [("ledger", "risk", ["S2", "S3"])]
+assert contacts("checkout", {"S2"}) == []
+</code></pre>
+<p>Compare vector RAG and graph-assisted retrieval on the same authorized corpus, questions, generator and context budget. Include direct lookup, multi-hop, global summary, ambiguous names, revoked sources and no-answer cases. Record evidence recall, supported-claim rate, citation correctness, abstention, ingestion cost and p95 query latency. Report results per slice: average improvement can hide direct-lookup regressions. Do not present this fixture as a benchmark.</p>
+<p>At generation time, retrieve original passages for graph evidence, check current permissions and distinguish quoted fact from inference. Authorization must also cover summaries: a community report built across tenants can leak even when its underlying chunks are filtered. Deletion requires invalidating derived edges, reports, vectors and caches. Maintain lineage or rebuild affected generations. For a small factual Q&amp;A corpus, ordinary hybrid retrieval may be cheaper and easier to keep fresh.</p>
+<details><summary>Interview checkpoint: does a path prove the conclusion?</summary><p>No. It proves connectivity in the stored graph. Extraction, entity linking, relationship direction, validity dates or source authority may be wrong. Validate each supporting source and whether the relation chain actually entails the answer. If S3 is revoked, this fixture must stop naming Risk until authorized replacement evidence exists.</p></details>
+<p>Tomorrow, contrast a local entity query with a global summary query and name one case where vector retrieval is sufficient. <a href="../lessons/0602-portfolio-project-2-evaluated-knowledge-product.html">Return to lesson 0602</a>.</p>
+</section>
+
+<section id="kag"><h2>KAG: separate rule execution from explanation</h2>
+<p>“Knowledge-augmented generation” can describe a broad family of systems. <a href="https://github.com/OpenSPG/KAG">OpenSPG KAG</a> is a specific framework combining schema-constrained knowledge, links back to source chunks and logical-form-guided retrieval/reasoning. Do not use its name as a synonym for every knowledge graph or claim that it universally beats RAG.</p>
+<p>Ordinary RAG asks which passages help answer a question. A rule-aware system may instead resolve typed entities, fetch authoritative facts, execute comparisons or arithmetic, then explain the resulting decision. Retrieval supplies facts and rule provenance; deterministic code evaluates formal rules; generation communicates the result. A schema reduces ambiguity but cannot correct a wrongly extracted rule or a stale fact.</p>
+<h3>Decide a fictional training grant</h3>
+<p>Policy P7 version 2 says: applicants resident in region R with at least 24 completed months qualify. This is a toy rule, not real eligibility advice. Inputs come from verified records. Missing facts mean unknown, not false. Contradictory records require review before evaluation.</p>
+<pre><code data-python="offline"># Offline check: a rule boundary, not the OpenSPG framework.
+def grant_decision(region, months):
+    if region is not None and type(region) is not str:
+        raise ValueError("region must be a string or missing")
+    if months is not None and (type(months) is not int or months &lt; 0):
+        raise ValueError("months must be a nonnegative integer or missing")
+    if region is None or months is None:
+        return "unknown", "P7:v2"
+    return ("eligible" if region == "R" and months &gt;= 24 else "ineligible"), "P7:v2"
+
+assert grant_decision("R", 24) == ("eligible", "P7:v2")
+assert grant_decision("R", 23)[0] == "ineligible"
+assert grant_decision(None, 30)[0] == "unknown"
+try:
+    grant_decision("R", True)
+except ValueError:
+    pass
+else:
+    raise AssertionError("booleans are not month counts")
+</code></pre>
+<p>Draw the logical plan: resolve applicant → fetch region/months → select policy effective on application date → compare → return decision and evidence. Now change P7 to 30 months effective next year. Historical applications must retain the old rule; cache keys must include rule and fact versions. A human-approved rule compiler or reviewed code owns the threshold, not an LLM's interpretation on every request.</p>
+<p>To extend this into an existing KAG environment, define Applicant and Policy schema types, import these four boundary cases and policy chunks, and inspect the generated plan and evidence chain. Compare against the deterministic oracle above. Test unresolved entity IDs, conflicting dates and unsupported units. A natural-language explanation must preserve the computed status and cite both rule and facts. This is an integration exercise specification, not a supplied KAG deployment.</p>
+<details><summary>Interview checkpoint: when does this earn its complexity?</summary><p>When repeated domain questions depend on stable entity relationships, exact comparisons and expert-maintained rules. It may be excessive for document lookup. Budget for schema ownership, source lineage, rule migrations and conflict handling. Report decision accuracy separately from explanation faithfulness; an eloquent explanation of an incorrect rule is still wrong.</p></details>
+<p>Tomorrow, explain the difference between missing, false and conflicting knowledge without looking at the code. <a href="#graphrag">Compare with GraphRAG</a>.</p>
+</section>
+
+<section id="lightrag"><h2>LightRAG: inspect every derived index</h2>
+<p><a href="https://github.com/HKUDS/LightRAG">LightRAG</a> combines extracted graph entities/relationships with vector retrieval. Its local mode focuses on entity-related information; global mode on broader relationships; hybrid combines these; naive retrieves text chunks without the graph; mix combines graph-oriented and chunk retrieval. These names are framework-specific: LightRAG global mode is not Microsoft GraphRAG's community-report map/reduce algorithm.</p>
+<p>Indexing starts with documents and chunks, uses extraction to derive entities and relationships, and stores linked representations in graph, vector and document/status storage. Queries select and combine evidence before generation. Extraction-model quality, embedding compatibility and storage configuration affect the result. A “light” name does not eliminate indexing cost, operational state or the need to measure quality.</p>
+<h3>Run a controlled mode comparison</h3>
+<p>Use the Checkout/Ledger sources from <a href="#graphrag">the GraphRAG fixture</a>, plus a distracting document where “Ledger” is a book title. In an already provisioned LightRAG workspace, pin the release, choose approved chat/embedding adapters, initialize the configured storage backends, ingest the four documents once, and wait for indexing completion. Keep source IDs and indexing errors. Use the release's documented query API with <code>QueryParam(mode="naive")</code> and then <code>QueryParam(mode="mix")</code>; hold the query, generator and context limit fixed. Follow the upstream <a href="https://github.com/HKUDS/LightRAG/tree/main/examples">examples</a> for adapter-specific initialization. No server or model setup is performed by this page.</p>
+<ol><li>Ask who owns Ledger. Record retrieved source IDs and the answer.</li><li>Ask whom Payments should contact downstream. Require S2 and S3.</li><li>Ask for an unrelated policy. Require abstention, not a graph-shaped guess.</li><li>Remove S3 through the supported document-deletion workflow. Re-run both queries and inspect remaining derived evidence.</li></ol>
+<p>The expected invariant is not that mix wins: it is that neither mode names Risk without surviving authorized support. Report paired evidence recall and supported answers alongside extraction tokens, index duration/storage, p95 query latency and regeneration cost. Inspect entity collisions and long high-degree neighborhoods before increasing top-k. Repeat generation to expose variance; record the corpus snapshot and model revisions.</p>
+<p>Operationally, keep one document lifecycle across all backends. A failed ingestion can leave a document marked processing while some vectors already exist. Make retries idempotent by source/version and reconcile statuses. Deleting raw text alone is insufficient if an entity description or cached answer still contains it. Changing embeddings requires a compatible rebuild, not merely a new query model. Do not assume a workspace name enforces tenant isolation; authorize retrieved and derived material in the application/deployment design.</p>
+<details><summary>Interview checkpoint: mix improves answers by 5%—ship it?</summary><p>Ask which queries improved, whether labels were held out, whether unauthorized or stale evidence increased, and what indexing/query costs changed. Require a reproducible comparison and deletion/recovery checks. If only multi-hop queries benefit, route that slice to the graph path and retain the simpler baseline elsewhere.</p></details>
+<p>Tomorrow, draw the stores affected when one source is deleted, then explain how you would detect a partial cleanup. <a href="../lessons/0602-portfolio-project-2-evaluated-knowledge-product.html">Return to lesson 0602</a>.</p>
+</section>
+
+<section id="self-rag"><h2>Self-RAG: reflection is a signal, not proof</h2>
+<p>The <a href="https://arxiv.org/abs/2310.11511">Self-RAG paper</a> describes a trained model that emits special retrieval and reflection tokens. It can decide when to retrieve and score relevance, support and usefulness during generation. The <a href="https://selfrag.github.io/">authors' method description</a> explains critic-generated training signals and inference-time control. Asking an ordinary chat model to “check your work” is a useful possible baseline, but it is not a reproduction of that training/decoding method.</p>
+<p>Keep three judgments separate: a passage can be relevant to the question, fail to support the answer, and still sound useful. Control signals can select or reject candidate continuations, but their reliability must be measured against independent labels. A system that both makes and grades the same error can become confidently wrong.</p>
+<h3>Make the stopping policy explicit</h3>
+<p>This offline exercise models a conservative application controller around externally supplied relevance/support labels. It neither predicts reflection tokens nor validates text. Predict the branches before running it.</p>
+<pre><code data-python="offline"># Offline check: policy only; labels are fixtures, not model judgments.
+def next_step(relevant, supported, attempts, max_attempts=2):
+    if type(relevant) is not bool or type(supported) is not bool:
+        raise ValueError("explicit judgments required")
+    if type(attempts) is not int or type(max_attempts) is not int:
+        raise ValueError("integer attempt counts required")
+    if attempts &lt; 0 or max_attempts &lt; 1:
+        raise ValueError("invalid budget")
+    if relevant and supported:
+        return "answer"
+    return "retrieve" if attempts &lt; max_attempts else "abstain"
+
+assert next_step(True, False, 1) == "retrieve"
+assert next_step(True, False, 2) == "abstain"
+assert next_step(True, True, 2) == "answer"
+assert next_step(False, True, 2) == "abstain"
+</code></pre>
+<p>Create 20 labeled question/evidence/answer triples, including relevant-but-contradictory passages and correctly cited yet unsupported claims. Compare fixed-retrieval RAG, a prompted critique loop and—only if an approved checkpoint/runtime already exists—the actual Self-RAG implementation. Keep model differences explicit; otherwise gains cannot be attributed solely to the controller. Measure answer accuracy, unsupported-claim rate, retrieval frequency, false abstentions, p95 latency and total tokens. Judge errors and controller errors need separate reporting.</p>
+<p>A “supported” label is not a calibrated probability, and a model confidence threshold is not an authorization rule. Always filter evidence permissions first. Enforce call, token and wall-clock budgets in application code; repeated retrieval of the same evidence should not be counted as progress. A stopping policy trades answer coverage against risk. Use held-out data to choose it, and examine failures where the critic agrees with the generator's misconception.</p>
+<details><summary>Interview checkpoint: the critic says yes—can you skip evaluation?</summary><p>No. A critic is another component to evaluate. Compare its support labels with human judgments, including negation, numbers and misleading citations. Independently test factual answers and abstentions. The fixture proves only that the controller follows supplied labels and its attempt budget; it proves nothing about label accuracy.</p></details>
+<p>Tomorrow, explain how trained reflection tokens differ from prompted self-critique and why either can still be wrong. <a href="../lessons/0598-advanced-retrieval-freshness-permissions-and-operational-failure-modes.html">Return to lesson 0598</a>.</p>
+</section>
+
+<section id="hyde"><h2>HyDE: generate a search representation, not evidence</h2>
+<p><a href="https://arxiv.org/abs/2212.10496">HyDE (Hypothetical Document Embeddings)</a> generates a plausible answer-like document for a query, embeds it and searches for real documents near that representation. It can bridge short-query/document vocabulary gaps. The generated text may contain false details; its role is retrieval, never citation or factual authority.</p>
+<p>Query expansion adds useful search terms; multi-query retrieval searches several reformulations; HyDE embeds an answer-shaped hypothesis. They can be combined, but change one component at a time to understand why a result moved. Preserve the original query so a generated assumption does not silently redefine the user's request.</p>
+<h3>Observe query drift with a tiny vector fixture</h3>
+<p>Imagine the query is about revoking credentials. The toy relevant document is A; a misleading hypothesis drifts toward billing document B. These invented vectors illustrate mechanics, not embedding quality.</p>
+<pre><code data-python="offline">from math import sqrt
+
+def cosine(a, b):
+    if len(a) != len(b) or not a:
+        raise ValueError("matching nonempty vectors required")
+    denominator = sqrt(sum(x*x for x in a) * sum(x*x for x in b))
+    if denominator == 0:
+        raise ValueError("zero vector")
+    return sum(x*y for x, y in zip(a, b)) / denominator
+
+documents = {"A": (1.0, 0.0), "B": (0.0, 1.0)}
+def retrieve(vector):
+    return max(documents, key=lambda key: cosine(vector, documents[key]))
+
+assert retrieve((0.9, 0.1)) == "A"  # original query fixture
+assert retrieve((0.1, 0.9)) == "B"  # hallucinated billing hypothesis
+assert cosine((1.0, 0.0), (1.0, 0.0)) == 1.0
+</code></pre>
+<p>In an existing model/retrieval environment, prepare a held-out set of questions with relevant document IDs. Compare baseline query embeddings with one hypothetical-document embedding using the same corpus, encoder, authorized filters and k. Include jargon, ambiguous acronyms, multilingual queries and questions with no answer. Record hypothesis/model/prompt version, retrieval IDs, recall@k, MRR, generation latency and cost. Do not include the hypothesis in the evidence passed to the answer generator.</p>
+<p>Example arithmetic, not a benchmark: if baseline finds evidence for 14 of 20 single-relevant-document questions and HyDE finds 16, success@k rises from 70% to 80%. If HyDE loses three formerly successful questions, it must have gained five others; inspect both sets. A small aggregate gain is not a universal win. Measure repeated generations and do not tune on the final evaluation set.</p>
+<p>Keep an original-query fallback for drifting or timed-out hypotheses. A union of original and hypothetical retrieval can improve coverage but expands reranking work; evaluate it under the same final context budget. Cache hypotheses only with query, prompt/model version and appropriate privacy scope. Avoid sending sensitive query data to an unapproved provider, even before retrieval.</p>
+<details><summary>Interview checkpoint: why not answer directly from the hypothesis?</summary><p>It is invented text, not a recovered source. HyDE uses the embedding as a search aid so real documents can support an answer. If real evidence does not support the hypothesis, discard it or abstain. Better-sounding prose is not better retrieval.</p></details>
+<p>Tomorrow, compare HyDE, lexical expansion and <a href="cross-encoder-reranking.html">cross-encoder reranking</a> by where each changes the pipeline. <a href="../lessons/0596-query-rewriting-filtering-reranking-context-assembly-and-citations.html">Return to lesson 0596</a>.</p>
+</section>
+
+<section id="active-web-search"><h2>Active web search: treat the web as untrusted evidence</h2>
+<p>Active search lets a workflow issue queries, inspect pages and follow evidence gaps rather than relying on a fixed private index. Separate search discovery from fetching and evidence selection. A search snippet is not the full source; a high-ranked result is not necessarily authoritative. Keep title, canonical URL, retrieval time, stated publication/update time and supporting excerpt with each citation.</p>
+<p>Use a narrow tool contract: query text, a small result limit, optional freshness/domain constraints and a deadline. The server supplies credentials and enforces budgets; the model does not choose account identities or arbitrary request headers. Search outputs and page text are data, not instructions. A page asking an agent to reveal secrets or run a tool must not gain authority. See <a href="https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html">OWASP's prompt-injection guidance</a>.</p>
+<h3>Build a bounded source investigation</h3>
+<p>Tabletop task: find whether a fictional product's retention policy changed. Fixture A is an old official policy, B is the current official policy with an effective date, C is a recent blog quoting A, and D contains an instruction to send credentials. Budget two searches and three fetched pages. Before seeing the feedback, choose sources and identify the facts needed for a defensible answer.</p>
+<details><summary>Check the investigation</summary><p>Compare A and B's actual policy text and effective dates; C's recent publication does not make its quoted policy current. Ignore D's instruction and do not execute any side effect. Cite the clauses supporting the change, distinguish effective date from fetch date, and state uncertainty if B cannot be retrieved. Do not infer a change only from a search snippet or timestamp.</p></details>
+<p>If fetching URLs, enforce HTTPS and allowed ports, reject credentials and unsafe destinations, validate resolved addresses and every redirect, and constrain egress at the network layer. Protect loopback, private, link-local and cloud-metadata endpoints, including IPv6 and DNS-rebinding cases. String checks alone are not SSRF protection. Bound redirects, response/decompressed size, content types and time; do not forward credentials across origins. Consult <a href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html">OWASP's SSRF controls</a>.</p>
+<p>Use provider quotas and bounded exponential backoff with jitter for retryable failures, honoring Retry-After within the total deadline. Do not blindly retry authorization failures. Cache public results with a documented freshness policy; partition or avoid caches for sensitive queries. Keep secrets and personal data out of search strings. Report provider errors separately from genuine no-result answers.</p>
+<p>For a lab in an existing search adapter, inject 429 responses, a redirect to a blocked address, an oversized page, a contradictory source and citation text that does not entail the claim. Assert bounded attempts, blocked egress and explicit unknown results. Evaluate source authority, claim support, freshness, citation accuracy, malicious-instruction resistance and cost per resolved question. HTTP success is only transport success.</p>
+<details><summary>Interview checkpoint: can a citation guardrail guarantee truth?</summary><p>No. A URL can exist while its page is stale, mistaken or unrelated to the claim. Check that the cited span supports the claim, use primary sources where possible, corroborate material conflicts and preserve the retrieval snapshot. Authorization and tool permissions remain enforced outside the model even when the page looks trustworthy.</p></details>
+<p>Tomorrow, distinguish source freshness, fetch freshness and policy effective date. <a href="../lessons/0598-advanced-retrieval-freshness-permissions-and-operational-failure-modes.html">Return to lesson 0598</a>.</p>
+</section>
+
+<section id="mongodb"><h2>MongoDB: choose the document boundary deliberately</h2>
+<p>MongoDB stores BSON documents: JSON-like structures with additional types such as ObjectId, dates and Decimal128. Type consistency matters to matching and indexes; a string ID is not an ObjectId, and a date string is not a BSON date. Use schema validation and explicit conversions at the API boundary. Flexible schema means controlled evolution, not no contract. Read <a href="https://www.mongodb.com/docs/manual/reference/bson-types/">BSON types</a> and <a href="https://www.mongodb.com/docs/manual/data-modeling/">data modeling</a>.</p>
+<p>Embed bounded data read and updated together: an order's address snapshot and line items are good candidates. Reference independently changing entities or unbounded histories. Embedding a live product catalog in every order makes updates expensive; embedding the purchase-time price preserves history. Documents have a size limit, and growing arrays create hot documents and index costs. Choose from access patterns and invariants, not “SQL versus JSON” ideology.</p>
+<h3>Read, aggregate and update an order</h3>
+<p>The following <code>mongosh</code> example creates a scratch database/collection on an existing authorized learning deployment. It inserts three fixtures; use a fresh namespace, because rerunning the inserts produces duplicate-key errors. No MongoDB service is installed or started here. Amounts are small integer minor-unit fixtures, not floating-point currency values.</p>
+<pre><code>// mongosh: only on an isolated learning deployment.
+const lab = db.getSiblingDB("lesson_mongo_scratch");
+lab.orders.insertMany([
+  {_id: "a1", tenant: "a", status: "paid", totalCents: 125,
+   createdAt: ISODate("2026-01-01T00:00:00Z"), version: 1},
+  {_id: "a2", tenant: "a", status: "paid", totalCents: 250,
+   createdAt: ISODate("2026-01-02T00:00:00Z"), version: 1},
+  {_id: "b1", tenant: "b", status: "paid", totalCents: 999,
+   createdAt: ISODate("2026-01-03T00:00:00Z"), version: 1}
+]);
+lab.orders.createIndex({tenant: 1, status: 1, createdAt: -1, _id: -1});
+lab.orders.find({tenant: "a", status: "paid"})
+  .sort({createdAt: -1, _id: -1}).limit(20).explain("executionStats");
+lab.orders.aggregate([
+  {$match: {tenant: "a", status: "paid"}},
+  {$group: {_id: "$tenant", cents: {$sum: "$totalCents"}}}
+]); // Expected before the update: [{_id: "a", cents: 375}]
+lab.orders.updateOne(
+  {_id: "a1", tenant: "a", version: 1, status: "paid"},
+  {$set: {status: "refunded"}, $inc: {version: 1}}
+); // First matchedCount: 1; an identical retry matches 0.
+</code></pre>
+<p>The compound index puts equality filters first, followed by sort keys. Inspect keys/documents examined and returned rows, not just the presence of an index. Tiny fixtures may legitimately produce a collection scan; scale the dataset before judging performance. Every extra index consumes storage and adds write work. Array fields create multikey indexes with additional constraints. The aggregation pipeline transforms a stream of documents; filter early when semantics permit, then group/project. See <a href="https://www.mongodb.com/docs/manual/core/indexes/index-types/index-compound/">compound indexes</a> and <a href="https://www.mongodb.com/docs/manual/core/aggregation-pipeline/">aggregation</a>.</p>
+<h3>Atomicity, retries and failover</h3>
+<p>A single-document update is atomic. Including the expected version/status in its filter is optimistic concurrency control: only one competing writer should match. A zero match can mean stale version, absent record or forbidden scope, so handle it deliberately. Never pass a user's raw JSON filter through to the database; validate scalar values and construct query operators yourself.</p>
+<p>Multi-document transactions exist on replica sets and sharded clusters. Use them when an invariant crosses documents, associate every operation with the session and keep the transaction short. Snapshot reads and majority commits have specific guarantees; they are not a blanket promise of serializable application behavior. Driver transaction callbacks may retry: do not send an email or charge a card inside them. Commit an outbox record with the database changes and make the external consumer idempotent. See <a href="https://www.mongodb.com/docs/manual/core/transactions/">transactions and concerns</a>.</p>
+<p>A replica set replicates writes from a primary to secondaries and elects a new primary after failure. Replication improves availability, not write sharding. Read preference chooses where to read; read concern governs visibility guarantees; write concern governs acknowledgement. Secondary reads can lag. A timeout can leave a write's outcome unknown; use stable operation IDs and reconciliation rather than assuming failure. Backups and restore drills remain necessary because replication also propagates mistakes. See <a href="https://www.mongodb.com/docs/manual/replication/">replication</a>.</p>
+<h3>Scaling and change streams</h3>
+<p>Sharding partitions data across replica-set shards, with routing through mongos and metadata in config servers. A shard key influences distribution and query targeting. A timestamp range key can concentrate new writes; hashing can spread writes but weakens range locality. Tenant alone may leave a very large tenant hot. Evaluate cardinality, skew and actual query shapes; queries missing the shard key may scatter across shards. Cross-shard operations and rebalancing have costs. See <a href="https://www.mongodb.com/docs/manual/sharding/">sharding</a>.</p>
+<p>Change streams expose changes from replica sets or sharded clusters. Persist the resume token only after the downstream effect is durably handled; make replay safe. The oplog retention window bounds recovery after an outage, so a stale token can require a resnapshot/reconciliation. A stream is not an infinite event archive and does not make an external effect exactly-once. Full-document lookups may reflect later document state, not an immutable event-time snapshot. See <a href="https://www.mongodb.com/docs/manual/changestreams/">change streams</a>.</p>
+<pre><code data-python="offline"># Offline check: idempotent effect/checkpoint ordering, not MongoDB behavior.
+effects = set()
+checkpoint = None
+def consume(token, operation_id, crash_after_effect=False):
+    global checkpoint
+    effects.add(operation_id)  # stands for a durable idempotent sink
+    if crash_after_effect:
+        return
+    checkpoint = token
+
+consume("token1", "refund:a1", crash_after_effect=True)
+assert checkpoint is None and effects == {"refund:a1"}
+consume("token1", "refund:a1")
+assert checkpoint == "token1" and len(effects) == 1
+</code></pre>
+<p>Run the order fixture, explain the 375-cent result, race two version-1 updates and verify exactly one match. In a separately approved replica-set lab, pause a change-stream consumer, resume it and compare the destination to a source snapshot. Record lag, duplicate handling and recovery evidence. The offline set above illustrates ordering only; it does not test atomicity, durability, failover or actual resume-token behavior.</p>
+<details><summary>Interview checkpoint: MongoDB or PostgreSQL for this system?</summary><p>Start with transactions and query patterns. A bounded order aggregate can fit a document well; heavy relational joins and cross-entity constraints may favor PostgreSQL. MongoDB still requires schema, index and consistency design. Do not claim automatic scaling or absence of transactions. Defend your choice with query plans, failure/recovery tests, operational competence and migration cost.</p></details>
+<p>Tomorrow, explain why replicas do not distribute writes like shards, why a checkpoint must follow the effect, and why a conditional update is not a complete payment-idempotency protocol. <a href="../lessons/0396-data-systems-production-architecture-capstone-postgresql-redis-cdc-recov.html">Return to lesson 0396</a>.</p>
+</section>
+
+<footer><h2>Turn coverage into interview evidence</h2>
+<p>Choose one exercise, attempt it before opening the feedback, then explain the result in five minutes: invariant, mechanism, failure, evidence, tradeoff. Revisit it tomorrow without notes and a week later with one changed constraint. Ask your teacher to challenge any unclear step or review your saved trace. None of these reading checkpoints automatically records mastery.</p>
+<p>Local content checks validate the five offline fixtures, Python syntax, topic anchors and lesson links. They do not establish framework compatibility, database behavior, model quality, browser rendering or a successful deployment.</p></footer>
+</main></body></html>

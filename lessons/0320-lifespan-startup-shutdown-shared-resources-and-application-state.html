@@ -182,6 +182,50 @@ app = FastAPI(lifespan=lifespan)</code></pre>
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] coordinates startup and shutdown resources for an application process. Use context managers or finally for cleanup on exceptional exits. Graceful shutdown allows cleanup, but a forced kill or process crash cannot guarantee it runs.</li><li>[concept] is the application lifecycle phase that validates configuration and creates shared process resources before traffic begins.</li><li>[concept] is the lifecycle phase that stops new work, drains active work, and closes process resources.</li><li>[concept] are clients, pools, models, or caches reused by requests in one application process.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Lifespan: 1; startup: 2; shutdown: 3; shared resources: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Lifespan: 1; startup: 2; shutdown: 4; shared resources: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Lifespan: 1; startup: 3; shutdown: 4; shared resources: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Lifespan: 1; startup: 4; shutdown: 3; shared resources: 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> Lifespan: 1; startup: 2; shutdown: 3; shared resources: 4</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “shutdown” matches explanation 3, not 4. “shared resources” matches explanation 4, not 3.</li><li>C. “startup” matches explanation 2, not 3. “shutdown” matches explanation 3, not 4. “shared resources” matches explanation 4, not 2.</li><li>D. “startup” matches explanation 2, not 4. “shared resources” matches explanation 4, not 2.</li></ul>
+        <p>Lifespan: Lifespan coordinates startup and shutdown resources for an application process. Use context managers or finally for cleanup on exceptional exits. Graceful shutdown allows cleanup, but a forced kill or process crash cannot guarantee it runs.</p><p>startup: Startup is the application lifecycle phase that validates configuration and creates shared process resources before traffic begins.</p><p>shutdown: Shutdown is the lifecycle phase that stops new work, drains active work, and closes process resources.</p><p>shared resources: Shared resources are clients, pools, models, or caches reused by requests in one application process.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] are clients, pools, models, or caches reused by requests in one application process.</li><li>[concept] stores process-scoped objects that lifespan code creates and later closes.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. shared resources: 1; application state: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. shared resources: 2; application state: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> shared resources: 1; application state: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “shared resources” matches explanation 1, not 2. “application state” matches explanation 2, not 1.</li></ul>
+        <p>shared resources: Shared resources are clients, pools, models, or caches reused by requests in one application process.</p><p>application state: Application state stores process-scoped objects that lifespan code creates and later closes.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Shared resources are acquired: Pools and clients become owned by this process.</li><li>Readiness admits requests: The worker handles bounded concurrent traffic.</li><li>Shutdown stops and cleans up: Readiness drops, requests finish, then resources close.</li><li>Process imports the application: Configuration and route registration happen per worker.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. At position 2, the trace uses “Shared resources are acquired”, not “Readiness admits requests”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Shared resources are acquired”, not “Shutdown stops and cleans up”.</li><li>D. At position 1, the trace uses “Process imports the application”, not “Shared resources are acquired”.</li></ul>
+        <p>Process imports the application: Configuration and route registration happen per worker.</p><p>Shared resources are acquired: Pools and clients become owned by this process.</p><p>Readiness admits requests: The worker handles bounded concurrent traffic.</p><p>Shutdown stops and cleans up: Readiness drops, requests finish, then resources close.</p>
+        <p>Send a termination signal during a slow request and observe the drain sequence. Evidence to inspect: Process log, readiness state, in-flight count, exit code, and resource cleanup.</p>
+      </details>
+    </article>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

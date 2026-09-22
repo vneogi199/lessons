@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enterprise connectors and AI security labs</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:30px 24px 70px}h1,h2,h3{line-height:1.25;color:#fff}a,summary{color:#79e8ff}section{border:1px solid #3b526c;border-radius:8px;padding:24px;margin:28px 0;scroll-margin-top:20px}pre{overflow:auto;background:#101722;padding:18px;font:14px/1.6 monospace}table{border-collapse:collapse;width:100%}td,th{border:1px solid #3b526c;padding:10px;text-align:left;vertical-align:top}details{border-left:2px solid #79e8ff;padding:12px;margin:16px 0}summary{cursor:pointer}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff}.note{border-left:3px solid #ffd277;padding:12px}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}@media(max-width:600px){main{padding:18px 12px}section{padding:16px}table{font-size:14px}}@media print{:root{color-scheme:light}body{background:white;color:black;font-size:11pt}h1,h2,h3,a,summary{color:black}pre{background:white;white-space:pre-wrap}nav{display:none}details::details-content{content-visibility:visible}}</style></head><body><main>
+<header><a href="../index.html">Curriculum</a><h1>Connect enterprise systems without widening authority</h1><p>Each lab has an input contract, a denial case and evidence to inspect. Use synthetic data and an existing isolated environment. Nothing is installed, sent to vendors or changed in enterprise accounts during authoring.</p><p class="note">A local fixture is not a security certification. SDK recipes are parsed only. Read one section, attempt the negative case and revisit its interview question tomorrow. Ask your teacher to review uncertain authorization boundaries.</p></header>
+<nav><a href="#collaboration-connectors">Slack/Teams/Jira</a> · <a href="#soap">SOAP</a> · <a href="#enterprise-sql">Enterprise SQL</a> · <a href="#entra-rbac">Entra/RBAC</a> · <a href="#presidio">Presidio</a> · <a href="#nemo">NeMo/Colang</a> · <a href="#bedrock-guardrails">Bedrock guardrails</a></nav>
+
+<section id="collaboration-connectors"><h2>Slack, Teams and Jira: events are not authorization</h2>
+<p>An incoming webhook commonly lets your application post into a channel; an events endpoint receives platform events. A bot token authorizes API operations under granted scopes. Treat webhook URLs and tokens as secrets. Interactive buttons submit action IDs and payloads, but an “Approve” label does not prove the user has permission to approve that exact action.</p>
+<p>For Slack HTTP requests, verify the signature over the original raw body and timestamp before parsing, then enforce replay protection and workspace/actor scope. Use <a href="https://docs.slack.dev/authentication/verifying-requests-from-slack/">Slack's verification contract</a>. Acknowledge within the platform's deadline and hand durable work to a queue; deduplicate redelivery using a platform event identity or your application operation key.</p>
+<pre><code data-python="offline">import hashlib
+import hmac
+
+def valid_slack(secret, body, timestamp, signature, now):
+    if (not isinstance(timestamp, str) or not timestamp.isascii()
+            or not timestamp.isdigit() or len(timestamp) &gt; 12
+            or abs(now - int(timestamp)) &gt; 300):
+        return False
+    base = b"v0:" + timestamp.encode("ascii") + b":" + body
+    expected = "v0=" + hmac.new(secret, base, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+secret, body, timestamp = b"synthetic-secret", b'{"event":"demo"}', "1000"
+signature = "v0=" + hmac.new(secret, b"v0:1000:" + body, hashlib.sha256).hexdigest()
+assert valid_slack(secret, body, timestamp, signature, 1001)
+assert not valid_slack(secret, body + b" ", timestamp, signature, 1001)
+assert not valid_slack(secret, body, timestamp, signature, 1400)
+</code></pre>
+<p>This tests signature/freshness only, not replay storage or platform integration. Limit request bytes before verification and atomically deduplicate accepted events. For an interactive payload, resolve the actor from verified platform identity, look up the pending operation server-side and bind approval to its version/hash and expiry. Ignore client-supplied roles or arbitrary callback URLs.</p>
+<p>Teams has distinct webhook/Workflow and bot application paths. Use the currently supported <a href="https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook">Teams webhook guidance</a>; legacy connector lifecycle and tenant policies affect availability. An Adaptive Card can present actions, but the receiving service still validates identity, action scope and replay. Do not reuse Slack HMAC assumptions for Teams: follow the selected Teams/Bot authentication contract.</p>
+<p>Jira lab: request only approved issue fields using the REST API and the caller's permitted project scope. Jira issues and Confluence pages are different resources; choose the appropriate connector. Treat descriptions/comments as untrusted instructions. For ticket creation, validate project, issue type and allowed fields against metadata; Jira Cloud rich-text descriptions may require Atlassian Document Format rather than a plain string. Record the created issue ID in a durable operation ledger. If the response is lost, reconcile before retrying because an arbitrary idempotency header is not automatically honored. See the <a href="https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/">Jira REST API</a>.</p>
+<details><summary>Acceptance drill</summary><p>Replay a signed Slack request, change one byte, click an expired approval, remove Jira permission and lose a create response. Expect respectively one effect, rejection, rejection, denial and reconciliation—not duplicate tickets. Show redacted evidence and zero raw tokens in logs.</p></details>
+<p>Tomorrow, contrast authentic delivery, fresh delivery and authorized action.</p></section>
+
+<section id="soap"><h2>WSDL, Zeep and safe XML boundaries</h2>
+<p>WSDL describes operations, messages, XSD types, bindings and service endpoints. SOAP carries a namespaced Envelope with optional Header and a Body containing an operation or Fault. SOAP 1.1/1.2 differ in transport details; let the reviewed WSDL binding drive serialization rather than concatenating XML strings. A transport HTTP status and an application SOAP Fault are separate failure signals.</p>
+<pre><code data-python="integration">from requests import Session
+from zeep import Client, Settings
+from zeep.transports import Transport
+from zeep.exceptions import Fault
+from zeep.helpers import serialize_object
+
+def lookup_legacy(approved_wsdl, ca_bundle, customer_id):
+    # The entire WSDL/XSD import closure and endpoints must be approved beforehand.
+    with Session() as session:
+        session.verify = ca_bundle
+        transport = Transport(session=session, timeout=5, operation_timeout=10)
+        settings = Settings(strict=True, forbid_dtd=True,
+                            forbid_entities=True, forbid_external=True,
+                            xml_huge_tree=False)
+        client = Client(approved_wsdl, transport=transport, settings=settings)
+        # Illustrative operation: use the actual reviewed WSDL's name/types.
+        try:
+            result = client.service.GetCustomer(CustomerId=customer_id)
+        except Fault as exc:
+            raise ValueError("legacy service rejected the request") from exc
+        return serialize_object(result)
+</code></pre>
+<p>Read <a href="https://docs.python-zeep.org/en/master/client.html">Zeep's client/binding behavior</a> and <a href="https://docs.python-zeep.org/en/master/settings.html">XML parser settings</a>. forbid_external protects XML external entities/DTDs; it is not a complete SSRF policy for WSDL imports or service calls. Pin an approved local WSDL/import bundle or enforce network allowlists, response-size limits and sandboxing. Never accept a user-supplied WSDL URL. Preserve TLS certificate validation and provision mTLS/WS-Security only as required by the service contract.</p>
+<p>Use client.create_message to inspect a generated envelope without sending it, then compare namespaces, required elements and XSD order against a fixture. Deserialization can produce Decimal, datetime, lists and nested objects: define a JSON mapping explicitly. Preserve money as decimal strings or integer minor units, dates with timezone policy, null versus absent values and repeated elements as arrays. Do not flatten two same-named elements from different namespaces into one field.</p>
+<p>Practice with a synthetic success, a typed business Fault, a malformed XML response, a timeout and an attempted external entity. Classify retryable transport failures separately from invalid input/business denial. Never log complete fault bodies containing PII. Mutation retries require an operation identifier/reconciliation plan; a timeout does not prove the legacy server did nothing. Zeep initialization may perform synchronous WSDL loading even in an async application; configure it at startup outside the request's hot path.</p>
+<details><summary>Interview: convert every XML node directly to a JSON key?</summary><p>No. Attributes, namespaces, order, mixed content, repeated elements and numeric/date types can lose meaning. Define the target schema, validate it and retain source provenance. Conversion is a semantic contract, not merely a format change.</p></details>
+<p>Tomorrow, identify which limits block entity expansion and which block outbound URL abuse.</p></section>
+
+<section id="enterprise-sql"><h2>SQL Server/Oracle connections and constrained Text-to-SQL</h2>
+<p>Use an existing approved driver and encrypted connection with certificate verification. pyodbc uses an installed ODBC driver; python-oracledb has Thin/Thick modes with different prerequisites. SQLAlchemy wraps dialect/driver behavior; it does not make unsafe SQL or excessive database permissions safe. Keep connection secrets outside source and logs, bound pools/timeouts and close sessions promptly.</p>
+<pre><code data-python="integration">from sqlalchemy import text
+
+def sqlserver_total(cursor, trusted_tenant, start_date):
+    # pyodbc cursor from a TLS-verified, least-privilege connection.
+    cursor.execute("SELECT SUM(amount_cents) FROM ai.invoice_view "
+                   "WHERE tenant_id = ? AND issued_at &gt;= ?", trusted_tenant, start_date)
+    return cursor.fetchone()[0]
+
+def oracle_total(cursor, trusted_tenant, start_date):
+    cursor.execute("SELECT SUM(amount_cents) FROM ai_invoice_view "
+                   "WHERE tenant_id = :tenant AND issued_at &gt;= :since",
+                   {"tenant": trusted_tenant, "since": start_date})
+    return cursor.fetchone()[0]
+
+def sqlalchemy_total(connection, trusted_tenant, start_date):
+    statement = text("SELECT SUM(amount_cents) FROM ai.invoice_view "
+                     "WHERE tenant_id = :tenant AND issued_at &gt;= :since")
+    return connection.execute(statement, {"tenant": trusted_tenant, "since": start_date}).scalar_one()
+</code></pre>
+<p>References: <a href="https://github.com/mkleehammer/pyodbc/wiki/Getting-started">pyodbc parameter binding</a>, <a href="https://python-oracledb.readthedocs.io/en/latest/user_guide/bind.html">Oracle binds</a> and <a href="https://docs.sqlalchemy.org/en/20/core/connections.html">SQLAlchemy connections</a>. Bind values, not table/column names. Use an allowlisted query catalog for identifiers and approved views. Configure SQL Server encryption with certificate verification rather than TrustServerCertificate=yes; use the organization's Oracle TLS/wallet configuration. Do not claim a read-only flag on a client replaces database grants.</p>
+<pre><code data-sql="recipe">-- SQL Server recipe for an existing authorized database user, not executed.
+CREATE ROLE ai_reader;
+GRANT SELECT ON OBJECT::ai.invoice_view TO ai_reader;
+ALTER ROLE ai_reader ADD MEMBER ai_application_user;
+-- Do not grant broad db_owner, write, DDL or unrestricted EXECUTE privileges.</code></pre>
+<p>Provide the LLM a curated schema description: approved tables/views, column types, join keys, units, null semantics, business definitions and examples using synthetic values. Exclude credentials and sensitive sample rows. Retrieve only relevant schema fragments. Tenant predicates must be service/database enforced, not entrusted to the generated query.</p>
+<p>Start Text-to-SQL with intent → typed parameters → reviewed query template. If free-form SQL is necessary, parse a supported dialect into an AST, allowlist read constructs/functions/resources, reject multiple statements and cap cost/rows/time; database permissions remain the final boundary. A string beginning SELECT can still invoke expensive or unsafe functions. Use read-only views/RLS and a constrained execution identity. EXPLAIN and a row limit alone do not guarantee cheap execution.</p>
+<details><summary>Practice and fallback</summary><p>Test a quote-containing customer name, cross-tenant request, ambiguous “revenue,” unauthorized column and timeout. Bind the name safely, deny forbidden scope, ask which revenue definition/time range applies, reject the column and return a bounded failure. Do not let a repair loop broaden permissions. Verify the computed result against a reference SQL query and explain null/empty aggregates.</p></details>
+<p>Tomorrow, explain why read-only SQL can still leak data or exhaust resources.</p></section>
+
+<section id="entra-rbac"><h2>Map Entra groups to application permissions</h2>
+<p>Azure AD is now Microsoft Entra ID. Authenticate by validating the token with a maintained library: signature/key provenance, allowed algorithm, issuer, audience and lifetime. Authorization then maps trusted identities/claims to application roles and resource access. Decoding a JWT without verification is not authentication; an ID token is not automatically the correct bearer token for your API.</p>
+<p>Use stable tenant/object/group IDs rather than display names or email suffixes. The <a href="https://learn.microsoft.com/en-us/entra/identity-platform/access-token-claims-reference">access-token claims reference</a> describes group overage: large memberships can require a separate directory lookup. An omitted groups claim must not mean “all groups.” Use a trusted directory endpoint/client with least privilege rather than blindly following an arbitrary URL in a claim.</p>
+<pre><code data-python="offline"># Post-verification policy fixture: NOT a JWT validator.
+ROLE_BY_GROUP = {"group-reviewers": "review", "group-readers": "read"}
+def roles_for(verified_claims):
+    if verified_claims.get("tid") != "tenant-A":
+        return set()
+    if verified_claims.get("hasgroups") or "groups" in verified_claims.get("_claim_names", {}):
+        raise PermissionError("resolve membership through trusted directory first")
+    groups = verified_claims.get("groups", [])
+    if not isinstance(groups, list) or not all(isinstance(g, str) for g in groups):
+        raise PermissionError("invalid group claim")
+    return {ROLE_BY_GROUP[g] for g in groups if g in ROLE_BY_GROUP}
+
+assert roles_for({"tid": "tenant-A", "groups": ["group-readers"]}) == {"read"}
+assert roles_for({"tid": "tenant-B", "groups": ["group-reviewers"]}) == set()
+assert roles_for({"tid": "tenant-A"}) == set()
+try:
+    roles_for({"tid": "tenant-A", "hasgroups": True})
+except PermissionError:
+    pass
+else:
+    raise AssertionError("overage treated as complete membership")
+</code></pre>
+<p>Apply RBAC to actions and document ACL/row-level rules to data. A reviewer role does not grant access to every tenant's document. Filter vector/keyword/graph retrieval before model exposure, recheck parent expansion and scope caches to effective permissions/version. SAML federation follows a different assertion-validation path; reuse the resulting local authorization model, not token parsers.</p>
+<details><summary>Provisioned identity test</summary><p>Create synthetic reader/reviewer/no-access users in an approved tenant. Validate wrong audience, expired token, group removal, group overage and a shared-cache attempt. Measure membership-cache/session revocation delay. Do not report immediate revocation if existing sessions continue to carry earlier authority.</p></details>
+<p>Tomorrow, distinguish login success, role membership and permission to retrieve a specific record.</p></section>
+
+<section id="presidio"><h2>Presidio detection, redaction and reversible masks</h2>
+<p>Presidio separates detection (entity spans/types/scores) from transformations such as replacement, redaction or encryption. It is associated with the Microsoft Presidio project; the official repository/docs currently redirect to its maintained data-privacy-stack location. Detection depends on language models, recognizers, context and thresholds. “No entities found” is not proof there is no PII.</p>
+<pre><code data-python="integration">from presidio_analyzer import Pattern, PatternRecognizer
+from presidio_anonymizer import AnonymizerEngine
+from presidio_anonymizer.entities import OperatorConfig
+
+def redact_fixture(analyzer):
+    # Supply an already configured analyzer with local, approved NLP assets.
+    employee = PatternRecognizer(supported_entity="EMPLOYEE_ID", patterns=[
+        Pattern(name="employee-id", regex=r"\bEMP-\d{6}\b", score=0.8)
+    ])
+    analyzer.registry.add_recognizer(employee)
+    sample = "Contact alex@example.test about EMP-123456."
+    results = analyzer.analyze(text=sample, language="en",
+        entities=["EMAIL_ADDRESS", "US_SSN", "CREDIT_CARD", "EMPLOYEE_ID"])
+    return AnonymizerEngine().anonymize(text=sample, analyzer_results=results,
+        operators={"DEFAULT": OperatorConfig("replace", {"new_value": "[REDACTED]"})}).text
+</code></pre>
+<p>See <a href="https://github.com/data-privacy-stack/presidio/blob/main/docs/analyzer/adding_recognizers.md">custom recognizers</a> and <a href="https://github.com/data-privacy-stack/presidio/blob/main/docs/anonymizer/index.md">anonymizer operators</a>. Add the recognizer once at startup in a real service, not per request. Avoid automatic model downloads; provision assets separately. Use synthetic SSN/card/email positives, invalid/checksum negatives and domain IDs that resemble non-sensitive references. Regexes need boundaries, bounded input and performance testing; a broad pattern may redact useful dates/order numbers.</p>
+<p>Irreversible redaction cannot be reversed. Reversible pseudonymization needs an encrypted, short-lived mapping scoped to tenant, user and run. Replace detected values with opaque collision-resistant tokens before the model call. Never place the mapping in model context, traces or a shared cache. After generation, restore only tokens issued for this run and only to an authorized recipient; reject unknown/replayed tokens and re-scan output. Do not globally substitute every token-looking string a model invents. Encryption operators likewise need key management and a release policy.</p>
+<pre><code data-python="offline"># Synthetic restoration-policy example, not encryption or a PII detector.
+vault = {("tenant-A", "run-1", "opaque-token-7"): "synthetic-private-value"}
+def restore(tenant, run, token, may_reveal):
+    if not may_reveal or (tenant, run, token) not in vault:
+        raise PermissionError("mask cannot be revealed")
+    return vault[(tenant, run, token)]
+
+assert restore("tenant-A", "run-1", "opaque-token-7", True) == "synthetic-private-value"
+for tenant, run, permission in [("tenant-B", "run-1", True), ("tenant-A", "run-2", True), ("tenant-A", "run-1", False)]:
+    try:
+        restore(tenant, run, "opaque-token-7", permission)
+    except PermissionError:
+        pass
+    else:
+        raise AssertionError("cross-scope reveal")
+</code></pre>
+<p>Evaluate entity/span precision and recall by type/language; define exact versus overlap matching. False-positive rate is FP/(FP+TN) under a defined negative-unit convention, not FP/(TP+FP), which measures false discoveries among detections. Report utility loss when redaction removes needed context. Use holdouts and manual review of misses; do not promise a zero-leak rate from a finite test set.</p>
+<details><summary>Interview: a masked answer is safe to log?</summary><p>Not necessarily. Undetected PII, linkable stable tokens, surrounding context or a leaked mapping can identify someone. Minimize logged content, control retention and test re-identification paths as well as literal PII strings.</p></details>
+<p>Tomorrow, explain anonymization versus reversible pseudonymization.</p></section>
+
+<section id="nemo"><h2>NeMo Guardrails and Colang: checks at the right boundary</h2>
+<p>NeMo Guardrails can apply input, retrieval, dialog, action and output controls. Colang expresses conversational flows; Python actions implement application checks. Pin both library and Colang dialect: 1.0 and 2.x syntax/runtime configuration are not interchangeable. Read the <a href="https://docs.nvidia.com/nemo/guardrails/configure-guardrails/colang/colang-1/tutorials/4-input-rails">Colang 1 input-rail tutorial</a> and <a href="https://docs.nvidia.com/nemo/guardrails/latest/configure-guardrails/configuration-reference">configuration reference</a>.</p>
+<pre><code data-colang="recipe"># Colang 1.0 teaching flow; not a Colang 2.x configuration.
+define bot scope refusal
+  "I can help with the approved support workflow, not that request."
+
+define flow enforce application scope
+  $allowed = execute check_application_scope
+  if not $allowed
+    bot scope refusal
+    stop</code></pre>
+<pre><code data-yaml="recipe">colang_version: "1.0"
+rails:
+  input:
+    flows:
+      - enforce application scope
+  output:
+    flows:
+      - self check output</code></pre>
+<p>The fragment is incomplete until a reviewed check_application_scope action, model configuration and self-check prompt are supplied. In an existing NeMo environment, register the action with LLMRails and load these files through RailsConfig. The action should consult a trusted application route/intent policy; a semantic classifier may help with natural-language topicality but is not an authorization mechanism. Use a fixed refusal for denied scope and test legitimate edge cases to avoid blocking normal support.</p>
+<p>A native Python pipeline can enforce deterministic order: validate bytes/schema → authenticate/authorize → detect/redact sensitive data → check topical/safety policy → retrieve authorized material → call model → validate output/grounding → check output PII → release. If a required security dependency fails, return a bounded unavailable/review outcome rather than silently bypassing it. For streaming, decide whether content is buffered until approved; an output rail cannot retract leaked tokens.</p>
+<p>Threat model: direct and indirect prompt injection, unauthorized tool use, exfiltration, unsafe output handling, sensitive-data disclosure and resource exhaustion. Separate instructions from retrieved data, restrict network/tool capabilities and revalidate every action in the owning service. A jailbreak detector is one fallible layer; “prevention” is risk reduction with measured residual failures, not a guarantee.</p>
+<p>Testing lab: use approved synthetic attack cases or an existing authorized jailbreak-testing library in a sandbox. Include benign lookalikes, multilingual/encoded requests, injected retrieved text, malicious tool results, secret-exfiltration attempts and rail timeouts. Measure unsafe pass rate, benign block rate, task utility and p95 latency. Never run attack suites against third-party production systems without permission.</p>
+<details><summary>Interview: input rail passed, but an agent leaked a document</summary><p>The malicious instruction may have arrived through retrieved content or a tool result, or authorization may have been too broad. Input-only filtering does not cover those boundaries. Trace the data flow, limit capability and check output before release; adding more prompt warnings alone does not fix excessive authority.</p></details>
+<p>Tomorrow, identify which control protects each boundary and which outcomes require human review.</p></section>
+
+<section id="bedrock-guardrails"><h2>Configure and test Bedrock managed guardrails</h2>
+<p>Separate control-plane creation/versioning from runtime application. Choose region/model support and policy scope, prepare synthetic positive/negative cases, and use a narrowly authorized deployment role. Guardrails do not replace IAM, retrieval ACLs, deterministic business rules or tool authorization.</p>
+<pre><code data-python="integration">def create_training_guardrail(bedrock):
+    # Paid/external control-plane operation: never called by the local checker.
+    return bedrock.create_guardrail(
+        name="training-pii-guardrail",
+        blockedInputMessaging="Input requires review.",
+        blockedOutputsMessaging="Output requires review.",
+        sensitiveInformationPolicyConfig={"piiEntitiesConfig": [
+            {"type": "EMAIL", "action": "ANONYMIZE"},
+            {"type": "US_SOCIAL_SECURITY_NUMBER", "action": "BLOCK"},
+        ]},
+    )
+
+def check_training_text(runtime, guardrail_id, version, text):
+    result = runtime.apply_guardrail(guardrailIdentifier=guardrail_id,
+        guardrailVersion=version, source="INPUT", content=[{"text": {"text": text}}])
+    return result  # Caller must inspect action and use transformed outputs/policy.
+</code></pre>
+<p>Follow the current Boto3 <a href="https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock/client/create_guardrail.html">create_guardrail</a> and <a href="https://docs.aws.amazon.com/boto3/latest/reference/services/bedrock-runtime/client/apply_guardrail.html">apply_guardrail</a> contracts. Provision clients with approved credentials, timeouts and bounded retries. Creation returns identifiers; create and approve a version, then bind the intended version to inference or apply it explicitly at INPUT and OUTPUT boundaries. A draft changing underneath a release makes evaluations hard to reproduce.</p>
+<p>On intervention, distinguish blocking from anonymization. Do not forward the original text after a transformed result. If policy requires denial, return the configured safe response; if masking is allowed, use the returned sanitized content and revalidate the rest of the workflow. Record action/category/latency without raw sensitive text. Guardrail availability failure needs an explicit fail-closed or review policy.</p>
+<details><summary>Provisioned acceptance test</summary><p>Test synthetic PII, harmless similar strings, an unsupported language case, a denied topic and a guardrail timeout. Verify both request and response paths and that raw input never reaches downstream logs/model when intervention is required. Compare results across guardrail versions before promoting; a console “enabled” flag is not sufficient evidence.</p></details>
+<p>Tomorrow, explain why a guardrail version belongs beside model, prompt and corpus versions in a release record.</p></section>
+</main></body></html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cross-encoder reranking — senior practice</title>
+<style>body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui,sans-serif}main{max-width:850px;margin:auto;padding:32px 24px}a,summary{color:#79e8ff}h1,h2{line-height:1.3}section{margin:24px 0;padding:22px;border:1px solid #3b526c;border-radius:8px}pre{overflow:auto;padding:16px;background:#101722;font-size:14px}summary{cursor:pointer}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff;outline-offset:4px}table{border-collapse:collapse;width:100%}th,td{padding:10px;border:1px solid #3b526c;text-align:left}@media print{body{background:white;color:black}a,summary{color:black}pre{white-space:pre-wrap;background:white}details::details-content{content-visibility:visible}}</style></head>
+<body><main>
+<h1>Cross-encoder reranking</h1>
+<p>Goal: decide whether a second ranking stage earns its latency budget, and defend that decision in a senior AI engineering interview.</p>
+<p><a href="../lessons/0596-query-rewriting-filtering-reranking-context-assembly-and-citations.html">Return to lesson 0596</a> · <a href="../lessons/0597-rag-evaluation-golden-sets-retrieval-metrics-answer-metrics-and-regressi.html">RAG evaluation</a></p>
+<section><h2>Score the query and passage together</h2>
+<p>A bi-encoder represents the query and documents separately, allowing stored document vectors to be searched efficiently. A cross-encoder processes each query–passage pair jointly. Token interactions help distinguish a passage that answers the question from one that merely shares vocabulary. Its output is a relevance score, not an answer or a factuality guarantee.</p>
+<p>Use lexical or hybrid retrieval to gather N authorized, deduplicated candidates; score those N pairs; sort descending; send the best k passages to context assembly. Keep document IDs, versions and source spans attached throughout. Reranking cannot recover a relevant passage missing from the candidate set.</p>
+<p>Some models return logits, including negative values. A sigmoid preserves their ordering but does not establish calibrated relevance probabilities. Select models using the domain, language, supported sequence length and measured quality. See the <a href="https://www.sbert.net/docs/cross_encoder/usage/usage.html">official CrossEncoder usage guide</a>.</p></section>
+<section><h2>Predict, run, explain</h2>
+<p>For “How do I revoke an API key?”, retrieval returns A (create a key), B (revoke a key), C (billing). Only B is relevant. Predict reciprocal rank and precision@2 before and after sorting the fixture scores. Then run <code>python3 scripts/check-cross-encoder-reranking.py</code> from the repository root.</p>
+<table><thead><tr><th>Passage</th><th>Initial rank</th><th>Fixture score</th></tr></thead><tbody><tr><td>A: create</td><td>1</td><td>0.2</td></tr><tr><td>B: revoke</td><td>2</td><td>2.1</td></tr><tr><td>C: billing</td><td>3</td><td>-0.7</td></tr></tbody></table>
+<details><summary>Check your prediction</summary><p>Order changes from A,B,C to B,A,C. Reciprocal rank rises from 1/2 to 1; precision@2 stays 1/2. Remove B before scoring and recall is zero regardless of reranker quality. Give B a low score and reranking makes the result worse. These fixed scores test ranking mechanics, not a trained model's quality.</p></details>
+<p>The script also checks stable ties, empty candidates and invalid scores. Modify its relevant-ID set and candidate order; predict the assertions that should change.</p></section>
+<section><h2>Connect a real scorer</h2>
+<p>In an environment that already has Sentence Transformers and approved local model files, replace the fixture scores with the following adapter. Model inference has not been executed as part of this lesson's local checks.</p>
+<pre><code>from sentence_transformers import CrossEncoder
+
+# Existing local directory; record its model revision and package version.
+model = CrossEncoder("/path/to/existing/reranker", local_files_only=True)
+query = "How do I revoke an API key?"
+passages = ["Create a key in settings.",
+            "Revoke the key in settings to disable access.",
+            "Invoices are available under billing."]
+scores = model.predict([(query, text) for text in passages], batch_size=8)
+ranked = sorted(zip(passages, scores), key=lambda item: item[1], reverse=True)
+print(ranked)</code></pre>
+<p>Compare actual output with human relevance judgments; never assert that a chosen model must put B first. Inspect model-specific truncation: if the answer is at the end of a long passage, it may never reach the scorer. Preserve the original passage for citations even when scoring a bounded excerpt.</p></section>
+<section><h2>Batch size is a throughput decision</h2>
+<p>N controls candidate coverage and total pair work; k controls how much evidence reaches generation. Batch size controls how many pairs are processed together. Larger batches can improve device utilization but increase memory use, padding and queue delay. They do not reduce the number of pairs. Grouping similar lengths may reduce padding; restore document IDs after any reordering.</p>
+<p>Example budget: a 250 ms pre-generation deadline with 60 ms retrieval and 40 ms assembly leaves 150 ms for reranker queueing and inference. With 48 candidates and batches of 16 there are three batches. At a hypothetical 30 ms each, 90 ms inference leaves 60 ms for queueing and overhead. Measure under concurrency: these numbers are planning arithmetic, not a benchmark.</p>
+<p>Record N, token lengths, batch size, hardware, queue wait, warm/cold p50 and p95 latency, timeout rate and cost per query. For a dedicated device, allocated cost/query is hourly device cost divided by completed queries/hour; for an API, use its actual billing units. Tune N and model size jointly. On a deadline failure, use an explicitly measured authorized first-stage fallback or abstain; never present fallback results as reranked.</p></section>
+<section><h2>Evaluate the whole retrieval path</h2>
+<p>Freeze a held-out query set, corpus version, relevance labels and first-stage candidates. Compare baseline and reranked results on identical candidates and k. Measure candidate recall@N, MRR@k for first-answer rank, nDCG@k for graded ordering, and precision@k. Define empty-label, duplicate and tie policies. Then evaluate answer correctness and grounding separately: better ranking need not produce better answers.</p>
+<p>Do not inject missing positive passages into evaluation candidates. In Sentence Transformers, use the <code>documents</code> sample field with <code>always_rerank_positives=False</code> for a realistic pipeline comparison; the evaluator's default can include positives absent from retrieval. See the <a href="https://www.sbert.net/docs/package_reference/cross_encoder/evaluation.html">official reranking evaluator</a>.</p>
+<p>Slice by language, exact identifiers, long documents, ambiguous queries and no-answer cases. Sweep N and batch size on a development set, then report held-out quality, uncertainty, latency and cost together. A reranker that improves average MRR but breaks the latency budget or a critical slice may not belong in production.</p></section>
+<section><h2>Defend the design</h2>
+<ol><li>Candidate recall is 0.45 but reranked precision looks excellent. What should you improve first?</li><li>Doubling batch size improves throughput while p95 worsens. What measurements explain that?</li><li>Scores shift after a model upgrade. Why is reusing a fixed acceptance threshold risky?</li><li>A passage scores highly but contains malicious instructions. Which boundaries keep relevance separate from permission and trust?</li></ol>
+<details><summary>Compare your reasoning</summary><p>First inspect missing candidates, ingestion, filters and retrieval before tuning ordering. Separate queue wait, padding, memory pressure and inference time when diagnosing batches. Revalidate thresholds against labeled data after any model change. Enforce access before scorer exposure; treat retrieved text as untrusted data and keep tool authority outside retrieval scores. Similarity cannot grant permission.</p></details>
+<p>Tomorrow, without notes, explain why a perfect reranker cannot fix missing candidates. In a week, repeat the design with half the latency budget. Ask your teaching assistant to challenge your measurements and one failure case.</p></section>
+</main></body></html>

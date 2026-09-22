@@ -195,6 +195,50 @@ redis-check-aof /validated/offline-copy/appendonlydir/appendonly.aof.manifest
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] persistence records write commands for replay. Fsync policy controls the tradeoff among acknowledged-write loss, latency, and storage work.</li><li>[concept] requests persistence through the OS storage stack; policy and storage guarantees affect acknowledged-data durability.</li><li>AOF [concept] create a compact persistence representation while coordinating new changes and resource use.</li><li>RDB persistence writes point-in-time snapshots, with potential loss of changes since the last recoverable snapshot.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Redis RDB: 4; AOF: 2; fsync: 1; rewrites: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Redis RDB: 4; AOF: 1; fsync: 2; rewrites: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Redis RDB: 4; AOF: 3; fsync: 1; rewrites: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Redis RDB: 1; AOF: 4; fsync: 2; rewrites: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Redis RDB: 4; AOF: 1; fsync: 2; rewrites: 3</p>
+        <ul><li>A. “AOF” matches explanation 1, not 2. “fsync” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “AOF” matches explanation 1, not 3. “fsync” matches explanation 2, not 1. “rewrites” matches explanation 3, not 2.</li><li>D. “Redis RDB” matches explanation 4, not 1. “AOF” matches explanation 1, not 4.</li></ul>
+        <p>Redis RDB: RDB persistence writes point-in-time snapshots, with potential loss of changes since the last recoverable snapshot.</p><p>AOF: AOF persistence records write commands for replay. Fsync policy controls the tradeoff among acknowledged-write loss, latency, and storage work.</p><p>fsync: fsync requests persistence through the OS storage stack; policy and storage guarantees affect acknowledged-data durability.</p><p>rewrites: AOF rewrites create a compact persistence representation while coordinating new changes and resource use.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] initially shares pages and copies them when modified, so concurrent writes can increase memory during persistence.</li><li>[concept] reconstructs Redis state from configured persistence; test the actual recoverable data rather than assuming all acknowledged writes survive.</li><li>Durability trade-offs balance flush frequency, latency, throughput, and acceptable loss under specific failures.</li><li>Redis persistence may [concept] a child process, introducing page-table and copy-on-write memory costs.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. fork: 4; copy-on-write: 2; restart: 1; durability tradeoffs: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. fork: 4; copy-on-write: 1; restart: 2; durability tradeoffs: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. fork: 4; copy-on-write: 3; restart: 1; durability tradeoffs: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. fork: 1; copy-on-write: 4; restart: 2; durability tradeoffs: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> fork: 4; copy-on-write: 1; restart: 2; durability tradeoffs: 3</p>
+        <ul><li>A. “copy-on-write” matches explanation 1, not 2. “restart” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “copy-on-write” matches explanation 1, not 3. “restart” matches explanation 2, not 1. “durability tradeoffs” matches explanation 3, not 2.</li><li>D. “fork” matches explanation 4, not 1. “copy-on-write” matches explanation 1, not 4.</li></ul>
+        <p>fork: Redis persistence may fork a child process, introducing page-table and copy-on-write memory costs.</p><p>copy-on-write: Copy-on-write initially shares pages and copies them when modified, so concurrent writes can increase memory during persistence.</p><p>restart: Restart reconstructs Redis state from configured persistence; test the actual recoverable data rather than assuming all acknowledged writes survive.</p><p>durability tradeoffs: Durability trade-offs balance flush frequency, latency, throughput, and acceptable loss under specific failures.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Persistence or replication advances: RDB, AOF, offsets, backlog, and asynchronous delivery create explicit windows.</li><li>Process or primary becomes unavailable: Restart, resynchronization, quorum, promotion, and client routing decide progress.</li><li>Recovered topology serves data: Acknowledged writes, offsets, files, slots, and client behavior prove the outcome.</li><li>Primary accepts a state change: Command atomicity finishes before durability and replica guarantees are assumed.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. At position 3, the trace uses “Process or primary becomes unavailable”, not “Recovered topology serves data”.</li><li>B. At position 2, the trace uses “Persistence or replication advances”, not “Process or primary becomes unavailable”.</li><li>C. This reproduces the lesson’s trace.</li><li>D. At position 2, the trace uses “Persistence or replication advances”, not “Recovered topology serves data”.</li></ul>
+        <p>Primary accepts a state change: Command atomicity finishes before durability and replica guarantees are assumed.</p><p>Persistence or replication advances: RDB, AOF, offsets, backlog, and asynchronous delivery create explicit windows.</p><p>Process or primary becomes unavailable: Restart, resynchronization, quorum, promotion, and client routing decide progress.</p><p>Recovered topology serves data: Acknowledged writes, offsets, files, slots, and client behavior prove the outcome.</p>
+        <p>Fail the primary immediately after an acknowledged write and inventory what survives where. Evidence to inspect: AOF or RDB state, replication IDs and offsets, slot owner, promoted node, client redirect, and key value.</p>
+      </details>
+    </article>
+    <p><a href="https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/" target="_blank" rel="noreferrer">Review the lesson source: Redis persistence documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

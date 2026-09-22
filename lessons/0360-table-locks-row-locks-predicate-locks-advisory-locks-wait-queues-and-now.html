@@ -186,6 +186,50 @@ COMMIT;</code></pre>
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate [concept]; compare the compatibility matrix rather than inferring behavior from the name.</li><li>[concept] coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.</li><li>PostgreSQL SSI [concept] track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.</li><li>[concept] coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Table locks: 1; row locks: 2; predicate locks: 3; advisory locks: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Table locks: 1; row locks: 2; predicate locks: 4; advisory locks: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Table locks: 1; row locks: 3; predicate locks: 4; advisory locks: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Table locks: 1; row locks: 4; predicate locks: 3; advisory locks: 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> Table locks: 1; row locks: 2; predicate locks: 3; advisory locks: 4</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “predicate locks” matches explanation 3, not 4. “advisory locks” matches explanation 4, not 3.</li><li>C. “row locks” matches explanation 2, not 3. “predicate locks” matches explanation 3, not 4. “advisory locks” matches explanation 4, not 2.</li><li>D. “row locks” matches explanation 2, not 4. “advisory locks” matches explanation 4, not 2.</li></ul>
+        <p>Table locks: Table-level lock modes coordinate operations on a relation, from ordinary reads and writes to DDL. Names containing ROW in this lock-mode family still designate table locks; compare the compatibility matrix rather than inferring behavior from the name.</p><p>row locks: Row locks coordinate conflicting writes and explicit locking reads on selected tuples. Ordinary snapshot SELECTs usually do not wait for them; acquire multiple rows in a stable order to reduce deadlocks.</p><p>predicate locks: PostgreSQL SSI predicate locks track read dependencies for serialization checks. They do not block writers like ordinary row locks; a dangerous dependency pattern can instead cause a serialization failure.</p><p>advisory locks: Advisory locks coordinate application-chosen keys by agreement. PostgreSQL does not automatically associate them with table rows; distinguish session-owned locks from transaction-owned locks, especially with pooling.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] hold operations blocked on unavailable resources such as locks.</li><li>[concept] requests immediate failure rather than waiting for certain unavailable locks.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. wait queues: 1; NOWAIT: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. wait queues: 2; NOWAIT: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> wait queues: 1; NOWAIT: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “wait queues” matches explanation 1, not 2. “NOWAIT” matches explanation 2, not 1.</li></ul>
+        <p>wait queues: Wait queues hold operations blocked on unavailable resources such as locks.</p><p>NOWAIT: NOWAIT requests immediate failure rather than waiting for certain unavailable locks.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Constraints and conflicts resolve: The engine can wait, abort, commit, or require retry.</li><li>Publish one atomic outcome: Visibility follows the reader&#39;s snapshot. Crash durability also depends on WAL flush and replication settings.</li><li>Choose the isolation boundary: Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</li><li>Statements acquire versions or locks: Concurrent transactions may conflict.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 2, the trace uses “Statements acquire versions or locks”, not “Constraints and conflicts resolve”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Statements acquire versions or locks”, not “Publish one atomic outcome”.</li><li>D. At position 1, the trace uses “Choose the isolation boundary”, not “Statements acquire versions or locks”.</li></ul>
+        <p>Choose the isolation boundary: Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</p><p>Statements acquire versions or locks: Concurrent transactions may conflict.</p><p>Constraints and conflicts resolve: The engine can wait, abort, commit, or require retry.</p><p>Publish one atomic outcome: Visibility follows the reader&#39;s snapshot. Crash durability also depends on WAL flush and replication settings.</p>
+        <p>Run two conflicting transactions and predict the wait, error, or visible value. Evidence to inspect: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
