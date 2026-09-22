@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="pure ASGI middleware">
         <span>02</span>
         <h3>pure ASGI middleware</h3>
-        <p class="concept-definition">Middleware wraps the ASGI application around many requests. It is suitable for app-wide protocol concerns, but ordering, streaming, body consumption, and error layers affect correctness.</p>
+        <p class="concept-definition">Pure ASGI middleware wraps the scope, receive and send interface directly rather than adapting through BaseHTTPMiddleware&#039;s request-response interface. Keep per-request state inside the call, pass unsupported scope types through, and preserve message ordering and streaming.</p>
       </article><article class="concept-card" data-subtopic="ordering">
         <span>03</span>
         <h3>ordering</h3>
@@ -185,6 +185,50 @@ app.add_middleware(RequestContextMiddleware)</code></pre>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Middleware [concept] defines which wrapper sees a request first and which wrapper sees a response or error first.</li><li>Request [concept] is data associated with the current request, such as a principal, trace, deadline, or correlation identifier.</li><li>Middleware wraps the ASGI application around many requests. It is suitable for app-wide protocol concerns, but ordering, streaming, body consumption, and error layers affect correctness.</li><li>[concept] wraps the scope, receive and send interface directly rather than adapting through BaseHTTPMiddleware&#39;s request-response interface. Keep per-request state inside the call, pass unsupported scope types through, and preserve message ordering and streaming.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. HTTP middleware: 3; pure ASGI middleware: 4; ordering: 2; context: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. HTTP middleware: 3; pure ASGI middleware: 1; ordering: 2; context: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. HTTP middleware: 3; pure ASGI middleware: 4; ordering: 1; context: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. HTTP middleware: 3; pure ASGI middleware: 2; ordering: 1; context: 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> HTTP middleware: 3; pure ASGI middleware: 4; ordering: 1; context: 2</p>
+        <ul><li>A. “ordering” matches explanation 1, not 2. “context” matches explanation 2, not 1.</li><li>B. “pure ASGI middleware” matches explanation 4, not 1. “ordering” matches explanation 1, not 2. “context” matches explanation 2, not 4.</li><li>C. Every concept matches its explanation.</li><li>D. “pure ASGI middleware” matches explanation 4, not 2. “context” matches explanation 2, not 4.</li></ul>
+        <p>HTTP middleware: Middleware wraps the ASGI application around many requests. It is suitable for app-wide protocol concerns, but ordering, streaming, body consumption, and error layers affect correctness.</p><p>pure ASGI middleware: Pure ASGI middleware wraps the scope, receive and send interface directly rather than adapting through BaseHTTPMiddleware&#39;s request-response interface. Keep per-request state inside the call, pass unsupported scope types through, and preserve message ordering and streaming.</p><p>ordering: Middleware ordering defines which wrapper sees a request first and which wrapper sees a response or error first.</p><p>context: Request context is data associated with the current request, such as a principal, trace, deadline, or correlation identifier.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Request [concept] is data associated with the current request, such as a principal, trace, deadline, or correlation identifier.</li><li>A request ID is a correlation value used to connect logs, errors, traces, and support reports for one request.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. context: 1; request IDs: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. context: 2; request IDs: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> context: 1; request IDs: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “context” matches explanation 1, not 2. “request IDs” matches explanation 2, not 1.</li></ul>
+        <p>context: Request context is data associated with the current request, such as a principal, trace, deadline, or correlation identifier.</p><p>request IDs: A request ID is a correlation value used to connect logs, errors, traces, and support reports for one request.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Dependencies and business logic run: Typed inputs become a return value or exception.</li><li>ASGI send emits wire events: Status, headers, and body become observable to the client.</li><li>HTTP bytes reach Uvicorn: The server parses protocol data and creates an ASGI scope.</li><li>Events enter the application: Middleware wraps receive, routing, and endpoint handling.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 2, the trace uses “Events enter the application”, not “Dependencies and business logic run”.</li><li>B. At position 2, the trace uses “Events enter the application”, not “ASGI send emits wire events”.</li><li>C. At position 1, the trace uses “HTTP bytes reach Uvicorn”, not “Events enter the application”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
+        <p>HTTP bytes reach Uvicorn: The server parses protocol data and creates an ASGI scope.</p><p>Events enter the application: Middleware wraps receive, routing, and endpoint handling.</p><p>Dependencies and business logic run: Typed inputs become a return value or exception.</p><p>ASGI send emits wire events: Status, headers, and body become observable to the client.</p>
+        <p>Trace one valid request and one failure while recording every ASGI event. Evidence to inspect: Scope fields, middleware order, dependency calls, send events, and client response.</p>
+      </details>
+    </article>
+    <p><a href="https://fastapi.tiangolo.com/advanced/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Advanced User Guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

@@ -191,6 +191,50 @@ async def execute_with_retry(operation, attempts: int = 3):
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A transaction groups database changes into one atomic outcome. Commit makes them durable together; rollback removes the uncommitted work after failure.</li><li>A [concept] owns one transaction across all repositories used by a business operation. This keeps multi-step invariants inside one commit or rollback boundary.</li><li>[concept] asks the database to make all changes in the current transaction durable and visible according to isolation rules.</li><li>[concept] discards uncommitted database changes and returns the transaction or session to a usable state.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Transactions: 1; unit of work: 2; commit: 3; rollback: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Transactions: 1; unit of work: 2; commit: 4; rollback: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Transactions: 1; unit of work: 3; commit: 4; rollback: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Transactions: 1; unit of work: 4; commit: 3; rollback: 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> Transactions: 1; unit of work: 2; commit: 3; rollback: 4</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “commit” matches explanation 3, not 4. “rollback” matches explanation 4, not 3.</li><li>C. “unit of work” matches explanation 2, not 3. “commit” matches explanation 3, not 4. “rollback” matches explanation 4, not 2.</li><li>D. “unit of work” matches explanation 2, not 4. “rollback” matches explanation 4, not 2.</li></ul>
+        <p>Transactions: A transaction groups database changes into one atomic outcome. Commit makes them durable together; rollback removes the uncommitted work after failure.</p><p>unit of work: A unit of work owns one transaction across all repositories used by a business operation. This keeps multi-step invariants inside one commit or rollback boundary.</p><p>commit: Commit asks the database to make all changes in the current transaction durable and visible according to isolation rules.</p><p>rollback: Rollback discards uncommitted database changes and returns the transaction or session to a usable state.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A retry repeats an operation after a transient failure under a defined attempt, delay, and idempotency policy.</li><li>[concept] states which data invariants and visibility guarantees must hold before and after an operation.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. retries: 1; consistency: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. retries: 2; consistency: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> retries: 1; consistency: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “retries” matches explanation 1, not 2. “consistency” matches explanation 2, not 1.</li></ul>
+        <p>retries: A retry repeats an operation after a transient failure under a defined attempt, delay, and idempotency policy.</p><p>consistency: Consistency states which data invariants and visibility guarantees must hold before and after an operation.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Statements enforce invariants: Locks, constraints, and the pool shape behavior.</li><li>Commit or rollback completes: Only then should the API publish success or failure.</li><li>Validated command enters: The endpoint hands business intent to the service.</li><li>One unit owns DB conversation: Session and transaction state stay request-scoped.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 2, the trace uses “One unit owns DB conversation”, not “Statements enforce invariants”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “One unit owns DB conversation”, not “Commit or rollback completes”.</li><li>D. At position 1, the trace uses “Validated command enters”, not “One unit owns DB conversation”.</li></ul>
+        <p>Validated command enters: The endpoint hands business intent to the service.</p><p>One unit owns DB conversation: Session and transaction state stay request-scoped.</p><p>Statements enforce invariants: Locks, constraints, and the pool shape behavior.</p><p>Commit or rollback completes: Only then should the API publish success or failure.</p>
+        <p>Force the second database operation to fail and verify nothing partially commits. Evidence to inspect: SQL log, transaction boundaries, pool checkout, persisted rows, and response.</p>
+      </details>
+    </article>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

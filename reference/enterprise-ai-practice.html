@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Enterprise AI: retrieval, agents and deployment practice</title>
+<style>
+:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.75 system-ui,sans-serif}main{max-width:920px;margin:auto;padding:32px 24px 80px}a,summary{color:#79e8ff}h1,h2,h3{line-height:1.3;color:#f7fbff}h1{font-size:clamp(28px,5vw,42px)}section{margin:30px 0;padding:24px;border:1px solid #3b526c;border-radius:8px;scroll-margin-top:18px}pre{overflow:auto;padding:18px;background:#101722;font:14px/1.65 ui-monospace,monospace}summary{cursor:pointer}details{margin:18px 0;padding:12px;border-left:2px solid #79e8ff}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff;outline-offset:4px}li{margin:7px 0}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}.note{border-left:3px solid #ffd277;padding:14px;background:#17191d}nav ul{columns:2}@media(max-width:600px){main{padding:20px 14px}section{padding:15px}nav ul{columns:1}}@media print{:root{color-scheme:light}body{background:white;color:black;font-size:11pt}main{padding:0}h1,h2,h3,a,summary{color:black}pre,.note{background:white;white-space:pre-wrap}details::details-content{content-visibility:visible}nav{display:none}h2,h3{break-after:avoid}}
+</style></head><body><main>
+<header><p><a href="../index.html">Curriculum</a> · Senior AI/FDE extensions · 20 September 2026</p><h1>Enterprise AI: retrieval, agents and deployment</h1>
+<p>These focused extensions connect framework names to mechanisms and testable decisions. Study one section at a time. Each has an exercise and feedback; return the next day and explain the failure case without notes.</p>
+<p class="note">No installations or external executions accompany this material. Run <code>python3 scripts/check-enterprise-ai-practice.py</code> from the repository root for the standard-library fixtures and syntax checks. SDK recipes, identity-provider labs, model servers and process commands require an existing approved environment; they are not certified deployments. Fictional fixtures test mechanics, not model quality, security completeness or learner mastery.</p></header>
+<nav aria-label="Topics"><ul>
+<li><a href="#rag">RAG end to end</a></li><li><a href="#pinecone">Pinecone</a></li><li><a href="#ragas">RAGAS</a></li><li><a href="#parent-child">Parent–child retrieval</a></li><li><a href="#pageindex">Vectorless / PageIndex-style RAG</a></li><li><a href="#chain-of-thought">Chain-of-thought terminology</a></li><li><a href="#deep-agents">Deep Agents</a></li><li><a href="#openai-agents">OpenAI Agents SDK</a></li><li><a href="#claude-agents">Claude Agent SDK</a></li><li><a href="#episodic-memory">Episodic memory</a></li><li><a href="#kill-switch">Operational kill switches</a></li><li><a href="#gunicorn">Gunicorn and Uvicorn</a></li><li><a href="#saml">SAML</a></li><li><a href="#etl-elt">ETL versus ELT</a></li><li><a href="#vllm">vLLM</a></li>
+</ul></nav>
+
+<section id="rag"><h2>RAG: trace the answer back to evidence</h2>
+<p>Retrieval-augmented generation supplies retrieved external material to a generator. The <a href="https://arxiv.org/abs/2005.11401">original RAG paper</a> provides the research foundation; a production pipeline also needs identity, ingestion, versioning and evaluation. Retrieval can be lexical, vector, graph or document-tree based. RAG is not synonymous with a vector database, and attaching citations does not prove that an answer follows from them.</p>
+<p>The offline path validates a source, parses it, preserves provenance, chunks/indexes it and publishes a ready generation. The online path authenticates the caller, retrieves permitted evidence, optionally reranks, constructs bounded context, generates and checks the answer. Keep source/version/span IDs attached throughout. Permission revocation must affect retrieval, parent expansion, caches and generated summaries—not just the original object.</p>
+<h3>Locate the failure before tuning</h3>
+<p>Fixture: D1 says refunds take seven days; D2 describes creating an account. The question asks about refunds. Write the expected behavior for four cases: D1 absent from the index, D1 retrieved but cut from context, D1 in context but the answer says thirty days, and D1 revoked for this user.</p>
+<details><summary>Compare your diagnosis</summary><p>These are respectively ingestion/retrieval coverage, context assembly, generation/grounding and authorization problems. A stronger generator does not repair a missing source or a permission leak. In the revoked case, with no authorized replacement evidence, abstain rather than reuse the cached answer.</p></details>
+<p>Build a held-out set with source IDs and answer expectations, including no-answer, contradiction and revoked-document cases. Measure retrieval recall separately from claim support, answer correctness, latency and cost. Hold corpus/model/prompt versions fixed when comparing a change. A fabricated good-looking answer is not a success. See the existing <a href="ai-data-extensions.html#graphrag">GraphRAG comparison</a> and <a href="cross-encoder-reranking.html">reranking exercise</a>.</p>
+<p>Interview rehearsal: explain which traces distinguish “not retrieved” from “retrieved but not used.” Tomorrow, reconstruct both pipeline paths and their permission checks.</p></section>
+
+<section id="pinecone"><h2>Pinecone: own the index contract</h2>
+<p>Pinecone is a managed retrieval service. An index defines relevant storage/search configuration; a namespace partitions its records. Records carry stable IDs, vectors and metadata. Bring-your-own vectors and integrated embedding indexes have different input APIs: do not send text to a vector-only query or assume the service chose your intended embedding model. See <a href="https://docs.pinecone.io/guides/index-data/upsert-data">upserts</a> and <a href="https://docs.pinecone.io/guides/search/filter-by-metadata">filtered search</a>.</p>
+<p>For a pre-existing two-dimensional learning index and Python SDK, the recipe below writes one synthetic record, then queries it. It can incur service charges. The host/key are trusted application configuration; tenant scope comes from authenticated identity. Do not run against a production namespace.</p>
+<pre><code data-python="integration">import os
+from pinecone import Pinecone
+
+pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+index = pc.Index(host=os.environ["PINECONE_INDEX_HOST"])
+namespace = "lesson-tenant-a"  # server-derived in the real service
+index.upsert(namespace=namespace, vectors=[{
+    "id": "policy:v1:0", "values": [1.0, 0.0],
+    "metadata": {"status": "published", "source": "policy:v1", "page": 2},
+}])
+result = index.query(namespace=namespace, vector=[1.0, 0.0], top_k=3,
+    filter={"status": {"$eq": "published"}}, include_metadata=True,
+    include_values=False)
+</code></pre>
+<p>Check visibility using the deployment's documented freshness behavior; do not assume an immediate query proves a completed write. Use a bounded wait/retry in the lab. Add an identical record in tenant B's namespace and verify that an A-scoped service request cannot select B. A namespace parameter is not an authentication mechanism if callers can freely choose it.</p>
+<p>Pin embedding revision, dimensions, distance metric and chunking version. Re-embedding into a new index/generation enables comparison and rollback. Upserts with stable IDs replace records, but do not remove stale chunks left by a shorter source. Keep a manifest and reconcile deletions. Benchmark filtered recall, p95 latency, read/write usage and ingestion lag with representative tenant sizes.</p>
+<details><summary>Interview: same dimensions, new embeddings—safe to reuse the index?</summary><p>No. Equal shape does not imply a compatible vector space. Re-embed documents and change the query encoder together. Validate tenant isolation and retrieval quality before switching traffic; maintain a rollback generation.</p></details>
+<p>Tomorrow, explain the difference between metadata filtering, namespaces and application authorization.</p></section>
+
+<section id="ragas"><h2>RAGAS: use metrics as diagnostics</h2>
+<p>Ragas is an evaluation library, not an oracle. A sample records the user question, retrieved contexts, response and, where required, a reference answer. Faithfulness measures support in the supplied context; factual correctness compares against a reference; context recall asks whether needed reference information was retrieved. An answer can be faithful to an incorrect source. Read the <a href="https://docs.ragas.io/en/stable/getstarted/rag_eval/">official evaluation walkthrough</a> and <a href="https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/faithfulness/">faithfulness definition</a>.</p>
+<pre><code data-python="integration">from ragas import EvaluationDataset, evaluate
+from ragas.metrics import Faithfulness, FactualCorrectness, LLMContextRecall
+
+dataset = EvaluationDataset.from_list([{
+    "user_input": "How long is the refund window?",
+    "retrieved_contexts": ["Policy P1: refunds within seven days."],
+    "response": "Refunds are available within thirty days.",
+    "reference": "Refunds are available within seven days.",
+}])
+
+def score_with_approved_judge(evaluator_llm):
+    # Supply a compatible, explicitly configured Ragas judge adapter.
+    # This can make paid model calls; no default provider is selected here.
+    return evaluate(dataset=dataset,
+        metrics=[Faithfulness(), FactualCorrectness(), LLMContextRecall()],
+        llm=evaluator_llm)
+</code></pre>
+<p>Prediction: the context contains the necessary information, but the answer contradicts it. You should expect poor answer-support/correctness judgments, not assert a particular numeric score from a probabilistic judge. Repeat with “seven days,” then with an empty context. Inspect per-sample explanations, parsing failures and missing scores before averaging.</p>
+<p>Pin Ragas, metric configuration, judge model/prompt and corpus snapshots. Calibrate on human-labeled positives and negatives, including numbers, negation and misleading citations. Use holdouts, slices and repeated judge calls; a large score shift after a judge upgrade may not reflect product improvement. Do not treat missing/error scores as zeros without a declared policy. Record successful evaluation coverage alongside quality.</p>
+<details><summary>Interview: faithfulness improved while customers report worse answers—why?</summary><p>The system may now repeat irrelevant context accurately or abstain more often. Check answer relevance, evidence recall, task success, abstention and source correctness. Compare paired examples and denominators; one metric cannot certify the whole application.</p></details>
+<p>Tomorrow, distinguish faithful-to-context from correct-in-the-world and identify which labels each metric needs.</p></section>
+
+<section id="parent-child"><h2>Parent–child retrieval: search small, explain with context</h2>
+<p>Small child chunks often make precise matches easier; a larger parent section preserves definitions, exceptions and neighboring explanation. Index children with a stable parent ID, source version and span. At query time, rank children, resolve their parents, deduplicate parents and fit authorized context into a token budget. This differs from merely increasing every chunk's size.</p>
+<p>Worked case: two refund sentences point to parent P1; a third hit points to P2 from another tenant. Predict which parent IDs may reach the generator. This toy resolver assumes a parent is one permission unit and rechecks its current tenant and version.</p>
+<pre><code data-python="offline">parents = {
+    "p1": {"tenant": "a", "version": 2, "text": "Refunds: seven days. Exceptions apply."},
+    "p2": {"tenant": "b", "version": 2, "text": "Private policy."},
+}
+hits = [("p1", 2), ("p1", 2), ("p2", 2), ("p1", 1)]
+def expand(hits, tenant):
+    chosen = {}
+    for parent_id, version in hits:
+        parent = parents.get(parent_id)
+        if parent and parent["tenant"] == tenant and parent["version"] == version:
+            chosen.setdefault(parent_id, parent["text"])
+    return chosen
+
+assert list(expand(hits, "a")) == ["p1"]
+assert expand([("missing", 1), ("p1", 1)], "a") == {}
+</code></pre>
+<p>In production, use the actual ACL rather than only tenant equality. If different parent spans have different permissions, do not expand the whole parent: partition it or fetch permitted spans. Keep child-span citations even when passing broader context. Deduplication prevents one parent from consuming the budget repeatedly; selecting parents should preserve the evidence ranking and avoid starving other sources.</p>
+<details><summary>Interview: why did retrieval improve but answers regress?</summary><p>Parent expansion may add distracting text or crowd out other evidence. Measure child evidence recall, final-context coverage, supported answers and token cost separately. Test orphan children, version mismatch, revoked parents and very large sections. Bigger context is a tradeoff, not an automatic improvement.</p></details>
+<p>For a framework implementation, consult the <a href="https://reference.langchain.com/python/langchain-classic/retrievers/parent_document_retriever/ParentDocumentRetriever">ParentDocumentRetriever reference</a>; the fixture above intentionally avoids framework dependencies. Tomorrow, explain why permission checks must occur again after expansion.</p></section>
+
+<section id="pageindex"><h2>Vectorless / PageIndex-style RAG: retrieve through a document tree</h2>
+<p>Vectorless retrieval means that vector similarity is not the selection mechanism. It can use lexical search, SQL or structured navigation; these are not all the same algorithm. <a href="https://github.com/VectifyAI/PageIndex">PageIndex</a> specifically builds a hierarchical document index and uses model-driven navigation to find relevant sections/pages. A tree node is a locator and summary, not independent factual evidence.</p>
+<p>A typical path is document → section tree with page ranges → candidate branches → original pages → answer with citations. This can suit long, structured reports where headings and hierarchy matter. It is less attractive when headings are poor, relevant facts cross branches, OCR is unreliable or many unrelated documents need a fast first-stage search. Vector and tree retrieval can also be combined.</p>
+<h3>Practice branch selection and recovery</h3>
+<p>Fixture: a handbook has “Overview” on pages 1–3, “Billing” on 4–8 and “Refund exceptions” on 9–11. The query asks whether an annual plan can be refunded after cancellation. First select candidate nodes from titles/summaries; then read the actual pages. Include both billing definitions and exception pages if the answer depends on them. Do not let the overview's broad summary override a specific exception.</p>
+<details><summary>Check: a planner chooses only Billing—how should you respond?</summary><p>Bounded sibling/backtracking search can recover the exception branch. If no supporting clause is found within the budget, abstain or ask for clarification. Never turn an index summary into a fabricated page citation. The test should record selected nodes, fetched pages and the precise supporting span.</p></details>
+<p>In an already provisioned PageIndex environment, index an approved long PDF and compare tree retrieval with hybrid vector/keyword retrieval using the same questions, corpus and final context budget. Include cross-section, exact-number and no-answer questions. Measure source-page recall, supported answers, tree-building tokens, node visits, p95 latency and total model cost. Separate indexing from query expense.</p>
+<p>Document edits invalidate page ranges and derived summaries; publish versioned trees and retain lineage. Apply permissions before sending summaries or pages to a model. Prompt injection can exist in headings and summaries too. “No vector DB” does not mean no index, no preprocessing, no hallucinations or no operating cost. Tomorrow, explain which workload would justify this design over ordinary hybrid retrieval.</p></section>
+
+<section id="chain-of-thought"><h2>Chain-of-thought: distinguish a technique from evidence</h2>
+<p>Chain-of-thought (CoT) prompting presents or elicits intermediate reasoning steps before an answer. Few-shot CoT provides worked examples; zero-shot variants request stepwise solving. The <a href="https://arxiv.org/abs/2201.11903">original paper</a> studied gains on reasoning tasks under particular experimental conditions. It does not establish that longer explanations are always better or that generated rationales reveal the actual computation.</p>
+<p>Separate internal model reasoning, a user-facing explanation, and an auditable tool trace. An explanation can be useful without exposing private internal reasoning. A trace records observable tool inputs/outputs, approvals and source references. Neither fluent prose nor a claimed “thought” proves factual correctness. With reasoning models, explicit requests to reveal a chain of thought are often unnecessary; follow the model's <a href="https://developers.openai.com/api/docs/guides/reasoning-best-practices">official prompting guidance</a>.</p>
+<h3>Evaluate the answer, not the length of the rationale</h3>
+<p>Task: “A report lists 12 items at 25 cents each. Return the total in cents and a brief calculation.” Compare a direct instruction with a worked-example prompt on a held-out arithmetic set. Expected output for this item: 300 cents, with the concise calculation 12 × 25. For production financial totals, calculate with a deterministic tool rather than trusting either prompt.</p>
+<details><summary>Interview: is “show every thought” an observability strategy?</summary><p>No. Ask for a concise justification and evidence instead. Record the arithmetic tool result, source IDs and final answer validation. Evaluate exact correctness, schema compliance, tokens and latency. More generated reasoning text can introduce unsupported claims and sensitive details.</p></details>
+<p>Tomorrow, contrast CoT prompting, task decomposition, ReAct's tool loop and a verifiable calculation. They address different parts of the system.</p></section>
+
+<section id="deep-agents"><h2>Deep Agents: a harness, not a stronger model</h2>
+<p>LangChain's Deep Agents adds planning, context/file management and delegation around a tool-calling loop, using LangGraph infrastructure. A plan tracks intended work; it does not enforce completion or authorization. Subagents can keep detailed intermediate work out of the coordinator's context, but they add latency, costs and failure paths. Read the <a href="https://docs.langchain.com/oss/python/deepagents/overview">overview</a> and <a href="https://docs.langchain.com/oss/python/deepagents/subagents">subagent contract</a>.</p>
+<p>This construction recipe requires an existing compatible Deep Agents installation and explicitly selected provider model. It defines a policy specialist, but does not invoke the model. Built-in filesystem/delegation tools and a default general-purpose subagent may still exist; the explicit tool list is not a complete capability audit.</p>
+<pre><code data-python="integration">import os
+from deepagents import create_deep_agent
+
+def read_training_policy() -&gt; str:
+    """Return a synthetic policy and its source ID."""
+    return "P1: production changes require approval."
+
+agent = create_deep_agent(
+    model=os.environ["DEEP_AGENT_MODEL"],
+    system_prompt="Draft a recommendation with evidence; do not change systems.",
+    tools=[read_training_policy],
+    subagents=[{
+        "name": "policy-reviewer",
+        "description": "Find policy evidence for a proposed change.",
+        "system_prompt": "Use the policy tool; return a concise claim and source ID.",
+        "tools": [read_training_policy],
+    }],
+)
+</code></pre>
+<p>Exercise in an approved sandbox: ask for a deployment recommendation, inspect the effective tool inventory, and verify that no system-changing capability exists. Configure backend isolation and default-agent behavior for the pinned release before invoking. Give the specialist an output contract: supported claims, source IDs, unresolved questions and budget spent. Reject summaries with invented evidence.</p>
+<details><summary>Interview: when should you avoid delegation?</summary><p>For a simple lookup, direct tool use may be clearer and cheaper. Compare one agent against the coordinator/specialist setup on the same tasks. Count total calls, evidence retention, failure rate and wall time. Context isolation is not security isolation if both workers still share credentials or filesystem access.</p></details>
+<p>Tomorrow, explain why a to-do list, a checkpoint and an authorization rule are three different things.</p></section>
+
+<section id="openai-agents"><h2>OpenAI Agents SDK: control the run and the tool boundary</h2>
+<p>The SDK's Agent declares behavior and tools; Runner manages the interaction loop. Function tools expose typed application functions. Handoffs transfer control to another agent, while an agent used as a tool returns a result to its caller. Sessions/state, tracing and guardrails are supporting mechanisms, not automatic business authorization. See the <a href="https://developers.openai.com/api/docs/guides/agents/quickstart">SDK quickstart</a> and <a href="https://developers.openai.com/api/docs/guides/agents/running-agents">run lifecycle</a>.</p>
+<pre><code data-python="integration">import asyncio
+import os
+from agents import Agent, Runner, function_tool
+
+@function_tool
+def read_ticket() -&gt; str:
+    """Read the single authorized synthetic ticket for this exercise."""
+    return "T1: staging health check failed; no production change is approved."
+
+agent = Agent(name="Operations drafter", model=os.environ["AGENTS_MODEL"],
+    instructions="Read the ticket. Draft a diagnosis, cite its ID, and do not act.",
+    tools=[read_ticket])
+
+async def draft():
+    # Configure tracing/privacy and provider spend limits before a real run.
+    result = await asyncio.wait_for(
+        Runner.run(agent, "Assess the staging incident."), timeout=20)
+    return result.final_output
+</code></pre>
+<p>In a provisioned lab, first substitute an approved test model/transport, then evaluate one live run only within a budget. Assert that the ticket is read, that T1 is cited, and that output is a proposal—not a reported action. A timeout cancels local waiting; it does not prove the provider stopped computation or undo an external effect. Add the SDK's supported turn limits for the pinned release and enforce tool-call/spend limits outside model instructions.</p>
+<p>Validate tool arguments, derive identity from trusted run context, check permissions at execution and use idempotency for writes. A guardrail that runs after generation cannot retroactively prevent a tool side effect. Review blocking versus concurrent behavior before relying on it. Bind approval to the exact action payload, actor and expiry. See <a href="https://developers.openai.com/api/docs/guides/agents/guardrails-approvals">guardrails and human review</a>.</p>
+<details><summary>Interview: does a successful Runner result mean the workflow succeeded?</summary><p>No. It may contain an unsupported statement or an unsuccessful tool result expressed fluently. Validate the task outcome against authoritative state and the trace. Test malformed arguments, denied actions, tool timeout, repeated calls and restart after approval.</p></details>
+<p>Tomorrow, contrast a handoff with an agent-as-tool call and identify which component owns the final result.</p></section>
+
+<section id="claude-agents"><h2>Claude Agent SDK: runtime authority matters</h2>
+<p>The Claude Agent SDK wraps an agent runtime with tools, sessions and permission controls. It is different from sending one message to a model API: a run can inspect files or execute actions when those capabilities are enabled. Begin with a synthetic ticket, no repository secrets, an isolated working directory and a hard spending limit. Check the pinned SDK/runtime versions before adopting a recipe.</p>
+<p>Read the <a href="https://code.claude.com/docs/en/agent-sdk/permissions">permission evaluation order</a> before configuring tools. <code>allowed_tools</code> pre-approves named tools; it is not an exclusive whitelist. Unlisted tools can still be available. <code>dontAsk</code> denies calls that would require a prompt, not necessarily every unlisted call. For a text-only baseline, current documentation supports <code>disallowed_tools=["*"]</code> to remove tool definitions. Recheck this behavior in the release you deploy.</p>
+<p>Build the lab in two passes. First ask for a proposal from a synthetic ticket included in the prompt, with every tool removed. Then enable one narrowly scoped ticket-reading capability in a sandbox. Inspect the actual exposed tool inventory, not just your configuration list. Attempt an unrelated file read, a shell command and a write. Each prohibited action must fail at the enforcement boundary, with a recorded denial and no effect.</p>
+<p>Keep authorization in the service that owns the data. A tool callback can be skipped by earlier auto-approval rules; use the documented pre-tool hook when a runtime check must precede every tool call, and still enforce access in the backing service. OS isolation and outbound-network controls limit damage if application controls fail. Avoid permission-bypass modes in this exercise.</p>
+<details><summary>Interview: why is a permission callback not a sandbox?</summary><p>It governs a particular runtime decision path. It does not independently constrain subprocesses, network access or a backing service's credentials. A safe deployment combines verified tool exposure, service authorization, limited credentials and process/network isolation. Test every layer with an attempted violation.</p></details>
+<p>Keep the trace, denied-call evidence, version pins and task outcome. Tomorrow, explain why “Read is allowed” does not imply “only Read exists.” This is a provisioned integration assignment, not a runtime test performed by this reference.</p></section>
+
+<section id="episodic-memory"><h2>Episodic memory: learn from an event without repeating its mistake</h2>
+<p>Semantic memory stores facts; procedural memory stores how to perform work; episodic memory stores a particular experience, including its context, action and observed outcome. A conversation transcript is not automatically useful episodic memory. A compact incident record might say: “Tenant A, policy v2, incident I17; restarting did not help; reverting configuration restored service; verified by error-rate recovery.” See the <a href="https://docs.langchain.com/oss/python/concepts/memory">memory taxonomy</a>.</p>
+<p>Write an episode only after checking the outcome against authoritative evidence. Preserve unsuccessful attempts as unsuccessful: they can prevent repetition. Separate observation from interpretation, attach timestamps, source IDs, tenant, policy version, outcome and expiry, and remove secrets. A previous successful action is evidence to consider, not permission to repeat it.</p>
+<p>Predict which episodes survive this filter before running it. The ranking stage comes later; eligibility must happen first.</p>
+<pre><code data-python="offline">episodes = [
+    dict(id="I17", tenant="A", version=2, expires=200, verified=True, outcome="recovered"),
+    dict(id="I18", tenant="B", version=2, expires=200, verified=True, outcome="recovered"),
+    dict(id="I19", tenant="A", version=1, expires=200, verified=True, outcome="recovered"),
+    dict(id="I20", tenant="A", version=2, expires=100, verified=True, outcome="recovered"),
+    dict(id="I21", tenant="A", version=2, expires=200, verified=False, outcome="claimed success"),
+    dict(id="I22", tenant="A", version=2, expires=200, verified=True, outcome="failed restart"),
+]
+def eligible(tenant, version, now):
+    return [e for e in episodes if e["tenant"] == tenant
+            and e["version"] == version and e["expires"] &gt; now and e["verified"]]
+assert [e["id"] for e in eligible("A", 2, 100)] == ["I17", "I22"]
+assert eligible("C", 2, 100) == []
+</code></pre>
+<p>This fixture assumes trusted metadata and a fixed clock; it tests eligibility, not semantic retrieval, deletion propagation or real authorization. In practice, derive tenant identity from authentication and enforce document-level permissions too. Retain a link to the source so corrections or deletion can invalidate derived memories.</p>
+<details><summary>Practice feedback: what should the agent do with I22?</summary><p>Use it as a counterexample to an unexamined restart recommendation. Check whether the current incident has the same cause before applying either episode. Stale, irrelevant or conflicting memories should trigger fresh investigation, not confident imitation.</p></details>
+<p>Compare a no-memory baseline against episodic retrieval on ten held-out incidents. Count correct resolutions, harmful repeated actions, stale-memory use, latency and privacy failures. Tomorrow, reconstruct the episode schema and explain why storing only successes biases it.</p></section>
+
+<section id="kill-switch"><h2>Operational kill switches: stop authority, not just the chat window</h2>
+<p>A kill switch must stop new work and constrain queued or running actions. Closing a UI or cancelling a model request does not revoke a worker's credentials or undo a committed payment. Put an execution gate where effects occur, use short-lived authority, and record who stopped which tenant or run. The <a href="https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html">OWASP agent security guidance</a> is a useful threat-model checklist.</p>
+<p>This sequential fixture models generation-based fencing. Predict whether a queued job from generation 1 can execute after stopping and resuming.</p>
+<pre><code data-python="offline"># ponytail: sequential model; real effects need atomic receiver-side fencing.
+state = {"enabled": True, "generation": 1}
+effects = []
+def dispatch(job_generation, action):
+    if not state["enabled"] or job_generation != state["generation"]:
+        return "denied"
+    effects.append(action)
+    return "applied"
+def stop():
+    state["enabled"] = False
+    state["generation"] += 1
+assert dispatch(1, "draft-only") == "applied"
+stop()
+assert dispatch(1, "queued-write") == "denied"
+state["enabled"] = True  # Explicit operator-approved resume in the real system.
+assert dispatch(1, "stale-retry") == "denied"
+assert dispatch(2, "new-draft") == "applied"
+assert effects == ["draft-only", "new-draft"]
+</code></pre>
+<p>This is not a distributed cancellation implementation. There is a check-to-effect race if the gate and mutation are separate. For a database effect, validate the fencing generation in the same serialized transaction as the mutation; all writers must obey it. For an external API, use provider-side revocation/cancellation where available and document the residual window. Already committed effects require reconciliation or an explicitly approved compensating action.</p>
+<p>Run the operational drill in a provisioned test environment with a fake effect receiver: pause one worker before dispatch, leave another job queued, then activate the switch. Capture stop-request time, enforcement acknowledgements and the last accepted effect. Resume the paused worker and deliver the queued job twice. Neither stale attempt may create a new effect after the enforcement cutover. Restart a worker and repeat. Lose access to the control store and verify that sensitive actions fail closed.</p>
+<details><summary>Interview: what evidence proves the stop worked?</summary><p>Receiver-side effect records, generation checks, queue disposition and worker acknowledgements—not a green UI badge. Report the measured stop latency and any in-flight effects accepted before enforcement. Resuming requires new authority; do not silently reactivate old jobs.</p></details>
+<p>Tomorrow, draw the race between authorization and a third-party write. Name the guarantee your architecture can actually provide.</p></section>
+
+<section id="gunicorn"><h2>Gunicorn and Uvicorn: processes versus request handling</h2>
+<p>“Guvicorn” is interpreted here as Gunicorn. Uvicorn is an ASGI server suitable for FastAPI and supports its own worker-process mode. Gunicorn manages worker processes; the worker class determines the application protocol. A FastAPI ASGI application cannot simply be treated as a synchronous WSGI application.</p>
+<p>For an already provisioned environment, a small Uvicorn deployment can start with <code>uvicorn main:app --host 127.0.0.1 --port 8000 --workers 2</code>. Do not combine production worker mode with development reload. See <a href="https://uvicorn.dev/deployment/">Uvicorn deployment</a>. Bind addresses, trusted proxy headers and TLS termination must match your actual network boundary.</p>
+<p>Current Gunicorn documentation also describes a <a href="https://gunicorn.org/asgi/">native ASGI worker</a>: <code>gunicorn main:app --worker-class asgi --bind 127.0.0.1:8000 --workers 2</code>. This is release-dependent: verify availability, maturity and supported features in your pinned release. Older deployments may use a separately maintained Uvicorn worker adapter. Do not copy a historical worker import path without checking its lifecycle. Neither command is executed by this lesson.</p>
+<p>Every process has its own application state and usually its own connection pools. Four workers with a pool limit of ten can request forty database connections, plus migration/admin capacity. A model loaded in each worker can similarly multiply memory use. Async I/O allows a worker to wait efficiently; it does not make CPU-heavy PDF parsing nonblocking. Move that work to a bounded job executor.</p>
+<p>Practice with a small test service: record the PID and request ID, send simultaneous slow requests, then replace one worker during traffic. Verify readiness, draining and response completion. For streaming, inspect proxy buffering, disconnect handling and time-to-first-byte. Configure a termination grace period compatible with bounded requests; long jobs should not depend on keeping an HTTP worker alive.</p>
+<details><summary>Interview: why not choose worker count from CPU cores alone?</summary><p>Memory, database capacity, request concurrency, blocking code and latency targets can become the limit first. Measure throughput and tail latency under representative load, including slow clients and shutdown. More workers can make an overloaded dependency worse.</p></details>
+<p>Tomorrow, explain what changes when two containers each run four workers instead of one.</p></section>
+
+<section id="saml"><h2>SAML: enterprise sign-in without confusing identity and access</h2>
+<p>SAML federation lets an identity provider (IdP) authenticate a user for a service provider (SP). In an SP-initiated flow, the SP sends an authentication request; the browser delivers the IdP response to the SP's assertion consumer service (ACS). The SP validates the response and creates its own session. An assertion is not an instruction to grant every application permission.</p>
+<p>Use a maintained SAML implementation, vetted metadata and explicitly trusted signing keys. Do not write XML signature validation yourself. Validation must bind the authenticated, signed content to the values the application consumes. Check issuer, audience, destination/recipient, time conditions and—in an SP-initiated flow—the outstanding request correlation. Apply replay protection atomically and protect RelayState. Account for bounded clock skew and key rotation. Consult the <a href="https://cheatsheetseries.owasp.org/cheatsheets/SAML_Security_Cheat_Sheet.html">OWASP SAML security checklist</a>.</p>
+<p>Tabletop exercise: an assertion is correctly signed but names a different audience; another is expired; a third has already been used; a fourth responds to an unknown request; a fifth is valid but its user has lost access to a document. Decide which boundary rejects each case before opening the answer.</p>
+<details><summary>Worked rejection boundaries</summary><p>The first four fail the applicable federation validation/replay policy before session creation. The fifth can authenticate successfully, but application authorization must deny the document. Test IdP-initiated sign-in separately if intentionally supported: it does not have the same outstanding-request correlation and needs an explicit threat model, not an accidental bypass.</p></details>
+<p>For RAG, map the stable federated identity to a local account and tenant. Resolve current groups and document permissions using trusted systems, not a model-selected tenant or an unverified claim. Apply access controls before retrieval and again before returning expanded parent documents. Cache entries must not leak responses across identities. Logout, session expiry and group revocation need a documented propagation policy.</p>
+<p>In a provisioned identity test environment, exercise key rollover, replay, expired assertions and a removed group membership; retain redacted validation results, never raw production assertions. SAML covers federation, OAuth covers delegated authorization, and OIDC adds an identity layer to OAuth. None replaces your API's session/token validation or resource permissions.</p>
+<p>Tomorrow, explain why “the signature is valid” is necessary but insufficient.</p></section>
+
+<section id="etl-elt"><h2>ETL versus ELT: where transformation happens</h2>
+<p>Extract–transform–load (ETL) transforms records before loading the target system. Extract–load–transform (ELT) lands records first, then transforms them using the destination's compute. A landing zone is still a governed data store, not permission to retain arbitrary raw PII. See <a href="https://aws.amazon.com/compare/the-difference-between-etl-and-elt/">AWS's comparison</a>. Many practical pipelines mix both: redact before landing, then normalize and aggregate downstream.</p>
+<p>Choose based on sensitive-data policy, source formats, replay needs, compute capacity and how often transformations change. ETL can keep prohibited fields out of the destination; ELT can preserve an approved source representation for new transformations. Either approach needs schema contracts, lineage, access controls, retention, quarantine and reproducibility. CDC describes how changes are captured; it is independent of where transformation occurs.</p>
+<p>For document ingestion, extraction produces source text and page evidence; transformation normalizes text, derives chunks and embeds them; loading publishes searchable records. Keep document version, chunker version and embedding-model version distinct. Use a versioned index or publication pointer so a user does not read a half-rebuilt document.</p>
+<p>Predict the final state after out-of-order updates and a deletion. Here the source supplies an ordered revision per document; arrival time is not used as the authority.</p>
+<pre><code data-python="offline">latest = {}
+events = [
+    ("A", "d1", 2, "new text"),
+    ("A", "d1", 1, "old text"),
+    ("A", "d1", 3, None),
+    ("A", "d1", 2, "late retry"),
+    ("B", "d1", 1, "different tenant"),
+]
+for tenant, doc, version, text in events:
+    key = (tenant, doc)
+    if version &gt; latest.get(key, (0, None))[0]:
+        latest[key] = (version, text)
+assert latest[("A", "d1")] == (3, None)
+assert latest[("B", "d1")] == (1, "different tenant")
+visible = {key: text for key, (_, text) in latest.items() if text is not None}
+assert ("A", "d1") not in visible
+</code></pre>
+<p>The retained tombstone prevents an older update from resurrecting the document. A real implementation needs atomic compare-and-write, durable source offsets and a defined policy for equal-version conflicting payloads. If your source lacks ordered revisions, design reconciliation instead of pretending timestamps establish a total order. Deletion must reach chunks, vectors, caches and derived memories according to policy.</p>
+<details><summary>Interview: can you replay an ELT pipeline safely?</summary><p>Only with a defined source snapshot/change log, deterministic or versioned transformations, idempotent outputs and publication rules. “We kept the raw data” is insufficient if permissions, source deletes or embedding versions are missing.</p></details>
+<p>Tomorrow, select ETL, ELT or a mixed pipeline for a source containing restricted personal information and explain where redaction occurs.</p></section>
+
+<section id="vllm"><h2>vLLM: operating an open-weight model service</h2>
+<p>vLLM is an inference-serving engine, not a model and not an agent framework. It schedules model execution and exposes serving interfaces, including an OpenAI-compatible API. Compatibility is an integration convenience, not a promise that every model supports identical tools, structured outputs or token accounting. Check the selected model, chat template, parser and server release with contract tests.</p>
+<p>Read the <a href="https://docs.vllm.ai/en/stable/cli/serve/">vLLM serving reference</a>. In an already provisioned GPU lab, use an approved model already present on disk and a pinned server image. Do not download or install anything to complete this reading exercise. A runbook must name the model license, weight revision, tokenizer, runtime, hardware and numerical precision so results are reproducible.</p>
+<p>Distinguish prefill—the work over the prompt—from decoding successive output tokens. Measure time to first token, inter-token latency and total completion latency separately. Concurrent requests compete for compute and memory. Model weights are only part of memory use: KV cache, execution buffers and runtime overhead also matter. An eight-billion-parameter model at two bytes per parameter has roughly sixteen billion bytes of weights; that is not a sixteen-GB total-memory fit guarantee.</p>
+<p>Practice a capacity experiment with fixed short/long prompt and output buckets. At each concurrency level record accepted throughput, p50/p95 latency, queue time, errors and peak memory. Repeat with the same quality evaluation after changing precision or context limits. Reject a configuration that looks faster only because it truncates required evidence or returns lower-quality answers.</p>
+<p>Put the service behind authentication, per-tenant quotas, request-size limits and a bounded queue. Bind a local lab to loopback; production needs network isolation, TLS at the appropriate boundary, scoped credentials and redacted logs. A compatible endpoint should not be exposed anonymously. Separate readiness from liveness and test overload rejection, client cancellation, draining and model startup failure. Preserve an explicitly approved fallback policy rather than silently sending private data to an external provider.</p>
+<details><summary>Interview: when is self-hosting cheaper?</summary><p>Compare cost per successful task at the required quality and latency, not GPU-hour price alone. Include utilization, spare capacity, operations, security, upgrades and failed requests. Low utilization or strict tail-latency targets can erase apparent savings. Data-residency requirements may still justify self-hosting independently of price.</p></details>
+<p>Tomorrow, explain why throughput can rise while an individual user's first-token latency gets worse. This is a GPU integration assignment; no server or model was started.</p></section>
+</main></body></html>

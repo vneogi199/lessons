@@ -1,5 +1,15 @@
 # Teaching and Product Notes
 
+- On 2026-09-20, closed the two Python/Linux coverage gaps in reference/data-preparation-and-terminal.html. Lessons 0289/0291 link to asyncio/executor submission, context propagation, exception/cancellation behavior, bounded admission and shutdown practice; 0508 links to user/group creation, supplementary membership, ownership/modes, umask, positive/negative access checks and offboarding cautions. Teach guided predictions, feedback and delayed recall; Ponytail reused the existing reference, renderer and checker. Two stdlib fixtures execute; Linux administration recipe is syntax-checked only. No account, permission, service or package changes performed.
+
+- On 2026-09-20, completed the 15 requested enterprise-AI extensions in reference/enterprise-ai-practice.html, linked from 13 existing lessons. Covers Pinecone, RAGAS, parent–child retrieval, PageIndex-style retrieval, RAG, CoT terminology, Deep Agents, OpenAI/Claude Agent SDKs, episodic memory, kill switches, Gunicorn/Uvicorn, SAML, ETL/ELT and vLLM. Teach shaped prediction, worked feedback and delayed recall; Ponytail reused existing extension rendering and the stdlib HTML parser. Four offline fixtures execute; four SDK examples are syntax-checked only. Identity, distributed-stop, GPU and provider labs remain unexecuted. No installation or deployment; no learner mastery claimed.
+
+- On 2026-09-20, added detailed Pandas coverage plus brief PDF processing and basic Linux terminal practice, as requested. reference/data-preparation-and-terminal.html links from 0285, 0595 and 0001 respectively. Pandas covers schema/dtypes, alignment, Copy-on-Write, cleaning, join validation, grouping, reshaping, time windows, memory and regression testing. Nine sequential Pandas blocks and one PDF adapter are syntax-checked only because the packages are absent; no installations. A read-only Bash fixture executes. Teach supplies predictions/feedback/delayed recall; Ponytail reuses the existing extension rendering and HTML parser. Authoring is not learner mastery or live integration proof.
+
+- Completed the remaining 12 named technical extensions on 2026-09-19 in reference/ai-data-extensions.html, linked from lessons 0396, 0588, 0596, 0598, 0599, 0602, 0604 and 0610. Covers ChromaDB, Neo4j, CrewAI, Pydantic AI, DuckDB, GraphRAG, KAG, LightRAG, Self-RAG, HyDE, active web search and MongoDB. Teach guided focused attempts, worked feedback and spaced recall; Ponytail kept one reference and existing generation/link checks, with five stdlib fixture checks. No packages installed or SDK/database/model integrations run. These are content sign-offs, not learner mastery or production verification.
+
+- Completed pending cross-encoder reranking coverage on 2026-09-19 through lesson 0596 and reference/cross-encoder-reranking.html. Added a standard-library ranking fixture; candidate scoring, batching, cost/latency, evaluation and interview feedback are covered. No installations or model downloads. Removed the completed entry from pending.txt.
+
 - DSA question-bank pass on 2026-09-14: lessons 0018–0050 now show four to seven topic-specific interview questions with direct LeetCode links and curated Blind 75, NeetCode 150 and Striver A2Z alignment badges. The links are practice guidance, not an exhaustive or immutable copy of any external sheet. Regenerated pages, refreshed DSA revision pins and re-ran content/catalog/link checks; no installation, deployment or external execution.
 
 - Readability cleanup on 2026-09-14 applied to all 644 lessons: removed repetitive paragraph subtitles in the shared template and retained topic headings, explanatory depth, code and warnings. Exact before/after transformation verified every page; revision pins refreshed for this presentation-only change. Content/catalog/link checks pass. Ponytail guided one shared-template change with existing checks, no dependencies or installation. No deployment performed.
@@ -163,3 +173,26 @@
 - Replaced leaderless-replication and service-discovery helper sketches with runnable quorum-set and endpoint-selection exercises, including counterexamples and explicit integration limits.
 - Corrected Python sequence, Python testing, FastAPI response and FastAPI testing diagram routing. Reused the existing behavior-test trace; added regression checks for all five affected lessons.
 - Response semantics checked against https://fastapi.tiangolo.com/advanced/custom-response/. No dependencies installed or live services invoked.
+## 2026-09-21 · Latest syllabus and foundations
+
+Added 29 linked reference sections; see SYLLABUS-COVERAGE.md. Teach shaped attempt/feedback/next-day recall prompts; no mastery record created. Ponytail reused the renderer/parser and standard-library fixtures. No installations, model calls, provisioning or deployment. Capstones are teaching briefs, not completed apps.
+## 2026-09-21 · NumPy, Pandas, Polars and SQL
+
+Added six focused sections in reference/numerical-data-engineering.html, linked from 0285. NumPy includes vectorization, broadcasting, views/copies and a benchmark; Pandas extends existing coverage with temporal features; Polars covers expressions and lazy/streaming plans. Teach shaped assertion-based attempts, failure cases and spaced recall. Reused the HTML parser under Ponytail; no packages installed. Library execution unavailable in the checked interpreter, so only syntax and the stdlib SQL oracle are verified. No learner mastery asserted.
+## 2026-09-21 · AI Engineer specialization
+
+Implemented the requested emphasis as an optional pathway without replacing MISSION.md. Teach supplies attempts, feedback, changed conditions and recall prompts. Reused existing lessons and the syllabus checker; no new dependencies. Two projects are implementation briefs with acceptance evidence, not applications. The standalone triage brief uses a synthetic tracker because the referenced Week 1 contract is unavailable. No external actions, installs or mastery claims.
+## Rates-risk interview preparation — implementation, unrun
+
+Added projects/rates-risk for the user's revised priorities: Python dictionaries/grouping/sorting/comprehensions/datetime; SQL joins, GROUP BY/HAVING/CTEs/windows/latest-per-group; Pandas/NumPy; FastAPI and pytest. Strict synthetic IRS RFQ grammar, nonbinding gross-risk checks and rate freshness/move monitoring. No pricing, execution or live market claims. User explicitly said not to run tests; no new code was executed and nothing installed. README includes expected results and an honest system-design narrative.
+## Interview MCQs — 2026-09-22
+
+Added reference/rfq-interview-mcqs.html: 28 single-best-answer questions with revealable explanations and sources, linked from the rates-risk README. Teach influenced equal-word-count options within questions, delayed answer reveal, counterexamples and spaced recall. MCQs complement coding/SQL practice; no success guarantee or mastery record. No scripts, tests or browser sessions run.
+
+## Curriculum-wide MCQs — 2026-09-22
+
+With explicit permission to run the lesson generator, regenerated all 644 lessons with 1,927 additional MCQs. Most are concept-matching and mechanism-reconstruction recall questions based on existing lesson content; two single-topic lessons have authored scenario questions. These are not 1,927 independently authored senior interview scenarios. Every title-derived term participates in a matching or scenario question; this does not imply assessment of every detail in starter code or linked extension guides.
+
+Teach shaped balanced option lengths, hidden answers, explanations for distractors and follow-up recall. Ponytail reused the lesson generator, native radio buttons and details; no quiz framework or dependency added. Clarified eight overlapping definitions so they can support meaningful distinctions. Manifest mcqCount and mcqUncoveredTerms expose generated coverage; no unresolved title-derived terms remain. Existing progress events and orientation semantics are unchanged.
+
+Generation succeeded and generated text/counts were inspected. Authored scripts/check-lesson-mcqs.mjs but did not run it or any other tests, browser, server or installer. No learner mastery or individual editorial sign-off was recorded; lesson-review-status.json pins were deliberately not refreshed for this broad change. The new question set still needs an authorized validation run and editorial review, especially beyond recall-level assessment.

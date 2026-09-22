@@ -79,6 +79,7 @@
       </article>
     </div>
   </section>
+  <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/data-preparation-and-terminal.html#async-executors">Asyncio and thread pools: context, cancellation and capacity</a></li></ul></section>
 
   <section class="card mechanism-walkthrough">
     <span class="section-label">05 · Detailed mechanism</span>
@@ -187,6 +188,50 @@ assert counter.value == 20_000
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] in conventional CPython builds restricts simultaneous Python execution; free-threaded builds have different constraints. Neither makes compound application operations automatically safe.</li><li>A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</li><li>Condition variables coordinate waiting for a predicate under a lock; recheck the predicate after waking.</li><li>[concept] share one process and memory while the OS schedules them independently. Shared mutable invariants still require synchronization.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Threads: 4; the GIL: 2; locks: 1; conditions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Threads: 4; the GIL: 1; locks: 2; conditions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Threads: 4; the GIL: 3; locks: 1; conditions: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Threads: 1; the GIL: 4; locks: 2; conditions: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Threads: 4; the GIL: 1; locks: 2; conditions: 3</p>
+        <ul><li>A. “the GIL” matches explanation 1, not 2. “locks” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “the GIL” matches explanation 1, not 3. “locks” matches explanation 2, not 1. “conditions” matches explanation 3, not 2.</li><li>D. “Threads” matches explanation 4, not 1. “the GIL” matches explanation 1, not 4.</li></ul>
+        <p>Threads: Threads share one process and memory while the OS schedules them independently. Shared mutable invariants still require synchronization.</p><p>the GIL: The GIL in conventional CPython builds restricts simultaneous Python execution; free-threaded builds have different constraints. Neither makes compound application operations automatically safe.</p><p>locks: A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</p><p>conditions: Condition variables coordinate waiting for a predicate under a lock; recheck the predicate after waking.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A free-threaded CPython build can disable the GIL. It enables more Python-level parallelism while increasing the importance of thread-safe extension and application code.</li><li>[concept] preserves invariants under concurrent calls and depends on synchronization and ownership, not only interpreter behavior.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. thread safety: 1; free-threaded builds: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. thread safety: 2; free-threaded builds: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> thread safety: 2; free-threaded builds: 1</p>
+        <ul><li>A. “thread safety” matches explanation 2, not 1. “free-threaded builds” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>thread safety: Thread safety preserves invariants under concurrent calls and depends on synchronization and ownership, not only interpreter behavior.</p><p>free-threaded builds: A free-threaded CPython build can disable the GIL. It enables more Python-level parallelism while increasing the importance of thread-safe extension and application code.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Result, error, or cancellation returns: The owner waits for cleanup before continuing.</li><li>A callable or coroutine is created: Its wait pattern and CPU cost determine a boundary.</li><li>Loop, thread, or process owns it: The scheduler decides when execution can progress.</li><li>Work waits or consumes CPU: Cancellation and synchronization shape interleaving.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. At position 3, the trace uses “Work waits or consumes CPU”, not “Result, error, or cancellation returns”.</li><li>B. At position 2, the trace uses “Loop, thread, or process owns it”, not “Work waits or consumes CPU”.</li><li>C. This reproduces the lesson’s trace.</li><li>D. At position 2, the trace uses “Loop, thread, or process owns it”, not “Result, error, or cancellation returns”.</li></ul>
+        <p>A callable or coroutine is created: Its wait pattern and CPU cost determine a boundary.</p><p>Loop, thread, or process owns it: The scheduler decides when execution can progress.</p><p>Work waits or consumes CPU: Cancellation and synchronization shape interleaving.</p><p>Result, error, or cancellation returns: The owner waits for cleanup before continuing.</p>
+        <p>Run the workload once normally and once with blocking, cancellation, or worker failure. Evidence to inspect: Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p>
+      </details>
+    </article>
+    <p><a href="https://docs.python.org/3/library/threading.html" target="_blank" rel="noreferrer">Review the lesson source: Python threading reference</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

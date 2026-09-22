@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NumPy, Pandas, Polars and SQL</title><style>:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui}main{max-width:960px;margin:auto;padding:30px 24px}section{border:1px solid #3b526c;border-radius:8px;padding:24px;margin:24px 0}h1,h2,h3{line-height:1.3}a,summary{color:#79e8ff}pre{overflow:auto;background:#101722;padding:18px;font:14px/1.6 monospace}summary{cursor:pointer}details{border-left:2px solid;padding:12px}a:focus-visible,summary:focus-visible{outline:2px solid}table{border-collapse:collapse;width:100%}td,th{border:1px solid #3b526c;padding:8px;text-align:left}@media print{:root{color-scheme:light}body,pre{background:white;color:black}a,summary{color:black}pre{white-space:pre-wrap}details::details-content{content-visibility:visible}}</style></head><body><main>
+<a href="../index.html">Curriculum</a><h1>Numerical and tabular data engineering</h1><p>For senior/FDE interviews: explain shapes, nulls, memory and query execution before claiming speed. Work through one section per sitting. Predict each assertion, run it in an existing approved environment, then change one assumption. Nothing is installed by these lessons. Library examples are syntax-checked unless the optional checker explicitly executes them.</p>
+<nav><a href="#numpy-arrays">Arrays</a> · <a href="#vectorization">Vectorization</a> · <a href="#numpy-performance">Performance</a> · <a href="#pandas-windows">Pandas</a> · <a href="#polars">Polars</a> · <a href="#sql-parity">SQL and engine choice</a></nav>
+<section id="numpy-arrays"><h2>NumPy: shape, dtype and memory ownership</h2><p>An ndarray describes a typed data buffer with shape and strides. A list stores references to Python objects; a numeric array supports homogeneous machine-level arithmetic. Inspect ndim, shape, dtype, itemsize and nbytes. Object dtype loses many numeric-array advantages. Fixed-width integers can overflow; float32 saves storage but has less precision than float64. Choose types from the required range/error budget, not just file size.</p>
+<pre><code data-python="numpy">import numpy as np
+x = np.arange(12, dtype=np.float64).reshape(3, 4)
+assert x.shape == (3, 4) and x.nbytes == 96
+np.testing.assert_array_equal(x.sum(axis=0), [12, 15, 18, 21])
+np.testing.assert_array_equal(x.sum(axis=1), [6, 22, 38])
+assert x.mean(axis=1, keepdims=True).shape == (3, 1)
+view = x[:, 1:3]
+assert np.shares_memory(view, x)
+view[0, 0] = 99
+assert x[0, 1] == 99
+copy = x[[0, 2]]
+copy[0, 0] = -1
+assert x[0, 0] == 0 and not np.shares_memory(copy, x)
+mask = (x &gt;= 4) &amp; (x &lt; 8)
+np.testing.assert_array_equal(x[mask], [4, 5, 6, 7])
+assert x.T.shape == (4, 3)
+</code></pre>
+<p>axis=0 reduces the row axis, leaving one result per column; axis=1 reduces columns. keepdims retains singleton axes for later arithmetic. Basic slicing usually creates views; advanced integer/boolean indexing creates copies when reading. Assignment such as x[mask] = value still updates x. reshape may copy when the layout cannot support a view; transpose changes strides and may produce non-contiguous storage. Use copy when independent ownership is required. See <a href="https://numpy.org/doc/stable/user/basics.copies.html">copies and views</a>.</p><p>Use zeros/full for known initialization, arange for integer steps and linspace for a fixed number of evenly spaced samples. reshape(-1, d) infers one dimension; it does not validate what each row means. concatenate extends an existing axis; stack creates a new one. NaN is not equal to itself: use isnan/isfinite and define a missing-data policy. Reproducible simulations use an explicitly seeded default_rng, not a hidden global random state.</p><details><summary>Attempt: why did normalizing a training slice alter its source?</summary><p>The slice shared storage. Decide whether in-place mutation is part of the contract; otherwise copy before changing it. Conversely, expecting a boolean-indexed temporary to modify the source is a different ownership mistake. Tomorrow, predict shapes and aliasing without running the code.</p></details></section>
+<section id="vectorization"><h2>Vectorization: move the loop, preserve the contract</h2><p>Vectorization expresses work through native array operations instead of a Python callback for every element. A ufunc such as add or divide operates elementwise. np.vectorize is primarily a convenience wrapper around repeated Python calls, not the optimization implied by its name. See <a href="https://numpy.org/doc/stable/reference/generated/numpy.vectorize.html">the vectorize contract</a>.</p><p>Broadcasting compares dimensions from the right: equal lengths or a length of one are compatible; missing leading dimensions behave like one. For an (n,d) matrix, subtracting a (d,) vector adjusts columns. A (n,1) vector adjusts rows. A (n,) vector does not mean “per row”; square matrices can conceal this error. Broadcasting avoids explicitly tiling an input, but the result can still be huge. See <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">broadcasting rules</a>.</p>
+<pre><code data-python="numpy">import numpy as np
+x = np.array([[2., 4., 6.], [4., 8., 12.]])
+centered = x - x.mean(axis=0, keepdims=True)
+np.testing.assert_allclose(centered.mean(axis=0), [0., 0., 0.])
+row_scaled = x / np.array([2., 4.])[:, None]
+np.testing.assert_allclose(row_scaled, [[1., 2., 3.], [1., 2., 3.]])
+numerator = np.array([6., 8., 0.])
+denominator = np.array([2., 0., 0.])
+ratio = np.full_like(numerator, np.nan)
+np.divide(numerator, denominator, out=ratio, where=denominator != 0)
+assert ratio[0] == 3 and np.isnan(ratio[1:]).all()
+weights = np.array([1., 0., -1.])
+np.testing.assert_allclose(x @ weights, [-4., -8.])
+assert (x * weights).shape == (2, 3)
+</code></pre>
+<p>The divide output is initialized so masked positions have a defined value. np.where(condition, a/b, 0) evaluates a/b before selecting results, so it is not a safe way to avoid division by zero. Parenthesize boolean comparisons and use &amp;/|, not Python and/or on multi-element arrays. Elementwise * differs from matrix multiplication @.</p>
+<h3>Vectorized cosine similarity with explicit zero-vector policy</h3>
+<pre><code data-python="numpy">import numpy as np
+def cosine_scores(rows, query):
+    rows = np.asarray(rows, dtype=np.float64)
+    query = np.asarray(query, dtype=np.float64)
+    if rows.ndim != 2 or query.ndim != 1 or rows.shape[1] != query.size or query.size == 0:
+        raise ValueError("expected (n,d) rows and (d,) query")
+    if not np.isfinite(rows).all() or not np.isfinite(query).all():
+        raise ValueError("finite inputs required")
+    qnorm = np.linalg.norm(query)
+    norms = np.linalg.norm(rows, axis=1)
+    if qnorm == 0 or not np.isfinite(qnorm) or not np.isfinite(norms).all():
+        raise ValueError("invalid norm")
+    scores = np.full(rows.shape[0], np.nan)
+    np.divide(rows @ (query / qnorm), norms, out=scores, where=norms != 0)
+    return scores  # Zero rows remain undefined; exclude them from ranking.
+
+scores = cosine_scores([[1, 0], [0, 1], [0, 0]], [1, 0])
+np.testing.assert_allclose(scores[:2], [1., 0.])
+assert np.isnan(scores[2])
+try:
+    cosine_scores([[1, 2]], [0, 0])
+except ValueError:
+    pass
+else:
+    raise AssertionError("zero query accepted")
+</code></pre>
+<p>This is a bounded embedding fixture, not a robust numerical library for arbitrary extreme magnitudes. Compute train-set normalization statistics once and reuse them on validation/test data; independently normalizing each split changes the contract and can leak information.</p><details><summary>Interview: how would you test a loop-to-array rewrite?</summary><p>Compare a simple loop oracle on empty, single-row, rectangular, zero, negative and nonfinite cases. Assert shape and dtype as well as values. Choose tolerances from the error budget. A faster wrong axis is still wrong. Tomorrow, explain why np.vectorize and broadcasting are different.</p></details></section>
+<section id="numpy-performance"><h2>Measure time and peak memory, not brevity</h2><p>A broadcast pairwise difference for n rows and m centers of dimension d materializes n×m×d values. With n=10,000, m=1,000, d=768 and float32, that is 30.72 GB for one intermediate alone. A shorter expression can exhaust memory. Batch the row axis, retain only needed results, or use a suitable search index. Even an n×m score matrix may be too large.</p>
+<pre><code data-python="numpy">import numpy as np
+from timeit import repeat
+values = np.linspace(-2, 2, 20_000)
+def loop():
+    return [v * v + 2 * v + 1 for v in values]
+def array():
+    return values * values + 2 * values + 1
+np.testing.assert_allclose(loop(), array(), rtol=1e-12, atol=1e-12)
+timings = {name: min(repeat(fn, number=3, repeat=3)) / 3
+           for name, fn in [("loop", loop), ("array", array)]}
+assert all(t &gt;= 0 for t in timings.values())
+print("Local seconds per call, not a universal speedup:", timings)
+</code></pre>
+<p>Benchmark kernel-only and ingestion-to-result separately. Include conversion, allocation and serialization when they are part of the real request. Record versions, dtype, sizes, thread settings and hardware; vary sizes and repeat runs. No speed threshold belongs in a portable correctness test. Python allocation tracers may miss native buffers; nbytes describes one array, not peak process memory.</p><p>Prefer built-in reductions, avoid object arrays and reduce temporary allocations with reviewed out= operations when ownership permits. BLAS threading can oversubscribe a multi-worker server. Contiguous copies may speed repeated kernels but cost time/memory themselves. Do not assume vectorization means GPU execution or unlimited parallelism.</p><details><summary>Attempt: broadcast distance versus a batch loop</summary><p>The batch loop can be the better design because it bounds memory while vectorizing inside each batch. Check tie ordering, final partial batches and identical results against a tiny full computation. Tomorrow, estimate memory before choosing an implementation.</p></details></section>
+<section id="pandas-windows"><h2>Pandas: temporal correctness before optimization</h2><p>Start with the <a href="data-preparation-and-terminal.html#pandas">existing detailed Pandas guide</a> for indexing, nullable types, validated joins, grouping, reshaping and chunked summaries. Here the contract is one feature per event, using only information available before that event. Sort with a deterministic tie-breaker and isolate entities before rolling.</p>
+<pre><code data-python="pandas">import pandas as pd
+events = pd.DataFrame({"tenant": ["A", "A", "A", "B"],
+    "event_id": [1, 2, 3, 4], "value": [10., 20., 40., 90.],
+    "at": pd.to_datetime(["2026-01-01", "2026-01-02", "2026-01-04", "2026-01-01"], utc=True)})
+events = events.sort_values(["tenant", "at", "event_id"])
+events["prior_two_mean"] = events.groupby("tenant")["value"].transform(
+    lambda s: s.shift(1).rolling(2, min_periods=1).mean())
+assert events.loc[events.event_id == 3, "prior_two_mean"].iloc[0] == 15
+assert pd.isna(events.loc[events.event_id == 4, "prior_two_mean"].iloc[0])
+s = pd.Series([10., 20., 40.], index=pd.to_datetime(
+    ["2026-01-01", "2026-01-02", "2026-01-04"], utc=True))
+assert s.rolling(2).sum().iloc[-1] == 60
+assert s.rolling("2D", closed="right").sum().iloc[-1] == 40
+</code></pre>
+<p>A row-count window and an elapsed-time window answer different questions. closed determines boundary inclusion, min_periods determines when output exists, and center=True can use future observations. Expanding summarizes all previous rows; exponentially weighted windows discount older observations and require an explicit adjust/decay policy. See <a href="https://pandas.pydata.org/docs/user_guide/window.html">window semantics</a>.</p>
+<h3>As-of joins and point-in-time features</h3>
+<pre><code data-python="pandas">import pandas as pd
+left = pd.DataFrame({"tenant": ["A", "A"], "at": pd.to_datetime(
+    ["2026-01-02", "2026-01-04"], utc=True)})
+right = pd.DataFrame({"tenant": ["A", "A"], "at": pd.to_datetime(
+    ["2026-01-01", "2026-01-03"], utc=True), "limit": [100, 200]})
+result = pd.merge_asof(left.sort_values("at"), right.sort_values("at"),
+    on="at", by="tenant", direction="backward", tolerance=pd.Timedelta("2D"))
+assert result["limit"].tolist() == [100, 200]
+</code></pre>
+<p><a href="https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html">merge_asof</a> requires sorted time keys; by restricts matching groups. Backward matching is not enough if the right-side event was recorded later: use availability time where required. Define tie handling and whether exact timestamps are eligible. Localize naive civil times with explicit daylight-saving ambiguity policy before converting to UTC; never silently label local time as UTC.</p><p>For performance, replace row-wise apply with column expressions where semantics match. The group transform callback above runs once per group, not once per row, but still needs profiling. Measure memory_usage(deep=True), join cardinality and peak copies. Prefer one concat over repeated incremental concatenation. Read only required columns and push filters to storage/SQL. Do not convert nullable/object columns to NumPy without checking missing values, coercion and lost labels.</p><details><summary>Attempt: a feature looks perfect offline but fails live</summary><p>Audit availability timestamps, centered windows, backfilled nulls and cross-entity state. Test a late-arriving update that must not affect an earlier prediction. Tomorrow, explain row-window versus time-window and how an as-of join can still leak.</p></details></section>
+<section id="polars"><h2>Polars: expressions, lazy plans and bounded execution</h2><p>Polars uses typed columns and expressions rather than a Pandas-style row index. select projects columns; with_columns adds/replaces them; filter selects rows; group_by collapses groups; over maps group calculations back to rows. Aliases name outputs. Expressions in the same with_columns call should not rely on a newly created sibling alias: chain another call for that dependency.</p>
+<pre><code data-python="polars">import polars as pl
+df = pl.DataFrame({"tenant": ["A", "A", "B"], "amount": [10, None, 30]},
+    schema={"tenant": pl.String, "amount": pl.Int64})
+clean = df.with_columns(pl.col("amount").fill_null(0).alias("known_amount"))
+result = (clean.group_by("tenant").agg(
+    pl.len().alias("rows"), pl.col("amount").count().alias("observed"),
+    pl.col("known_amount").sum().alias("total")).sort("tenant"))
+assert result.rows() == [("A", 2, 1, 10), ("B", 1, 1, 30)]
+windowed = clean.with_columns(pl.col("known_amount").sum().over("tenant").alias("tenant_total"))
+assert windowed["tenant_total"].to_list() == [10, 10, 30]
+lookup = pl.DataFrame({"tenant": ["A", "B"], "region": ["east", "west"]})
+joined = clean.join(lookup, on="tenant", how="left", validate="m:1")
+assert joined.height == 3 and joined["region"].null_count() == 0
+lazy = (df.lazy().filter(pl.col("amount").is_not_null())
+        .group_by("tenant").agg(pl.col("amount").sum()).sort("tenant"))
+assert lazy.collect().rows() == [("A", 10), ("B", 30)]
+print(lazy.explain())
+</code></pre>
+<p>The null-to-zero transformation above means “sum known amounts,” not “prove missing transactions were zero”; observed retains that distinction. NaN is a floating value, distinct from null: fill_null does not remove NaNs. Use strict casts for schema enforcement; non-strict conversion requires counting quarantined values. Join validation protects cardinality, not authorization. Null-key matching defaults differ across engines, so test it explicitly. Sort output when ordering is part of the contract.</p><p><a href="https://docs.pola.rs/user-guide/expressions/window-functions/">Window expressions</a> avoid a separate aggregate-and-join for many grouped features. For temporal features sort each entity by time/tie-breaker and apply shifts within that entity. Use dynamic time grouping for time buckets and rolling operations for overlapping windows; document boundaries, timezone and empty-bucket behavior. Lists and structs preserve nested data, but explode can multiply rows and duplicate monetary totals.</p>
+<h3>Lazy scans, optimization and streaming</h3><p>A DataFrame performs eager work; a LazyFrame holds a plan. Prefer scan_parquet/scan_csv at the source when you need pushdown; read_parquet(...).lazy() has already loaded the file. Filter early and select only needed columns. Use explain to inspect projection/predicate pushdown and optimized operations rather than assuming they happened. Python element callbacks can obscure optimization and add overhead; use native expressions first. See <a href="https://docs.pola.rs/user-guide/lazy/optimizations/">lazy optimizations</a>.</p>
+<pre><code data-python="polars">import polars as pl
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from polars.testing import assert_frame_equal
+with TemporaryDirectory() as directory:
+    path = Path(directory) / "synthetic.parquet"
+    pl.DataFrame({"tenant": ["A", "A", "B"], "amount": [10, 20, 90]}).write_parquet(path)
+    plan = (pl.scan_parquet(path).filter(pl.col("tenant") == "A")
+            .select("tenant", "amount").group_by("tenant")
+            .agg(pl.col("amount").sum()).sort("tenant"))
+    expected = pl.DataFrame({"tenant": ["A"], "amount": [30]})
+    assert_frame_equal(plan.collect(), expected)
+    assert_frame_equal(plan.collect(engine="streaming"), expected)
+</code></pre>
+<p><a href="https://docs.pola.rs/user-guide/concepts/streaming/">Streaming execution</a> processes supported work in batches, but does not guarantee constant memory for arbitrary plans. Group state grows with cardinality; joins/sorts and the final collected result can dominate memory. Check the physical plan and measured peak RSS for the pinned version. Use a supported sink to persist a large result rather than collecting it all. Lazy execution is not automatically distributed execution.</p><details><summary>Attempt: migrate a Pandas report to Polars</summary><p>Write expected rows/schema first. Test null versus NaN, duplicate lookup keys, missing groups, empty inputs and ordering. Compare results before timing. A positional column engine will not reproduce implicit Pandas label alignment for you. Tomorrow, explain why scan and read-then-lazy are different.</p></details></section>
+<section id="sql-parity"><h2>Choose an engine by data location and semantics</h2><table><tr><th>Engine</th><th>Useful boundary</th><th>Watch for</th></tr><tr><td>NumPy</td><td>Dense numeric kernels and embeddings</td><td>Shapes, precision, ownership, temporary buffers</td></tr><tr><td>Pandas</td><td>Labeled exploration and in-memory reports</td><td>Alignment, nulls, joins and peak memory</td></tr><tr><td>Polars</td><td>Expression-based columnar pipelines</td><td>Plan support, ordering, cardinality and conversions</td></tr><tr><td>SQL</td><td>Data already governed by a database</td><td>Plans, indexes, transactions and access boundaries</td></tr></table><p>SQL remains covered in the PostgreSQL track. Push filtering and aggregation to the database when it avoids transferring sensitive or unnecessary rows. Compare WHERE (rows before grouping), HAVING (groups after aggregation), and window functions (calculations retaining rows). An index is useful only when the access pattern and selectivity justify it; inspect plans, not assumptions.</p>
+<pre><code data-python="offline">import sqlite3
+# Standard-library semantic oracle, not PostgreSQL performance evidence.
+with sqlite3.connect(":memory:") as db:
+    db.execute("CREATE TABLE events (tenant TEXT, amount INTEGER)")
+    db.executemany("INSERT INTO events VALUES (?, ?)", [("A", 10), ("A", None), ("B", 30)])
+    result = db.execute("SELECT tenant, COUNT(*), COUNT(amount), SUM(amount) "
+                        "FROM events GROUP BY tenant ORDER BY tenant").fetchall()
+assert result == [("A", 2, 1, 10), ("B", 1, 1, 30)]
+</code></pre>
+<p>Use this expected result across all engines, then add an all-null group: SQL SUM is null there, whereas some DataFrame reductions produce zero. Declare the desired behavior rather than hiding the difference. Also test decimal precision, timezone, null joins and stable ordering. Compare database execution plus network transfer against file scan plus conversion—not a cached SQL result against cold file I/O.</p><p>Capstone: produce per-tenant daily request counts, failure rates and trailing latency summaries from synthetic AI request logs. Supply source schema, null policy, late-arrival policy, duplicate-event policy, assertions, query plan and a measured time/memory table. Do not average per-batch p95 values to obtain global p95. Avoid sensitive prompts in benchmark fixtures.</p><details><summary>Senior interview defense</summary><p>State input size/location, correctness invariants and resource budget; show the simplest passing pipeline; explain one rejected alternative. Include a null, a duplicate, a delayed event and an adversarial join. Faster syntax is not evidence of a better system. Ask your teacher to review your implementation; revisit the engine choice after changing data size tomorrow.</p></details></section>
+</main></body></html>

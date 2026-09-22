@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>API, cloud and delivery labs</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:30px 24px 70px}h1,h2,h3{line-height:1.25;color:#fff}a,summary{color:#79e8ff}section{border:1px solid #3b526c;border-radius:8px;padding:24px;margin:28px 0;scroll-margin-top:20px}pre{overflow:auto;background:#101722;padding:18px;font:14px/1.6 monospace}table{border-collapse:collapse;width:100%}td,th{border:1px solid #3b526c;padding:10px;text-align:left;vertical-align:top}details{border-left:2px solid #79e8ff;padding:12px;margin:16px 0}summary{cursor:pointer}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff}.note{border-left:3px solid #ffd277;padding:12px}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}@media(max-width:600px){main{padding:18px 12px}section{padding:16px}table{font-size:14px}}@media print{:root{color-scheme:light}body{background:white;color:black;font-size:11pt}h1,h2,h3,a,summary{color:black}pre{background:white;white-space:pre-wrap}nav{display:none}details::details-content{content-visibility:visible}}</style></head><body><main>
+<header><a href="../index.html">Curriculum</a><h1>Build and deliver a dependable API</h1><p>Senior/FDE practice: turn a schema, identity boundary and release plan into evidence. Study one section per sitting, attempt its failure case, then revisit the question tomorrow.</p><p class="note">These are teaching labs, not deployed applications. No packages or extensions were installed and no cloud resources were created. Integration recipes require an existing authorized environment and reviewed version pins. Ask your teacher when a prerequisite or tradeoff is unclear.</p></header>
+<nav><a href="#python-api-llm">Python → API → LLM</a> · <a href="#graphql">GraphQL</a> · <a href="#versioning">Versioning</a> · <a href="#developer-workflow">Testing and IDE</a> · <a href="#aws-provisioning">AWS provisioning</a> · <a href="#billing">Billing</a> · <a href="#ecs-delivery">Delivery</a></nav>
+
+<section id="python-api-llm"><h2>Python basics → a validated API → an LLM call</h2>
+<p>A variable binds a name to an object. Common types include int, float, bool, str, list, tuple, dict and set; None represents absence. A for loop visits items in an iterable, and if/elif/else chooses a branch. Indentation groups statements. Lists are mutable; assigning another name to one does not copy it. Start with a small deterministic function before involving HTTP or a model.</p>
+<pre><code data-python="offline">def classify_scores(scores):
+    result = {"pass": [], "retry": []}
+    for score in scores:
+        if type(score) is not int or not 0 &lt;= score &lt;= 100:
+            raise ValueError("integer score from 0 to 100 required")
+        if score &gt;= 70:
+            result["pass"].append(score)
+        else:
+            result["retry"].append(score)
+    return result
+
+assert classify_scores([69, 70, 100]) == {"pass": [70, 100], "retry": [69]}
+assert classify_scores([]) == {"pass": [], "retry": []}
+try:
+    classify_scores([True])
+except ValueError:
+    pass
+else:
+    raise AssertionError("bool is not a score in this contract")
+</code></pre>
+<p>Predict the result for [0, 70] and explain why bool needs deliberate handling in Python numeric checks. Compare mutating result with rebinding score. This is the same boundary discipline used in an API schema.</p>
+<p>The following teaching application requires existing FastAPI, Pydantic v2, pydantic-settings and OpenAI SDK installations. It is a loopback-only lab without application authentication; never publish it as-is. The provider model and key are environment configuration, not source-code constants. A .env file is a local convenience, not a production secret store: exclude it from Git and images, restrict its permissions, and rotate any exposed key. In production use an approved secret manager/workload identity and startup validation.</p>
+<pre><code data-python="integration">from contextlib import asynccontextmanager
+import logging
+from uuid import uuid4
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from openai import AsyncOpenAI, APIError
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="APP_", env_file=".env", extra="ignore")
+    llm_api_key: SecretStr
+    llm_model: str = Field(min_length=1)
+
+class Question(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: str = Field(min_length=1, max_length=2000)
+
+    @field_validator("text")
+    @classmethod
+    def nonblank(cls, value):
+        value = value.strip()
+        if not value:
+            raise ValueError("blank question")
+        return value
+
+class Ask(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    question: Question  # Nested validation applies to question.text.
+
+class Answer(BaseModel):
+    text: str
+    request_id: str
+
+class UpstreamFailure(Exception):
+    pass
+
+@asynccontextmanager
+async def lifespan(app):
+    settings = Settings()
+    app.state.model = settings.llm_model
+    async with AsyncOpenAI(api_key=settings.llm_api_key.get_secret_value(),
+                           timeout=15.0, max_retries=0) as client:
+        app.state.llm = client
+        yield
+
+app = FastAPI(lifespan=lifespan)
+
+@app.middleware("http")
+async def correlate(request: Request, call_next):
+    request.state.request_id = uuid4().hex
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request.state.request_id
+    return response
+
+def error(request, status, code):
+    return JSONResponse(status_code=status, content={"error": {
+        "code": code, "request_id": getattr(request.state, "request_id", None)}})
+
+@app.exception_handler(UpstreamFailure)
+async def upstream_error(request: Request, exc: UpstreamFailure):
+    return error(request, 502, "llm_unavailable")
+
+@app.exception_handler(RequestValidationError)
+async def invalid_input(request: Request, exc: RequestValidationError):
+    return error(request, 422, "invalid_request")  # Do not echo raw input/secrets.
+
+@app.exception_handler(HTTPException)
+async def known_http_error(request: Request, exc: HTTPException):
+    response = error(request, exc.status_code, "unsupported_operation")
+    if exc.headers:
+        response.headers.update(exc.headers)
+    return response
+
+async def generate(request: Request):
+    async def call(text):
+        try:
+            response = await request.app.state.llm.responses.create(
+                model=request.app.state.model,
+                input=text, max_output_tokens=200,
+            )
+        except APIError as exc:
+            raise UpstreamFailure() from exc
+        if response.status != "completed" or not response.output_text.strip():
+            raise UpstreamFailure()
+        return response.output_text
+    return call
+
+def completion_metric(request_id):
+    logging.getLogger("lesson").info("completed request_id=%s", request_id)
+
+@app.post("/ask/{mode}", response_model=Answer)
+async def ask(mode: str, payload: Ask, request: Request,
+              background: BackgroundTasks, call=Depends(generate)):
+    if mode != "brief":
+        raise HTTPException(status_code=400, detail="unsupported mode")
+    text = await call(payload.question.text)
+    background.add_task(completion_metric, request.state.request_id)
+    return Answer(text=text, request_id=request.state.request_id)
+</code></pre>
+<p>The route combines a path parameter, nested request validation, a filtered response contract, middleware, a dependency and a small post-response task. BackgroundTasks is not a durable queue; process loss can discard the metric and its failure cannot change an already-sent response. Critical audit/job work needs durable storage. Provider timeouts do not undo remote effects; refusal and unsupported structured content need an explicit product policy. This text-only example treats an empty/incomplete turn as unavailable.</p>
+<p>In a provisioned environment, test with FastAPI TestClient and a lifespan-aware fixture. Override generate with an async fake returning a deterministic string; use a dummy test key so no provider call is made. Assert success for a nested question, 422 for blank/extra fields, 400 for the wrong mode, 502 for UpstreamFailure, and matching request IDs in body/header. Verify the background callback receives only the ID, not the question/key. For production add authentication, authorization, request limits, rate/spend control and a consistent handler for other Starlette HTTP errors.</p>
+<p>Primary references: <a href="https://fastapi.tiangolo.com/tutorial/background-tasks/">background tasks</a>, <a href="https://fastapi.tiangolo.com/tutorial/handling-errors/">error handling</a> and <a href="https://developers.openai.com/api/docs/guides/text">Python model calls</a>. No server/model call was executed here. Tomorrow, trace one invalid request and one upstream error through different boundaries.</p></section>
+
+<section id="graphql"><h2>GraphQL schemas, resolvers and N+1 queries</h2>
+<p>A schema describes fields, object relationships and input types; a resolver supplies each field's value. Queries read data; mutations express changes. Top-level mutation fields execute serially under GraphQL semantics, but that does not make the entire operation a database transaction or serialize other requests. Keep authorization and transaction boundaries inside the application service.</p>
+<p>Strawberry derives schema types from Python annotations; Graphene uses explicit ObjectType/InputObjectType declarations. Choose one rather than mixing frameworks. This recipe uses <a href="https://strawberry.rocks/docs/general/mutations">Strawberry mutations</a> and <a href="https://strawberry.rocks/docs/guides/dataloaders">DataLoader batching</a>. The repository interface is deliberately supplied by your application; it must enforce tenant filtering and use bounded parameterized SQL.</p>
+<pre><code data-python="integration">import strawberry
+from strawberry.dataloader import DataLoader
+from strawberry.types import Info
+
+@strawberry.type
+class Customer:
+    id: strawberry.ID
+    name: str
+
+@strawberry.type
+class Order:
+    id: strawberry.ID
+    customer_id: strawberry.Private[str]
+
+    @strawberry.field
+    async def customer(self, info: Info) -&gt; Customer | None:
+        return await info.context["customers"].load(self.customer_id)
+
+@strawberry.input
+class RenameCustomer:
+    id: strawberry.ID
+    name: str
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    async def orders(self, info: Info, first: int = 20) -&gt; list[Order]:
+        if not 1 &lt;= first &lt;= 100:
+            raise ValueError("first must be between 1 and 100")
+        return await info.context["repo"].orders(info.context["actor"], first)
+
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    async def rename_customer(self, info: Info, input: RenameCustomer) -&gt; Customer:
+        name = input.name.strip()
+        if not 1 &lt;= len(name) &lt;= 100:
+            raise ValueError("invalid name")
+        # Service checks object-level write authority and commits atomically.
+        result = await info.context["repo"].rename(info.context["actor"], str(input.id), name)
+        info.context["customers"].clear(str(input.id))
+        return result
+
+def context_for(actor, repo):
+    async def batch(ids):
+        rows = await repo.customers_by_ids(actor, ids)
+        return [rows.get(key) for key in ids]  # Preserve order and missing entries.
+    return {"actor": actor, "repo": repo, "customers": DataLoader(load_fn=batch)}
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
+</code></pre>
+<p>For <code>{ orders { id customer { name } } }</code>, fetching customers individually can produce one order query plus N customer queries. Request-scoped loaders batch sibling loads and cache repeated keys. Awaiting unrelated calls sequentially can prevent batching; a loader does not optimize arbitrary SQL. Use eager loading when a predictable join is simpler. Never share a user-specific loader across requests, and invalidate cached entities after a mutation.</p>
+<p>Practice with a fake repository that returns three orders belonging to two customers. Execute the query through schema.execute with context_value, count repository calls and assert the response shape. Then swap customer row order, omit one row, deny one actor and rename a customer. For a real database, record SQL counts and query plans, not only resolver counts. Add depth/complexity limits, pagination and timeouts; a small HTTP body can still request expensive nested work.</p>
+<details><summary>Interview: the response is correct, but one customer is shown to the wrong tenant. What failed?</summary><p>Batching is not authorization. Verify actor-derived scope in the repository and the loader's lifetime/cache keys. Returning rows in database order rather than requested-key order is another possible misassociation. Test both tenant separation and ordering explicitly.</p></details>
+<p>Tomorrow, explain why an HTTP 200 GraphQL response can still contain errors and why a mutation is not automatically transactional.</p></section>
+
+<section id="versioning"><h2>URL versus header versioning</h2>
+<p>URL versioning makes the contract visible, for example /v1/orders versus /v2/orders. Header versioning keeps the URL stable but adds routing and caching obligations. Pick a documented default, reject unsupported versions and define conflict handling when both mechanisms appear. Version the external representation, not every internal refactor.</p>
+<pre><code data-python="offline">def choose_version(path_version=None, header_version=None):
+    supported = {"1", "2"}
+    for value in (path_version, header_version):
+        if value is not None and value not in supported:
+            raise ValueError("unsupported API version")
+    if path_version and header_version and path_version != header_version:
+        raise ValueError("conflicting API versions")
+    return path_version or header_version or "1"
+
+assert choose_version() == "1"
+assert choose_version(None, "2") == "2"
+assert choose_version("2", "2") == "2"
+for values in [("1", "2"), (None, "3"), (None, "")]:
+    try:
+        choose_version(*values)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(values)
+</code></pre>
+<p>In FastAPI, read an explicit <code>Header(alias="X-API-Version")</code> dependency, call this selector and map ValueError to your documented 400 error. Reuse a domain service but serialize with the selected response model; do not let an ORM object silently define both contracts. For header-varying cacheable responses, configure the cache key and merge <code>X-API-Version</code> into <code>Vary</code> without overwriting other dimensions. Browser clients may need a CORS preflight for a custom request header. See <a href="https://fastapi.tiangolo.com/tutorial/header-params/">FastAPI header parameters</a>.</p>
+<p>Test the same resource ID through both versions, including missing/invalid headers, mismatched URL/header values and a warmed cache. Assert that v1 never receives a v2 field/type by accident. Keep consumer contract tests and usage telemetry during deprecation; a Sunset announcement is not evidence all clients migrated.</p>
+<details><summary>Worked feedback: header-based v2 returns v1 after a successful first request. Why?</summary><p>A shared cache may key only on the URL. Check both origin Vary and the actual proxy/CDN cache configuration. Also check that response validation uses the selected version rather than a single incompatible model.</p></details>
+<p>Tomorrow, defend one approach for a public API and the other for a tightly controlled internal client.</p></section>
+
+<section id="developer-workflow"><h2>Tests, coverage and a reproducible IDE setup</h2>
+<p>Unit tests exercise a small boundary with controlled dependencies; integration tests verify a real boundary such as database uniqueness or an ASGI lifecycle. Use fixtures for owned setup/teardown and patch the name where it is looked up. Mock external time/network behavior, not the business rule you want to verify. Coverage reports executed lines/branches, not assertion quality.</p>
+<p>In an existing environment with pytest and coverage support, run <code>python -m pytest</code> first outside the IDE. If pytest-cov already exists, use <code>python -m pytest --cov=app --cov-branch --cov-report=term-missing</code>. Never install it merely to read this lesson. Inspect untested denial, timeout, rollback and empty-result branches, then intentionally break one assertion-relevant behavior and verify a test fails. See <a href="https://code.visualstudio.com/docs/python/testing">VS Code testing and coverage</a>.</p>
+<pre><code data-json="check">{
+  "version": "0.2.0",
+  "configurations": [{
+    "name": "FastAPI local debug",
+    "type": "debugpy",
+    "request": "launch",
+    "module": "uvicorn",
+    "args": ["app.main:app", "--host", "127.0.0.1", "--port", "8000"],
+    "justMyCode": true,
+    "env": {"APP_ENV": "development"}
+  }]
+}</code></pre>
+<p>This is a launch.json recipe, not an installed configuration. Adjust app.main and the interpreter to your project. Avoid reload/multiple workers for a first breakpoint exercise; subprocesses complicate breakpoint placement. Bind locally, do not expose a debugger port, and do not commit credentials in env or envFile. Debug a failing validation request and inspect the call stack without logging customer payloads.</p>
+<p>A minimal VS Code setup is the Microsoft Python extension, Pylance for language analysis and Python Debugger for debugpy integration. Add Ruff only when the project already standardizes on it; Docker/YAML extensions are optional aids, not prerequisites. Review publisher, workspace trust and extension access before enabling anything. Use an existing interpreter and the same test command/configuration in CI. No extensions were installed here.</p>
+<details><summary>Interview: 100% line coverage, but duplicate payments still occur?</summary><p>The tests may execute the retry branch without testing concurrent requests or an uncertain provider outcome. Add a behavioral assertion at the idempotency/effect boundary and an integration test for the database constraint. More mocks or a higher percentage do not prove safety.</p></details>
+<p>Tomorrow, reproduce a failed test from the command line and explain why debugging state is not a regression test.</p></section>
+
+<section id="aws-provisioning"><h2>Provision a small isolated AWS application</h2>
+<p>Provisioning is a dependency graph: identity and budget → network → data services → compute → evidence and teardown. Use a disposable account/project, one selected region, explicit names/tags and an approved cost ceiling. This walkthrough is not authorization to create resources. Record every created resource ID; snapshots, NAT gateways, public IPv4 addresses and logs can cost money after compute stops.</p>
+<ol>
+<li>Confirm the account/role with STS caller identity. Design a VPC with non-overlapping CIDRs and two AZs. Public subnet route tables point to an internet gateway; private application subnets use approved NAT egress or service endpoints. Database subnets need not have general internet egress. Use the <a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-example-private-subnets-nat.html">AWS private-subnet walkthrough</a>, adapting cost/resilience choices explicitly.</li>
+<li>Create security groups around traffic relationships: client → HTTPS load balancer; load-balancer group → application port; application group → database port. Do not expose SSH/database ports to the world. Verify DNS, routes and return paths independently of group rules. NAT permits outbound flows; it is not an application firewall.</li>
+<li>Launch an approved EC2 image with an instance profile, encrypted storage and IMDSv2 required. Use an approved management path rather than copying long-lived keys into user data. Record startup logs and verify the instance cannot reach a forbidden test destination.</li>
+<li>Create a private RDS instance using a subnet group, engine/version pin, backup retention, encryption and an application-specific credential. Test connectivity from the application identity and denial from another group. Restore a synthetic backup into a separate test target before claiming recoverability.</li>
+<li>Create a private encrypted S3 bucket with public access blocked. Scope a lifecycle rule to a lab prefix/tag, distinguish current/noncurrent versions, and expire incomplete multipart uploads under a separate rule. Use synthetic objects; versioned delete markers are not immediate deletion of all versions.</li>
+<li>Connect a test S3 event or queue to a bounded Lambda function. Validate event shape and object scope, process duplicate deliveries idempotently and route repeated failures to a reviewed recovery path. Event arrival is not exactly-once execution.</li>
+</ol>
+<p>For a cross-account role, the target role's trust policy names the approved caller and the caller needs permission to assume that role. The target permission policy limits actual actions/resources; use appropriate external-ID conditions for third-party delegation. Session policies and organization controls can further restrict effective authority. Never copy a broad administrator policy to make the lab pass.</p>
+<p>Primary build references: <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html">EC2</a>, <a href="https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_GettingStarted.CreatingConnecting.PostgreSQL.html">RDS PostgreSQL</a>, <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html">S3 lifecycle</a>, and <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html">cross-account roles</a>.</p>
+<details><summary>Acceptance exercise: the API works publicly; is the lab complete?</summary><p>No. Show denied database ingress, least-privilege access failures, duplicate-event behavior, a restore result and the inventory/cost cleanup plan. Positive reachability alone says nothing about isolation or recovery. Inspect dependencies before disposing of only the lab's exact resources.</p></details>
+<p>Tomorrow, trace an application request and an outbound provider call through separate routes.</p></section>
+
+<section id="billing"><h2>Billing visibility and budget thresholds</h2>
+<p>Open Billing and Cost Management with an authorized billing role. Use Bills for billed service/region breakdowns, Cost Explorer for trends and filters, and Budgets for thresholds. Confirm the account/billing-view scope, currency, time period and whether the metric is actual or forecast cost. Billing data can lag; a quiet graph is not proof of zero spend.</p>
+<ol><li>From Budgets, create a monthly cost budget with an explicitly approved amount and named owner.</li><li>Choose account/service/tag filters deliberately; check that required cost-allocation tags are active and historical data is not assumed to be retroactively complete.</li><li>Add example actual-spend alerts at 50%, 80% and 100%, plus a forecast alert, with verified notification recipients. These percentages are a lab policy, not universal recommendations.</li><li>Record where alerts arrive and who acknowledges them. If using SNS, verify subscription/policy configuration and test the notification path separately.</li><li>Define an operational response: investigate unexpected service spend, stop new lab creation, and review exact resources for safe disposal. Never attach an unreviewed destructive budget action.</li></ol>
+<p>Follow <a href="https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html">AWS budget creation</a>. Alerts are not a hard spending cap. Auto-actions require their own permission, delay and blast-radius review. Keep an independent inventory of idle NAT, databases, snapshots, logs and unattached storage.</p>
+<pre><code data-python="offline">from decimal import Decimal
+budget = Decimal("100")  # Fictional accounting units, not an AWS price quote.
+actual, forecast = Decimal("81"), Decimal("120")
+crossed = [p for p in (50, 80, 100) if actual &gt;= budget * Decimal(p) / 100]
+assert crossed == [50, 80]
+assert forecast &gt; budget
+assert actual &lt; budget  # Forecast alarm does not mean already overspent.
+</code></pre>
+<details><summary>Interview: the alert arrived after the budget was exceeded. Was it necessarily broken?</summary><p>No. Usage ingestion, billing updates and delivery have latency. Compare timestamps and configured scope. Budgeting informs decisions; enforce workload quotas/admission limits separately when you need a technical bound.</p></details>
+<p>Tomorrow, explain actual versus forecast thresholds and identify the cost that survives terminating a VM.</p></section>
+
+<section id="ecs-delivery"><h2>FastAPI → image → ECS/Fargate → verified release</h2>
+<p>Use one artifact across test, staging and production. A container image contains the runtime; an ECS task definition describes how it runs; a service maintains tasks and attaches them to a load balancer. Fargate removes host management, not IAM, networking, capacity or operational responsibility. Start from lesson 0491's task-definition contract.</p>
+<p>Dockerfile design: pin a reviewed Python base digest, copy the dependency lock before frequently changing source, keep build tools out of the runtime stage, run as a non-root UID and use an exec-form Uvicorn command. Exclude .git, credentials, caches and test exports with .dockerignore. For local Compose, use service DNS names rather than localhost, a named database volume and a health-aware startup policy. Do not publish the database port merely to allow another container to connect.</p>
+<p>Provision an ECR repository, ECS cluster/service, two private subnets, an HTTPS ALB and an IP target group for awsvpc tasks. Separate task execution role (image/log/secret startup access) from application task role. Inject secrets from the approved store, not image layers. Set readiness/health checks, log retention, memory/CPU and graceful-stop limits.</p>
+<pre><code data-yaml="recipe">name: release-api
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-api
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@REVIEWED_COMMIT_SHA
+      - name: Test with the project's provisioned CI environment
+        run: ./ci/test.sh
+      - uses: aws-actions/configure-aws-credentials@REVIEWED_COMMIT_SHA
+        with:
+          role-to-assume: ${{ vars.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@REVIEWED_COMMIT_SHA
+        id: ecr
+      - name: Build and push candidate
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+        run: |
+          set -euo pipefail
+          image="$REGISTRY/$REPOSITORY:$GITHUB_SHA"
+          docker build -t "$image" .
+          docker push "$image"
+          echo "image=$image" &gt;&gt; "$GITHUB_OUTPUT"
+      - uses: aws-actions/amazon-ecs-render-task-definition@REVIEWED_COMMIT_SHA
+        id: task
+        with:
+          task-definition: deploy/task-definition.json
+          container-name: api
+          image: ${{ steps.image.outputs.image }}
+      - uses: aws-actions/amazon-ecs-deploy-task-definition@REVIEWED_COMMIT_SHA
+        with:
+          task-definition: ${{ steps.task.outputs.task-definition }}
+          service: ${{ vars.ECS_SERVICE }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          wait-for-service-stability: true
+      - name: Verify the released behavior
+        run: ./ci/smoke.sh
+</code></pre>
+<p>This is a configuration recipe, not a committed workflow. Replace every reviewed-SHA marker, supply the Dockerfile/task definition and implement test.sh/smoke.sh before use. The CI test environment must already provide locked dependencies. Require ECR tag immutability for the commit tag or resolve and deploy the pushed digest. Bind GitHub OIDC trust to the specific repository/environment and audience; restrict iam:PassRole to the task roles. GitHub environment approvals protect the deployment boundary. Long-lived AWS keys are unnecessary; provider secrets remain in the service's secret store. See <a href="https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/amazon-elastic-container-service">GitHub's ECS workflow</a>.</p>
+<p>Register the service as an Application Auto Scaling target with a tested minimum/maximum. Choose CPU or ALB request-count-per-target based on measured saturation; use cooldowns and observe scale-in draining. See <a href="https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-autoscaling-targettracking.html">target tracking</a>. More tasks can overwhelm a fixed database pool or provider quota. Ensure private tasks can reach ECR, logs, secrets and required providers through approved endpoints/egress.</p>
+<details><summary>Release drill</summary><p>Introduce a readiness failure: new tasks must not receive traffic, and recovery must use the previous immutable image/task revision. Then introduce a business-response regression that readiness cannot detect: smoke tests and error/latency telemetry must catch it. Container rollback does not undo incompatible schema migrations; use expand/contract changes and a separate migration owner.</p></details>
+<p>Tomorrow, name the evidence separating “deployment stable” from “customers can complete the task.”</p></section>
+</main></body></html>

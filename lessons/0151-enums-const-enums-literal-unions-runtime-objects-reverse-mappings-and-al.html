@@ -59,7 +59,7 @@
       </article><article class="concept-card" data-subtopic="const enums">
         <span>02</span>
         <h3>const enums</h3>
-        <p class="concept-definition">An enum creates a named type and normally a runtime object. Numeric enums also emit reverse mappings, while const enums may inline values.</p>
+        <p class="concept-definition">Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.</p>
       </article><article class="concept-card" data-subtopic="literal unions">
         <span>03</span>
         <h3>literal unions</h3>
@@ -191,6 +191,50 @@ function parseProjectStatus(input: unknown): ProjectStatus {
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] survive emission and can be inspected or called; type aliases and interfaces do not create corresponding objects.</li><li>An enum creates a named type and normally a runtime object. Numeric [concept] also emit reverse mappings, while const [concept] may inline values.</li><li>[concept] restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient [concept] introduces isolated-compilation and dependency-version hazards.</li><li>A literal union is erased but precisely limits values during checking. Pair it with a runtime as-const object or parser when enumeration is required at runtime.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Enums: 2; const enums: 4; literal unions: 3; runtime objects: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Enums: 2; const enums: 1; literal unions: 3; runtime objects: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Enums: 3; const enums: 2; literal unions: 4; runtime objects: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Enums: 2; const enums: 3; literal unions: 4; runtime objects: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Enums: 2; const enums: 3; literal unions: 4; runtime objects: 1</p>
+        <ul><li>A. “const enums” matches explanation 3, not 4. “literal unions” matches explanation 4, not 3.</li><li>B. “const enums” matches explanation 3, not 1. “literal unions” matches explanation 4, not 3. “runtime objects” matches explanation 1, not 4.</li><li>C. “Enums” matches explanation 2, not 3. “const enums” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Enums: An enum creates a named type and normally a runtime object. Numeric enums also emit reverse mappings, while const enums may inline values.</p><p>const enums: Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.</p><p>literal unions: A literal union is erased but precisely limits values during checking. Pair it with a runtime as-const object or parser when enumeration is required at runtime.</p><p>runtime objects: Runtime objects survive emission and can be inspected or called; type aliases and interfaces do not create corresponding objects.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Compare literal unions, lookup objects, and enums by emitted behavior, wire stability, discoverability, and compilation constraints, not syntax preference alone.</li><li>Numeric enum objects map numbers back to member names as well as names to numbers. String enums do not emit that reverse mapping.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. reverse mappings: 1; alternatives: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. reverse mappings: 2; alternatives: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> reverse mappings: 2; alternatives: 1</p>
+        <ul><li>A. “reverse mappings” matches explanation 2, not 1. “alternatives” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>reverse mappings: Numeric enum objects map numbers back to member names as well as names to numbers. String enums do not emit that reverse mapping.</p><p>alternatives: Compare literal unions, lookup objects, and enums by emitted behavior, wire stability, discoverability, and compilation constraints, not syntax preference alone.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Branch returns or reaches never: Diagnostics and type tests expose missing or unsafe paths.</li><li>A value begins with a possible type: Its declaration describes every permitted variant.</li><li>Control flow tests the runtime value: A discriminant, guard, equality, or reachability fact is learned.</li><li>Checker removes impossible cases: Only operations valid for the remaining variants are allowed.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Checker removes impossible cases”, not “Branch returns or reaches never”.</li><li>C. At position 2, the trace uses “Control flow tests the runtime value”, not “Checker removes impossible cases”.</li><li>D. At position 2, the trace uses “Control flow tests the runtime value”, not “Branch returns or reaches never”.</li></ul>
+        <p>A value begins with a possible type: Its declaration describes every permitted variant.</p><p>Control flow tests the runtime value: A discriminant, guard, equality, or reachability fact is learned.</p><p>Checker removes impossible cases: Only operations valid for the remaining variants are allowed.</p><p>Branch returns or reaches never: Diagnostics and type tests expose missing or unsafe paths.</p>
+        <p>Add one new discriminated variant and observe every non-exhaustive consumer. Evidence to inspect: Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</p>
+      </details>
+    </article>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

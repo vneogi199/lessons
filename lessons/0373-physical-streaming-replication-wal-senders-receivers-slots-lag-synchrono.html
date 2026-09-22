@@ -189,6 +189,50 @@ SELECT pg_is_in_recovery(), pg_last_wal_receive_lsn(), pg_last_wal_replay_lsn(),
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>WAL sender processes stream log information to replication or backup consumers.</li><li>WAL [concept] accept streamed log data on standby servers.</li><li>Replication [concept] retain needed progress and log data for consumers; stalled consumers can cause storage growth.</li><li>[concept] sends WAL bytes to a compatible standby, which writes and replays them to reproduce the whole database cluster.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Physical streaming replication: 4; WAL senders: 2; receivers: 1; slots: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Physical streaming replication: 4; WAL senders: 1; receivers: 2; slots: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Physical streaming replication: 4; WAL senders: 3; receivers: 1; slots: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Physical streaming replication: 1; WAL senders: 4; receivers: 2; slots: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Physical streaming replication: 4; WAL senders: 1; receivers: 2; slots: 3</p>
+        <ul><li>A. “WAL senders” matches explanation 1, not 2. “receivers” matches explanation 2, not 1.</li><li>B. Every concept matches its explanation.</li><li>C. “WAL senders” matches explanation 1, not 3. “receivers” matches explanation 2, not 1. “slots” matches explanation 3, not 2.</li><li>D. “Physical streaming replication” matches explanation 4, not 1. “WAL senders” matches explanation 1, not 4.</li></ul>
+        <p>Physical streaming replication: Physical streaming replication sends WAL bytes to a compatible standby, which writes and replays them to reproduce the whole database cluster.</p><p>WAL senders: WAL sender processes stream log information to replication or backup consumers.</p><p>receivers: WAL receivers accept streamed log data on standby servers.</p><p>slots: Replication slots retain needed progress and log data for consumers; stalled consumers can cause storage growth.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</li><li>Replication [concept] is delay in sending, writing, flushing, or replaying changes; name which stage is measured.</li><li>[concept] waits for configured standby acknowledgement stages, trading latency and availability for stronger commit guarantees.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. lag: 3; synchronous replication: 2; failover: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. lag: 2; synchronous replication: 3; failover: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. lag: 1; synchronous replication: 2; failover: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. lag: 2; synchronous replication: 1; failover: 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> lag: 2; synchronous replication: 3; failover: 1</p>
+        <ul><li>A. “lag” matches explanation 2, not 3. “synchronous replication” matches explanation 3, not 2.</li><li>B. Every concept matches its explanation.</li><li>C. “lag” matches explanation 2, not 1. “synchronous replication” matches explanation 3, not 2. “failover” matches explanation 1, not 3.</li><li>D. “synchronous replication” matches explanation 3, not 1. “failover” matches explanation 1, not 3.</li></ul>
+        <p>lag: Replication lag is delay in sending, writing, flushing, or replaying changes; name which stage is measured.</p><p>synchronous replication: Synchronous replication waits for configured standby acknowledgement stages, trading latency and availability for stronger commit guarantees.</p><p>failover: Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Restored state serves invariants: Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</li><li>Backend creates a database change: Transaction identity and modified buffers define the candidate outcome.</li><li>Log record reaches required durability: LSNs, flush policy, checkpoints, archive, and sender positions advance.</li><li>Recovery or replica reapplies history: Redo, timelines, slots, targets, and schema compatibility govern progress.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 2 → 3 → 4 → 1</p>
+        <ul><li>A. At position 3, the trace uses “Recovery or replica reapplies history”, not “Restored state serves invariants”.</li><li>B. At position 2, the trace uses “Log record reaches required durability”, not “Recovery or replica reapplies history”.</li><li>C. This reproduces the lesson’s trace.</li><li>D. At position 2, the trace uses “Log record reaches required durability”, not “Restored state serves invariants”.</li></ul>
+        <p>Backend creates a database change: Transaction identity and modified buffers define the candidate outcome.</p><p>Log record reaches required durability: LSNs, flush policy, checkpoints, archive, and sender positions advance.</p><p>Recovery or replica reapplies history: Redo, timelines, slots, targets, and schema compatibility govern progress.</p><p>Restored state serves invariants: Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</p>
+        <p>Stop the relevant process at one precise point and predict the last recoverable commit. Evidence to inspect: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
+      </details>
+    </article>
+    <p><a href="https://www.postgresql.org/docs/current/maintenance.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL maintenance documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>

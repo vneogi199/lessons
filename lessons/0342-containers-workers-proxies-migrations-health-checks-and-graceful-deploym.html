@@ -79,6 +79,7 @@
       </article>
     </div>
   </section>
+  <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/enterprise-ai-practice.html#gunicorn">Gunicorn and Uvicorn: workers, capacity and shutdown</a></li></ul></section>
 
   <section class="card mechanism-walkthrough">
     <span class="section-label">05 · Detailed mechanism</span>
@@ -185,6 +186,50 @@ CMD [&quot;fastapi&quot;, &quot;run&quot;, &quot;app/main.py&quot;, &quot;--port
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>A proxy receives external traffic and forwards it to application workers while applying routing, TLS, headers, or limits.</li><li>Database [concept] apply versioned schema changes in an order that old and new application versions can tolerate.</li><li>A container packages the application and dependencies into an image and runs it as an isolated process. It does not choose your migration, replication, secrets, or graceful-shutdown strategy.</li><li>[concept] are separate processes running copies of the application. They add CPU parallelism and failure isolation but duplicate memory, pools, lifespan resources, and in-process state.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Containers: 3; workers: 4; proxies: 2; migrations: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Containers: 3; workers: 1; proxies: 2; migrations: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Containers: 3; workers: 4; proxies: 1; migrations: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Containers: 3; workers: 2; proxies: 1; migrations: 4</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> Containers: 3; workers: 4; proxies: 1; migrations: 2</p>
+        <ul><li>A. “proxies” matches explanation 1, not 2. “migrations” matches explanation 2, not 1.</li><li>B. “workers” matches explanation 4, not 1. “proxies” matches explanation 1, not 2. “migrations” matches explanation 2, not 4.</li><li>C. Every concept matches its explanation.</li><li>D. “workers” matches explanation 4, not 2. “migrations” matches explanation 2, not 4.</li></ul>
+        <p>Containers: A container packages the application and dependencies into an image and runs it as an isolated process. It does not choose your migration, replication, secrets, or graceful-shutdown strategy.</p><p>workers: Workers are separate processes running copies of the application. They add CPU parallelism and failure isolation but duplicate memory, pools, lifespan resources, and in-process state.</p><p>proxies: A proxy receives external traffic and forwards it to application workers while applying routing, TLS, headers, or limits.</p><p>migrations: Database migrations apply versioned schema changes in an order that old and new application versions can tolerate.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] are automated requests or commands that decide whether a process should start, receive traffic, or restart.</li><li>A [concept] starts healthy new workers, stops new traffic to old workers, drains work, and closes resources.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. health checks: 1; graceful deployment: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. health checks: 2; graceful deployment: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> health checks: 1; graceful deployment: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “health checks” matches explanation 1, not 2. “graceful deployment” matches explanation 2, not 1.</li></ul>
+        <p>health checks: Health checks are automated requests or commands that decide whether a process should start, receive traffic, or restart.</p><p>graceful deployment: A graceful deployment starts healthy new workers, stops new traffic to old workers, drains work, and closes resources.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Readiness admits requests: The worker handles bounded concurrent traffic.</li><li>Shutdown stops and cleans up: Readiness drops, requests finish, then resources close.</li><li>Process imports the application: Configuration and route registration happen per worker.</li><li>Shared resources are acquired: Pools and clients become owned by this process.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> 3 → 4 → 1 → 2</p>
+        <ul><li>A. At position 2, the trace uses “Shared resources are acquired”, not “Readiness admits requests”.</li><li>B. At position 2, the trace uses “Shared resources are acquired”, not “Shutdown stops and cleans up”.</li><li>C. At position 1, the trace uses “Process imports the application”, not “Shared resources are acquired”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
+        <p>Process imports the application: Configuration and route registration happen per worker.</p><p>Shared resources are acquired: Pools and clients become owned by this process.</p><p>Readiness admits requests: The worker handles bounded concurrent traffic.</p><p>Shutdown stops and cleans up: Readiness drops, requests finish, then resources close.</p>
+        <p>Send a termination signal during a slow request and observe the drain sequence. Evidence to inspect: Process log, readiness state, in-flight count, exit code, and resource cleanup.</p>
+      </details>
+    </article>
+    <p><a href="https://fastapi.tiangolo.com/deployment/concepts/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI deployment concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
   </section>
 
   <section class="card mastery">

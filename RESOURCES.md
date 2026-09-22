@@ -2,6 +2,24 @@
 
 ## Knowledge
 
+- [TypeScript inference](https://www.typescriptlang.org/docs/handbook/type-inference.html), [object types](https://www.typescriptlang.org/docs/handbook/2/objects.html), and [enums](https://www.typescriptlang.org/docs/handbook/enums.html)
+  Consulted 2026-09-22 to distinguish contextual inference, insufficient inference, readonly arrays and const enums in the curriculum-wide MCQs. These refine existing lesson definitions rather than certify compiler execution.
+- [Python imports](https://docs.python.org/3/reference/import.html), [structural protocols](https://docs.python.org/3/library/typing.html#typing.Protocol), and [Starlette middleware source documentation](https://github.com/Kludex/starlette/blob/main/docs/middleware.md)
+  Consulted 2026-09-22 for partially initialized circular imports, structural typing and pure ASGI middleware. The Starlette website failed to load; its official repository documentation supplied the reference. Integration behavior remains untested.
+
+- [Python thread offloading](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread), [event-loop executors](https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor), and [executor lifecycle](https://docs.python.org/3/library/concurrent.futures.html)
+  Ground the 0289/0291 integration exercise: submission timing, copied context, awaiting results, running-work cancellation limits and pool ownership. Checked 2026-09-20; stdlib fixture executes without external I/O.
+- [Linux useradd](https://man7.org/linux/man-pages/man8/useradd.8.html), [usermod](https://man7.org/linux/man-pages/man8/usermod.8.html), [groupadd](https://man7.org/linux/man-pages/man8/groupadd.8.html), [inode modes](https://man7.org/linux/man-pages/man7/inode.7.html), [path resolution](https://man7.org/linux/man-pages/man7/path_resolution.7.html), and [umask](https://man7.org/linux/man-pages/man2/umask.2.html)
+  Maintained tool/kernel interface manuals for lesson 0508's scoped identity and permission lab. Checked 2026-09-20; command recipe parsed only, arithmetic fixture does not certify real Linux authorization.
+
+- [Enterprise AI practice](reference/enterprise-ai-practice.html) — 15 focused extensions, checked 2026-09-20. Each section links primary documentation and separates executable local mechanics from provisioned integration assignments.
+  Retrieval sources: [Pinecone filtering](https://docs.pinecone.io/guides/search/filter-by-metadata), [Ragas evaluation](https://docs.ragas.io/en/stable/getstarted/rag_eval/), [parent retrieval](https://reference.langchain.com/python/langchain-classic/retrievers/parent_document_retriever/ParentDocumentRetriever), [PageIndex](https://github.com/VectifyAI/PageIndex), [RAG paper](https://arxiv.org/abs/2005.11401), [CoT paper](https://arxiv.org/abs/2201.11903).
+  Agent sources: [Deep Agents](https://docs.langchain.com/oss/python/deepagents/overview), [OpenAI SDK quickstart](https://developers.openai.com/api/docs/guides/agents/quickstart), [Claude permission semantics](https://code.claude.com/docs/en/agent-sdk/permissions), [memory taxonomy](https://docs.langchain.com/oss/python/concepts/memory), [OWASP agent security](https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html).
+  Operations sources: [Gunicorn ASGI](https://gunicorn.org/asgi/), [Uvicorn deployment](https://uvicorn.dev/deployment/), [OWASP SAML](https://cheatsheetseries.owasp.org/cheatsheets/SAML_Security_Cheat_Sheet.html), [ETL/ELT](https://aws.amazon.com/compare/the-difference-between-etl-and-elt/), [vLLM serving](https://docs.vllm.ai/en/stable/cli/serve/). Release-dependent recipes must be rechecked against pinned versions; links do not certify integrations.
+
+- [Sentence Transformers cross-encoder usage](https://www.sbert.net/docs/cross_encoder/usage/usage.html) and [reranking evaluation](https://www.sbert.net/docs/package_reference/cross_encoder/evaluation.html)
+  Ground lesson 0596's cross-encoder extension: pair scoring, score interpretation, realistic candidate sets and evaluation configuration. Checked 2026-09-19; local exercises use fixed scores, not model inference.
+
 - [ECMAScript array length](https://tc39.es/ecma262/2023/multipage/indexed-collections.html#sec-properties-of-array-instances-length), [generator completion](https://tc39.es/ecma262/2025/multipage/control-abstraction-objects.html#sec-generatorresumeabrupt), and [resizable buffers](https://github.com/tc39/proposal-resizablearraybuffer)
   Ground the sparse-length counterexample, unopened-generator return behavior and fixed versus resizable storage distinction in the JavaScript individual review.
 - [TC39 explicit resource management](https://github.com/tc39/proposal-explicit-resource-management)
@@ -210,6 +228,40 @@
 - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) and [OWASP Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
   Security guidance for structured audit evidence and privileged admin systems. Use for: event fields, sensitive-data exclusion, tamper detection, access controls, deny-by-default authorization, resource scope, and privileged workflow testing.
 
+- [Chroma clients](https://docs.trychroma.com/reference/python/client), [collections](https://docs.trychroma.com/docs/collections/manage-collections), and [query/get](https://docs.trychroma.com/docs/querying-collections/query-and-get)
+  Use for: local versus server-backed persistence, explicit embeddings, collection lifecycle and metadata-filtered retrieval. Linked extension includes a tenant-isolation fixture.
+- [Neo4j MERGE](https://neo4j.com/docs/cypher-manual/current/clauses/merge/), [index use](https://neo4j.com/docs/cypher-manual/current/indexes/search-performance-indexes/using-indexes/), and [GraphRAG Python](https://neo4j.com/docs/neo4j-graphrag-python/current/)
+  Use for: property-graph identity, parameterized Cypher, constraints, bounded traversals and source-backed graph retrieval.
+- [CrewAI agents](https://docs.crewai.com/en/concepts/agents) and [tasks](https://docs.crewai.com/en/concepts/tasks)
+  Use for: role/tool/task separation, direct Python configuration, sequential handoffs and bounded delegation. Verify memory/tracing configuration against the deployed release.
+- [Pydantic AI dependencies](https://pydantic.dev/docs/ai/core-concepts/dependencies/), [structured output](https://pydantic.dev/docs/ai/examples/getting-started/pydantic-model/), and [testing](https://pydantic.dev/docs/ai/guides/testing/)
+  Use for: trusted runtime dependencies, typed outputs, TestModel/FunctionModel and blocking accidental provider calls. Validation does not establish truth or authorization.
+- [DuckDB Python DB API](https://duckdb.org/docs/current/clients/python/dbapi) and [security model](https://duckdb.org/docs/current/operations_manual/securing_duckdb/overview)
+  Use for: embedded analytics, bound SQL values, file snapshots, external-access restrictions and the limits of read-only execution.
+- [Microsoft GraphRAG](https://microsoft.github.io/graphrag/) and [query modes](https://microsoft.github.io/graphrag/query/overview/), [OpenSPG KAG](https://github.com/OpenSPG/KAG), and [LightRAG](https://github.com/HKUDS/LightRAG)
+  Use for: comparing entity/community retrieval, schema/rule-aware reasoning and graph-plus-vector retrieval. Framework-specific mode names and advertised benchmark gains are not interchangeable guarantees.
+- [Self-RAG paper](https://arxiv.org/abs/2310.11511) and [author explanation](https://selfrag.github.io/), plus [HyDE paper](https://arxiv.org/abs/2212.10496)
+  Use for: trained reflection-token boundaries versus prompted critique, and hypothetical-document embeddings versus real evidence. Local fixtures illustrate controller/retrieval mechanics, not research reproduction.
+- [OWASP SSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html) and [prompt-injection prevention](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html)
+  Use for: search/fetch trust boundaries, egress and redirect controls, untrusted page content and tool permissions.
+- [MongoDB modeling](https://www.mongodb.com/docs/manual/data-modeling/), [BSON](https://www.mongodb.com/docs/manual/reference/bson-types/), [compound indexes](https://www.mongodb.com/docs/manual/core/indexes/index-types/index-compound/), and [aggregation](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/)
+  Use for: embedding versus references, typed document contracts, query-plan experiments and aggregation pipelines.
+- [MongoDB transactions](https://www.mongodb.com/docs/manual/core/transactions/), [replication](https://www.mongodb.com/docs/manual/replication/), [sharding](https://www.mongodb.com/docs/manual/sharding/), and [change streams](https://www.mongodb.com/docs/manual/changestreams/)
+  Use for: single-document atomicity versus distributed transactions, concerns and failover, shard-key tradeoffs and replay-safe CDC.
+
+- [Pandas indexing](https://pandas.pydata.org/docs/user_guide/indexing.html), [Copy-on-Write](https://pandas.pydata.org/docs/user_guide/copy_on_write.html), and [missing data](https://pandas.pydata.org/docs/user_guide/missing_data.html)
+  Use for: label alignment versus position, Pandas 3.x mutation semantics, nullable dtypes and explicit missing-value policies.
+- [Pandas CSV input](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html), [merge contracts](https://pandas.pydata.org/docs/reference/api/pandas.merge.html), and [combining frames](https://pandas.pydata.org/docs/user_guide/merging.html)
+  Use for: schema-controlled ingestion, key cardinality, null-key behavior and avoiding silent row multiplication.
+- [Pandas grouping](https://pandas.pydata.org/docs/user_guide/groupby.html), [reshaping](https://pandas.pydata.org/docs/user_guide/reshaping.html), and [time series](https://pandas.pydata.org/docs/user_guide/timeseries.html)
+  Use for: aggregation versus transformation, count/size, pivots, timezones, resampling and window boundaries.
+- [Pandas scaling](https://pandas.pydata.org/docs/user_guide/scale.html) and [frame assertions](https://pandas.pydata.org/docs/reference/api/pandas.testing.assert_frame_equal.html)
+  Use for: memory-aware analysis, chunked summaries, dtype-sensitive regression tests and limits of in-memory processing.
+- [pypdf text extraction](https://pypdf.readthedocs.io/en/stable/user/extract-text.html)
+  Use for: digitally generated versus scanned PDFs, OCR boundaries, layout ambiguity and extraction quality. A parser is not a sandbox.
+- [Ubuntu terminal introduction](https://ubuntu.com/server/docs/tutorial/welcome-to-the-terminal/), [command reference](https://ubuntu.com/server/docs/reference/cli-cheatsheet/), [Bash redirection](https://www.gnu.org/s/bash/manual/html_node/Redirections.html), and [pipelines](https://www.gnu.org/software/bash/manual/html_node/Pipelines.html)
+  Use for: navigation, file/process inspection, quoting, standard streams, exit status and safe command composition. Check local manuals for macOS/Linux flag differences.
+
 ## Wisdom (Communities)
 
 - [GitHub Open Source](https://github.com/open-source)
@@ -224,3 +276,35 @@
 - Select target countries or regions before adding official immigration pathways, work-authorization constraints, and local hiring conventions.
 - Collect representative job descriptions for the learner's desired seniority and target companies before the interview-intensive phase.
 - AWS is the implementation platform for the cloud deep dive while cloud fundamentals and tradeoffs remain portable. Revisit platform emphasis after collecting job descriptions from the learner's target countries and companies.
+## Knowledge additions — 2026-09-21
+
+- [LangGraph subgraphs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs): nested execution and shared state boundaries.
+- [OpenTelemetry Python](https://opentelemetry.io/docs/languages/python/instrumentation/): manual spans and request trace context.
+- [RAGAS metrics](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/): distinguish retrieval and response evaluation.
+- [Strawberry DataLoader](https://strawberry.rocks/docs/guides/dataloaders): batching and ordered resolver results.
+- [FastAPI errors](https://fastapi.tiangolo.com/tutorial/handling-errors/): request/HTTP exception boundaries.
+- [ColPali paper](https://arxiv.org/abs/2407.01449): visual document late-interaction retrieval.
+- [Zeep settings](https://docs.python-zeep.org/en/master/settings.html): XML parser controls, not a complete network policy.
+
+Further topic-specific primary sources are cited beside each recipe in the four guides listed in SYLLABUS-COVERAGE.md.
+## Numerical data engineering — 2026-09-21
+
+- [NumPy broadcasting](https://numpy.org/doc/stable/user/basics.broadcasting.html): shape compatibility and memory costs of expanded results.
+- [NumPy copies/views](https://numpy.org/doc/stable/user/basics.copies.html): ownership when slicing, reshaping and indexing.
+- [NumPy vectorize](https://numpy.org/doc/stable/reference/generated/numpy.vectorize.html): convenience wrapper versus native vectorized operations.
+- [Pandas windows](https://pandas.pydata.org/docs/user_guide/window.html): rolling, expanding and weighted-window semantics.
+- [Pandas as-of joins](https://pandas.pydata.org/docs/reference/api/pandas.merge_asof.html): sorted temporal joins, tolerance and direction.
+- [Polars optimization](https://docs.pola.rs/user-guide/lazy/optimizations/): inspect lazy pushdown and query plans.
+- [Polars windows](https://docs.pola.rs/user-guide/expressions/window-functions/): grouped expressions mapped back to rows.
+- [Polars streaming](https://docs.pola.rs/user-guide/concepts/streaming/): batch execution and its memory boundaries.
+## AI Engineer practice sources — 2026-09-21
+
+- [Agent evaluations](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents): distinguish claimed completion from actual outcomes and use multiple grading signals.
+- [pytest monkeypatch](https://docs.pytest.org/en/stable/how-to/monkeypatch.html): isolate external dependencies without mocking away the policy under test.
+- [LoRA concepts](https://huggingface.co/docs/peft/main/en/conceptual_guides/lora): low-rank adaptation and its training tradeoffs.
+## RFQ interview MCQ references — 2026-09-22
+
+- [Python data structures](https://docs.python.org/3/tutorial/datastructures.html): dictionary/list/set choices and record transformations.
+- [PostgreSQL window functions](https://www.postgresql.org/docs/current/tutorial-window.html): partitioning, ordering, ranking and frames.
+- [Pandas merge](https://pandas.pydata.org/docs/reference/api/pandas.merge.html): cardinality validation and null-key behavior.
+- [CME basis-point value](https://www.cmegroup.com/education/courses/introduction-to-sofr/understanding-the-importance-of-basis-point-value): distinguish rate moves from sensitivity measures.

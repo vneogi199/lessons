@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Context, retrieval and visual document labs</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.7 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:30px 24px 70px}h1,h2,h3{line-height:1.25;color:#fff}a,summary{color:#79e8ff}section{border:1px solid #3b526c;border-radius:8px;padding:24px;margin:28px 0;scroll-margin-top:20px}pre{overflow:auto;background:#101722;padding:18px;font:14px/1.6 monospace}table{border-collapse:collapse;width:100%}td,th{border:1px solid #3b526c;padding:10px;text-align:left;vertical-align:top}details{border-left:2px solid #79e8ff;padding:12px;margin:16px 0}summary{cursor:pointer}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff}.note{border-left:3px solid #ffd277;padding:12px}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}@media(max-width:600px){main{padding:18px 12px}section{padding:16px}table{font-size:14px}}@media print{:root{color-scheme:light}body{background:white;color:black;font-size:11pt}h1,h2,h3,a,summary{color:black}pre{background:white;white-space:pre-wrap}nav{display:none}details::details-content{content-visibility:visible}}</style></head><body><main>
+<header><a href="../index.html">Curriculum</a><h1>From context budgets to visual evidence</h1><p>Senior AI practice: preserve the right information, retrieve it reproducibly and distinguish a supported answer from plausible output.</p><p class="note">Offline examples use synthetic data and standard Python. SDK/model/database recipes are syntax-checked or reviewed only; no package installation, model download, provider call or cloud provisioning is performed. Study one section, predict its result, then revisit its question tomorrow. Ask your teacher about uncertain design choices.</p></header>
+<nav><a href="#context-budget">Context</a> · <a href="#typed-output">Typed output</a> · <a href="#parallel-tools">Tools</a> · <a href="#hybrid-implementation">Hybrid retrieval</a> · <a href="#reranker-api">Reranker API</a> · <a href="#graph-modeling">Graphs</a> · <a href="#visual-retrieval">ColPali and CLIP</a> · <a href="#document-layout">Document layout</a></nav>
+
+<section id="context-budget"><h2>Count tokens, slide history and compress carefully</h2>
+<p>Zero-shot supplies a task without worked examples; few-shot supplies representative input/output examples. Compare them on held-out cases rather than selecting a favorite answer. CoT terminology is covered in the <a href="enterprise-ai-practice.html#chain-of-thought">reasoning extension</a>; evidence and concise explanations matter more than revealing internal reasoning.</p>
+<p>Tokens are model-specific units, not words or characters. Count instructions, tool definitions, messages, retrieved evidence and image inputs using the selected provider's supported counting mechanism; reserve output/reasoning capacity according to that model's contract. A local tokenizer count of plain text alone is an estimate of the request, not a billing receipt. Record actual usage from the response. See <a href="https://developers.openai.com/api/docs/guides/token-counting">OpenAI token counting</a>.</p>
+<p>A sliding window keeps recent complete turns while removing older ones. Do not separate a tool call from its result or discard authoritative constraints. Maintain immutable instructions and the current question separately from history; keep high-value evidence by relevance rather than mere recency. A compacted summary should retain decisions, unresolved questions, source IDs and scope, not invent facts. Treat summaries of untrusted content as untrusted too.</p>
+<pre><code data-python="offline"># Supplied token counts model complete turns, not a tokenizer implementation.
+def recent_turns(turns, available):
+    if available &lt; 0:
+        raise ValueError("mandatory context already exceeds budget")
+    kept, used = [], 0
+    for name, tokens in reversed(turns):
+        if tokens &lt;= 0:
+            raise ValueError("positive count required")
+        if used + tokens &gt; available:
+            break  # Contiguous suffix: don't create holes in conversation history.
+        kept.append(name)
+        used += tokens
+    return list(reversed(kept)), used
+
+limit, instructions, tools, question, evidence, output = 900, 100, 100, 80, 300, 200
+available = limit - instructions - tools - question - evidence - output
+assert recent_turns([("old", 90), ("middle", 60), ("new", 50)], available) == (["middle", "new"], 110)
+assert recent_turns([("large", 130)], available) == ([], 0)
+</code></pre>
+<p>Practice with a 20-turn synthetic support thread containing one early constraint and a changed address later. Compare full context, recent-window only and a cited summary plus recent turns. Test whether the model respects the constraint, uses the latest authorized address and admits missing facts. Measure accuracy, evidence retention, input/output tokens and latency. If mandatory context alone is too large, route, retrieve or ask a narrower question; silently trimming policy is not an acceptable fix.</p>
+<details><summary>Interview: compression halves tokens but doubles failures. What should you inspect?</summary><p>Find the lost constraints or citations and measure errors by task type. Compression has a quality budget as well as a size target. Keep a reversible source link and compare before/after examples; a summary is not an authoritative replacement for the original record.</p></details>
+<p>Tomorrow, calculate a request budget and explain why raw text length is insufficient.</p></section>
+
+<section id="typed-output"><h2>Provider schemas plus local business validation</h2>
+<p>Type hints alone do not validate arbitrary JSON. Pydantic validates a parsed boundary; a provider's strict structured-output mode constrains supported output shapes during generation. Neither proves that numbers, source IDs or permissions are correct. Keep the wire schema small enough for the selected provider's supported JSON Schema subset, then validate domain rules locally.</p>
+<pre><code data-python="integration">import os
+from typing import Annotated, Literal
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
+from openai import OpenAI
+
+class Line(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    label: str
+    amount_cents: int
+
+class ExtractedInvoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_id: str
+    lines: list[Line]
+    total_cents: int
+
+def extract(client: OpenAI, approved_text: str):
+    response = client.responses.parse(
+        model=os.environ["STRUCTURED_OUTPUT_MODEL"],
+        input=[{"role": "user", "content": approved_text}],
+        text_format=ExtractedInvoice,
+    )
+    if response.status != "completed" or response.output_parsed is None:
+        raise ValueError("incomplete or refused extraction: inspect typed response")
+    invoice = response.output_parsed
+    if sum(line.amount_cents for line in invoice.lines) != invoice.total_cents:
+        raise ValueError("arithmetic mismatch")
+    return invoice  # Caller must also validate source ID, scope and numeric limits.
+
+class Ready(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    kind: Literal["ready"]
+    invoice: ExtractedInvoice
+
+class NeedsReview(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    kind: Literal["needs_review"]
+    reason: str
+
+# Local discriminated union; not assumed compatible with every provider schema.
+Decision = Annotated[Ready | NeedsReview, Field(discriminator="kind")]
+decision_parser = TypeAdapter(Decision)
+assert decision_parser.validate_python({"kind": "needs_review", "reason": "missing page"}).kind == "needs_review"
+</code></pre>
+<p>Sources: <a href="https://developers.openai.com/api/docs/guides/structured-outputs">structured outputs</a> and <a href="https://docs.pydantic.dev/latest/concepts/unions/">Pydantic discriminated unions</a>. The discriminator selects one branch explicitly; optional fields with ambiguous meanings are harder to validate. A model's refusal or truncation must not be coerced into a success record.</p>
+<p>Build a retry policy by failure class: transport 429/temporary failures use bounded backoff and a total deadline; malformed/schema-invalid output may get one constrained repair using sanitized validation errors; unauthorized IDs are rejected, not “repaired” into another user's data. Never retry a side-effecting tool merely because its narration failed to parse. Preserve attempt count, provider status and final outcome without logging sensitive text.</p>
+<details><summary>Practice: valid invoice JSON, correct sum, wrong source ID</summary><p>Reject at source/authorization validation. Test unknown discriminator values, missing nested fields, extra fields, incorrect totals, refusal and incomplete output independently. Passing Pydantic cannot replace these checks. Domain validation should produce a review decision rather than fabricated missing data.</p></details>
+<p>Tomorrow, name three failures that strict JSON cannot prevent.</p></section>
+
+<section id="parallel-tools"><h2>Parallel tool calls and the result-message loop</h2>
+<p>A model proposes calls; your application decides whether to execute them. Parallelize independent, authorized reads. Serialize dependent actions and writes whose ordering matters; require payload-bound approval and idempotency. Validate every name, call ID, argument object and resource scope before starting any work. Tool results are untrusted data, not new system instructions.</p>
+<pre><code data-python="offline">import asyncio
+import json
+
+async def execute_reads(calls):
+    if len(calls) &gt; 8:
+        raise ValueError("too many tool calls")
+    ids = set()
+    validated = []
+    for call in calls:
+        if call["name"] != "lookup_policy" or not isinstance(call["call_id"], str) or not call["call_id"] or call["call_id"] in ids:
+            raise ValueError("unknown tool or duplicate/invalid call ID")
+        args = json.loads(call["arguments"])
+        if not isinstance(args, dict) or set(args) != {"policy_id"} or args["policy_id"] not in {"P1", "P2"}:
+            raise ValueError("invalid or unauthorized policy")
+        ids.add(call["call_id"])
+        validated.append((call["call_id"], args["policy_id"]))
+    limit = asyncio.Semaphore(2)
+    async def read(call_id, policy_id):
+        async with limit:
+            await asyncio.sleep(0)  # Synthetic I/O boundary, no external request.
+            return {"type": "function_call_output", "call_id": call_id,
+                    "output": json.dumps({"source": policy_id, "status": "found"})}
+    return await asyncio.gather(*(read(*item) for item in validated))
+
+calls = [{"name": "lookup_policy", "call_id": "c1", "arguments": '{"policy_id":"P1"}'}]
+assert asyncio.run(execute_reads(calls))[0]["call_id"] == "c1"
+for bad in [calls + calls, [{**calls[0], "name": "delete_policy"}],
+            [{**calls[0], "arguments": '{"policy_id":"PRIVATE"}'}]]:
+    try:
+        asyncio.run(execute_reads(bad))
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("invalid call executed")
+</code></pre>
+<p>The fixture models a fixed authorized corpus; real identity must come from authenticated context, and production JSON boundaries also need byte/depth limits and duplicate-key policy. For the Responses API, retain returned output items, collect function_call items, execute validated calls, then append one function_call_output per call_id and send the continuation. Preserve required reasoning/output items according to the <a href="https://developers.openai.com/api/docs/guides/function-calling">function-calling contract</a>; do not mix Chat Completions tool-message shapes with Responses shapes.</p>
+<p>In a provisioned lab, define a strict function schema with policy_id, required fields and additionalProperties=false. Cap total turns, calls, output bytes, wall time and spend. Return sanitized typed failures when a read times out; do not silently omit a call result. Test two reads returning out of order, an unknown tool, malformed arguments and repeated call IDs. A request to execute parallel tools is not proof the proposed operations are independent.</p>
+<details><summary>Interview: one of two tools fails—retry both?</summary><p>Not automatically. Preserve each call's status and retry only safe failed work within the budget. Writes need reconciliation before retrying an unknown outcome. Correlation uses call IDs, not completion order or a model-generated summary.</p></details>
+<p>Tomorrow, trace one tool call from schema to validated execution to continuation message.</p></section>
+
+<section id="hybrid-implementation"><h2>BM25, sparse representations and reciprocal rank fusion</h2>
+<p>BM25 uses term frequency, inverse document frequency and document-length normalization to rank lexical matches. A sparse document–term matrix has mostly zero entries; an inverted index stores postings for terms that actually occur. It is not a dense semantic embedding. Tokenization, stemming and handling exact identifiers determine what counts as a match.</p>
+<pre><code data-python="offline">from collections import Counter
+from math import log
+
+documents = {"A": "refund policy seven days", "B": "account setup guide", "C": "refund exception"}
+counts = {key: Counter(text.split()) for key, text in documents.items()}
+average = sum(sum(c.values()) for c in counts.values()) / len(counts)
+
+def bm25(query, key, k1=1.2, b=0.75):
+    score = 0.0
+    for term in set(query.split()):
+        df = sum(term in c for c in counts.values())
+        idf = log(1 + (len(counts) - df + 0.5) / (df + 0.5))
+        tf = counts[key][term]
+        score += idf * tf * (k1 + 1) / (tf + k1 * (1 - b + b * sum(counts[key].values()) / average))
+    return score
+
+def rrf(rankings, k=60):
+    if k &lt;= 0:
+        raise ValueError("positive fusion constant required")
+    scores = {}
+    for ranking in rankings:
+        for rank, doc in enumerate(dict.fromkeys(ranking), 1):
+            scores[doc] = scores.get(doc, 0) + 1 / (k + rank)
+    return sorted(scores, key=lambda doc: (-scores[doc], doc))
+
+assert bm25("refund", "A") &gt; bm25("refund", "B")
+assert bm25("refund", "C") &gt; bm25("refund", "A")
+assert rrf([["A", "B"], ["B", "C"]])[0] == "B"
+assert rrf([["A", "A"], ["B"]]) == ["A", "B"]
+assert rrf([]) == []
+</code></pre>
+<p>This tiny BM25 implementation is a mechanics fixture: whitespace tokenization, nonempty corpus and no production postings index. Use a search engine for real scale. RRF adds 1/(k+rank) across result lists; it combines ranks rather than incomparable raw BM25/cosine scores. k is a tuning constant, not the number of results. Keep per-list candidate limits and tie policy fixed. See <a href="https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion">RRF semantics</a> and <a href="https://lucene.apache.org/core/9_12_0/core/org/apache/lucene/search/similarities/BM25Similarity.html">Lucene BM25</a>.</p>
+<p>Ingestion lab: compare fixed token chunks (for example 200/400) and heading/semantic boundaries, with overlap 0/10/20%. These are experiment settings, not universal defaults. Track duplicate evidence, boundary-answer recall, index bytes, embedding cost and final-context coverage. Semantic boundaries can protect meaning but require fallback limits for very long sections. Overlap can increase recall while wasting storage and crowding context.</p>
+<p>Provisioned vector lab: choose a model/dimension/metric contract, create an isolated index in an approved region, scope credentials and namespace, upsert versioned synthetic chunks and wait for documented visibility. Issue a metadata-filtered query, compare exact versus ANN neighbors and delete a document plus derived chunks. The <a href="enterprise-ai-practice.html#pinecone">Pinecone recipe</a> supplies the query/upsert example. Equal dimensions do not make two embedding models compatible.</p>
+<details><summary>Worked comparison</summary><p>Label relevant source documents before tuning. Precision@k is relevant returned items divided by k under your declared convention; recall@k divides by all labeled relevant items. Deduplicate source IDs and define no-answer behavior. Report lexical, dense, RRF and reranked results on the same held-out queries. RRF cannot recover an item absent from every candidate list.</p></details>
+<p>Tomorrow, explain why averaging raw BM25 and cosine scores is usually an unjustified baseline.</p></section>
+
+<section id="reranker-api"><h2>Integrate a hosted reranker without losing provenance</h2>
+<p>A cross-encoder jointly scores query–candidate pairs. Use it after a bounded, permission-filtered retrieval stage; it cannot recover missed candidates. Hosted reranking adds a data-processing boundary, timeout and cost. Verify residency and retention before sending text; metadata filters applied after the request are too late.</p>
+<pre><code data-python="integration">import os
+import cohere
+
+def rerank_authorized(query, candidates):
+    # Caller supplies only authorized, size-bounded {id, text} records.
+    if not candidates:
+        return []
+    client = cohere.ClientV2(api_key=os.environ["COHERE_API_KEY"])
+    result = client.rerank(model=os.environ["RERANK_MODEL"], query=query,
+                           documents=[c["text"] for c in candidates], top_n=min(5, len(candidates)))
+    seen, ordered = set(), []
+    for hit in result.results:
+        if not 0 &lt;= hit.index &lt; len(candidates) or hit.index in seen:
+            raise ValueError("invalid reranker index")
+        seen.add(hit.index)
+        ordered.append({**candidates[hit.index], "score": hit.relevance_score})
+    return ordered
+</code></pre>
+<p>Use the <a href="https://docs.cohere.com/reference/rerank">Cohere v2 rerank contract</a> for the pinned SDK/model. Add supported transport deadlines and retry handling at the application boundary; this recipe does not call the service. Preserve candidate IDs via returned indexes, not reconstructed text matching. Scores are ranking signals, not calibrated truth probabilities.</p>
+<p>Exercise: give two candidates identical text but different source IDs, then return indexes in reverse order. Verify provenance survives. Simulate 429, timeout and malformed indexes. Your explicit fallback may keep the original authorized ranking and mark reranking unavailable; it must not silently broaden permissions or erase the incident. Compare nDCG/MRR and supported-answer quality against candidate count, p95 added latency and cost.</p>
+<details><summary>Interview: reranking improved the offline score but hurt production</summary><p>Check whether short benchmark documents hid truncation, whether provider latency consumes the answer budget, and whether the fallback path changes context composition. Use the same corpus versions and query slices; do not equate average rank improvement with a reliable user outcome.</p></details>
+<p>Tomorrow, explain how a result index becomes a trustworthy citation.</p></section>
+
+<section id="graph-modeling"><h2>Model, provision and query a knowledge graph</h2>
+<p>A taxonomy organizes categories, commonly through broader/narrower relationships. An ontology defines entity types, relationships and constraints on meaning. A property graph stores nodes, directed typed relationships and properties. Neither a graph nor an ontology makes an extracted claim true; preserve source, time, tenant and confidence separately.</p>
+<p>Transform customers, orders and order-items tables into stable Customer/Order/Product nodes. Foreign keys become relationships; a join table with quantity, timestamp or repeated events may need an event node instead of one edge that overwrites history. Namespace IDs by tenant and source. Reconcile deletes and merges; do not generate a fresh identity on every import. Follow <a href="https://neo4j.com/docs/getting-started/data-import/relational-to-graph-import/">relational-to-graph guidance</a>.</p>
+<pre><code data-cypher="recipe">CREATE CONSTRAINT warehouse_key IF NOT EXISTS
+FOR (w:Warehouse) REQUIRE (w.tenant, w.id) IS UNIQUE;
+
+MATCH (start:Warehouse {tenant: $tenant, id: $start})
+MATCH path = (start)-[:ROUTE*1..3]-&gt;(destination:Warehouse)
+WHERE all(node IN nodes(path) WHERE node.tenant = $tenant)
+RETURN destination.id, length(path) AS hops
+ORDER BY hops, destination.id LIMIT 20;</code></pre>
+<p>Logistics lab: model warehouses and route edges with capacity, transit time and effective dates. Hop count is not minimum transit time; use an appropriate weighted-path algorithm when that is the objective. User-interaction lab: model an Interaction event with actor, object, type and timestamp to preserve repeated clicks/purchases. Avoid turning every click into a permanent unbounded edge expansion.</p>
+<p>Use EXPLAIN first and PROFILE only on authorized bounded queries because it executes them. Anchor at indexed identifiers, inspect cardinality/expansion and constrain variable-length paths. Broad cross-products or unbounded traversals are graph equivalents of bad joins. Filter all traversed entities by scope; an authorized starting node does not authorize every reachable node.</p>
+<p>AuraDB walkthrough: choose project, region/tier and limits in the <a href="https://neo4j.com/docs/aura/getting-started/create-instance/">instance-creation flow</a>, save generated credentials in the approved secret store, record the TLS connection URI, configure available network restrictions, verify connectivity and load only synthetic data. Create constraints, run positive/negative queries, inspect backups and delete only the disposable instance after retaining evidence. No Aura resources were created here.</p>
+<p><a href="https://docs.aws.amazon.com/neptune/latest/userguide/intro.html">Amazon Neptune</a> is a managed graph option with property-graph and RDF interfaces. Choose query language/data model and verify feature compatibility rather than treating Neo4j Cypher extensions as portable. Evaluate network access, IAM authentication, operational model and costs against the actual traversal workload.</p>
+<details><summary>Chatbot retrieval exercise</summary><p>Resolve “Which delayed routes affect customer C?” to authorized entities, fetch bounded paths, then cite the source events behind each edge. Compare against SQL joins and text RAG. If entity resolution is ambiguous, ask a clarifying question; don't choose the first same-name node. A graph-derived answer still needs evidence and freshness checks.</p></details>
+<p>Tomorrow, defend an event node versus an edge with properties.</p></section>
+
+<section id="visual-retrieval"><h2>CLIP, ColPali and vision-language bridges</h2>
+<p><a href="https://arxiv.org/abs/2103.00020">CLIP</a> learns aligned image/text representations using contrastive training: matched pairs should be more similar than mismatches within the training objective. An image embedding can support image-to-image nearest-neighbor search; alignment also enables text-to-image retrieval. Similarity is not proof of identity, exact numeric reading or permission.</p>
+<p>A vision-language system typically turns image patches into visual representations, then projects or attends to those representations in a language model's processing space. Architectures differ: not every model uses the same bridge, resolution or token budget. CLIP-style retrieval and a generative VLM answer different questions; a retriever locates evidence, while a generator interprets it.</p>
+<p><a href="https://arxiv.org/abs/2407.01449">ColPali</a> represents rendered document pages using multiple visual embeddings and late interaction with query-token representations. It avoids an explicit OCR-text pipeline for retrieval, but does not eliminate rendering, indexing, visual errors or the need to read retrieved evidence. A simplified MaxSim score sums each query vector's best page-vector similarity:</p>
+<pre><code data-python="offline">def maxsim(query_vectors, page_vectors):
+    if not query_vectors or not page_vectors:
+        raise ValueError("nonempty vectors required")
+    dimension = len(query_vectors[0])
+    if not dimension or any(len(v) != dimension for v in query_vectors + page_vectors):
+        raise ValueError("dimension mismatch")
+    return sum(max(sum(a*b for a, b in zip(q, p)) for p in page_vectors) for q in query_vectors)
+
+query = [[1.0, 0.0], [0.0, 1.0]]
+assert maxsim(query, [[1.0, 0.0], [0.0, 1.0]]) == 2.0
+assert maxsim(query, [[1.0, 0.0]]) == 1.0
+</code></pre>
+<p>The vectors are synthetic; this checks aggregation, not ColPali inference. In an already provisioned model environment, use the pinned processor/model pair, render authorized pages at a controlled resolution, batch page embeddings, index multi-vectors with versioned page IDs, and compute supported late-interaction scores. A single-vector DB cannot automatically implement multi-vector MaxSim. Record model revision, normalization, padding masks, resolution, GPU memory and index storage.</p>
+<p>Comparison lab: the same 20 approved pages should include a scanned invoice, a chart, a table and plain text. Compare OCR+BM25, text embeddings, CLIP-style retrieval and ColPali on source-page recall, numeric-answer support, latency and storage. Prompt the answering VLM with the question, selected page images and explicit source/page IDs; ask for cited evidence and uncertainty. Never assume a highly similar image contains the requested value.</p>
+<details><summary>Interview: “OCR-free” means no extraction problems?</summary><p>No. Fine print, rotations, poor scans and confusing chart legends still cause errors. Retrieval can find the right page while generation misreads it. Measure page retrieval and final claim correctness separately; route uncertain numbers to a higher-resolution crop or human review.</p></details>
+<p>Tomorrow, explain single-vector similarity versus late interaction without claiming a universal winner.</p></section>
+
+<section id="document-layout"><h2>Legacy PDFs, nested tables and multi-page visual context</h2>
+<p>Classify each document/page before extraction: native text, scanned image, mixed content, tables, charts, forms and reading-order complexity. Preserve an immutable source version, page number and coordinate system. Quarantine encrypted, malformed or oversized inputs; bound parser/OCR resources and never execute embedded actions or follow document-supplied URLs automatically.</p>
+<p>OCR pipeline: validate upload → render in an isolated worker → rotate/deskew when justified → recognize text/layout → associate words with blocks → quality-check → publish versioned chunks. Confidence scores are model signals, not verified accuracy. Evaluate character/word error and task-level extraction on manually labeled samples, including names, decimal separators and negative values.</p>
+<p>For nested tables, preserve cell coordinates, row/column spans, hierarchical headers, units and footnotes instead of flattening everything into unrelated strings. The <a href="https://docs.aws.amazon.com/textract/latest/dg/how-it-works-tables.html">Textract table model</a> illustrates cells and relationships. A provider-native document/VLM extraction may return nested JSON, but schema validity does not validate totals or header associations. Reconcile totals deterministically and retain source boxes per extracted field.</p>
+<pre><code data-python="offline">def normalized_box(box, width, height):
+    x0, y0, x1, y1 = box  # top-left origin, post-rotation page pixels
+    if not (width &gt; 0 and height &gt; 0 and 0 &lt;= x0 &lt; x1 &lt;= width and 0 &lt;= y0 &lt; y1 &lt;= height):
+        raise ValueError("invalid page coordinates")
+    return (x0/width, y0/height, x1/width, y1/height)
+
+assert normalized_box((100, 200, 300, 400), 1000, 2000) == (0.1, 0.1, 0.3, 0.2)
+try:
+    normalized_box((10, 10, 1, 20), 100, 100)
+except ValueError:
+    pass
+else:
+    raise AssertionError("inverted box accepted")
+</code></pre>
+<p>Store each text chunk with document/version/page and one or more boxes. Record the original-to-rendered rotation/scale transform; PDF points, pixel coordinates and normalized coordinates are not interchangeable. Verify overlays on the rendered page. Keep a table's parent header available when a child row is retrieved, with the same ACL safeguards as <a href="enterprise-ai-practice.html#parent-child">parent–child retrieval</a>.</p>
+<p>For charts, identify axes, units, scales, legend and time range before asking for a trend or value. A log axis, truncated y-axis or dual-axis chart changes interpretation. For infographics, distinguish decorative elements from encoded measurements. If exact values are unavailable, return an approximate observation with that limitation—not invented precision.</p>
+<p>Multi-page exercise: page 1 contains a table heading, page 2 the rows and page 3 an exception. Retrieve a page neighborhood or linked section, preserve ordering and label images individually. Ask the VLM for a typed answer with page/box evidence, then check whether each claim is visible. Limit total page/image tokens and avoid unrelated pages that dilute evidence. Test cropped headers, missing pages and conflicting versions.</p>
+<details><summary>Acceptance criteria</summary><p>A reviewer must be able to open every citation at the correct source version, see the supporting cell/region and reproduce deterministic totals. Keep rejected/uncertain fields in a review queue. Passing an OCR engine or JSON parser is not equivalent to passing this review.</p></details>
+<p>Tomorrow, explain how a coordinate mismatch can produce a convincing but incorrect citation.</p></section>
+</main></body></html>

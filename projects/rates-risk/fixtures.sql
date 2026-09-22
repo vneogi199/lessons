@@ -1,0 +1,16 @@
+-- Synthetic data only. Load into an empty database after schema.sql.
+INSERT INTO desks VALUES ('RATES'),('EMPTY'),('OTHER');
+INSERT INTO limits VALUES ('RATES','USD',10000000,5000),('EMPTY','USD',1000000,500);
+INSERT INTO positions VALUES ('p1','RATES','USD',2000000,900),('p2','RATES','USD',1000000,600),
+                             ('p3','OTHER','EUR',1000000,400);
+INSERT INTO rfqs VALUES
+ ('r1','RATES','USD','2026-01-05T10:00:00+00:00',1000000,'parsed'),
+ ('r2','RATES','USD','2026-01-05T10:00:00+00:00',2000000,'parsed'),
+ ('r3','RATES','USD','2026-01-05T10:01:00+00:00',500000,'rejected'),
+ ('r4','OTHER','EUR','2026-01-05T10:02:00+00:00',1000000,'parsed');
+INSERT INTO rate_ticks VALUES
+ ('USD',24,'2026-01-05T10:00:00+00:00','0.0400'),
+ ('USD',24,'2026-01-05T10:05:00+00:00','0.0407'),
+ ('USD',60,'2026-01-05T10:00:00+00:00','0.0425'),
+ ('USD',60,'2026-01-05T10:05:00+00:00','0.0421'),
+ ('EUR',24,'2026-01-05T09:40:00+00:00','0.0250');

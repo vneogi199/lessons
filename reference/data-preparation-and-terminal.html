@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en-US"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pandas, PDF processing and terminal basics</title>
+<style>
+:root{color-scheme:dark}body{margin:0;background:#080b11;color:#dbe7f4;font:17px/1.75 system-ui,sans-serif}main{max-width:900px;margin:auto;padding:32px 24px 80px}a,summary{color:#79e8ff}h1,h2,h3{line-height:1.3;color:#f7fbff}h1{font-size:clamp(28px,5vw,42px)}section{margin:30px 0;padding:24px;border:1px solid #3b526c;border-radius:8px;scroll-margin-top:18px}pre{overflow:auto;padding:18px;background:#101722;font:14px/1.65 ui-monospace,monospace}summary{cursor:pointer}details{margin:18px 0;padding:12px;border-left:2px solid #79e8ff}a:focus-visible,summary:focus-visible{outline:2px solid #79e8ff;outline-offset:4px}li{margin:7px 0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #3b526c;text-align:left;padding:10px;vertical-align:top}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}.note{border-left:3px solid #ffd277;padding:14px;background:#17191d}@media(max-width:600px){main{padding:20px 14px}section{padding:15px}table{font-size:14px}}@media print{:root{color-scheme:light}body{background:white;color:black;font-size:11pt}main{padding:0}h1,h2,h3,a,summary{color:black}pre,.note{background:white;white-space:pre-wrap}details::details-content{content-visibility:visible}h2,h3{break-after:avoid}}
+</style></head><body><main>
+<header><p><a href="../index.html">Curriculum</a> · Senior engineering practice · 20 September 2026</p>
+<h1>Prepare data and work confidently in a terminal</h1>
+<p>For AI engineering, a correct model response starts with reliable inputs. Learn Pandas in small stages, then handle PDFs and inspect files safely. Each exercise asks you to predict, attempt and explain—not memorize commands.</p>
+<nav aria-label="Topics"><a href="#pandas">Pandas in depth</a> · <a href="#pdf">PDF processing in brief</a> · <a href="#terminal">Linux terminal basics</a> · <a href="#async-executors">Asyncio and thread pools</a> · <a href="#linux-users">Linux users and groups</a></nav>
+<p class="note">Nothing needs to be installed to read these lessons or attempt the predictions. Pandas examples target the current 3.x semantics and require an existing compatible environment to execute. Pandas and pypdf were unavailable during authoring: their examples were syntax-checked, not runtime-verified. The terminal check uses an existing Bash and no network or file writes.</p></header>
+
+<section id="pandas"><h2>Pandas: build a trustworthy analytical pipeline</h2>
+<p>Use Pandas for labeled, in-memory tabular transformations: inspect exports, clean records, join reference data and analyze evaluation results. A Series is a one-dimensional labeled array; a DataFrame is a collection of columns sharing a row index. Each column has a dtype. The index is an alignment mechanism, not an automatically unique database key.</p>
+<p>Work through the following stages in order. All blocks marked Pandas share one Python session. From the repository root, run <code>python3 scripts/check-data-preparation.py</code> for syntax, links and the terminal fixture. Add <code>--run-pandas</code> only in an environment that already has Pandas; it will not install it. The tangible result is a validated, repeatable regional spending report with checks for common silent errors.</p>
+<h3>1. Inspect shape and schema before computing</h3>
+<p>Use <code>head()</code> to sample, <code>shape</code> for dimensions, <code>dtypes</code> and <code>info()</code> for types/null counts, and <code>describe()</code> for a first distribution check. A sample is not a whole-file validation. Check column names, key uniqueness, ranges and missingness explicitly. Business IDs such as “001” are strings even when they contain only digits.</p>
+<pre><code data-python="pandas">from io import StringIO
+import pandas as pd
+
+orders = pd.read_csv(StringIO(
+    "order_id,customer,amount_cents,created_at\n"
+    "o1,001,125,2026-01-01T10:00:00Z\n"
+    "o2,001,250,2026-01-02T10:00:00Z\n"
+    "o3,002,,2026-01-02T11:00:00Z\n"
+    "o4,003,500,2026-01-03T10:00:00Z\n"
+), dtype={"order_id": "string", "customer": "string", "amount_cents": "Int64"})
+assert orders.shape == (4, 4)
+assert orders["customer"].iloc[0] == "001"
+assert orders["order_id"].is_unique
+assert str(orders["amount_cents"].dtype) == "Int64"
+assert orders["amount_cents"].isna().sum() == 1
+</code></pre>
+<p><code>read_csv</code> can select columns with <code>usecols</code>, enforce dtypes and iterate with <code>chunksize</code>. Define encoding, delimiters and missing-value conventions; default NA recognition may turn a legitimate code such as “NA” into missing data. Strict parsing rejects malformed integers; use a quarantine policy when partial acceptance is required. CSV has no durable schema. Parquet preserves more type information and supports column selection, but needs an available engine and still needs schema checks. See <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html">CSV input options</a>.</p>
+<details><summary>Predict: should a missing amount become zero?</summary><p>Not by default. Zero is a known amount; missing is unknown. Filling it with zero changes averages and can hide ingestion defects. This report will preserve the unknown, count it and show that its total includes only known amounts.</p></details>
+<h3>2. Select by label or position deliberately</h3>
+<p><code>loc</code> selects labels and boolean masks; <code>iloc</code> selects integer positions. Label slices include their end label; position slices exclude the stop. A Series mask aligns by index labels. Use parentheses around comparisons with <code>&amp;</code> and <code>|</code>, not Python's scalar <code>and</code>/<code>or</code>. Reduce a Series with <code>any()</code> or <code>all()</code> before using it as a single condition. See <a href="https://pandas.pydata.org/docs/user_guide/indexing.html">indexing</a>.</p>
+<pre><code data-python="pandas">expensive = orders.loc[orders["amount_cents"].ge(250).fillna(False), ["order_id", "amount_cents"]]
+assert expensive["order_id"].tolist() == ["o2", "o4"]
+assert orders.iloc[:2]["order_id"].tolist() == ["o1", "o2"]
+
+# Assignment aligns by labels, not by the visible order of values.
+aligned = pd.DataFrame(index=["a", "b"])
+aligned["score"] = pd.Series([10, 20], index=["b", "a"])
+assert aligned["score"].tolist() == [20, 10]
+</code></pre>
+<p>Using <code>to_numpy()</code> bypasses label alignment; do so only when positional correspondence is an explicit invariant. After joins and filtering, labels may be duplicated or nonconsecutive. <code>reset_index(drop=True)</code> changes labels; it does not repair a wrong relationship between rows.</p>
+<h3>3. Update the intended object</h3>
+<p>With Pandas 3.x Copy-on-Write, derived objects behave independently when modified. Do not rely on chained assignment such as <code>df[mask]["amount"] = 0</code> to change the parent. Use one assignment: <code>df.loc[mask, "amount"] = 0</code>. Avoid silently mutating a caller's frame in reusable functions. See <a href="https://pandas.pydata.org/docs/user_guide/copy_on_write.html">Copy-on-Write</a>.</p>
+<pre><code data-python="pandas">corrected = orders.copy()
+corrected.loc[corrected["order_id"].eq("o1"), "amount_cents"] = 150
+assert corrected.loc[0, "amount_cents"] == 150
+assert orders.loc[0, "amount_cents"] == 125
+</code></pre>
+<details><summary>Interview: why did the row count stay correct but the scores become wrong?</summary><p>Inspect the indexes on both sides of the assignment. A correctly sized Series can still align to the wrong labels or introduce missing values. Compare keys and labels before converting to positional arrays. Length equality is not correspondence.</p></details>
+<h3>4. Clean values without hiding evidence</h3>
+<p>Nullable <code>Int64</code> and <code>boolean</code> preserve missing values; their capitalization/type names matter. Missing markers depend on dtype: <code>pd.NA</code>, NaN and NaT are not interchangeable scalar values. Use <code>isna()</code>, not equality with a missing marker. Many reductions skip missing values; an all-missing sum can become zero unless you require observations with <code>min_count=1</code>. See <a href="https://pandas.pydata.org/docs/user_guide/missing_data.html">missing-data semantics</a>.</p>
+<pre><code data-python="pandas">raw = pd.Series(["125", "bad", None], dtype="string")
+parsed = pd.to_numeric(raw, errors="coerce")
+invalid = raw.notna() &amp; parsed.isna()
+assert invalid.tolist() == [False, True, False]
+assert pd.isna(pd.Series([pd.NA], dtype="Int64").sum(min_count=1))
+
+names = pd.Series(["  ALICE ", None], dtype="string")
+assert names.str.strip().str.casefold().iloc[0] == "alice"
+assert names.str.contains("alice", case=False, regex=False, na=False).tolist() == [True, False]
+</code></pre>
+<p>Keep the original value, source row and rejection reason. <code>errors="coerce"</code> is useful only if coerced rows are counted or quarantined; otherwise it quietly converts corruption into missing data. Validate finite numbers, bounds and units after parsing. For currency, use validated integer minor units or an appropriate decimal representation—not binary floats plus rounding as a repair strategy.</p>
+<p>Use <code>duplicated(subset=...)</code> to inspect repeated business keys. Dropping duplicates blindly can discard legitimate repeated events. For “latest version wins,” define a stable sort on effective time plus a deterministic tie-breaker and reject unresolved conflicts. Keep tenant keys in deduplication and joins. Do not log sensitive raw rows merely to debug them.</p>
+<h3>5. Join with a cardinality contract</h3>
+<p>Before merging, state whether the relationship is one-to-one, many-to-one or many-to-many. A duplicated lookup key multiplies rows and money without raising an error unless you validate it. Pandas can match null join keys to each other, unlike ordinary SQL equality joins. Reject or separate null keys when that would be incorrect. See <a href="https://pandas.pydata.org/docs/reference/api/pandas.merge.html">merge validation and null behavior</a>.</p>
+<pre><code data-python="pandas">customers = pd.DataFrame({"customer": ["001", "002", "003"],
+                          "region": ["east", "east", "west"]}).astype("string")
+assert orders["customer"].notna().all()
+enriched = orders.merge(customers, on="customer", how="left",
+                        validate="many_to_one", indicator=True)
+assert len(enriched) == len(orders)
+assert enriched["_merge"].eq("both").all()
+assert enriched["amount_cents"].sum() == 875
+try:
+    orders.merge(pd.concat([customers, customers.iloc[:1]], ignore_index=True),
+                 on="customer", validate="many_to_one")
+except pd.errors.MergeError:
+    pass
+else:
+    raise AssertionError("duplicate lookup keys must fail")
+</code></pre>
+<p>An inner join can silently drop unmatched orders; a left join plus <code>indicator=True</code> makes the missing lookup visible. Compare row counts, key coverage and conserved totals, not just whether the join completed. <code>concat</code> appends/aligns objects rather than matching business relationships. Accumulate frames in a list and concatenate once instead of repeatedly copying a growing frame. See <a href="https://pandas.pydata.org/docs/user_guide/merging.html">combining frames</a>.</p>
+<details><summary>Predict: duplicate customer 001 without validation—what total appears?</summary><p>Orders o1 and o2 each match twice. Their 375 cents are duplicated, raising the known total from 875 to 1,250. The missing amount remains missing. Aggregating afterward does not undo this relational error.</p></details>
+<h3>6. Aggregate or transform?</h3>
+<p><code>agg</code> reduces a group to summaries; <code>transform</code> returns results aligned to the original rows. <code>size</code> counts rows, while column <code>count</code> counts nonmissing values. Set <code>dropna</code> deliberately for missing group keys and <code>observed</code> for categorical groups rather than relying on version defaults. See <a href="https://pandas.pydata.org/docs/user_guide/groupby.html">grouping</a>.</p>
+<pre><code data-python="pandas">report = enriched.groupby("region", dropna=False, observed=True).agg(
+    rows=("order_id", "size"), known_amounts=("amount_cents", "count"),
+    known_cents=("amount_cents", "sum"),
+).sort_index()
+assert report.loc["east", "rows"] == 3
+assert report.loc["east", "known_amounts"] == 2
+assert report.loc["east", "known_cents"] == 375
+assert report.loc["west", "known_cents"] == 500
+enriched["regional_known_cents"] = enriched.groupby("region")["amount_cents"].transform("sum")
+assert enriched["regional_known_cents"].tolist() == [375, 375, 375, 500]
+</code></pre>
+<p>These totals describe known amounts, not complete revenue. If a group has no known amounts, explicitly select an all-missing policy; use a separate group sum with <code>min_count=1</code> when unknown must remain unknown. Prefer built-in reductions to flexible <code>groupby.apply</code> callbacks when possible: their shape and performance are easier to reason about.</p>
+<h3>7. Reshape without accidental aggregation</h3>
+<p><code>melt</code> converts wide measure columns to long variable/value rows. <code>pivot</code> requires a unique value for each index/column combination; <code>pivot_table</code> aggregates duplicates using a chosen function. Never use an aggregation merely to suppress a duplicate-key error. <code>explode</code> expands list cells and repeats surrounding values; totals can inflate if you sum repeated order amounts. See <a href="https://pandas.pydata.org/docs/user_guide/reshaping.html">reshaping</a>.</p>
+<pre><code data-python="pandas">wide = pd.DataFrame({"model": ["baseline", "candidate"], "correct": [8, 9], "wrong": [2, 1]})
+long = wide.melt(id_vars="model", var_name="outcome", value_name="count")
+assert len(long) == 4
+restored = long.pivot(index="model", columns="outcome", values="count")
+assert restored.loc["candidate", "correct"] == 9
+</code></pre>
+<details><summary>Interview: pivot fails after an event replay—use pivot_table?</summary><p>First distinguish duplicate delivery from multiple valid observations. Deduplicate by event identity if it is a replay; aggregate only if the business measure requires it. A mean that makes the error disappear may hide a broken ingestion contract.</p></details>
+<h3>8. Dates, rolling windows and leakage</h3>
+<p>Parse known formats and choose a timezone policy. <code>utc=True</code> normalizes offset-aware timestamps; interpreting naive timestamps as UTC is correct only if the source contract says UTC. Local civil time needs explicit localization and a policy for ambiguous/nonexistent daylight-saving times. Sort before rolling, cumulative or as-of operations, and isolate entities/tenants before constructing temporal features. See <a href="https://pandas.pydata.org/docs/user_guide/timeseries.html">time-series operations</a>.</p>
+<pre><code data-python="pandas">timed = orders.copy()
+timed["created_at"] = pd.to_datetime(timed["created_at"], utc=True, errors="raise")
+daily = timed.set_index("created_at")["amount_cents"].resample("D").sum(min_count=1)
+assert daily.tolist() == [125, 250, 500]
+rolling = daily.rolling(window=2, min_periods=2).sum()
+assert pd.isna(rolling.iloc[0])
+assert rolling.iloc[1:].tolist() == [375.0, 750.0]
+</code></pre>
+<p>A two-row window is not necessarily two calendar days; an offset window such as <code>"2D"</code> selects by elapsed time and boundary rules. <code>resample</code> changes time buckets; rolling computes overlapping summaries. In prediction tasks, exclude future information: sort, group, shift past values as needed, then compute features. Check exact timestamps and availability times, not only event dates.</p>
+<h3>9. Performance starts with less data</h3>
+<p>Read only necessary columns/rows, inspect <code>memory_usage(deep=True)</code>, and estimate peak memory including join output, temporary arrays and copies. Categoricals can help repeated low-cardinality values but are not a universal saving. A vectorized numeric operation avoids many Python-level calls; <code>apply(axis=1)</code> is not automatically vectorized, and string operations still need profiling. Pandas is not an out-of-core engine. See <a href="https://pandas.pydata.org/docs/user_guide/scale.html">scaling guidance</a>.</p>
+<p>Chunked CSV processing works well for mergeable summaries. Combine each chunk's sum and count to calculate a global mean; averaging chunk means gives unequal-sized chunks the wrong weight. Global deduplication, joins and exact quantiles may require state proportional to the dataset. Push filtering/aggregation into SQL or use DuckDB for larger analytical scans rather than loading everything into a DataFrame.</p>
+<p>Example: chunk A has two observations totaling 100 and chunk B has eight totaling 800. The global mean is 900/10 = 90, not the mean of 50 and 100, which is 75. Save this as a regression case before implementing chunked reporting.</p>
+<h3>10. Make the result reproducible</h3>
+<p>Extract transformations into functions with explicit input/output schemas. Keep source revision, library version, rejected-row counts and processing parameters with the artifact. Tests should check values, dtypes, index/column names and ordering. Use tolerances intentionally for floating-point outputs; money in minor units should normally match exactly. See <a href="https://pandas.pydata.org/docs/reference/api/pandas.testing.assert_frame_equal.html">assert_frame_equal</a>.</p>
+<pre><code data-python="pandas"># Declare nullable integer output columns rather than inherit reduction dtypes.
+report = report.astype({"rows": "Int64", "known_amounts": "Int64", "known_cents": "Int64"})
+expected = pd.DataFrame({"rows": [3, 1], "known_amounts": [2, 1], "known_cents": [375, 500]},
+                        index=pd.Index(["east", "west"], dtype="string", name="region"))
+expected = expected.astype({"rows": "Int64", "known_amounts": "Int64", "known_cents": "Int64"})
+pd.testing.assert_frame_equal(report, expected)
+</code></pre>
+<p>Final exercise: turn this pipeline into a function, shuffle input rows and prove the normalized report is unchanged. Add missing customer IDs, duplicated lookup keys, all-missing amounts, an empty input with a declared schema and malformed dates. Assert failures or quarantine counts according to your written contract. For AI eval analysis, split by tenant/task/model version, report denominators and missing labels, and avoid joining a prediction to the wrong dataset revision.</p>
+<details><summary>Senior checkpoint: what makes this production-ready?</summary><p>Not the use of Pandas alone. Defend schema validation, join cardinality, missing-data policy, repeatability, privacy, bounded resources and failure reporting. Show an adversarial fixture and its expected result. The local authoring check does not establish runtime compatibility or performance; run these assertions in your pinned environment before claiming that evidence.</p></details>
+<p>Tomorrow, explain alignment versus position, count versus size, and join validation without notes. A week later, repeat the report with a changed schema. Ask your teacher to review your attempted function or any unclear result. <a href="../lessons/0285-standard-library-pathlib-files-json-csv-datetime-zones-and-resources.html">Return to lesson 0285</a>.</p>
+</section>
+
+<section id="pdf"><h2>PDF processing: extract evidence, preserve its location</h2>
+<p>A PDF describes page layout, not necessarily a clean sequence of paragraphs. Digitally generated pages may contain extractable text; scanned pages may only contain images. OCR recognizes text from pixels and can introduce errors. Existing OCR layers can also be wrong. Neither an empty extraction nor a nonempty one proves the document was processed correctly. See <a href="https://pypdf.readthedocs.io/en/stable/user/extract-text.html">pypdf's extraction limits</a>.</p>
+<p>For an AI ingestion workflow: validate the upload → isolate parsing → extract per page → flag weak extraction for OCR/review → normalize cautiously → chunk with page/source metadata → index. Preserve the original document, its content hash/version, page number and extraction method. Multi-column reading order, tables, headers and hyphenation need inspection; flattening a table can detach a price from its product.</p>
+<pre><code data-python="pdf">from pypdf import PdfReader
+
+def extract_pages(path, document_version):
+    # Trusted local path supplied by upload storage, not a model-selected path.
+    reader = PdfReader(path)
+    if reader.is_encrypted:
+        raise ValueError("encrypted document requires an approved password workflow")
+    if len(reader.pages) &gt; 100:
+        raise ValueError("page limit exceeded")
+    for page_number, page in enumerate(reader.pages, start=1):
+        text = page.extract_text() or ""
+        yield {"document_version": document_version, "page": page_number,
+               "text": text, "method": "text-extraction",
+               "needs_review": not text.strip()}
+</code></pre>
+<p>This adapter does not perform OCR or sandbox parsing. Limit upload bytes, parser time, memory and output size outside the worker; a page-count check occurs after opening the file and cannot prevent all resource exhaustion. Treat embedded URLs, attachments and extracted instructions as untrusted. Never execute them. Enforce tenant permissions before retrieval and remove derived chunks when a document is revoked.</p>
+<p>Brief exercise: use an approved text PDF, a scan and a two-column/table PDF. Compare extracted text with each page, record missing text and reading-order errors, and verify a cited answer against the original page. OCR should be a routed fallback, not an assumption that every PDF is an image.</p>
+<details><summary>Check: a scan returns no text—did it contain no information?</summary><p>No. It may contain only images. Mark it for OCR or manual review and keep the page provenance. A generated answer must not fill the gap from guesswork. Conversely, nonempty text still needs quality checks before it becomes evidence.</p></details>
+<p>Tomorrow, explain why page citations and extraction quality are separate checks. Ask your teacher about a sample extraction that looks incorrect. <a href="../lessons/0595-ingestion-parsing-cleaning-metadata-chunking-and-indexing.html">Return to lesson 0595</a>.</p>
+</section>
+
+<section id="terminal"><h2>Basic Linux terminal commands</h2>
+<p>The terminal displays input/output; a shell such as Bash interprets commands. A process runs the chosen program with arguments, environment and a working directory. Linux commands and macOS BSD variants share many basics but differ in flags. Examples below use Bash-style syntax; read <code>man command</code> for your installed version. Start with the <a href="https://ubuntu.com/server/docs/tutorial/welcome-to-the-terminal/">Ubuntu terminal guide</a> and <a href="https://ubuntu.com/server/docs/reference/cli-cheatsheet/">command reference</a>.</p>
+<table><thead><tr><th>Task</th><th>Example</th><th>Interpretation</th></tr></thead><tbody>
+<tr><td>Locate yourself</td><td><code>pwd</code>, <code>ls -lah</code></td><td>Show current directory; list including hidden entries and permissions.</td></tr>
+<tr><td>Navigate</td><td><code>cd ./lessons</code>, <code>cd ..</code></td><td>Relative paths start at the current directory; absolute paths start at /.</td></tr>
+<tr><td>Read</td><td><code>head -n 20 NOTES.md</code>, <code>less NOTES.md</code></td><td>Preview or page through text; press q to leave less.</td></tr>
+<tr><td>Follow logs</td><td><code>tail -n 50 app.log</code>, <code>tail -f app.log</code></td><td>Inspect recent lines or wait for appended lines; Ctrl-C stops following.</td></tr>
+<tr><td>Search text</td><td><code>rg -n 'timeout' logs/</code></td><td>Show matches and line numbers if ripgrep exists; otherwise use grep.</td></tr>
+<tr><td>Search filenames</td><td><code>find . -name '*.csv' -print</code></td><td>The quoted pattern is interpreted by find, not expanded first by the shell.</td></tr>
+<tr><td>Count and summarize</td><td><code>wc -l app.log</code>, <code>sort names.txt | uniq -c</code></td><td>Count newline characters; count adjacent equal lines after sorting.</td></tr>
+<tr><td>Check storage</td><td><code>df -h .</code>, <code>du -sh ./data</code></td><td>Filesystem free space versus directory usage; inspect before cleanup.</td></tr>
+<tr><td>Inspect processes</td><td><code>ps -ef</code>, <code>top</code></td><td>Find process identity and activity; avoid sharing secret-bearing arguments.</td></tr>
+<tr><td>Identify tools</td><td><code>command -v python3</code>, <code>man ls</code></td><td>Find the executable and read local help.</td></tr>
+</tbody></table>
+<h3>Quote paths and understand streams</h3>
+<p>Quote variable expansions: <code>"$path"</code> preserves spaces as part of one argument. Single quotes preserve literal text; double quotes allow variable expansion. A pipe passes standard output (descriptor 1) to the next program's standard input (0); standard error (2) is separate. <code>&gt;</code> creates/truncates a file, <code>&gt;&gt;</code> appends, and <code>2&gt;</code> redirects errors. Redirection order matters. Never redirect output into the same file being read. See <a href="https://www.gnu.org/s/bash/manual/html_node/Redirections.html">Bash redirections</a>.</p>
+<p>Exit status zero conventionally means success. Read <code>$?</code> immediately after the command. <code>a &amp;&amp; b</code> runs b only after a succeeds; <code>a || b</code> runs b after a fails. Bash pipelines normally return the last command's status; <code>set -o pipefail</code> makes earlier failures visible. A no-match grep returns 1, which may be an expected result rather than an operational error. See <a href="https://www.gnu.org/software/bash/manual/html_node/Pipelines.html">pipeline semantics</a>.</p>
+<pre><code data-shell="check"># Safe Bash exercise: no files written and no network calls.
+set -o pipefail
+label='customer export.csv'
+test "$label" = 'customer export.csv' || exit 1
+count=$(printf '%s\n' ERROR INFO ERROR | grep '^ERROR$' | wc -l)
+test "$count" -eq 2 || exit 1
+if false | true; then
+    printf '%s\n' 'Unexpected pipeline success' >&amp;2
+    exit 1
+fi
+printf '%s\n' 'Terminal fixture passed'
+</code></pre>
+<details><summary>Predict the output before running</summary><p>The error count is two. Quoting preserves the filename as one value. With pipefail enabled, false piped into true reports failure, so the unexpected-success branch is not entered. The final line is “Terminal fixture passed.” Without pipefail, that branch would run and exit with status 1.</p></details>
+<h3>Change files and processes carefully</h3>
+<p>In a scratch directory, <code>mkdir practice</code> creates a directory, <code>touch practice/notes.txt</code> creates an empty file or updates its timestamps, <code>cp -i source.txt copy.txt</code> copies with an overwrite prompt, and <code>mv -i old.txt new.txt</code> moves/renames. Inspect exact targets first. <code>rm -i practice/notes.txt</code> asks before permanent removal; it is not a trash operation. <code>rmdir practice</code> removes only an empty directory. Avoid recursive deletion while learning.</p>
+<p><code>chmod u+x script.sh</code> gives the owner execute permission; it does not fix every permission problem. Directory execute permission means traversal. Do not solve permission errors with 777 or sudo by default. Ctrl-C usually interrupts a foreground process; <code>kill -TERM 1234</code> requests termination of a specifically verified PID. Never copy an example PID without checking the actual process. SIGKILL prevents cleanup and is a last resort.</p>
+<p>Environment example: <code>APP_MODE=development python3 app.py</code> sets a value for that command. Do not print the whole environment when it may contain credentials. An authorized <code>ssh user@host</code> opens a remote session; verify the host-key fingerprint through a trusted channel, use approved credentials and confirm the remote hostname/path before changing anything. These are optional command references, not actions performed during this lesson.</p>
+<p>Exercise: inspect this repository using pwd, ls, head and a text search; explain one pipeline and its exit status. Then practice file creation/rename only in your own scratch directory. Tomorrow, explain the difference between a pipe and redirection, and why an unquoted path can change arguments. Ask your teacher before any command whose target or effect is unclear. <a href="../lessons/0001-terminal-processes-files-permissions-environment-variables-signals-and-e.html">Return to lesson 0001</a>.</p>
+</section>
+<section id="async-executors"><h2>Integrate blocking work with asyncio</h2>
+<p>A synchronous SDK or file operation called directly inside <code>async def</code> still blocks the event-loop thread. Offload genuinely blocking I/O when no suitable async API exists. For a senior interview, explain where the work runs, who owns its lifetime and what happens when the caller times out—not just where to put <code>await</code>.</p>
+<table><thead><tr><th>Choice</th><th>Submission and context</th><th>Use</th></tr></thead><tbody>
+<tr><td><code>await asyncio.to_thread(fn, arg)</code></td><td>Returns a coroutine; work submits when it runs. Copies the current contextvars context into the worker.</td><td>Simple blocking I/O using the loop's default executor.</td></tr>
+<tr><td><code>loop.run_in_executor(pool, fn, arg)</code></td><td>Submits immediately and returns an asyncio Future. Explicitly copy context when needed.</td><td>Separate pool ownership/capacity for a particular dependency.</td></tr>
+<tr><td>Native async client</td><td>Cooperatively waits without allocating a thread per blocked call.</td><td>Prefer when the dependency provides a suitable async interface.</td></tr>
+</tbody></table>
+<p>See Python's <a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread">to_thread</a>, <a href="https://docs.python.org/3/library/asyncio-eventloop.html#asyncio.loop.run_in_executor">executor integration</a> and <a href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor">ThreadPoolExecutor</a> references. Pass the callable, not its result: <code>run_in_executor(pool, fetch, url)</code>, not <code>run_in_executor(pool, fetch(url))</code>. Use <code>functools.partial</code> for keyword arguments. Do not call a concurrent Future's blocking <code>result()</code> on the loop; await the asyncio wrapper.</p>
+<h3>Predict context propagation, exceptions and cancellation</h3>
+<p>This standard-library example performs no network or filesystem work. It demonstrates an explicitly owned pool, request context, error propagation, and a worker that remains alive after its asyncio Future is cancelled. The synchronization handshakes avoid guessing execution order from sleeps.</p>
+<pre><code data-python="offline">import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from contextvars import ContextVar, copy_context
+import threading
+
+request_id = ContextVar("request_id", default="unset")
+
+def fail():
+    raise ValueError("upstream rejected the request")
+
+async def exercise(pool):
+    loop = asyncio.get_running_loop()
+    token = request_id.set("request-17")
+    try:
+        assert await asyncio.to_thread(request_id.get) == "request-17"
+        context = copy_context()  # Fresh copy for each independent submission.
+        assert await loop.run_in_executor(pool, context.run, request_id.get) == "request-17"
+        try:
+            await loop.run_in_executor(pool, fail)
+        except ValueError as error:
+            assert str(error) == "upstream rejected the request"
+        else:
+            raise AssertionError("worker exception was lost")
+
+        release = threading.Event()
+        finished = threading.Event()
+        started = loop.create_future()
+        effects = []
+
+        def worker():
+            loop.call_soon_threadsafe(started.set_result, None)
+            try:
+                if release.wait(timeout=5):
+                    effects.append("worker completed")
+            finally:
+                finished.set()
+
+        future = loop.run_in_executor(pool, worker)
+        try:
+            await asyncio.wait_for(asyncio.shield(started), timeout=2)
+            future.cancel()
+            try:
+                await future
+            except asyncio.CancelledError:
+                pass
+            else:
+                raise AssertionError("expected cancellation")
+            assert future.cancelled()
+        finally:
+            release.set()  # Cancellation did not release or kill the thread.
+            assert await asyncio.to_thread(finished.wait, 6)
+        assert effects == ["worker completed"]
+    finally:
+        request_id.reset(token)
+
+# Pool shutdown waits outside the event loop, after the exercise drains its work.
+with ThreadPoolExecutor(max_workers=2) as pool:
+    asyncio.run(exercise(pool))
+</code></pre>
+<details><summary>Compare your prediction</summary><p>Both context-aware calls see request-17; the worker's ValueError is raised at await. Cancelling the asyncio Future changes what the caller observes, but the already-running thread still completes after release. call_soon_threadsafe hands the notification back to the loop rather than modifying an asyncio Future directly from a worker. No remote cancellation is demonstrated.</p></details>
+<h3>Bound admission, not only thread count</h3>
+<p><code>max_workers=8</code> limits executing threads, not all submitted jobs or waiting request objects. Bound admission before submission, use a finite queue or fixed set of consumer tasks, and define overload rejection. A semaphore around await is insufficient if cancellation releases the permit while its thread continues working. Track underlying completion when capacity represents actual running work. Do not submit an entire unbounded document corpus at once.</p>
+<p>Give blocking libraries their own connection/read deadlines. Cooperative cancellation needs a stop signal that the worker checks; it cannot interrupt an arbitrary blocked library call. Shutdown should stop admission, drain or cancel queued work, then wait for running work within a documented operational policy. <code>shutdown(cancel_futures=True)</code> can cancel pending jobs, not already-running ones. Avoid nested waits on the same saturated pool and synchronous pool shutdown inside a live request handler.</p>
+<p>Thread safety remains your responsibility: use per-call clients or documented thread-safe sharing. Context propagation is for correlation, not a substitute for authorization. For CPU-heavy pure Python under a conventional GIL-enabled build, consider a process pool or durable worker instead; native extensions that release the GIL and free-threaded builds change the performance tradeoff.</p>
+<details><summary>Interview drill: requests time out, but downstream traffic keeps growing. Why?</summary><p>Cancelled callers may leave their threads running while retries admit more work. Measure queue depth, active jobs, actual completions, dependency deadlines and retry volume. Bound admission, preserve accounting until completion and use idempotency for effects. A shorter HTTP timeout alone does not solve the overload.</p></details>
+<p>Tomorrow, explain to_thread versus run_in_executor without notes, then describe the cancellation race. Ask your teacher to review your chosen executor and shutdown policy. Run this fixture through <code>python3 scripts/check-data-preparation.py</code>.</p>
+</section>
+
+<section id="linux-users"><h2>Linux users, groups and permissions in practice</h2>
+<p>A service runs with numeric user and group identities; names are directory-service mappings. Distinguish the primary group from supplementary groups. File access depends on the process's current credentials, not just what an administrator has most recently written into the account database. Read the maintained manuals for <a href="https://man7.org/linux/man-pages/man8/useradd.8.html">useradd</a>, <a href="https://man7.org/linux/man-pages/man8/usermod.8.html">usermod</a> and <a href="https://man7.org/linux/man-pages/man8/groupadd.8.html">groupadd</a>.</p>
+<p class="note">The following walkthrough is for an existing disposable Linux VM with authorized sudo access and these tools already present. It is not a script to run on this computer or a shared server. No users, groups, permissions or services were changed during authoring. If no lab exists, complete the predictions and offline exercise instead.</p>
+<h3>Inspect, create a scoped identity, then test</h3>
+<p>Start with <code>id</code> and <code>groups</code> for the current process identity. Use <code>getent passwd lesson-reader</code>, <code>getent group lesson-docs</code> and <code>ls -ld /srv/lesson-access</code> to check the proposed names/path. Confirm that they are unused and that lookup failures are not directory-service outages. Stop if a name or path already exists; do not adopt an unknown account or change its ownership.</p>
+<pre><code data-shell="recipe"># Disposable Linux VM only. Read and run each line separately after inspection.
+# First verify /usr/sbin/nologin exists on this distribution.
+sudo groupadd lesson-docs
+sudo useradd --no-create-home --user-group --shell /usr/sbin/nologin lesson-reader
+sudo useradd --no-create-home --user-group --shell /usr/sbin/nologin lesson-outsider
+sudo usermod -aG lesson-docs lesson-reader
+id lesson-reader
+getent group lesson-docs
+
+# Directory must be absent before this step. Root owns the published document.
+sudo mkdir /srv/lesson-access
+sudo chown root:lesson-docs /srv/lesson-access
+sudo chmod 2750 /srv/lesson-access
+sudo install -o root -g lesson-docs -m 0640 /dev/null /srv/lesson-access/policy.txt
+
+# Fresh processes: expected success, failure, failure, respectively.
+sudo -u lesson-reader -- test -r /srv/lesson-access/policy.txt
+sudo -u lesson-reader -- test -w /srv/lesson-access/policy.txt
+sudo -u lesson-outsider -- test -r /srv/lesson-access/policy.txt
+</code></pre>
+<p>Read <code>echo $?</code> immediately after each test: 0 means true, 1 means false. A sudo/setup error is not evidence of the intended denial; inspect diagnostics. The outsider supplies a negative control. A nologin shell prevents ordinary shell login, not an administrator from running an authorized test command as that identity.</p>
+<p><code>-aG</code> appends supplementary membership. Using <code>-G</code> without <code>-a</code> can replace the existing supplementary list. Existing sessions/services retain their process credentials: create a new authorized session or restart the affected service through its normal procedure, then check its actual groups. <code>id username</code> shows account lookup information; <code>id</code> inside a process shows that process's identity. Removing membership likewise does not instantly revoke old processes or already-open file descriptors.</p>
+<h3>Read the permission bits before reaching for sudo</h3>
+<p>Each owner/group/other digit combines read=4, write=2 and execute=1. Mode 0640 gives owner read/write and group read. For directories, read lists names, execute permits traversal, and write plus execute permits entry creation/removal subject to further restrictions. File write permission is not what controls deleting its directory entry. Mode 2750 also requests setgid group inheritance for newly created children; it does not grant group write access.</p>
+<p>Diagnose every parent directory, effective ownership, supplementary membership, ACLs and mandatory-access controls such as SELinux/AppArmor. A read-only mount can also block writes. Never fix uncertainty with chmod 777 or recursive chown. A service-specific group is not the same as granting membership in a privileged administration group. See Linux's <a href="https://man7.org/linux/man-pages/man7/inode.7.html">file-mode rules</a> and <a href="https://man7.org/linux/man-pages/man7/path_resolution.7.html">path permission checks</a>.</p>
+<p>Without a default ACL, creation permissions follow requested mode AND NOT umask, not decimal subtraction. Umask affects new objects, not existing permissions; a default ACL changes the calculation. See <a href="https://man7.org/linux/man-pages/man2/umask.2.html">the Linux creation-mask rules</a>. Predict these results before running the purely arithmetic fixture:</p>
+<pre><code data-python="offline"># ponytail: mode-bit model only; verify real access under the target Linux identity.
+def created_mode(requested, mask):
+    assert 0 &lt;= requested &lt;= 0o777 and 0 &lt;= mask &lt;= 0o777
+    return requested &amp; (~mask &amp; 0o777)
+
+assert created_mode(0o666, 0o027) == 0o640
+assert created_mode(0o777, 0o027) == 0o750
+assert created_mode(0o600, 0o027) == 0o600  # A mask never adds permission.
+
+def selected_bits(mode, is_owner, in_group):
+    shift = 6 if is_owner else 3 if in_group else 0
+    return (mode &gt;&gt; shift) &amp; 0o7
+
+assert selected_bits(0o640, False, True) == 4
+assert selected_bits(0o640, False, False) == 0
+assert selected_bits(0o047, True, True) == 0  # No fallback to more generous bits.
+</code></pre>
+<details><summary>Worked feedback and interview failure case</summary><p>A usual 0666 file request with umask 027 becomes 0640; a 0777 directory request becomes 0750. The selected owner/group/other class is not a union of all three. The fixture deliberately omits ACLs, capabilities, root privileges and path traversal, so it is not a security validator. If a new group member still cannot read, inspect the failing process's groups and every directory in the path before changing the file mode.</p></details>
+<p>For offboarding, inventory running processes, credentials, sessions and owned data. Locking a password alone does not revoke SSH keys, other authentication methods or existing sessions. In this exercise, retain the lab for review or dispose of the VM through its approved lifecycle; do not practice destructive user/home deletion on a shared machine. Tomorrow, explain why a membership change may require a new process and why a readable file can remain inaccessible. Ask your teacher to review your permission diagnosis.</p>
+</section>
+</main></body></html>

@@ -193,6 +193,50 @@ TTL session:abc
     </div>
   </section>
 
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Redis [concept] choose internal representations for values; representation changes can alter memory and operation costs.</li><li>A Redis string is a binary-safe value associated with a key. Atomic string commands support counters, flags, serialized objects, and conditional writes.</li><li>Redis [concept] use atomic numeric updates, subject to value format and numeric range rules.</li><li>Redis [concept] store field-value pairs under one key, with encoding and memory costs depending on content and size.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Redis strings: 2; counters: 4; hashes: 3; object encodings: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Redis strings: 2; counters: 1; hashes: 3; object encodings: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Redis strings: 3; counters: 2; hashes: 4; object encodings: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Redis strings: 2; counters: 3; hashes: 4; object encodings: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> Redis strings: 2; counters: 3; hashes: 4; object encodings: 1</p>
+        <ul><li>A. “counters” matches explanation 3, not 4. “hashes” matches explanation 4, not 3.</li><li>B. “counters” matches explanation 3, not 1. “hashes” matches explanation 4, not 3. “object encodings” matches explanation 1, not 4.</li><li>C. “Redis strings” matches explanation 2, not 3. “counters” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
+        <p>Redis strings: A Redis string is a binary-safe value associated with a key. Atomic string commands support counters, flags, serialized objects, and conditional writes.</p><p>counters: Redis counters use atomic numeric updates, subject to value format and numeric range rules.</p><p>hashes: Redis hashes store field-value pairs under one key, with encoding and memory costs depending on content and size.</p><p>object encodings: Redis object encodings choose internal representations for values; representation changes can alter memory and operation costs.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] prevent interleaving within a defined operation; they do not automatically coordinate external database effects.</li><li>[concept] includes stored values, metadata, fragmentation, buffers, and persistence-related overhead.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. memory usage: 1; atomic updates: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. memory usage: 2; atomic updates: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> memory usage: 2; atomic updates: 1</p>
+        <ul><li>A. “memory usage” matches explanation 2, not 1. “atomic updates” matches explanation 1, not 2.</li><li>B. Every concept matches its explanation.</li></ul>
+        <p>memory usage: Memory usage includes stored values, metadata, fragmentation, buffers, and persistence-related overhead.</p><p>atomic updates: Atomic updates prevent interleaving within a defined operation; they do not automatically coordinate external database effects.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Redis parses and schedules work: Protocol, client buffers, expiration, and command complexity apply.</li><li>Data structure changes atomically: The selected encoding and algorithm determine CPU and memory work.</li><li>Ordered evidence returns: Reply, latency, memory, key state, and errors expose the result.</li><li>Client frames one or more commands: Connection, identity, key, arguments, and deadlines enter.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> 4 → 1 → 2 → 3</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Data structure changes atomically”, not “Ordered evidence returns”.</li><li>C. At position 2, the trace uses “Redis parses and schedules work”, not “Data structure changes atomically”.</li><li>D. At position 2, the trace uses “Redis parses and schedules work”, not “Ordered evidence returns”.</li></ul>
+        <p>Client frames one or more commands: Connection, identity, key, arguments, and deadlines enter.</p><p>Redis parses and schedules work: Protocol, client buffers, expiration, and command complexity apply.</p><p>Data structure changes atomically: The selected encoding and algorithm determine CPU and memory work.</p><p>Ordered evidence returns: Reply, latency, memory, key state, and errors expose the result.</p>
+        <p>Increase one value or batch size and predict event-loop occupancy and buffer growth. Evidence to inspect: RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</p>
+      </details>
+    </article>
+    <p><a href="https://redis.io/docs/latest/develop/data-types/" target="_blank" rel="noreferrer">Review the lesson source: Redis data types documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
   <section class="card mastery">
     <span class="section-label">10 · Retrieval practice</span>
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
