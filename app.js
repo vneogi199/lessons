@@ -5,12 +5,39 @@
   const lessonView = document.querySelector("#lesson-view");
   const lessonNav = document.querySelector("#lesson-nav");
   const searchInput = document.querySelector("#catalog-search");
+  const catalogToggle = document.querySelector("#toggle-catalog");
+  const sidebar = document.querySelector("#course-sidebar");
+  const mobileLayout = window.matchMedia("(max-width: 700px)");
   const trackPalette = ["#ff8c70", "#79e8ff", "#b6f36b", "#c2a8ff", "#ffd277", "#70e8c3", "#ff9ac0"];
 
   let curriculum = { tracks: [], lessons: [] };
   let activeLessonId = null;
   let searchQuery = "";
   const expandedTracks = new Set();
+
+  function setCatalogOpen(open) {
+    sidebar.classList.toggle("catalog-open", open);
+    catalogToggle.setAttribute("aria-expanded", String(open));
+    catalogToggle.textContent = open ? "Close lessons" : "Browse lessons";
+    if (open) window.requestAnimationFrame(scrollActiveLessonIntoView);
+  }
+
+  catalogToggle.addEventListener("click", () => {
+    setCatalogOpen(catalogToggle.getAttribute("aria-expanded") !== "true");
+  });
+  mobileLayout.addEventListener("change", () => {
+    const restoreFocus = mobileLayout.matches && sidebar.contains(document.activeElement);
+    const returnToDesktop = !mobileLayout.matches && document.activeElement === catalogToggle;
+    setCatalogOpen(false);
+    if (restoreFocus) catalogToggle.focus({ preventScroll: true });
+    if (returnToDesktop) searchInput.focus({ preventScroll: true });
+  });
+  window.addEventListener("keydown", event => {
+    if (event.key === "Escape" && mobileLayout.matches && sidebar.classList.contains("catalog-open")) {
+      setCatalogOpen(false);
+      catalogToggle.focus({ preventScroll: true });
+    }
+  });
 
   function validateManifest(value) {
     if (!value || value.version !== 1 || !Array.isArray(value.tracks) || !Array.isArray(value.lessons)) {
@@ -69,6 +96,7 @@
   function navigateTo(lessonId, options = {}) {
     const lesson = findLesson(lessonId);
     if (!lesson) return;
+    if (mobileLayout.matches) setCatalogOpen(false);
     activeLessonId = lessonId;
     expandedTracks.add(lesson.trackId);
     saveActiveLesson();
@@ -276,9 +304,6 @@
     const item = active.getBoundingClientRect();
     const panel = sidebar.getBoundingClientRect();
     sidebar.scrollTop += item.top - panel.top - (sidebar.clientHeight - item.height) / 2;
-    // On narrow screens the catalog scrolls horizontally instead.
-    const nav = lessonNav.getBoundingClientRect();
-    lessonNav.scrollLeft += item.left - nav.left - (lessonNav.clientWidth - item.width) / 2;
   }
 
   function render() {
@@ -310,7 +335,7 @@
     const data = event.data;
     if (!data || data.version !== 1 || data.lessonId !== activeLessonId || !findLesson(data.lessonId)) return;
     if (data.type === "teach:resize" && Number.isFinite(data.height)) {
-      frame.style.height = `${Math.min(12000, Math.max(700, data.height))}px`;
+      frame.style.height = `${Math.min(100000, Math.max(700, Math.ceil(data.height)))}px`;
       window.requestAnimationFrame(updateReadingProgress);
       return;
     }
