@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0393 / 0644</span></div>
+    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0393 / 0665</span></div>
     <h1>Cache-aside, write-through, invalidation, stampedes, stale data, negative caching, and consistency</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
+
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
       <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a versioned cache read</h2>
       <ol class="trace-flow" data-flow="redis-coordination" aria-label="Mechanism trace: Application names a cache or coordination operation then Atomic primitive changes shared state then Delay, duplicate, expiry, or outage occurs then Durable system accepts or rejects effect. Experiment: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.">
         <li class="trace-stage"><span>01 · INTENT</span><strong>Application names a cache or coordination operation</strong><small>Key design, event identity, owner token, TTL, and source of truth enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REDIS</span><strong>Atomic primitive changes shared state</strong><small>Entry, pending owner, lease, counter, or cached value becomes visible.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE WINDOW</span><strong>Delay, duplicate, expiry, or outage occurs</strong><small>Old owners, missed acknowledgements, stale values, and retries challenge correctness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUTHORITY</span><strong>Durable system accepts or rejects effect</strong><small>Idempotency, fencing, version, fallback, and business state close the proof.</small></li>
@@ -71,7 +71,7 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="7">
-    <span class="section-label">04 · Detailed term guide</span>
+
     <p class="concept-intro">Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Cache-aside">
@@ -107,7 +107,7 @@
   </section>
 
   <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       <article>
         <span>01 · INTENT</span>
@@ -133,7 +133,7 @@
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Implement cache-aside with versioned keys, single-flight refresh, jittered TTL, negative caching, and observable fallback during Redis failure.</p>
     <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
 
@@ -189,7 +189,7 @@ async function loadProject(tenant, id, version, redis, database) {
 
 
   <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -199,7 +199,7 @@ async function loadProject(tenant, id, version, redis, database) {
   </section>
 
   <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a versioned cache read from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p></article>
@@ -209,7 +209,7 @@ async function loadProject(tenant, id, version, redis, database) {
   </section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Design a cache for a concrete read path and explain invalidation, stampede, stale-read, and outage behavior.</li>
       <li>Trace a versioned cache read for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -278,7 +278,7 @@ async function loadProject(tenant, id, version, redis, database) {
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

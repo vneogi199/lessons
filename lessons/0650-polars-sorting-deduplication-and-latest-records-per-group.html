@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>0650 · Polars sorting, deduplication, and latest records per group</title>
+  <style>
+    :root{--bg:#080b11;--panel:#101722;--panel2:#0c131d;--text:#dbe7f4;--bright:#f7fbff;--muted:#9babc0;--cyan:#79e8ff;--lime:#b6f36b;--amber:#ffd277;--red:#ff918a;--line:#2f3e53;--font:"IBM Plex Mono Nerd Font","IBM Plex Mono",ui-monospace,SFMono-Regular,Consolas,monospace;color-scheme:dark}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.75 var(--font);font-synthesis:none}button,textarea{font:inherit}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}main{max-width:940px;margin:0 auto;padding:42px clamp(20px,6vw,68px) 90px}.eyebrow,.section-label{color:var(--cyan);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.eyebrow{display:flex;justify-content:space-between;gap:20px}.eyebrow span:last-child{color:var(--muted)}h1{max-width:850px;margin:22px 0 18px;color:var(--bright);font-size:clamp(28px,5vw,52px);line-height:1.12;letter-spacing:-.045em}h2{margin:0 0 13px;color:var(--bright);font-size:22px;line-height:1.35}.lede{max-width:790px;color:#c3d0df;font-size:17px;line-height:1.8}.outcome{display:grid;grid-template-columns:46px 1fr;gap:16px;align-items:center;margin:34px 0;padding:20px;border:1px solid #426077;border-radius:10px;background:#0d1721}.outcome b{display:grid;width:46px;height:46px;place-items:center;border-radius:8px;background:#102934;color:var(--cyan)}.outcome p{margin:4px 0 0}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:18px}.card{padding:27px;border:1px solid var(--line);border-radius:11px;background:var(--panel);box-shadow:0 18px 48px #0005}.card p{margin:10px 0;color:#bdcada}.analogy{border-left:3px solid var(--amber);padding:12px 16px;background:#17191d;color:#e7edf5!important}.blackboard{background:#0b1918;border-color:#42736d}.blackboard svg{width:100%;height:auto;margin-top:14px}.blackboard text{font:12px var(--font);fill:#c8f5e8}.blackboard .node{fill:#102925;stroke:#68b8aa;stroke-width:1.4}.blackboard .arrow{stroke:#b6f36b;stroke-width:2;marker-end:url(#arrow)}.mechanism-list{margin:10px 0 0;padding-left:22px}.mechanism-list li{margin:10px 0}.concept-section{margin-top:18px;padding:29px;border:1px solid #3b526c;border-radius:11px;background:#0c131d}.concept-intro{max-width:760px;color:var(--muted)}.concept-grid{display:grid;gap:12px;margin-top:20px}.concept-card{position:relative;padding:22px 22px 22px 62px;border:1px solid var(--line);border-radius:9px;background:var(--panel)}.concept-card>span{position:absolute;left:20px;top:22px;color:var(--lime);font-size:12px}.concept-card h3{margin:0 0 10px;color:var(--bright);font-size:18px}.concept-card p{margin:9px 0;color:#c4d0df}.concept-card strong{color:#f2f7fc}.dsa-question-bank{margin-top:18px;border-color:#426077}.dsa-question-bank>p:first-of-type{max-width:800px;color:#c4d0df}.dsa-question-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0;padding:0;list-style:none}.dsa-question-list li{display:grid;gap:3px;padding:14px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}.dsa-question-list a{color:var(--bright);text-decoration:none}.dsa-question-list a:hover{text-decoration:underline}.dsa-question-list span,.dsa-question-sources{color:var(--muted);font-size:12px}.dsa-question-sources a{color:var(--cyan)}.interview-tip{padding:12px;border-left:3px solid var(--amber);background:#17191d}.lab{margin-top:18px}.steps{counter-reset:step;display:grid;gap:10px;padding:0;list-style:none}.steps li{counter-increment:step;display:grid;grid-template-columns:32px 1fr;gap:10px}.steps li:before{content:counter(step);display:grid;width:28px;height:28px;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--lime);font-size:12px}pre{overflow:auto;margin:18px 0 0;padding:20px;border:1px solid #33455e;border-radius:8px;background:#070a0f;color:#e2ebf5;font:13px/1.75 var(--font);white-space:pre-wrap}.interview{margin-top:18px;border-color:#5b4e35}.interview .section-label{color:var(--amber)}.interview-questions{margin:16px 0;padding-left:24px}.interview-questions li{margin:11px 0;color:#d7dfeb}.answer-frame{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:17px}.answer-frame span{padding:11px 8px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:12px;text-align:center}.mastery{margin-top:18px;border-color:#40566e}.options{display:grid;gap:9px;margin-top:16px}.option{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);cursor:pointer}.option:hover,.option:has(input:checked){border-color:var(--cyan);color:var(--bright)}.option input{position:absolute;opacity:0}.key{display:grid;width:28px;height:27px;place-items:center;border:1px solid var(--line);border-radius:5px;color:var(--cyan);font-size:12px}.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}.button{padding:11px 15px;border:1px solid #66883f;border-radius:6px;background:#162313;color:var(--lime);cursor:pointer;font-weight:700}.button:hover{background:var(--lime);color:#081006}.button.secondary{border-color:var(--line);background:var(--panel2);color:var(--muted)}.feedback{min-height:24px;margin:0;color:var(--muted);font-size:13px}.feedback.success{color:var(--lime)}.feedback.error{color:var(--red)}textarea{width:100%;min-height:110px;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:7px;background:#090e15;color:var(--text);resize:vertical}.source{display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap;margin-top:18px;padding:20px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)}.source a{color:var(--cyan)}.source small{color:var(--muted);font-size:12px}@media(max-width:760px){main{padding-top:28px}.grid{grid-template-columns:1fr}.eyebrow{display:block}.eyebrow span{display:block;margin-bottom:6px}.concept-card{padding:18px}.concept-card>span{position:static;display:block;margin-bottom:6px}.dsa-question-list{grid-template-columns:1fr}.answer-frame{grid-template-columns:1fr 1fr}.source{align-items:flex-start;flex-direction:column}}@media print{body{background:#fff;color:#111;font:11pt/1.5 var(--font)}main{max-width:none;padding:0}.card,.outcome,.source,.concept-card,.dsa-question-bank{break-inside:avoid;background:#fff;border-color:#777;box-shadow:none}h1,h2,h3,.card p,.analogy,.concept-card p,.dsa-question-list span,.dsa-question-sources{color:#111!important}.actions{display:none}}
+    h1{font-size:clamp(22px,2.8vw,34px)}
+    .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
+    .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
+    a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    @media screen and (max-width:700px){
+      body{font-size:16px;line-height:1.7}
+      main{padding:22px 12px 40px;overflow-wrap:anywhere}
+      h1{font-size:26px;line-height:1.25;letter-spacing:-.025em}
+      h2{font-size:21px}
+      .card,.concept-section{padding:16px}
+      .concept-card{padding:14px}
+      .grid,.concept-grid,.walkthrough-grid,.mistake-grid,.answer-frame{min-width:0}
+      .grid>*,.concept-grid>*,.walkthrough-grid>*,.mistake-grid>*{min-width:0}
+      .walkthrough-grid article,.mistake-grid article{padding:14px}
+      pre{max-width:100%;padding:14px;font-size:13px;white-space:pre;overflow-wrap:normal;word-break:normal;overflow-x:auto}
+      textarea{font-size:16px}
+      button,.button,summary{min-height:44px}
+      summary{padding:10px 0}
+      fieldset{min-inline-size:0;margin:14px 0;padding:12px}
+      legend{max-width:100%;white-space:normal}
+      #lesson-mcqs label{min-height:44px;padding:10px 6px;line-height:1.6}
+      #lesson-mcqs input[type=radio]{width:20px;height:20px;vertical-align:middle;accent-color:var(--cyan)}
+      .option:focus-within{outline:2px solid var(--cyan);outline-offset:2px}
+      .source{padding:16px}.source a{display:inline-block;min-height:44px;padding-block:8px}
+      .actions{align-items:stretch}.actions .button{white-space:normal}
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow"><span>Polars Data Engineering and Analytics · deep</span><span>lesson 0650 / 0665</span></div>
+    <h1>Polars sorting, deduplication, and latest records per group</h1>
+  </header>
+
+  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
+
+    <p>Deduplication selects which repeated records to keep. Latest requires an ordering rule. A timestamp alone is insufficient when two updates share that timestamp; a source sequence can break ties if the producer defines its meaning.</p>
+    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
+  </section>
+<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
+
+  <div class="grid">
+    <section class="card">
+
+      <p>Define a complete ordering before selecting one record for each business key.</p>
+      <p class="analogy">Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</p>
+    </section>
+
+    <aside class="card blackboard">
+
+      <h2>Trace a typed analytical transformation</h2>
+      <ol class="trace-flow" data-flow="polars-0650" aria-label="Mechanism trace: Define the input and row grain then Apply the stated operation then Compare values and failure behavior. Experiment: Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.">
+        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Define the input and row grain</strong><small>Deduplication selects which repeated records to keep. Latest requires an ordering rule. A timestamp alone is insufficient when two updates share that timestamp; a source sequence can break ties if the producer defines its meaning.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><strong>Apply the stated operation</strong><small>Define a complete ordering before selecting one record for each business key.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><strong>Compare values and failure behavior</strong><small>RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</small></li>
+      </ol>
+      <div class="trace-proof">
+        <span>↺ TEST THE MODEL</span>
+        <strong>Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.</strong>
+        <small><b>Inspect:</b> keep=&#039;any&#039; is unsuitable when a business rule requires the latest event. Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</small>
+      </div>
+    </aside>
+  </div>
+
+  <section class="concept-section" data-subtopic-count="2">
+
+
+    <div class="concept-grid">
+      <article class="concept-card" data-subtopic="deduplication">
+        <span>01</span>
+        <h3>deduplication</h3>
+        <p class="concept-definition">Selecting records under a stated identity and winner rule.</p>
+      </article><article class="concept-card" data-subtopic="tie_breaker">
+        <span>02</span>
+        <h3>tie_breaker</h3>
+        <p class="concept-definition">An additional ordering field used when the primary ordering fields are equal.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="card mechanism-walkthrough"><p>The fixture has two updates for RFQ a at the same event time. Sequence 2 wins under the stated contract. Sort by the business key, event time and sequence, then keep the last row for each key.</p>
+<p>Distinguish exact duplicate delivery from conflicting updates. If the same event identity arrives with different content, quarantine the conflict. Arbitrarily selecting one can hide upstream corruption.</p>
+<p>Specify null timestamp behavior. Quarantining unknown event time is often clearer than silently treating it as earliest or latest. A stable sort preserves ties but does not invent a business tie-breaker.</p>
+<p>Do not rely on incidental group or hash order. Sort the output when a report or test requires deterministic presentation. A pipeline that keeps every version serves a different purpose from a latest-state projection.</p></section>
+
+  
+
+  <section class="card lab">
+    <h2>Practice</h2>
+    <p>Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.</p>
+    <p class="lab-scope">Self-contained synthetic Python fixture requiring Polars already installed. File examples use unique temporary directories. Cloud, database, service and optional-library work is an extension, not a supplied deployment.</p>
+
+
+
+
+    <ol class="steps">
+      <li><span>Predict the state changes and one likely failure.</span></li>
+      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
+      <li><span>Change one condition, then run the same check again.</span></li>
+      <li><span>Compare the evidence and explain the tradeoff.</span></li>
+    </ol>
+    <pre aria-label="Starter code"><code>import polars as pl
+
+df = pl.DataFrame({&quot;id&quot;: [&quot;a&quot;, &quot;a&quot;, &quot;b&quot;], &quot;ts&quot;: [10, 10, 9], &quot;seq&quot;: [1, 2, 1], &quot;qty&quot;: [5, 7, 3]})
+latest = (df.sort([&quot;id&quot;, &quot;ts&quot;, &quot;seq&quot;])
+    .unique(subset=[&quot;id&quot;], keep=&quot;last&quot;, maintain_order=True)
+    .sort(&quot;id&quot;))
+assert latest.select(&quot;id&quot;, &quot;qty&quot;).rows() == [(&quot;a&quot;, 7), (&quot;b&quot;, 3)]
+assert latest[&quot;id&quot;].n_unique() == latest.height
+again = latest.sort([&quot;id&quot;, &quot;ts&quot;, &quot;seq&quot;]).unique(subset=[&quot;id&quot;], keep=&quot;last&quot;, maintain_order=True)
+assert again.sort(&quot;id&quot;).equals(latest)</code></pre>
+    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
+  </section>
+
+
+
+  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</p></section>
+
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>keep=&#039;any&#039; is unsuitable when a business rule requires the latest event.</p></article><article><h3>Tradeoff to defend</h3><p>Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</p></article></div></section>
+
+  <section class="card interview">
+    <h2>Interview practice</h2>
+    <ol class="interview-questions">
+      <li>Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</li>
+      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>How would you add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner, and which evidence would prove the result?</li>
+      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+    </ol>
+    <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
+    <label for="teachback"><strong>Your 90-second teach-back</strong></label>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <div class="senior-practice" data-senior-track="polars">
+      <p>Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.</p>
+      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <details>
+        <summary>Check your reasoning after answering</summary>
+        <p>RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged. Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</p>
+        <p class="worked-answer">RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</p>
+        <p>Look for: keep=&#039;any&#039; is unsuitable when a business rule requires the latest event. Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</p>
+        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
+      </details>
+    </div>
+  </section>
+
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+    <h2>Practice MCQs</h2>
+    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. Two updates have the same timestamp. What establishes a deterministic latest update?</h3>
+      <ol><li>Define a complete ordering before selecting one record for each business key.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Original memory address</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Documented sequence rule</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Arbitrary group order</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Current batch size</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Documented sequence rule</p>
+        <ul><li>A. Memory addresses have no business ordering meaning.</li><li>B. A documented sequence can resolve the tie.</li><li>C. Incidental group order is not a contract.</li><li>D. Batch size does not order the updates.</li></ul>
+        <p>RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</p>
+        <p>Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>Selecting records under a stated identity and winner rule.</li><li>An additional ordering field used when the primary ordering fields are equal.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. deduplication: 1; tie_breaker: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. deduplication: 2; tie_breaker: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: A.</strong> deduplication: 1; tie_breaker: 2</p>
+        <ul><li>A. Every concept matches its explanation.</li><li>B. “deduplication” matches explanation 1, not 2. “tie_breaker” matches explanation 2, not 1.</li></ul>
+        <p>deduplication: Selecting records under a stated identity and winner rule.</p><p>tie_breaker: An additional ordering field used when the primary ordering fields are equal.</p>
+        <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
+      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Compare values and failure behavior: RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</li><li>Define the input and row grain: Deduplication selects which repeated records to keep. Latest requires an ordering rule. A timestamp alone is insufficient when two updates share that timestamp; a source sequence can break ties if the producer defines its meaning.</li><li>Apply the stated operation: Define a complete ordering before selecting one record for each business key.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: D.</strong> 2 → 3 → 1</p>
+        <ul><li>A. At position 1, the trace uses “Define the input and row grain”, not “Apply the stated operation”.</li><li>B. At position 1, the trace uses “Define the input and row grain”, not “Compare values and failure behavior”.</li><li>C. At position 2, the trace uses “Apply the stated operation”, not “Compare values and failure behavior”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
+        <p>Define the input and row grain: Deduplication selects which repeated records to keep. Latest requires an ordering rule. A timestamp alone is insufficient when two updates share that timestamp; a source sequence can break ties if the producer defines its meaning.</p><p>Apply the stated operation: Define a complete ordering before selecting one record for each business key.</p><p>Compare values and failure behavior: RFQ a retains quantity 7 because sequence 2 breaks the timestamp tie. Deduplicating the resulting projection again leaves it unchanged.</p>
+        <p>Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner. Evidence to inspect: keep=&#39;any&#39; is unsuitable when a business rule requires the latest event. Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.</p>
+      </details>
+    </article>
+    <p><a href="https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.unique.html" target="_blank" rel="noreferrer">Review the lesson source: Polars official documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    
+  </section>
+
+  <section class="card mastery">
+
+    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <h2>Which study approach should you use for this lesson?</h2>
+    <form id="mastery-form">
+      <div class="options">
+        <label class="option"><input type="radio" name="answer" value="0"/><span class="key">A</span><span>Trust abstractions and ignore failures</span></label><label class="option"><input type="radio" name="answer" value="1"/><span class="key">B</span><span>Trace mechanisms and verify evidence</span></label><label class="option"><input type="radio" name="answer" value="2"/><span class="key">C</span><span>Memorize terminology and skip verification</span></label>
+      </div>
+      <div class="actions"><button class="button" type="submit">run_mastery_check()</button><p class="feedback" id="feedback" aria-live="polite">Choose one answer, then verify it.</p></div>
+    </form>
+  </section>
+
+  <footer class="source">
+    <div><span class="section-label">Primary source</span><br/><a href="https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.unique.html" target="_blank" rel="noreferrer">Polars official documentation ↗</a></div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
+    <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
+  </footer>
+</main>
+<script>
+(() => {
+  const lesson = {"id":"polars--polars-sorting-deduplication-and-latest-records-per-group","title":"Polars sorting, deduplication, and latest records per group","correctIndex":1,"evidenceSummary":"Polars sorting, deduplication, and latest records per group: completed the orientation check; practical work and senior interview understanding are not verified."};
+  const feedback = document.querySelector("#feedback");
+  const targetOrigin = window.location.origin === "null" ? "*" : window.location.origin;
+
+  function messageParent(type, extra = {}) {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type, version: 1, lessonId: lesson.id, ...extra }, targetOrigin);
+  }
+
+  function reportHeight() {
+    messageParent("teach:resize", { height: document.documentElement.scrollHeight });
+  }
+
+  document.querySelector("#mastery-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const selected = new FormData(event.currentTarget).get("answer");
+    if (selected === null) {
+      feedback.textContent = "Select an answer before checking.";
+      feedback.className = "feedback error";
+      return;
+    }
+    if (Number(selected) !== lesson.correctIndex) {
+      feedback.textContent = "Not yet. Return to the mechanism map, then retry.";
+      feedback.className = "feedback error";
+      reportHeight();
+      return;
+    }
+    feedback.textContent = "Orientation check complete. Your written explanation and practical evidence still need review.";
+    feedback.className = "feedback success";
+    messageParent("teach:mastery", {
+      passed: true,
+      score: 100,
+      completedAt: new Date().toISOString(),
+      evidenceSummary: lesson.evidenceSummary
+    });
+    reportHeight();
+  });
+
+  document.querySelector("#copy-handoff").addEventListener("click", async (event) => {
+    const teachback = document.querySelector("#teachback").value.trim();
+    const prompt = "Review my understanding of “" + lesson.title + "” for a senior full-stack AI engineer interview (around 10 years of experience). My teach-back: " + (teachback || "No explanation recorded yet.") + " Ask me one topic-specific question at a time, then change a constraint. Check correctness, tradeoffs, failure handling, evidence, and ownership. Give corrective feedback before moving on. Do not infer mastery from the orientation check or years of experience. Create a learning record only if my answers demonstrate understanding.";
+    try {
+      await navigator.clipboard.writeText(prompt);
+      event.currentTarget.textContent = "copied ✓";
+    } catch {
+      window.prompt("Copy this prompt for Codex:", prompt);
+    }
+  });
+
+  window.addEventListener("load", reportHeight);
+  new ResizeObserver(reportHeight).observe(document.body);
+})();
+</script>
+</body>
+</html>

@@ -39,40 +39,40 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>TypeScript Complete Deep Dive · core</span><span>lesson 0140 / 0644</span></div>
+    <div class="eyebrow"><span>TypeScript Complete Deep Dive · core</span><span>lesson 0140 / 0665</span></div>
     <h1>Generics, type parameters, constraints, defaults, relationships, and reusable contracts</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
+
+    <p>A type parameter is a name for a type supplied or inferred at a call site. In identity&lt;T&gt;(value: T): T, the same T connects the argument type to the result type. TypeScript checks this relationship before execution; JavaScript does not receive T at runtime.</p>
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
-      <p>Treat type parameters as relationships among positions, apply constraints only to required capabilities, and understand defaults.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+
+      <p>A type parameter connects caller inputs to result types. Trace inference, required fields and a default type through concrete calls.</p>
+      <p class="analogy">For indexById, T is the complete item type. The constraint requires an id field. It still preserves fields such as name and private in the returned Map.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a type-checking decision</h2>
-      <ol class="trace-flow" data-flow="typescript-instantiation" aria-label="Mechanism trace: API declares type parameters then Call sites contribute candidates then Type expressions substitute arguments then Concrete relationship is tested. Experiment: Change one inference site or union input and predict the instantiated result and cost.">
-        <li class="trace-stage"><span>01 · RELATION</span><strong>API declares type parameters</strong><small>Positions and constraints state information to preserve.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INFER</span><strong>Call sites contribute candidates</strong><small>Arguments, context, constraints, and variance shape inference.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · INSTANTIATE</span><strong>Type expressions substitute arguments</strong><small>Mapped, conditional, indexed, and template operations compute a result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CHECK</span><strong>Concrete relationship is tested</strong><small>Inferred output, errors, and checker cost make the design observable.</small></li>
+      <ol class="trace-flow" data-flow="generic-relationship" aria-label="Mechanism trace: T connects input and output then Items supply the type argument then The id capability is checked then Lookup preserves fields and absence. Experiment: Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;.">
+        <li class="trace-stage"><span>01 · DECLARE</span><strong>T connects input and output</strong><small>indexById accepts items of type T and returns Map values of type T.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INFER</span><strong>Items supply the type argument</strong><small>The caller&#039;s id, name and private fields determine the item type.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSTRAIN</span><strong>The id capability is checked</strong><small>T must have a string id; other fields remain part of T.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · USE</span><strong>Lookup preserves fields and absence</strong><small>Map.get returns the full item type or undefined.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Change one inference site or union input and predict the instantiated result and cost.</strong>
-        <small><b>Inspect:</b> Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</small>
+        <strong>Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;.</strong>
+        <small><b>Inspect:</b> Inferred types, expected compiler errors, duplicate-ID result and missing-key result.</small>
       </div>
     </aside>
   </div>
 
   <section class="concept-section" data-subtopic-count="6">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">Treat type parameters as relationships among positions, apply constraints only to required capabilities, and understand defaults.</p>
+
+
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Generics">
         <span>01</span>
@@ -102,37 +102,20 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · RELATION</span>
-        <h3>API declares type parameters</h3>
-        <p>Positions and constraints state information to preserve.</p>
-      </article><article>
-        <span>02 · INFER</span>
-        <h3>Call sites contribute candidates</h3>
-        <p>Arguments, context, constraints, and variance shape inference.</p>
-      </article><article>
-        <span>03 · INSTANTIATE</span>
-        <h3>Type expressions substitute arguments</h3>
-        <p>Mapped, conditional, indexed, and template operations compute a result.</p>
-      </article><article>
-        <span>04 · CHECK</span>
-        <h3>Concrete relationship is tested</h3>
-        <p>Inferred output, errors, and checker cost make the design observable.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Change one inference site or union input and predict the instantiated result and cost.</p><p>Look for: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p></div>
-  </section>
+  <section class="card mechanism-walkthrough"><p>Read indexById from the call inward. The items argument supplies T. The constraint checks that T has a string id. The result is Map&lt;string, T&gt;, so an item read from it keeps its extra fields. Map.get can return undefined when the key is absent. A type parameter does not establish that a lookup will succeed.</p>
+<p>keyof T means the property names of T. T[K] means the type of the property selected by K. The store example accepts both key and items in one call. That gives inference the item type when it checks the key. A curried version must establish T before the first call, or design the returned function to infer the later items.</p>
+<p>A default type applies when a type argument is omitted and inference has no candidate. In Box&lt;T = string&gt;, Box means Box&lt;string&gt;. Box&lt;number&gt; overrides the default. A default must satisfy its constraint. It does not create or validate a runtime value.</p>
+<p>For choose, T is the nonempty tuple and T[number] is the union of its element types. With north and south, the declared result is "north" | "south", although this implementation returns the first element. That contract permits a later implementation to choose another member. If callers require the first element's exact type, use a contract that returns T[0].</p>
+<p>Inference means that the checker chooses type arguments from the call and its context. Variance describes how relationships between element types affect relationships between containers or callbacks. Mapped and conditional types are separate type transformations; this example does not require them.</p></section>
 
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Design repository and selection APIs that preserve caller types without leaking any.</p>
+    <p class="lab-scope">Use an existing TypeScript 5+ compiler with strict checking and an ES2015-or-later library. Inspect inferred types and expected errors before considering runtime results. The const type parameter requires TypeScript 5.0 or later.</p>
 
-<p>Standalone example. Test duplicate IDs and preserved extra fields. choose now requires a nonempty tuple; prove that an empty input is rejected instead of hiding absence with !.</p>
+<p>Test duplicate IDs and preserved extra fields. choose requires a nonempty tuple. The unreachable block contains expected compiler errors for empty input, missing id, an invalid key and a default-type mismatch.</p>
 
 
     <ol class="steps">
@@ -151,13 +134,37 @@ function choose&lt;const T extends readonly [string, ...string[]]&gt;(values: T)
   return values[0];
 }
 
-function createStore&lt;T, Key extends keyof T&gt;(key: Key) {
-  return (items: readonly T[]) =&gt; new Map(items.map(item =&gt; [item[key], item]));
+function createStore&lt;T, Key extends keyof T&gt;(key: Key, items: readonly T[]): Map&lt;T[Key], T&gt; {
+  return new Map(items.map(item =&gt; [item[key], item]));
 }
 
 const projects = [{ id: &quot;p1&quot;, name: &quot;Demo&quot;, private: true }] as const;
 const byId = indexById(projects);
 const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &quot;north&quot; | &quot;south&quot;
+
+const byName = createStore(&quot;name&quot;, projects);
+const found = byName.get(&quot;Demo&quot;); // complete item type | undefined
+console.assert(found?.private === true);
+console.assert(direction === &quot;north&quot;);
+const duplicates = indexById([{ id: &quot;p1&quot;, name: &quot;First&quot; }, { id: &quot;p1&quot;, name: &quot;Last&quot; }]);
+console.assert(duplicates.get(&quot;p1&quot;)?.name === &quot;Last&quot;);
+
+type Box&lt;T = string&gt; = { value: T };
+const label: Box = { value: &quot;ready&quot; };
+const size: Box&lt;number&gt; = { value: 3 };
+console.assert(label.value === &quot;ready&quot; &amp;&amp; size.value === 3);
+
+// Compile-time checks only. Do not execute these invalid calls.
+if (false) {
+  // @ts-expect-error Empty input violates the nonempty tuple contract.
+  choose([]);
+  // @ts-expect-error Missing required id capability.
+  indexById([{ name: &quot;No ID&quot; }]);
+  // @ts-expect-error The item has no missing property.
+  createStore(&quot;missing&quot;, projects);
+  // @ts-expect-error Omitting T selects string, not number.
+  const invalid: Box = { value: 3 };
+}
 
 // Each parameter must preserve a real relationship. A parameter used only once
 // often adds ceremony without information.</code></pre>
@@ -168,34 +175,18 @@ const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &q
     <h2>Understand, challenge, verify</h2>
     <p>A useful generic connects types at more than one position, such as keeping each input item&#039;s extra fields in the returned Map.</p>
     <details><summary>Senior reasoning checkpoint — answer before opening</summary>
-      <p>Constrain only capabilities the body needs. A map indexed by id also needs a duplicate policy: this example keeps the last item, not a magically unique record.</p>
+      <p>Constrain only capabilities the body needs. The Map keeps the last item for a duplicate id. Reject duplicates explicitly if the contract requires unique input.</p>
     </details>
     <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
-  <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>API declares type parameters → Call sites contribute candidates → Type expressions substitute arguments → Concrete relationship is tested. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
+  <section class="card code-guide"><p>Inspect byId and byName in the editor. Both retain the item&#039;s name and private fields. The false branch is never executed, but the compiler checks its expected errors. Removing a constraint should make the corresponding negative type check fail. Console assertions check runtime results separately.</p></section>
 
-  <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a type-checking decision from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change one inference site or union input and predict the instantiated result and cost.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p></article>
-    </div>
-  </section>
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Constraint loses information</h3><p>Returning Identified instead of T discards the caller&#039;s extra fields from the static result type. Replacing T with any removes useful checking.</p></article><article><h3>Types hide data policy</h3><p>Duplicate IDs overwrite earlier Map entries. Choose reject, first-write or last-write behavior explicitly. Validate external data at runtime before trusting its declared type.</p></article></div></section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Derive a generic signature from input-output relationships instead of adding a decorative type parameter.</li>
       <li>Trace a type-checking decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -206,26 +197,38 @@ const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &q
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Design an index that preserves extra item fields. Show one accepted call, one rejected key and one rejected empty selection. If duplicate IDs must become errors, which part of the implementation changes?</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Treat type parameters as relationships among positions, apply constraints only to required capabilities, and understand defaults.</p>
-        <p>Look for: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p>
+        <p>Connect input T to Map values. Use keyof T to check selected keys. Keep undefined in lookup results. Reject duplicates in runtime code before setting an existing key; a generic constraint cannot enforce uniqueness. Prefer a concrete function when no caller-specific type relationship needs preservation.</p>
+        <p>Look for: Inferred types, expected compiler errors, duplicate-ID result and missing-key result.</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
   </section>
 
-  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
     <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
-    <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. An index function accepts items with id and extra caller-specific fields. Which result type preserves those fields without disabling checking?</h3>
+      <ol><li>The function declares T extends Identified. Identified contains only id: string.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Map&lt;string, Identified&gt;</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Map&lt;string, unknown&gt;</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Map&lt;string, T&gt;</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Map&lt;string, any&gt;</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> Map&lt;string, T&gt;</p>
+        <ul><li>A. Identified discards the extra fields from the result type.</li><li>B. unknown requires narrowing before using item fields.</li><li>C. T preserves the caller&#39;s complete item type.</li><li>D. any disables useful checking.</li></ul>
+        <p>Map.get still returns T | undefined. Preserving the item type does not prove a key exists or enforce unique input IDs.</p>
+        <p>Change the contract to reject duplicate IDs. Explain why that needs runtime behavior.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>[concept] use type parameters to preserve relationships among inputs, outputs, containers, and callbacks across many concrete types.</li><li>Named type variables connect input, output, and member types in a reusable contract. They are not runtime parameters.</li><li>A generic constraint states the minimum capability a type argument must have. It should not erase additional specific information the caller provides.</li><li>A generic default supplies a type argument when inference and the call do not supply one. It must satisfy its constraint.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Generics: 1; type parameters: 2; constraints: 3; defaults: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Generics: 1; type parameters: 2; constraints: 4; defaults: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Generics: 1; type parameters: 3; constraints: 4; defaults: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Generics: 1; type parameters: 4; constraints: 3; defaults: 2</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Generics: 1; type parameters: 2; constraints: 3; defaults: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Generics: 1; type parameters: 2; constraints: 4; defaults: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Generics: 1; type parameters: 3; constraints: 4; defaults: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Generics: 1; type parameters: 4; constraints: 3; defaults: 2</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: A.</strong> Generics: 1; type parameters: 2; constraints: 3; defaults: 4</p>
@@ -234,10 +237,10 @@ const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &q
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>A type relationship connects positions: a selected key K determines the result T[K], rather than returning an unrelated broad type.</li><li>[concept] preserve meaningful relationships across callers without assuming more capabilities than the implementation needs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. relationships: 1; reusable contracts: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. relationships: 2; reusable contracts: 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. relationships: 1; reusable contracts: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. relationships: 2; reusable contracts: 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: A.</strong> relationships: 1; reusable contracts: 2</p>
@@ -246,24 +249,24 @@ const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &q
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
-      <ol><li>Call sites contribute candidates: Arguments, context, constraints, and variance shape inference.</li><li>Type expressions substitute arguments: Mapped, conditional, indexed, and template operations compute a result.</li><li>Concrete relationship is tested: Inferred output, errors, and checker cost make the design observable.</li><li>API declares type parameters: Positions and constraints state information to preserve.</li></ol>
+      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Items supply the type argument: The caller&#39;s id, name and private fields determine the item type.</li><li>The id capability is checked: T must have a string id; other fields remain part of T.</li><li>Lookup preserves fields and absence: Map.get returns the full item type or undefined.</li><li>T connects input and output: indexById accepts items of type T and returns Map values of type T.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 1 → 4 → 2 → 3</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: B.</strong> 4 → 1 → 2 → 3</p>
-        <ul><li>A. At position 2, the trace uses “Call sites contribute candidates”, not “Type expressions substitute arguments”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Call sites contribute candidates”, not “Concrete relationship is tested”.</li><li>D. At position 1, the trace uses “API declares type parameters”, not “Call sites contribute candidates”.</li></ul>
-        <p>API declares type parameters: Positions and constraints state information to preserve.</p><p>Call sites contribute candidates: Arguments, context, constraints, and variance shape inference.</p><p>Type expressions substitute arguments: Mapped, conditional, indexed, and template operations compute a result.</p><p>Concrete relationship is tested: Inferred output, errors, and checker cost make the design observable.</p>
-        <p>Change one inference site or union input and predict the instantiated result and cost. Evidence to inspect: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p>
+        <ul><li>A. At position 2, the trace uses “Items supply the type argument”, not “The id capability is checked”.</li><li>B. This reproduces the lesson’s trace.</li><li>C. At position 2, the trace uses “Items supply the type argument”, not “Lookup preserves fields and absence”.</li><li>D. At position 1, the trace uses “T connects input and output”, not “Items supply the type argument”.</li></ul>
+        <p>T connects input and output: indexById accepts items of type T and returns Map values of type T.</p><p>Items supply the type argument: The caller&#39;s id, name and private fields determine the item type.</p><p>The id capability is checked: T must have a string id; other fields remain part of T.</p><p>Lookup preserves fields and absence: Map.get returns the full item type or undefined.</p>
+        <p>Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;. Evidence to inspect: Inferred types, expected compiler errors, duplicate-ID result and missing-key result.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript handbook: generics</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
@@ -275,7 +278,7 @@ const direction = choose([&quot;north&quot;, &quot;south&quot;] as const); // &q
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noreferrer">TypeScript handbook: generics ↗</a></div>
     
     
     

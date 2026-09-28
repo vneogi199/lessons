@@ -2,6 +2,24 @@
 
 ## Knowledge
 
+- [Confluent Python client](https://docs.confluent.io/kafka-clients/python/current/overview.html): producer callbacks, consumer offsets and client lifecycle.
+- [Kafka Streams concepts](https://kafka.apache.org/41/streams/core-concepts/): JVM topologies, keyed state and processing guarantees.
+- [Spark Structured Streaming](https://spark.apache.org/docs/latest/streaming/apis-on-dataframes-and-datasets.html): event time, watermarks, state and recovery; use version-matched connectors.
+- [Grafana alerting](https://grafana.com/docs/grafana/latest/alerting/fundamentals/): alert rules and notification behavior.
+- [MSK best practices](https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html): managed Kafka capacity and operational responsibilities.
+- [Docker build practices](https://docs.docker.com/build/building/best-practices/): reproducible, maintainable runtime images.
+- [Kubernetes Pod lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/): probes, shutdown and replacement behavior.
+
+- [Polars expressions and contexts](https://docs.pola.rs/user-guide/concepts/expressions-and-contexts/): typed transformations and output contexts for the dedicated Polars track, lessons 0645–0665.
+- [Polars joins](https://docs.pola.rs/user-guide/transformations/joins/): cardinality, missing keys and temporal matching.
+- [Polars testing](https://docs.pola.rs/api/python/stable/reference/testing.html): compare values, schemas and ordering with explicit tolerances.
+- [Polars Pandas migration](https://docs.pola.rs/user-guide/migration/pandas/): understand expressions and explicit columns before translating code.
+
+- [On Layer Normalization in the Transformer Architecture](https://arxiv.org/abs/2002.04745)
+  Explains the placement of normalization relative to residual blocks. Use with lesson 0582 to distinguish its pre-normalization equations from the original post-normalization transformer.
+- [Hugging Face: how KV caching works](https://huggingface.co/docs/transformers/cache_explanation)
+  Explains reused keys and values during autoregressive inference. Use with lesson 0582 to separate full-sequence attention cost from decode-time cache tradeoffs.
+
 - [TypeScript inference](https://www.typescriptlang.org/docs/handbook/type-inference.html), [object types](https://www.typescriptlang.org/docs/handbook/2/objects.html), and [enums](https://www.typescriptlang.org/docs/handbook/enums.html)
   Consulted 2026-09-22 to distinguish contextual inference, insufficient inference, readonly arrays and const enums in the curriculum-wide MCQs. These refine existing lesson definitions rather than certify compiler execution.
 - [Python imports](https://docs.python.org/3/reference/import.html), [structural protocols](https://docs.python.org/3/library/typing.html#typing.Protocol), and [Starlette middleware source documentation](https://github.com/Kludex/starlette/blob/main/docs/middleware.md)

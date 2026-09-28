@@ -1,5 +1,22 @@
 # Individual content review evidence
 
+## Eight-lesson explanation corrections, 2026-09-24
+
+Read and revised 0090, 0140, 0176, 0216, 0358, 0447, 0582 and 0629 after the independent content review. The teach skill guided worked predictions, changed constraints and feedback. Humanizer guided removal of duplicate introductions, generic coaching and draft-history text. Technical contrasts, scope limits and consistent terms were preserved.
+
+- 0090: defined bindings and lexical scope; added shared-var versus per-iteration-let callbacks, a deferred stale-message example and registry cleanup. Collection timing remains a heap-inspection exercise.
+- 0140: supplied default type arguments, positive and negative calls, inferred result explanations and duplicate policy. The store accepts items at the inference site. The changes apply only to this lesson, not 0141's separate inference exercise.
+- 0176: replaced the atomic-UI claim with render/commit/paint behavior; added replacement, updater and mixed queues, Object.is qualifications, Strict Mode purity, nested copying and reset tradeoffs.
+- 0216: stated the I/O scheduling invariant and version boundary. The starter handles read errors and waits for callback completion rather than a sampling deadline. Starvation and socket-close work are bounded/separate exercises.
+- 0358: supplied a dedicated seeded table, explicit two-connection pauses, expected balances, and vacuum before/after snapshot release. Explained visibility, writer conflicts and cleanup limits.
+- 0447: corrected at-most-one leader wording, separated fencing from consensus, and explained log freshness, current-term commitment, partition recovery and joint membership. The existing RPC code remains explicitly a precheck, not a full Raft implementation or proof.
+- 0582: added query/key/value meanings, matrix shapes, a named pre-normalization block, residual and FFN shapes, masking, scaling, normalization and KV-cache tradeoffs. The scalar starter remains distinct from a trained model.
+- 0629: added a 25-minute practice plan, worked invariant, all-pairs/window variations, output-sensitive complexity and self-review criteria. Removed personal-history disclaimers from this algorithm exercise.
+
+Each lesson now includes one authored scenario MCQ with explained distractors, alongside its existing recall questions. Primary references include React and Node documentation, the TypeScript handbook, PostgreSQL isolation/vacuum documentation, the Raft paper and transformer architecture/normalization papers.
+
+Verification is static only: generated-source parity, manifest hashes, required content, MCQ structure, unchanged CSS/client scripts and the lesson validator. No lesson starter, compiler exercise, React app, PostgreSQL session, cluster or model was executed for this pass. No software was installed. These are content sign-offs, not evidence of learner mastery or integration certification.
+
 ## 0289 · Asyncio/thread-pool integration extension, 2026-09-20
 
 Reviewed to_thread versus explicit run_in_executor, context copying, worker error propagation, cancellation of an already-running thread and thread-safe loop notification. The extracted stdlib example verifies copied context, ValueError at await and worker completion after Future cancellation. Pool ownership/shutdown occurs outside the loop; dependency deadlines and overload accounting remain explicit design obligations. Parent lesson changes only by its extension link.

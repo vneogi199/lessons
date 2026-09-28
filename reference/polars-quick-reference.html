@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Polars practice guide</title>
+<style>body{max-width:900px;margin:auto;padding:24px;font:17px/1.65 system-ui;color:#162538;background:#f7fafc}a{color:#0757a6}code{overflow-wrap:anywhere}section{margin:32px 0}li{margin:10px 0}h1,h2{line-height:1.25}</style></head><body><main>
+<nav><a href="../index.html">Curriculum</a> · <a href="polars-deep-dive-map.html">All 21 Polars lessons</a> · <a href="numerical-data-engineering.html#polars">NumPy, Pandas and SQL comparison</a></nav>
+<h1>Polars practice guide</h1>
+<p>Start after Python collections and basic SQL. Each lesson includes a small fixture, predicted results, assertions, a changed constraint and interview questions. Examples need an existing Polars environment. They have static syntax checks, not a claim of runtime verification. Record your installed version and check its documentation before using an API.</p>
+<section><h2>A practical study sequence</h2>
+<ol>
+<li><strong>0645–0647:</strong> Typed columns, expressions and missing values. Preserve identifiers and separate rejected input from missing input.</li>
+<li><strong>0648–0650:</strong> Parse RFQs, normalize timestamps and select the latest record. Define a tie policy before deduplicating.</li>
+<li><strong>0651–0653:</strong> Aggregate, calculate windows and validate joins. Explain the output row grain after each operation.</li>
+<li><strong>0654–0657:</strong> Match historical quotes, form time windows, flatten nested data and reshape tables. Check that future information cannot enter a historical result.</li>
+<li><strong>0658–0661:</strong> Read files, inspect lazy plans and compare streaming with native expressions. Identify what must still fit in memory.</li>
+<li><strong>0662–0665:</strong> Test transformations, preserve financial units, compare SQL and build the risk-reporting capstone.</li>
+</ol>
+<p>At 6–8 hours per week, aim for two or three lessons with practice. Repeat a failed exercise before adding more lessons. This is a suggested pace, not a completion guarantee.</p></section>
+<section><h2>Operations to recognize</h2><ul>
+<li><code>select</code> chooses output expressions. <code>with_columns</code> retains other columns. Chain calls when an expression needs a newly created alias.</li>
+<li><code>filter</code> retains rows whose predicate is true. A null predicate does not retain a row. Write the intended missing-value policy.</li>
+<li><code>cast(..., strict=False)</code> can turn invalid input into null. Preserve the original value so invalid and absent inputs remain distinguishable.</li>
+<li><code>is_null</code> and <code>is_nan</code> test different conditions. <code>fill_null</code> does not replace floating-point NaN.</li>
+<li><code>group_by(...).agg(...)</code> reduces groups. <code>over(...)</code> can map a group calculation back to input rows.</li>
+<li><code>sort(...).unique(..., keep="last")</code> needs a complete ordering rule to select a meaningful latest record. Sort the final result separately when display order matters.</li>
+<li><code>join(..., validate="m:1")</code> checks the intended right-key uniqueness. An anti join exposes missing reference keys.</li>
+<li><code>join_asof(..., strategy="backward", tolerance=...)</code> needs sorted time keys. Also define when the quote became available.</li>
+<li><code>group_by_dynamic</code> creates time buckets. It is not a durable event-stream processor with watermarks and replay.</li>
+<li><code>explode</code> changes row grain. Reconcile totals before and after expanding lists.</li>
+<li><code>scan_parquet</code> starts a lazy file query. <code>read_parquet(...).lazy()</code> cannot undo the preceding eager read.</li>
+<li><code>explain</code> shows a query plan. <code>collect(engine="streaming")</code> still returns a materialized result. A sink can avoid collecting that result into Python.</li>
+<li><code>polars.testing.assert_frame_equal</code> compares results. Assert schema, order and tolerances according to the contract rather than ignoring differences automatically.</li>
+</ul></section>
+<section><h2>Senior interview checks</h2>
+<p>For any transformation, state the row grain, key, schema, null policy and output ordering. Then identify one failure case and one invariant. A faster result is useful only if it satisfies the same contract.</p>
+<p>Benchmark equivalent outputs on representative data. Report input size, file layout, library version, machine resources, elapsed time and peak memory. Separate cold and warm reads. Do not assume lazy execution, streaming or a Python UDF is always faster.</p>
+<p>Polars computes a report; it does not provide transactional risk reservation. Two concurrent traders can both pass a stale limit check. Enforce an irreversible booking decision in an authoritative transactional system.</p></section>
+<section><h2>Primary documentation</h2><ul>
+<li><a href="https://docs.pola.rs/user-guide/concepts/expressions-and-contexts/">Expressions and contexts</a>: understand how an expression becomes a computation.</li>
+<li><a href="https://docs.pola.rs/user-guide/transformations/joins/">Joins</a>: choose cardinality and missing-key behavior.</li>
+<li><a href="https://docs.pola.rs/user-guide/lazy/optimizations/">Lazy optimization</a>: inspect pushdown and optimization boundaries.</li>
+<li><a href="https://docs.pola.rs/user-guide/concepts/streaming/">Streaming</a>: distinguish batch execution from bounded total memory.</li>
+<li><a href="https://docs.pola.rs/user-guide/migration/pandas/">Migration from Pandas</a>: replace index and row-loop assumptions with explicit columns and expressions.</li>
+</ul></section></main></body></html>

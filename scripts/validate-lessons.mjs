@@ -2,6 +2,8 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
+import { POLARS_CONTENT } from "./polars-content.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const lessonsDirectory = join(root, "lessons");
@@ -11,16 +13,15 @@ const traceHeadings = new Set();
 const diagramKeys = new Set();
 const requiredFragments = [
   'lang="en-US"',
-  "Core foundation",
-  "Mental model",
-  "Blackboard",
-  "Detailed term guide",
-  "Detailed mechanism",
-  "Practical lab",
-  "Code reading guide",
+  'class="card beginner-foundation"',
+  'class="card blackboard"',
+  'data-subtopic-count=',
+  'class="card mechanism-walkthrough"',
+  '<h2>Practice</h2>',
+  'class="card code-guide"',
   "Common mistakes",
-  "Interview rehearsal",
-  "Retrieval practice",
+  '<h2>Interview practice</h2>',
+  'class="card mastery"',
   "Primary source",
   "ASD-STE100-core-principles",
   "continue_with_codex",
@@ -608,10 +609,10 @@ for (const [trackId, expectation] of Object.entries(infrastructureExpectations))
 for (const lesson of manifest.lessons) {
   const filename = lesson.path.replace(/^lessons\//, "");
   const html = await readFile(join(lessonsDirectory, filename), "utf8");
-  const hasBreakdown = html.includes("Detailed term guide");
+  const hasBreakdown = html.includes('data-subtopic-count=');
   if (!hasBreakdown) failures.push(`${lesson.id}: detailed beginner subtopic breakdown is missing`);
 
-  const expectedSubtopics = lesson.title
+  const expectedSubtopics = lesson.trackId === "polars" ? Object.keys(POLARS_CONTENT[lesson.number].terms).length : lesson.title
     .replace(/\s+—\s+/g, ", ")
     .split(/,\s+|\s+and\s+|\s+versus\s+/i)
     .map((part) => part.trim().replace(/^(and|or)\s+/i, ""))
@@ -624,7 +625,10 @@ for (const lesson of manifest.lessons) {
   const definitions = html.split('class="concept-definition"').length - 1;
   if (definitions !== expectedSubtopics) failures.push(`${lesson.id}: expected ${expectedSubtopics} definitions, found ${definitions}`);
   const connections = html.split('class="concept-intro"').length - 1;
-  if (connections !== 1) failures.push(`${lesson.id}: expected one shared mechanism explanation, found ${connections}`);
+  const authored = REVIEWED_CONTENT[lesson.number] ?? POLARS_CONTENT[lesson.number];
+  const expectedConnections = authored ? 0 : 1;
+  if (connections !== expectedConnections) failures.push(`${lesson.id}: expected ${expectedConnections} repeated term introductions, found ${connections}`);
+  if (authored && !html.includes(authored.mechanism)) failures.push(`${lesson.id}: missing authored mechanism explanation`);
 }
 
 const requiredSoftwareDesignLessons = [

@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0380 / 0644</span></div>
+    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0380 / 0665</span></div>
     <h1>Application data patterns, optimistic concurrency, idempotency, outbox, inbox, pagination, and read consistency</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
+
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
       <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a replay-safe command</h2>
       <ol class="trace-flow" data-flow="database-command-replay" aria-label="Mechanism trace: Claim the tenant-scoped request key then Replay or perform the operation then Save effect, result and event together then Recover a lost response or duplicate delivery. Experiment: Lose the response after commit, retry the same key, then reuse it with changed input.">
         <li class="trace-stage"><span>01 · CLAIM</span><strong>Claim the tenant-scoped request key</strong><small>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BRANCH</span><strong>Replay or perform the operation</strong><small>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Save effect, result and event together</strong><small>One transaction commits all records or rolls them all back. Return success only after commit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RETRY</span><strong>Recover a lost response or duplicate delivery</strong><small>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</small></li>
@@ -71,7 +71,7 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="7">
-    <span class="section-label">04 · Detailed term guide</span>
+
     <p class="concept-intro">Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Application data patterns">
@@ -107,7 +107,7 @@
   </section>
 
   <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       <article>
         <span>01 · CLAIM</span>
@@ -133,7 +133,7 @@
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Implement a duplicate-safe command with version checking and a transactional outbox, then consume it idempotently.</p>
     <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 
@@ -202,7 +202,7 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
 
 
   <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -212,7 +212,7 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
   </section>
 
   <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a replay-safe command from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Lose the response after commit, retry the same key, then reuse it with changed input.</p></article>
@@ -222,7 +222,7 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
   </section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain how database transactions support idempotent APIs and reliable event publication without claiming distributed atomicity.</li>
       <li>Trace a replay-safe command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -291,7 +291,7 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

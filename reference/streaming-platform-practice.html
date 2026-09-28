@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Python, Kafka and production data platforms</title><style>body{max-width:980px;margin:auto;padding:24px;font:17px/1.65 system-ui;color:#182a3a;background:#f8fafc}h1,h2{line-height:1.25}section{margin:36px 0;border-top:1px solid #abc;padding-top:16px}a{color:#075aa5}pre{overflow:auto;padding:18px;background:#e8eef4;font-size:14px}details{padding:12px;border-left:3px solid #168}summary{cursor:pointer}code{overflow-wrap:anywhere}@media print{pre{white-space:pre-wrap}details{break-inside:avoid}}</style></head><body><main>
+<a href="../index.html">Curriculum</a><h1>Python, Kafka and production data platforms</h1>
+<p>Build a rates-monitoring pipeline and defend its failure behavior in a senior interview. Study one section per sitting. Predict the result before opening the answer. Revisit the exercise tomorrow with a changed constraint. Ask your teacher to review unclear reasoning. These are teaching examples and deployment exercises, not a deployed platform. Nothing is installed or provisioned. Integration snippets require approved environments and version-matched dependencies; they have not been executed here.</p>
+<nav><a href="#python-kafka">Python + Kafka</a> · <a href="#streams">Kafka Streams</a> · <a href="#spark">Spark</a> · <a href="#grafana">Grafana</a> · <a href="#aws">AWS</a> · <a href="#docker">Docker</a> · <a href="#kubernetes">Kubernetes</a> · <a href="#capstone">Capstone</a></nav>
+<section id="python-kafka"><h2>Python producers and consumers</h2>
+<p>A topic is a named event log split into partitions. An offset is a position within one partition. Key rate updates by instrument when that instrument needs ordered handling. Kafka does not provide one order across all partitions. A consumer group shares partitions among workers; adding workers beyond the partition count does not add active partition readers.</p>
+<p>Use a stable event ID, schema version, instrument, event timestamp and arrival timestamp. Validate types, units and required fields before effects. A schema registry can enforce schema compatibility; it cannot prove that a value still means basis points rather than percent.</p>
+<p>With confluent-kafka, produce queues a record. Delivery callbacks report its later outcome; poll or flush serves callbacks. Bound the local queue and handle enqueue failures. On shutdown, bound flush time and check undelivered records. Producer idempotence protects against certain transport retries, not two independent submissions of the same business event.</p>
+<pre><code># Configuration fragments: obtain authenticated connection settings separately.
+producer_options = {"enable.idempotence": True, "acks": "all"}
+consumer_options = {
+    "group.id": "rates-monitor-v1", "enable.auto.commit": False,
+    "enable.auto.offset.store": False, "auto.offset.reset": "earliest",
+    "isolation.level": "read_committed",
+}
+
+# Integration function. Consumer and durable sink are injected.
+def handle_one(consumer, persist_once):
+    message = consumer.poll(1.0)
+    if message is None:
+        return False
+    if message.error():
+        raise RuntimeError(str(message.error()))
+    persist_once(message.value())  # validate + atomic event-ID dedup + effect
+    consumer.commit(message=message, asynchronous=False)
+    return True</code></pre>
+<p>The sink must commit before the Kafka offset. A crash between them replays the event. Use a database transaction that records the event ID and applies the change atomically. Do not deduplicate only in process memory. Commit failure must surface; replay remains safe only because the sink is idempotent. Close the consumer in the owning process's finally block.</p>
+<p>This deliberately serial function does not implement a complete worker. A production loop needs shutdown handling, bounded retries and durable rejection handling. Pause overloaded partitions, keep polling within client limits and track completed offsets per partition. If offset 12 finishes before 11, do not commit past unfinished 11. On revocation, stop scheduling that partition and coordinate in-flight work. Moving a poison event to a retry topic can change business order.</p>
+<details><summary>MCQ: the sink succeeds, then the worker crashes before commit. A: Guaranteed loss. B: Possible replay. C: Global rollback. D: Automatic rejection.</summary><p>B. The committed offset can still point before the processed record. Deduplicate the replay at the sink. A incorrectly assumes the offset advanced; C assumes a cross-system transaction; D invents a rejection mechanism. Exercise: inject sink failure and verify that commit is not called; then simulate replay and verify one durable effect.</p></details>
+<p>Source: <a href="https://docs.confluent.io/kafka-clients/python/current/overview.html">Confluent Python client</a>.</p></section>
+<section id="streams"><h2>Kafka Streams: a JVM stream-processing library</h2>
+<p>Kafka Streams is not the Python Kafka client. Use Java or another compatible JVM language for this library. A Python service can publish events that a Streams application processes. A KStream represents individual records; a KTable represents evolving keyed state. Choose based on whether an event is a new observation or a replacement of the current value.</p>
+<p>For a rates feed, build a topology: source → validate → rekey by instrument → windowed aggregate → output topic. Rekeying before a grouped operation may require repartitioning. Stateful tasks maintain stores; changelog topics support recovery. Recovery time depends on state size and available restore throughput, not only process startup time.</p>
+<pre><code>// Java DSL fragment: builder is a StreamsBuilder; input values are strings.
+builder.stream("rates.raw",
+        Consumed.with(Serdes.String(), Serdes.String()))
+    .groupByKey()
+    .count(Materialized.as("updates-per-instrument"))
+    .toStream()
+    .to("rates.counts", Produced.with(Serdes.String(), Serdes.Long()));</code></pre>
+<p>This counts every input record by its existing key; it does not deduplicate event IDs or calculate a time window. Supply application.id, bootstrap servers, authentication and matching dependencies in the enclosing application. Treat an application-ID change as a state/offset migration decision.</p>
+<p>For event-time windows, define timestamp extraction, window size and grace for late events. A grace period is not a guarantee that all late events eventually arrive. Test out-of-order input and closed-window behavior. Kafka exactly-once processing can coordinate input offsets, state and Kafka output; it does not make an external email or database mutation exactly once.</p>
+<details><summary>Exercise: x, x, y arrive, then another x. Predict the final keyed counts.</summary><p>x=3 and y=1. Intermediate outputs can depend on caching and commits; assert final state rather than an assumed output count. Use TopologyTestDriver with the matching test library. Then duplicate one business event: the count increases unless you explicitly add deduplication. Explain store retention, restoration and the cost of repartitioning.</p></details>
+<p>Source: <a href="https://kafka.apache.org/41/streams/core-concepts/">Kafka Streams concepts</a>.</p></section>
+<section id="spark"><h2>PySpark and Structured Streaming</h2>
+<p>Spark distributes a query across executors coordinated by a driver. A DataFrame describes typed columns and transformations. An action starts execution. Moving data between partitions is a shuffle; large joins and aggregations can create expensive shuffles. A hot instrument can overload one partition even when total cluster CPU appears low.</p>
+<p>Start with explicit schemas, column expressions, filters and selected columns. Inspect explain output. Avoid collect on a large result because it brings data into driver memory. Cache only reused results when the saved work justifies memory and recomputation costs. Broadcast only a side that safely fits the relevant executor memory budget.</p>
+<pre><code># PySpark expression fragment: events has instrument, event_time and qty.
+from pyspark.sql import functions as F
+
+totals = (events.withWatermark("event_time", "10 minutes")
+    .groupBy(F.window("event_time", "5 minutes"), "instrument")
+    .agg(F.sum("qty").alias("quantity")))
+# Fixture: x at 12:01 qty=2, x at 12:04 qty=3 gives quantity=5
+# in [12:00,12:05). x at 12:05 belongs to the next window.</code></pre>
+<p>With a streaming DataFrame, this defines an incremental aggregation. It does not start a query or select a sink. A watermark tracks event-time progress for supported stateful operations; it is not a wall-clock timer. A quiet source may delay final window output. Data beyond the lateness threshold may be dropped; specify a correction path for financial reports.</p>
+<p>For Kafka input, decode binary key/value columns, parse JSON with a schema and route malformed rows explicitly. Use a unique durable checkpoint location per query. Checkpoints hold progress and state; deleting one can trigger replay or change recovery behavior. Verify compatibility before changing a stateful query. foreachBatch can repeat a batch: use durable batch or event deduplication in the sink. The Kafka sink can produce duplicates, so do not claim universal exactly-once delivery.</p>
+<details><summary>MCQ: a large collect threatens which component? A: Driver memory. B: Topic naming. C: Registry syntax. D: Dashboard colors.</summary><p>A. collect materializes results at the driver. The other choices do not address memory. Exercise: compare a grouped batch fixture with streaming results after windows finalize. Add a late event, restart from the checkpoint and check both output correctness and state size. For small local data, justify Spark's operational cost against Polars or SQL.</p></details>
+<p>Source: <a href="https://spark.apache.org/docs/latest/streaming/apis-on-dataframes-and-datasets.html">Structured Streaming guide</a>. Pin the Spark, Python, JVM and Kafka connector versions together.</p></section>
+<section id="grafana"><h2>Grafana dashboards and actionable alerts</h2>
+<p>Grafana queries configured data sources. Prometheus can store scraped application metrics; broker exporters and CloudWatch provide other signals. A dashboard cannot display a metric that nobody collects. Define metric names, units, labels and owners before drawing panels.</p>
+<p>Track input rate, successful processing rate, error rate, lag by partition, event age, last successful update, worker restarts and sink latency. Lag in records is not a time delay: 100 records can represent seconds or hours. A zero backlog also does not prove a live upstream feed. Alert on stale data separately.</p>
+<pre><code># Example PromQL for application-defined metrics, not built-in Kafka names:
+sum(rate(rates_processed_total[5m]))
+histogram_quantile(0.95,
+  sum by (le) (rate(rates_sink_seconds_bucket[5m])))
+time() - rates_last_success_timestamp_seconds</code></pre>
+<p>The second query assumes a classic histogram with appropriate bucket boundaries. It estimates a percentile; averaging instance p95 values is not a fleet p95. Keep labels bounded: service, environment and outcome are useful; RFQ IDs and arbitrary exception text can create excessive series. Avoid sensitive payloads in labels and logs.</p>
+<p>For each alert, define a sustained duration, recovery behavior, owner and runbook. Configure No Data and query Error behavior explicitly; a broken data source must not quietly look healthy. Group related alerts and test notification routing. Record dashboards and alert definitions in version control.</p>
+<details><summary>Exercise: consumer lag is zero, but no quote arrived for 15 minutes. Is the feed healthy?</summary><p>Not established. Check source activity, last valid update and expected market hours. Fire a freshness alert when the business contract is violated. Test healthy traffic, stalled processing and missing telemetry separately. A useful runbook names the first diagnostic query and the safe recovery action.</p></details>
+<p>Source: <a href="https://grafana.com/docs/grafana/latest/alerting/fundamentals/">Grafana alerting</a>.</p></section>
+<section id="aws"><h2>AWS: choose and secure the deployment</h2>
+<p>Continue the <a href="cloud-aws-deep-dive-map.html">AWS track</a> and <a href="api-cloud-delivery-labs.html#aws-provisioning">provisioning exercises</a>. For this case, compare MSK for Kafka, ECS for container workers, EKS when Kubernetes is required, and EMR for Spark. These are alternatives to evaluate, not a requirement to deploy every service.</p>
+<p>Place service traffic in appropriate VPC subnets. Check routes, DNS, security groups, endpoint access and the selected authentication mechanism independently. Network reachability is not permission to consume a topic. Use narrowly scoped workload identities and approved secret retrieval. Do not embed credentials in an image.</p>
+<p>Define broker availability, storage growth, retention, replication, partition count and recovery objectives. Managed Kafka removes some broker operations, not responsibility for keys, schemas, clients or consumer lag. Archive approved immutable data to S3 with retention and access controls. Reconcile replayed output before exposing it to traders.</p>
+<details><summary>Design exercise: choose ECS or EKS for two Python consumers.</summary><p>ECS can reduce cluster-management work when Kubernetes features are unnecessary. EKS can fit an established Kubernetes platform, but adds platform responsibilities. Defend the choice with team experience, deployment controls and workload needs. Estimate broker, worker, storage, cross-zone transfer, NAT and observability costs. Set a budget notification; do not describe it as a guaranteed spending cap. No resources need to be created for this exercise.</p></details>
+<p>Source: <a href="https://docs.aws.amazon.com/msk/latest/developerguide/bestpractices.html">MSK operational guidance</a>.</p></section>
+<section id="docker"><h2>Docker: reproducible workers and safe shutdown</h2>
+<p>Use the <a href="docker-deep-dive-map.html">Docker track</a> for images, layers, Compose, networking, storage and isolation. For the rates worker, separate build tooling from runtime files with a multi-stage build when compilation needs it. Pin dependencies and base-image identity, then schedule security updates. A smaller image is not automatically secure.</p>
+<p>Run as a non-root user, exclude secrets and local data with .dockerignore, and use build-secret mounts when credentials are needed during a build. Use an exec-form entrypoint so the application receives termination signals. On SIGTERM, stop accepting work, finish or abandon in-flight work safely, flush producer deliveries within a deadline and close the consumer. Never commit unprocessed offsets to make shutdown look clean.</p>
+<details><summary>Exercise: the worker is terminated after its database write but before its offset commit.</summary><p>The replacement can receive the record again. The sink's durable deduplication prevents a second effect. Compose is useful for a disposable integration fixture, but one local broker does not establish production failover. Supply health checks and service DNS names; localhost inside a worker container refers to that container. Test image startup without root permissions and with missing configuration.</p></details>
+<p>Source: <a href="https://docs.docker.com/build/building/best-practices/">Docker build practices</a>.</p></section>
+<section id="kubernetes"><h2>Kubernetes: operate consumers without losing work</h2>
+<p>Continue the <a href="kubernetes-deep-dive-map.html">Kubernetes track</a>. A Deployment manages replaceable worker Pods. Requests affect scheduling; CPU limits can throttle execution; memory exhaustion can kill a container. Size resources from observed working sets and load tests, including restore and rebalance work.</p>
+<p>Readiness controls eligibility for Service traffic. It does not stop a Kafka consumer from polling. The worker must coordinate its own pause and shutdown. Use startup probes for slow initialization and liveness for conditions a restart can fix. Making liveness fail whenever Kafka is unavailable can cause a restart storm during a broker outage.</p>
+<p>Give termination enough time for bounded draining. Kubernetes can still force termination, so replay safety remains essential. Distribute replicas across failure domains and use disruption budgets for planned disruptions; a budget cannot prevent every involuntary failure. Mount configuration separately from secrets and limit service-account permissions.</p>
+<details><summary>MCQ: twelve consumers share six partitions in one group. Maximum active partition-owning consumers? A: Six workers. B: Twelve workers. C: Eighteen workers. D: Unlimited workers.</summary><p>A. Extra consumers do not create partitions. Scaling also causes group coordination and can move state. Use lag, throughput and processing duration to evaluate scaling, with stabilization to avoid oscillation. Test a rolling update while traffic flows; verify no lost events and no duplicate business effects, not just green Pods.</p></details>
+<p>Source: <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/">Pod lifecycle</a>.</p></section>
+<section id="capstone"><h2>Capstone: a replayable rates-monitoring platform</h2>
+<p>Publish synthetic instrument updates from Python. Choose Kafka Streams for a keyed JVM topology or Spark for distributed analytical windows. Write an idempotent projection to a database. Expose a read-only API and monitor freshness in Grafana. Package workers in Docker; document one AWS deployment using ECS or Kubernetes. Keep trade execution outside this exercise.</p>
+<ol><li>Specify schema, event identity, keys, units, lateness policy and permitted consumers.</li><li>Show three instruments, duplicate delivery, an invalid event and an out-of-order update.</li><li>Inject a sink failure, crash after persistence and restart from stored progress.</li><li>Explain a hot partition, growing state, expired retention and missing telemetry.</li><li>Present an architecture decision, capacity assumptions, cost model, dashboard and recovery runbook.</li></ol>
+<p>Acceptance: unique valid events reconcile with durable effects; invalid events remain traceable; late corrections follow the stated policy; stale quotes are visible; recovery has documented evidence. Report actual measurements only after running the integration. A diagram or passing syntax check is not deployment evidence.</p></section>
+</main></body></html>

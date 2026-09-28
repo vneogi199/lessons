@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>LLM and Transformer Internals · deep</span><span>lesson 0582 / 0644</span></div>
+    <div class="eyebrow"><span>LLM and Transformer Internals · deep</span><span>lesson 0582 / 0665</span></div>
     <h1>Attention, transformer blocks, residual streams, normalization, and feed-forward layers</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to large language models. A large language model processes tokens and estimates a probability for possible next tokens.</p>
+
+    <p>A token representation is a list of numbers. A tensor is an array with one or more dimensions; its shape gives the length of each dimension. Attention combines token representations. A transformer block combines attention with per-token transformations and residual additions.</p>
     <p><a href="../reference/senior-interview-practice.html#llm-internals">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
-      <p>Follow tensor shapes and information flow through a simplified transformer.</p>
-      <p class="analogy">A language model is an extremely detailed next-step navigator: it converts text into tokens, transforms context into probability distributions, then samples one continuation at a time.</p>
+
+      <p>Calculate a small attention result, then trace matrix shapes through one head and a pre-normalization transformer block.</p>
+      <p class="analogy">A query describes what a position is looking for. Keys are compared with that query to produce scores. Values supply the information that the scores will combine. These are learned vectors, not literal database queries or keys.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a token sequence</h2>
       <ol class="trace-flow" data-flow="numerical-0582" aria-label="Mechanism trace: Mask future positions then Normalize visible scores then Mix values. Experiment: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.">
         <li class="trace-stage"><span>01 · TRACE</span><strong>Mask future positions</strong><small>Position zero can only attend to the first value.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><strong>Normalize visible scores</strong><small>Exponentials turn the visible scores into weights summing to one.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><strong>Mix values</strong><small>The later position is a weighted average; changing a future value leaves the earlier output unchanged.</small></li>
@@ -71,8 +71,8 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="5">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">Follow tensor shapes and information flow through a simplified transformer.</p>
+
+
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Attention">
         <span>01</span>
@@ -98,32 +98,27 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · TRACE</span>
-        <h3>Mask future positions</h3>
-        <p>Position zero can only attend to the first value.</p>
-      </article><article>
-        <span>02 · TRACE</span>
-        <h3>Normalize visible scores</h3>
-        <p>Exponentials turn the visible scores into weights summing to one.</p>
-      </article><article>
-        <span>03 · TRACE</span>
-        <h3>Mix values</h3>
-        <p>The later position is a weighted average; changing a future value leaves the earlier output unchanged.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p><p>Look for: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></div>
-  </section>
+  <section class="card mechanism-walkthrough"><p>First trace the scalar example. At position zero, only value 10 is visible, so its weight is 1 and the output is 10. At position one, scores are 0 and 1. Softmax gives weights 1/(1 + e) and e/(1 + e). The weighted value is about 17.31. Changing the future value does not change position zero's output.</p>
+<p>Now use one head, three tokens and two numbers per query and key. Q and K each have shape 3 × 2. QKᵀ has shape 3 × 3. Each row scores one query against the three keys. Divide by √2. Set future-position scores to negative infinity before applying softmax across each row. If V has shape 3 × 4, the result has shape 3 × 4.</p>
+<p>For a full head, learned matrices project the input X into Q, K and V. Scaling by √d_k limits score growth as the key dimension grows. Without scaling, large scores can make softmax too concentrated and its gradients small. Subtracting the row maximum before exponentiation prevents avoidable overflow. Scaling and numerical stabilization solve different problems.</p>
+<p>Multiple heads use separate projections. Their outputs are concatenated and projected back to the model width. For the following pre-normalization block, X has shape n × d_model. This is one block variant; the original transformer paper uses post-normalization.</p>
+<pre><code>Y = X + Attention(LayerNorm(X))
+Z = Y + FFN(LayerNorm(Y))
+
+X, Y, Z: n × d_model
+FFN hidden activations: n × d_ff
+FFN output: n × d_model</code></pre>
+<p>Here Attention includes head combination and the output projection. Each addition requires matching shapes. The residual stream is the representation carried forward through these additions. LayerNorm normalizes features within each token. It is different from softmax, which turns attention scores into weights across visible positions.</p>
+<p>The feed-forward network applies a learned nonlinear transformation to each token separately. It shares weights across token positions within the layer. It expands to d_ff and projects back to d_model. Attention mixes positions; the feed-forward network transforms features. Positional information is also needed to represent sequence position; a causal mask specifies which positions are permitted.</p>
+<p>Dense attention computes n² query-key pairs for a full sequence. Doubling n quadruples the pair count, but does not imply that total model latency quadruples. Projections, the feed-forward network, memory access and kernels also cost time. During autoregressive decoding, a KV cache reuses prior keys and values. A new token attends to the stored prefix, while the cache consumes memory that grows with context length. Caching does not remove attention over the prefix.</p>
+<p><a href="https://arxiv.org/abs/2002.04745">Pre-normalization and post-normalization analysis</a>; <a href="https://huggingface.co/docs/transformers/cache_explanation">KV cache explanation</a>.</p></section>
 
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Implement and visualize scaled dot-product attention on a tiny example.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">The Python starter computes scalar causal attention and checks two outputs. The shape trace extends it to one matrix attention head and a named pre-normalization block. The block equations are an explanation, not a supplied trained model or performance benchmark.</p>
 
 
 
@@ -156,28 +151,12 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
 
 
 
-  <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Mask future positions → Normalize visible scores → Mix values. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
+  <section class="card code-guide"><p>The starter uses d = 1, so division by the square root of d would divide by one. Slicing visible keys performs the causal restriction. zip combines matching weights and values for the trusted fixture. A general function would also validate positions, lengths and finite values.</p></section>
 
-  <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a token sequence from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></article>
-    </div>
-  </section>
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Wrong softmax axis</h3><p>Normalize scores across the keys visible to one query. Mask before softmax so forbidden positions receive zero weight.</p></article><article><h3>Toy mistaken for a full block</h3><p>The scalar starter has no learned projections, multi-head combination, residual addition or feed-forward network. Use the shape trace to explain these omitted parts.</p></article></div></section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain self-attention, its cost, and why position information is needed.</li>
       <li>Trace a token sequence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -188,11 +167,11 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="llm-internals">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Give every shape for the three-token head. Explain why the FFN output must return to d_model. Then double the prompt length: what grows quadratically, and what does a KV cache save during decoding?</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow tensor shapes and information flow through a simplified transformer.</p>
+        <p>Scores and weights are 3 × 3; the weighted values are 3 × 4. The output projection restores model width for the residual addition. FFN weights are shared across positions, with an expanded hidden width. Dense pair count grows fourfold when length doubles. A KV cache avoids recomputing prior keys and values, at the cost of memory; it does not guarantee a fourfold latency change or eliminate prefix attention.</p>
         <p class="worked-answer">Position zero returns ten; position one returns about 17.31. Subtracting the maximum stabilizes softmax, and d=1 makes the scale factor one. The trusted fixture has only positions zero and one and matching value lengths. Dense full-sequence attention has quadratic pair interactions; this toy implements neither full blocks nor inference-cache performance.</p>
         <p>Look for: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
@@ -201,14 +180,26 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
     </div>
   </section>
 
-  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
     <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
-    <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. One head has Q and K of shape 3 × 2, and V of shape 3 × 4. What is the shape of softmax(QKᵀ / √2)V?</h3>
+      <ol><li>Softmax operates across keys in each score row. Masking preserves the score matrix shape.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. 2 × 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. 3 × 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. 3 × 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. 4 × 3</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 3 × 4</p>
+        <ul><li>A. The output retains three query positions, not the key feature count.</li><li>B. 3 × 3 is the shape of the weights before multiplying V.</li><li>C. A 3 × 3 weight matrix times 3 × 4 values gives 3 × 4.</li><li>D. The output does not transpose the query and value dimensions.</li></ul>
+        <p>The value width can differ from the query/key width. A full multi-head block projects combined heads back to model width before residual addition.</p>
+        <p>Double sequence length while preserving feature widths. Give the new score and output shapes.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>A residual stream carries the evolving token representation through model layers while each sublayer adds an update.</li><li>[concept] rescales activations to keep model computation stable and trainable.</li><li>[concept] computes weighted combinations of token representations based on learned query, key, and value relationships.</li><li>A transformer block applies attention, feed-forward transformations, normalization, and residual connections in repeated layers.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Attention: 3; transformer blocks: 4; residual streams: 2; normalization: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Attention: 3; transformer blocks: 1; residual streams: 2; normalization: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Attention: 3; transformer blocks: 4; residual streams: 1; normalization: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Attention: 3; transformer blocks: 2; residual streams: 1; normalization: 4</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Attention: 3; transformer blocks: 4; residual streams: 2; normalization: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Attention: 3; transformer blocks: 1; residual streams: 2; normalization: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Attention: 3; transformer blocks: 4; residual streams: 1; normalization: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Attention: 3; transformer blocks: 2; residual streams: 1; normalization: 4</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: C.</strong> Attention: 3; transformer blocks: 4; residual streams: 1; normalization: 2</p>
@@ -217,10 +208,10 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>[concept] rescales activations to keep model computation stable and trainable.</li><li>A feed-forward layer applies learned nonlinear transformations independently to each token position.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. normalization: 1; feed-forward layers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. normalization: 2; feed-forward layers: 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. normalization: 1; feed-forward layers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. normalization: 2; feed-forward layers: 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: A.</strong> normalization: 1; feed-forward layers: 2</p>
@@ -229,10 +220,10 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
       <ol><li>Mix values: The later position is a weighted average; changing a future value leaves the earlier output unchanged.</li><li>Mask future positions: Position zero can only attend to the first value.</li><li>Normalize visible scores: Exponentials turn the visible scores into weights summing to one.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 2 → 3 → 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: D.</strong> 2 → 3 → 1</p>
@@ -241,12 +232,12 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
         <p>Predict the assertions, change one fixture input, and explain whether the original expectation should still hold. Evidence to inspect: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p>
       </details>
     </article>
-    <p><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Review the lesson source: Attention Is All You Need</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://arxiv.org/html/1706.03762v7" target="_blank" rel="noreferrer">Review the lesson source: Attention Is All You Need: architecture</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
@@ -258,7 +249,7 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Attention Is All You Need ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/html/1706.03762v7" target="_blank" rel="noreferrer">Attention Is All You Need: architecture ↗</a></div>
     
     
     

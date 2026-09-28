@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0369 / 0644</span></div>
+    <div class="eyebrow"><span>PostgreSQL, Redis, and Data Systems Complete Deep Dive · core</span><span>lesson 0369 / 0665</span></div>
     <h1>VACUUM, autovacuum, ANALYZE, freezing, transaction ID wraparound, and maintenance tuning</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
+
     <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
       <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace database maintenance</h2>
       <ol class="trace-flow" data-flow="postgres-maintenance" aria-label="Mechanism trace: Writes leave current and dead tuple versions then Autovacuum selects maintenance work then Vacuum prunes and freezes safely then Space and visibility metadata improve. Experiment: Hold an old snapshot while updating rows, then compare cleanup before and after it ends.">
         <li class="trace-stage"><span>01 · VERSIONS</span><strong>Writes leave current and dead tuple versions</strong><small>Pages, indexes, TOAST, HOT eligibility, and old snapshots retain physical state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DISCOVER</span><strong>Autovacuum selects maintenance work</strong><small>Thresholds, worker availability, wraparound age, and cost settings control timing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CLEAN</span><strong>Vacuum prunes and freezes safely</strong><small>Visibility horizons prevent removal of versions another snapshot still needs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REUSE</span><strong>Space and visibility metadata improve</strong><small>Dead tuples, page reuse, index cleanup, all-visible bits, and query plans reveal impact.</small></li>
@@ -71,7 +71,7 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="6">
-    <span class="section-label">04 · Detailed term guide</span>
+
     <p class="concept-intro">Trace dead-tuple pruning, index cleanup, visibility marking, statistics refresh, freeze horizons, worker scheduling, thresholds, and long-transaction interference.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="VACUUM">
@@ -103,7 +103,7 @@
   </section>
 
   <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       <article>
         <span>01 · VERSIONS</span>
@@ -129,7 +129,7 @@
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Create dead tuples, inspect maintenance statistics, tune one table, and prove that an old transaction delays cleanup.</p>
     <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
 <p>Focus on maintenance ownership: hold an old snapshot in a separate test session, run vacuum and inspect what can be reclaimed. Release it and compare. Explain ANALYZE versus VACUUM and why ordinary vacuum does not generally shrink the file to its minimum size.</p>
@@ -163,7 +163,7 @@ ALTER TABLE events SET (
 
 
   <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -173,7 +173,7 @@ ALTER TABLE events SET (
   </section>
 
   <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace database maintenance from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Hold an old snapshot while updating rows, then compare cleanup before and after it ends.</p></article>
@@ -183,7 +183,7 @@ ALTER TABLE events SET (
   </section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain why vacuum is required by MVCC and how autovacuum protects both performance and transaction-ID safety.</li>
       <li>Trace database maintenance for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -252,7 +252,7 @@ ALTER TABLE events SET (
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

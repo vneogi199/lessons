@@ -39,40 +39,40 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>API Design and Distributed Systems Complete Deep Dive · core</span><span>lesson 0447 / 0644</span></div>
+    <div class="eyebrow"><span>API Design and Distributed Systems Complete Deep Dive · core</span><span>lesson 0447 / 0665</span></div>
     <h1>Consensus, replicated state machines, Raft terms, elections, log replication, and safety</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to APIs and distributed systems. An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
+
+    <p>Consensus lets replicas agree on an ordered log of commands despite crashes and delayed messages. A term is an election epoch. A quorum is the required set of voters; in a fixed Raft cluster it is a majority. A log prefix is the sequence of entries up to a given position.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
-      <p>Elect one leader per term, replicate ordered commands to a majority, commit safely, apply deterministically, and change membership without allowing conflicting committed logs.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+
+      <p>Raft elects at most one leader per term. Trace log replication, the current-term commitment rule and safe membership changes under a network partition.</p>
+      <p class="analogy">A committed log gives each replica the same command order. A deterministic state machine applies those commands with the same result. External effects need their own replay and authority controls.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a distributed request or message</h2>
-      <ol class="trace-flow" data-flow="consensus-authority" aria-label="Mechanism trace: Node proposes command or authority then Peers vote or acknowledge then Decision becomes durable authority then Stale and failed nodes rejoin safely. Experiment: Partition the leader into a minority, elect a new leader, then let the old leader send a late write.">
-        <li class="trace-stage"><span>01 · PROPOSE</span><strong>Node proposes command or authority</strong><small>Term, log prefix, membership, lease, and candidate state enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUORUM</span><strong>Peers vote or acknowledge</strong><small>Majority intersection and log freshness prevent conflicting committed histories.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Decision becomes durable authority</strong><small>Leader applies ordered state and issues a position or fencing token.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>Stale and failed nodes rejoin safely</strong><small>Terms, committed prefix, membership transition, rejected stale write, and state match prove safety.</small></li>
+      <ol class="trace-flow" data-flow="raft-log-safety" aria-label="Mechanism trace: A candidate needs a majority then Followers check the preceding entry then Count replicas for a current-term entry then Replicas apply committed commands in order. Experiment: Partition five replicas into groups of two and three, then heal the partition.">
+        <li class="trace-stage"><span>01 · ELECT</span><strong>A candidate needs a majority</strong><small>Persist term and vote. Check log freshness. A term can end without a leader.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICATE</span><strong>Followers check the preceding entry</strong><small>Matching index and term anchor the prefix before durable append or conflict repair.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Count replicas for a current-term entry</strong><small>A majority storing it allows commitment of it and the preceding log.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · APPLY</span><strong>Replicas apply committed commands in order</strong><small>A higher observed term ends old leadership. External effects need separate replay controls.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Partition the leader into a minority, elect a new leader, then let the old leader send a late write.</strong>
-        <small><b>Inspect:</b> Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</small>
+        <strong>Partition five replicas into groups of two and three, then heal the partition.</strong>
+        <small><b>Inspect:</b> Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</small>
       </div>
     </aside>
   </div>
 
   <section class="concept-section" data-subtopic-count="6">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">Elect one leader per term, replicate ordered commands to a majority, commit safely, apply deterministically, and change membership without allowing conflicting committed logs.</p>
+
+
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Consensus">
         <span>01</span>
@@ -85,7 +85,7 @@
       </article><article class="concept-card" data-subtopic="Raft terms">
         <span>03</span>
         <h3>Raft terms</h3>
-        <p class="concept-definition">Raft terms are monotonically increasing logical election epochs. Nodes persist the current term and vote; a higher term invalidates older leadership. A term can have no elected leader, and a term number alone does not prove a log entry committed.</p>
+        <p class="concept-definition">Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</p>
       </article><article class="concept-card" data-subtopic="elections">
         <span>04</span>
         <h3>elections</h3>
@@ -102,36 +102,21 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · PROPOSE</span>
-        <h3>Node proposes command or authority</h3>
-        <p>Term, log prefix, membership, lease, and candidate state enter.</p>
-      </article><article>
-        <span>02 · QUORUM</span>
-        <h3>Peers vote or acknowledge</h3>
-        <p>Majority intersection and log freshness prevent conflicting committed histories.</p>
-      </article><article>
-        <span>03 · COMMIT</span>
-        <h3>Decision becomes durable authority</h3>
-        <p>Leader applies ordered state and issues a position or fencing token.</p>
-      </article><article>
-        <span>04 · RECOVER</span>
-        <h3>Stale and failed nodes rejoin safely</h3>
-        <p>Terms, committed prefix, membership transition, rejected stale write, and state match prove safety.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Partition the leader into a minority, elect a new leader, then let the old leader send a late write.</p><p>Look for: Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</p></div>
-  </section>
+  <section class="card mechanism-walkthrough"><p>Raft elects at most one leader per term. Split votes can leave a term without a leader. Each server persists its current term and vote before relying on them after a crash. A server that learns of a higher term updates its term and becomes a follower. A disconnected old leader may not yet know that a new term exists.</p>
+<p>Consider five servers A, B, C, D and E with matching logs. Three votes form a majority. A leads term 4. A partition separates A and B from C, D and E. C can win term 5 with C, D and E. A may still believe it leads, but A and B cannot form a majority to commit new commands. A must step down when it receives a valid higher-term message.</p>
+<p>A voter also checks log freshness. Compare the last entry's term first, then its index if the terms match. A longer log with an older last term is not necessarily more up to date. Majority intersection alone is insufficient without these election and log rules.</p>
+<p>A leader advances commitment by counting replicas for entries from its current term. Once such an entry is stored on a majority, it and preceding entries become committed. A majority holding an older-term entry alone does not justify the same conclusion. The paper's Figure 8 shows why that entry can still be overwritten before the current-term rule is satisfied.</p>
+<p>AppendEntries checks the preceding entry's index and term. On a mismatch, the leader repairs the follower's log by finding a matching prefix. Conflicting uncommitted entries can be replaced. A shorter matching request must not blindly truncate a matching suffix. Persist accepted changes before reporting success. Apply committed commands in index order.</p>
+<p>Membership changes need overlapping authority. In the paper's joint-consensus procedure, decisions require a majority of both the old and new configurations during the transition. Switching directly between unrelated majorities can allow conflicting decisions. Name the membership procedure your implementation uses.</p>
+<p>Safety means that conflicting commands do not become committed at the same log position under the protocol's crash-fault assumptions. Progress also needs a communicating majority and sufficiently stable timing for an election. A minority partition loses write availability. These tests provide evidence for particular cases; they are not a proof of the full protocol.</p>
+<p>A fencing token is an application mechanism for rejecting a stale actor at an external resource. Raft does not make that resource enforce tokens automatically. A term is not a commit receipt. Define token issuance and stale-token rejection separately. A lease also introduces time assumptions that are not part of basic Raft log commitment.</p></section>
 
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery.</p>
-    <p class="lab-scope">Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
+    <p class="lab-scope">First trace the five-node scenario below. The JavaScript starter checks only the AppendEntries term and prefix preconditions with a persistence adapter. It does not implement a consensus cluster. Membership and recovery exercises are tabletop reasoning tasks.</p>
 
 
 
@@ -178,7 +163,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 // Remaining protocol: conflict handling without truncating a matching suffix,
 // durable log writes, nondecreasing commitIndex bounded by the last new entry,
 // application order, election safety, leader current-term commit rule, snapshots
-// and membership changes. The old sketch incorrectly used the entire local tail.
+// and membership changes. Bound commitIndex by the last entry covered by this RPC.
 // Do not deploy this precheck; use the full algorithm and tested implementation.
 // https://raft.github.io/raft.pdf</code></pre>
     <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
@@ -186,28 +171,12 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 
 
 
-  <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Node proposes command or authority → Peers vote or acknowledge → Decision becomes durable authority → Stale and failed nodes rejoin safely. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
+  <section class="card code-guide"><p>Read onAppendEntries as a precheck. A higher term is persisted even when the prefix is rejected. readyForLogProcessing deliberately differs from append success. A rejected persistence promise must stop normal node processing. Tests of this adapter cannot establish election or commitment safety.</p></section>
 
-  <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Partition the leader into a minority, elect a new leader, then let the old leader send a late write.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</p></article>
-    </div>
-  </section>
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Replication confused with commitment</h3><p>An older-term entry can exist on a majority and still be unsafe to commit by replica counting alone. Explain the current-term rule before acknowledging a client.</p></article><article><h3>Consensus confused with exactly-once effects</h3><p>A client can retry after losing a reply. Applying the same request twice is an application concern. Persist request identity and results where replay must be safe.</p></article></div></section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain what consensus solves, trace a Raft write, and distinguish leader election from failure detection and replication alone.</li>
       <li>Trace a distributed request or message for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -218,39 +187,51 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Trace the five-node partition. Who can commit? What happens to the old leader after healing? Then change membership from five servers to three. Explain which majorities the transition requires and what the precheck code cannot establish.</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Elect one leader per term, replicate ordered commands to a majority, commit safely, apply deterministically, and change membership without allowing conflicting committed logs.</p>
+        <p>C, D and E can elect a term-5 leader and commit current-term entries. A and B cannot commit alone. A steps down after learning term 5; conflicting uncommitted suffixes can be repaired. Joint consensus needs both configuration majorities. The precheck verifies durable term handling and prefix rejection only; election, append durability, commitment, application and membership safety still need the full protocol.</p>
         <p class="worked-answer">A higher term is persisted even when the prefix check fails. The success-shaped outcome deliberately says readyForLogProcessing, not append success. Trusted RPCs, serialized dispatch and durable hard-state adapter behavior are assumptions; rejecting a failed persistence promise must also stop normal node processing. Elections, conflict repair, commit rules and membership remain outside this precheck.</p>
-        <p>Look for: Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</p>
+        <p>Look for: Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
   </section>
 
-  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
     <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
-    <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
-      <ol><li>[concept] select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</li><li>[concept] lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</li><li>[concept] apply an agreed command sequence to deterministic state transitions across replicas.</li><li>[concept] are monotonically increasing logical election epochs. Nodes persist the current term and vote; a higher term invalidates older leadership. A term can have no elected leader, and a term number alone does not prove a log entry committed.</li></ol>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. A five-node Raft cluster splits into groups of two and three. The old leader is in the group of two. Which statement is correct?</h3>
+      <ol><li>Logs initially match. The three-node side communicates reliably and can complete an election.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Consensus: 2; replicated state machines: 4; Raft terms: 3; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Consensus: 2; replicated state machines: 1; Raft terms: 3; elections: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Consensus: 3; replicated state machines: 2; Raft terms: 4; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Consensus: 2; replicated state machines: 3; Raft terms: 4; elections: 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Both groups commit independently</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Only majority can commit</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Only minority can commit</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Neither group can commit</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> Only majority can commit</p>
+        <ul><li>A. Two disjoint groups cannot both form a fixed-cluster majority.</li><li>B. Three nodes can elect a leader and replicate a current-term entry to a majority.</li><li>C. The old leader&#39;s belief does not replace the majority requirement.</li><li>D. The three-node side can make progress under the stated conditions.</li></ul>
+        <p>The old leader steps down after learning of the higher term. A partition can delay that knowledge. Do not equate a local leadership belief with commitment authority.</p>
+        <p>Explain why an older-term entry on a majority still needs the current-term commitment rule.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <ol><li>[concept] select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</li><li>[concept] lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</li><li>[concept] apply an agreed command sequence to deterministic state transitions across replicas.</li><li>[concept] are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Consensus: 2; replicated state machines: 4; Raft terms: 3; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Consensus: 2; replicated state machines: 1; Raft terms: 3; elections: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Consensus: 3; replicated state machines: 2; Raft terms: 4; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Consensus: 2; replicated state machines: 3; Raft terms: 4; elections: 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: D.</strong> Consensus: 2; replicated state machines: 3; Raft terms: 4; elections: 1</p>
         <ul><li>A. “replicated state machines” matches explanation 3, not 4. “Raft terms” matches explanation 4, not 3.</li><li>B. “replicated state machines” matches explanation 3, not 1. “Raft terms” matches explanation 4, not 3. “elections” matches explanation 1, not 4.</li><li>C. “Consensus” matches explanation 2, not 3. “replicated state machines” matches explanation 3, not 2.</li><li>D. Every concept matches its explanation.</li></ul>
-        <p>Consensus: Consensus lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</p><p>replicated state machines: Replicated state machines apply an agreed command sequence to deterministic state transitions across replicas.</p><p>Raft terms: Raft terms are monotonically increasing logical election epochs. Nodes persist the current term and vote; a higher term invalidates older leadership. A term can have no elected leader, and a term number alone does not prove a log entry committed.</p><p>elections: Elections select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</p>
+        <p>Consensus: Consensus lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</p><p>replicated state machines: Replicated state machines apply an agreed command sequence to deterministic state transitions across replicas.</p><p>Raft terms: Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</p><p>elections: Elections select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</p>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>Distributed-systems [concept] means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break [concept], but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#39;s guarantees.</li><li>[concept] distributes ordered records and establishes commitment under a consensus or replication protocol.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. log replication: 1; safety: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. log replication: 2; safety: 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. log replication: 1; safety: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. log replication: 2; safety: 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: B.</strong> log replication: 2; safety: 1</p>
@@ -259,24 +240,24 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
-      <ol><li>Decision becomes durable authority: Leader applies ordered state and issues a position or fencing token.</li><li>Stale and failed nodes rejoin safely: Terms, committed prefix, membership transition, rejected stale write, and state match prove safety.</li><li>Node proposes command or authority: Term, log prefix, membership, lease, and candidate state enter.</li><li>Peers vote or acknowledge: Majority intersection and log freshness prevent conflicting committed histories.</li></ol>
+      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>Count replicas for a current-term entry: A majority storing it allows commitment of it and the preceding log.</li><li>Replicas apply committed commands in order: A higher observed term ends old leadership. External effects need separate replay controls.</li><li>A candidate needs a majority: Persist term and vote. Check log freshness. A term can end without a leader.</li><li>Followers check the preceding entry: Matching index and term anchor the prefix before durable append or conflict repair.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 2 → 1 → 4</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: A.</strong> 3 → 4 → 1 → 2</p>
-        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Decision becomes durable authority”, not “Stale and failed nodes rejoin safely”.</li><li>C. At position 2, the trace uses “Peers vote or acknowledge”, not “Decision becomes durable authority”.</li><li>D. At position 2, the trace uses “Peers vote or acknowledge”, not “Stale and failed nodes rejoin safely”.</li></ul>
-        <p>Node proposes command or authority: Term, log prefix, membership, lease, and candidate state enter.</p><p>Peers vote or acknowledge: Majority intersection and log freshness prevent conflicting committed histories.</p><p>Decision becomes durable authority: Leader applies ordered state and issues a position or fencing token.</p><p>Stale and failed nodes rejoin safely: Terms, committed prefix, membership transition, rejected stale write, and state match prove safety.</p>
-        <p>Partition the leader into a minority, elect a new leader, then let the old leader send a late write. Evidence to inspect: Terms, votes, logs, commit indexes, membership, lease time, fencing token, rejected write, and applied state.</p>
+        <ul><li>A. This reproduces the lesson’s trace.</li><li>B. At position 3, the trace uses “Count replicas for a current-term entry”, not “Replicas apply committed commands in order”.</li><li>C. At position 2, the trace uses “Followers check the preceding entry”, not “Count replicas for a current-term entry”.</li><li>D. At position 2, the trace uses “Followers check the preceding entry”, not “Replicas apply committed commands in order”.</li></ul>
+        <p>A candidate needs a majority: Persist term and vote. Check log freshness. A term can end without a leader.</p><p>Followers check the preceding entry: Matching index and term anchor the prefix before durable append or conflict repair.</p><p>Count replicas for a current-term entry: A majority storing it allows commitment of it and the preceding log.</p><p>Replicas apply committed commands in order: A higher observed term ends old leadership. External effects need separate replay controls.</p>
+        <p>Partition five replicas into groups of two and three, then heal the partition. Evidence to inspect: Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</p>
       </details>
     </article>
-    <p><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Review the lesson source: Raft extended paper</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Review the lesson source: Raft paper: elections, safety and membership</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
@@ -288,7 +269,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Raft extended paper ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Raft paper: elections, safety and membership ↗</a></div>
     
     
     

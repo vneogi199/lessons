@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>FastAPI Complete Deep Dive · core</span><span>lesson 0322 / 0644</span></div>
+    <div class="eyebrow"><span>FastAPI Complete Deep Dive · core</span><span>lesson 0322 / 0665</span></div>
     <h1>Cancellation, timeouts, task groups, disconnects, and structured concurrency</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
+
     <p>This topic belongs to FastAPI. FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
       <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a concurrent task</h2>
       <ol class="trace-flow" data-flow="fastapi-cancellation" aria-label="Mechanism trace: Keep child work inside a bounded scope then Connect timeout and abandonment policy then Let cancellation reach cooperative waits then Wait for children and account for outcomes. Experiment: Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.">
         <li class="trace-stage"><span>01 · OWN</span><strong>Keep child work inside a bounded scope</strong><small>Define a deadline and whether partial results are acceptable before starting upstream calls.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SIGNAL</span><strong>Connect timeout and abandonment policy</strong><small>A client disconnect is not a universal automatic cancellation guarantee; verify the server path and explicitly own any disconnect watcher.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · UNWIND</span><strong>Let cancellation reach cooperative waits</strong><small>Use finally for cleanup and normally propagate cancellation. Cancelling an await does not forcibly stop a running thread or undo a remote write.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><strong>Wait for children and account for outcomes</strong><small>Task groups own child completion and failures. Cleanup can exceed the nominal timeout, and remote effects may require reconciliation.</small></li>
@@ -71,7 +71,7 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="5">
-    <span class="section-label">04 · Detailed term guide</span>
+
     <p class="concept-intro">Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Cancellation">
@@ -99,7 +99,7 @@
   </section>
 
   <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       <article>
         <span>01 · OWN</span>
@@ -125,7 +125,7 @@
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Run bounded parallel upstream calls with AnyIO task groups, deadlines, partial failure policy, and client-disconnect cancellation.</p>
     <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
@@ -161,7 +161,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
 
 
   <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -171,7 +171,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
   </section>
 
   <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a concurrent task from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.</p></article>
@@ -181,7 +181,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
   </section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain why creating untracked background asyncio tasks inside a request is unsafe.</li>
       <li>Trace a concurrent task for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -250,7 +250,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

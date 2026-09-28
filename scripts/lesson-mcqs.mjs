@@ -1,5 +1,7 @@
 // Recall questions reuse the lesson's explanations, not invented false claims.
 // These do not certify coding skill or senior interview readiness.
+import { REVIEW_SCENARIOS } from "./reviewed-lesson-content.mjs";
+import { POLARS_SCENARIOS } from "./polars-content.mjs";
 const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[character]));
@@ -34,7 +36,7 @@ function concealTerms(definition, terms) {
 
 export function lessonMcqs(lesson, diagram, concepts) {
   const questions = [];
-  const authored = {
+  const authored = REVIEW_SCENARIOS[lesson.number] ?? POLARS_SCENARIOS[lesson.number] ?? {
     "0004": {
       kind: "scenario", terms: ["Debugging as hypothesis testing"],
       prompt: "A cache computes twice when its stored result is zero. The guard is if (!cache.get(key)). Which change directly addresses the reported cause while retaining caching?",
