@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>FastAPI Complete Deep Dive · core</span><span>lesson 0316 / 0644</span></div>
+    <div class="eyebrow"><span>FastAPI Complete Deep Dive · core</span><span>lesson 0316 / 0665</span></div>
     <h1>Yield dependencies, cleanup scopes, exceptions, and resource ownership</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
+
     <p>This topic belongs to FastAPI. FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
       <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a dependency lifetime</h2>
       <ol class="trace-flow" data-flow="fastapi-dependencies" aria-label="Mechanism trace: Endpoint declares requirements then FastAPI solves prerequisites then Values are acquired and cached then Yield resources close in reverse. Experiment: Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.">
         <li class="trace-stage"><span>01 · SIGNATURE</span><strong>Endpoint declares requirements</strong><small>Annotated parameters identify dependency callables.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GRAPH</span><strong>FastAPI solves prerequisites</strong><small>Sub-dependencies are ordered before their consumers.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REQUEST SCOPE</span><strong>Values are acquired and cached</strong><small>Each node normally runs once for this request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · UNWIND</span><strong>Yield resources close in reverse</strong><small>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</small></li>
@@ -71,7 +71,7 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="4">
-    <span class="section-label">04 · Detailed term guide</span>
+
     <p class="concept-intro">Trace generator dependencies through entry, endpoint execution, response production, nested LIFO cleanup, scope selection, and exception propagation.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Yield dependencies">
@@ -95,7 +95,7 @@
   </section>
 
   <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       <article>
         <span>01 · SIGNATURE</span>
@@ -121,7 +121,7 @@
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Manage a session and lock with nested yield dependencies, deliberately fail each phase, and verify cleanup ordering.</p>
     <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
 
@@ -160,7 +160,7 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
 
 
   <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -170,7 +170,7 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
   </section>
 
   <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a dependency lifetime from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.</p></article>
@@ -180,7 +180,7 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
   </section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Place transaction commit or rollback correctly and explain why cleanup timing matters for streaming responses.</li>
       <li>Trace a dependency lifetime for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -237,7 +237,7 @@ UowDep = Annotated[UnitOfWork, Depends(unit_of_work, scope=&quot;function&quot;)
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

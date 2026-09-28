@@ -69,6 +69,15 @@ export const REUSE_PURPOSE = {
 // Authored interview cases. Numbers are exercise assumptions, not provider limits.
 // These are worked examples and review prompts, not automated hiring assessments.
 export const SENIOR_CASES = {
+  polars: {
+    title: "An RFQ report doubles exposure after enrichment",
+    scenario: "A daily risk projection is fast and all casts succeed, but desk exposure doubles after joining instrument reference data. A colleague proposes dropping duplicates from the final report. How do you diagnose and repair the pipeline?",
+    reasoning: "State the grain at each boundary. Compare row counts and exposure totals before and after the join. Inspect duplicate reference keys and use an anti join to report missing mappings. Enforce the intended many-to-one relationship before enrichment. Do not drop legitimate trade rows to compensate for a broken reference join. Define latest-event selection and point-in-time reference validity separately. Rebuild from an immutable source snapshot and reconcile before publishing the corrected report.",
+    followup: "The query now passes correctness checks but exceeds memory. What changes, and which correctness rules must remain?",
+    signals: "Inspect source projection/filter pushdown, join cardinality, grouping state and output size. Measure peak memory and test a supported streaming/sink plan. Preserve unique reference keys, unmatched records, units and report identity. Use a bounded service worker path; Polars does not supply transactional risk reservations.",
+    gap: "Twenty-one authored lessons include synthetic Python assertions, worked outcomes and scenario MCQs. Examples are source-reviewed and syntax-checked only; no Polars runtime, cloud integration or production benchmark is certified.",
+    source: ["Polars join semantics", "https://docs.pola.rs/user-guide/transformations/joins/"]
+  },
   "engineering-foundations": {
     title: "A release works locally and fails in CI",
     scenario: "A release is due today. A teammate proposes deleting the lockfile because installation fails only in CI. How do you investigate and decide whether to ship?",

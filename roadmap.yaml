@@ -435,7 +435,7 @@ tracks:
         practical: Predict reads and writes before declarations across scripts, modules, functions, and blocks.
         interview: Replace the vague claim declarations move upward with the actual binding-creation and initialization sequence.
       - title: Closures, captured bindings, factories, privacy, stale state, and retention
-        behind_the_scenes: See how function objects retain references to outer lexical environments and how closures observe mutable bindings rather than frozen value copies.
+        behind_the_scenes: A returned function can still read and update variables from its defining call. Trace those bindings separately from values calculated earlier.
         practical: Implement a private counter, fix a loop capture bug, diagnose stale asynchronous state, and release a retained object graph.
         interview: Define a closure, trace one captured binding, and discuss both useful encapsulation and memory cost.
       - title: Functions, declarations, expressions, arrows, parameters, arguments, and arity
@@ -641,7 +641,7 @@ tracks:
         practical: Define an immutable route catalog retaining literal keys and values while satisfying a broader contract.
         interview: Contrast annotation, assertion, const assertion, and satisfies.
       - title: Generics, type parameters, constraints, defaults, relationships, and reusable contracts
-        behind_the_scenes: Treat type parameters as relationships among positions, apply constraints only to required capabilities, and understand defaults.
+        behind_the_scenes: A type parameter connects caller inputs to result types. Trace inference, required fields and a default type through concrete calls.
         practical: Design repository and selection APIs that preserve caller types without leaking any.
         interview: Derive a generic signature from input-output relationships instead of adding a decorative type parameter.
       - title: Generic inference, inference sites, contextual inference, const type parameters, and inference failures
@@ -791,7 +791,7 @@ tracks:
         practical: Build nested keyboard and pointer interactions, deliberately control propagation, and trace batched versus synchronous updates.
         interview: Distinguish event handlers from effects and explain why state does not change inside an existing render snapshot.
       - title: useState, render snapshots, update queues, batching, and functional updates
-        behind_the_scenes: Trace hook slots, memoized state, queued updater functions, Object.is bailouts, lazy initialization, and state replacement across renders.
+        behind_the_scenes: Each render reads its own state snapshot. Trace queued replacement values and updater functions before predicting the next state.
         practical: Implement counters, object and array updates, reset behavior, and queued updates while predicting every rendered value first.
         interview: Explain stale state, functional updaters, immutability, and when state is preserved.
       - title: useReducer, actions, reducer purity, initialization, and dispatch
@@ -957,7 +957,7 @@ tracks:
         practical: Classify common APIs by JavaScript, Node binding, libuv, worker-pool, and kernel responsibility.
         interview: Explain Node as a JavaScript host rather than calling it a language or merely a single thread.
       - title: Event loop phases, timers, pending callbacks, poll, check, close callbacks, and iteration
-        behind_the_scenes: Follow libuv loop iterations through readiness, timer, check, and close work while separating platform-dependent details from stable guarantees.
+        behind_the_scenes: Follow a file-read callback into the poll, check and timer work it schedules. Separate guaranteed relationships from observed top-level order.
         practical: Instrument timers, I/O, setImmediate, and socket close callbacks and predict their ordering from the scheduling context.
         interview: Draw the event-loop phases and avoid claiming one universal ordering across all contexts.
       - title: process.nextTick, Promise microtasks, queueMicrotask, setImmediate, timers, and starvation
@@ -1905,7 +1905,7 @@ tracks:
         practical: Design a partition key from workload data, simulate skew and rebalancing, and measure scatter-gather fan-out and tail latency.
         interview: Choose a shard key and explain resharding, hotspot, join, uniqueness, transaction, and routing consequences.
       - title: Consensus, replicated state machines, Raft terms, elections, log replication, and safety
-        behind_the_scenes: Elect one leader per term, replicate ordered commands to a majority, commit safely, apply deterministically, and change membership without allowing conflicting committed logs.
+        behind_the_scenes: Raft elects at most one leader per term. Trace log replication, the current-term commitment rule and safe membership changes under a network partition.
         practical: Implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery.
         interview: Explain what consensus solves, trace a Raft write, and distinguish leader election from failure detection and replication alone.
       - title: Membership, failure detection, leases, distributed locks, fencing, and split brain
@@ -2493,7 +2493,7 @@ tracks:
         practical: Inspect tokenizer output across languages, code, whitespace, and adversarial strings.
         interview: Explain tokens, embeddings, and context without anthropomorphism.
       - title: Attention, transformer blocks, residual streams, normalization, and feed-forward layers
-        behind_the_scenes: Follow tensor shapes and information flow through a simplified transformer.
+        behind_the_scenes: Calculate a small attention result, then trace matrix shapes through one head and a pre-normalization transformer block.
         practical: Implement and visualize scaled dot-product attention on a tiny example.
         interview: Explain self-attention, its cost, and why position information is needed.
       - title: Pretraining, next-token prediction, fine-tuning, instruction tuning, and preference optimization
@@ -2717,7 +2717,7 @@ tracks:
         practical: Record thirty-, ninety-, and three-hundred-second introductions and rehearse motivation, transition, compensation, notice period, location, remote, and scheduling answers.
         interview: Give a concise truthful screen that establishes fit and invites the right next question without oversharing or evasion.
       - title: Coding interview method, clarification, examples, invariants, brute force, optimization, complexity, and tests
-        behind_the_scenes: Turn ambiguity into a precise contract, maintain an invariant through implementation, expose tradeoffs aloud, and use tests to catch reasoning errors before the interviewer must.
+        behind_the_scenes: Clarify the required result, explain why each step preserves correctness, and test a small counterexample before optimizing.
         practical: Run timed problems using one repeatable loop from clarification through working code, edge tests, complexity, and a measured improvement note.
         interview: Collaborate visibly under pressure and recover from mistakes without silently abandoning the reasoning trail.
       - title: JavaScript and Python coding interviews, language fluency, debugging, standard libraries, and execution
@@ -2780,6 +2780,96 @@ tracks:
         behind_the_scenes: Replace vague confidence with repeated comparable evidence across coding, technical depth, system design, behavioral communication, and recovery after mistakes.
         practical: Run a full loop, score observable behaviors, review recordings, classify root errors, schedule targeted drills, and repeat until weak signals improve.
         interview: Enter the real loop with practiced structure while remaining responsive, conversational, and willing to revise an answer.
+
+  - id: polars
+    title: Polars Data Engineering and Analytics
+    tier: deep
+    goal: Build typed analytical pipelines, explain execution tradeoffs, and validate RFQ, rates and risk reports.
+    topics:
+      - title: Polars foundations, Series, DataFrames, schemas, and columnar execution
+        behind_the_scenes: A DataFrame stores named typed columns. Expressions describe operations on those columns.
+        practical: Add a repeated rfq_id. Does the schema reject it? Specify a uniqueness check separately.
+        interview: Explicit schemas make boundaries predictable but need maintenance when producers change. Inference is convenient for exploration; validate its result before treating it as a contract.
+      - title: Polars expressions, contexts, selectors, aliases, and conditional logic
+        behind_the_scenes: The same expression takes its meaning from select, with_columns, filter or an aggregation context.
+        practical: Move the band expression beside gross in the first call. Explain why relying on that new alias is invalid, then restore the explicit dependency.
+        interview: Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.
+      - title: Polars nulls, NaN, casts, validation, and quarantine
+        behind_the_scenes: Preserve invalid input evidence while converting validated values into typed columns.
+        practical: Add an integer larger than Int64 can hold and an empty string. Predict the quarantine rows before running the cast.
+        interview: Strict rejection gives a simple batch boundary. Row quarantine preserves valid work but needs reconciliation, privacy controls and a repair path.
+      - title: Polars strings, regular expressions, and bounded RFQ parsing
+        behind_the_scenes: Normalize text under a documented grammar and separate parsing from business validation.
+        practical: Add BUY 0 USD, a lowercase side and a very large quantity. Separate grammar rejection, overflow and business-rule rejection.
+        interview: A narrow grammar is predictable and auditable. Free-form inputs need a separate extraction workflow with confidence, review and deterministic validation.
+      - title: Polars timestamps, durations, time zones, and market event time
+        behind_the_scenes: Normalize known instants to a common time zone before ordering or comparing market events.
+        practical: Describe the policy for a source that sends a repeated local daylight-saving hour without an offset. Do not silently choose an instant.
+        interview: UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.
+      - title: Polars sorting, deduplication, and latest records per group
+        behind_the_scenes: Define a complete ordering before selecting one record for each business key.
+        practical: Add a row with the same id, timestamp and sequence but a different quantity. Write the conflict rule before choosing a winner.
+        interview: Sorting makes the selection contract explicit but costs work and memory. A streaming latest-state system needs retained keyed state and a late-event policy.
+      - title: Polars grouped aggregations, conditional counts, and weighted metrics
+        behind_the_scenes: Group by the reporting grain and make each aggregate's denominator explicit.
+        practical: Add a null rate with nonzero notional. Decide whether to reject the group or exclude that rate-weight pair, then reconcile the denominator.
+        interview: Pre-aggregation reduces data volume but must retain enough components to combine metrics correctly. Store sums and counts rather than only a displayed average.
+      - title: Polars window expressions, ranking, shifts, and cumulative features
+        behind_the_scenes: Compute group-relative features while keeping the original row grain.
+        practical: Use this feature in a historical trading decision. Which columns use information that was not yet available? Replace them with a trailing calculation.
+        interview: Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.
+      - title: Polars joins, cardinality validation, null keys, and reconciliation
+        behind_the_scenes: A join combines matching rows and can multiply them when keys repeat.
+        practical: Duplicate reference instrument x. Predict the unvalidated total and explain why the validated join should fail.
+        interview: Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.
+      - title: Polars as-of joins, quote freshness, and point-in-time correctness
+        behind_the_scenes: A backward as-of join selects a preceding quote within the same instrument and freshness limit.
+        practical: Mark the time-10 quote as arriving at time 13. Explain why it must be excluded from a decision made at 12 despite passing the event-time comparison.
+        interview: A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.
+      - title: Polars rolling windows, dynamic groups, resampling, and late events
+        behind_the_scenes: Separate fixed row windows, time-based trailing windows and clock-aligned reporting buckets.
+        practical: Move the final event forward by an hour. Explain which row-window result stays the same and which time-bucket assignment changes.
+        interview: Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.
+      - title: Polars nested data, lists, structs, arrays, and JSON fields
+        behind_the_scenes: Keep nested values typed and make row expansion explicit when flattening them.
+        practical: Add an empty list, a null list and [None]. Specify which should represent no legs versus unknown legs before aggregating.
+        interview: Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.
+      - title: Polars concatenation, pivots, unpivots, and schema alignment
+        behind_the_scenes: Reshape data only after defining the key and aggregation policy for each output cell.
+        practical: Insert a second bid for RFQ a. Explain why selecting an arbitrary first value would be a business decision, not a harmless formatting step.
+        interview: Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.
+      - title: Polars CSV, JSON, Parquet, partitioned datasets, and schema drift
+        behind_the_scenes: Treat file format, schema and source identity as parts of the data contract.
+        practical: Describe how you would handle a second file where qty becomes a string or changes units. Distinguish a safe cast from a semantic migration.
+        interview: CSV is convenient for interchange. Parquet preserves types and supports column-oriented reads, but it does not replace catalog, retention or publication controls.
+      - title: Polars lazy plans, predicate pushdown, projection pushdown, and explain
+        behind_the_scenes: A lazy query lets the engine optimize several operations together before collecting results.
+        practical: Replace the source with a Parquet scan in a disposable fixture. Compare optimized and unoptimized explanations without asserting an exact plan string.
+        interview: Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.
+      - title: Polars streaming execution, sinks, memory limits, and backpressure
+        behind_the_scenes: Batch-oriented execution can reduce intermediate memory without guaranteeing that every query fits in memory.
+        practical: Change two groups into millions of distinct keys. Explain why grouping state can grow even when the input is processed in batches.
+        interview: A sink avoids returning the whole result to Python but requires explicit failure, retry and publication semantics.
+      - title: Polars native vectorization, Python UDFs, NumPy, Arrow, and Pandas interoperability
+        behind_the_scenes: Keep work inside native expressions until an external library is genuinely needed.
+        practical: Replace multiplication with an external model call. Explain why retries, batching, network limits and result identity belong outside an element-wise expression.
+        interview: A UDF can reuse a required library, but may sacrifice optimization and add copies or callback overhead. Measure the full boundary cost before adopting it.
+      - title: Polars testing, schema contracts, property checks, and fair benchmarks
+        behind_the_scenes: Verify values and schema before measuring equivalent completed work.
+        practical: Write a failing fixture where a duplicated reference key inflates a joined total. Make the test fail before comparing join performance.
+        interview: Small fixtures give fast precise feedback. Production-scale checks expose memory, skew and I/O behavior that unit tests cannot establish.
+      - title: Polars financial types, integer units, decimals, enums, and risk arithmetic
+        behind_the_scenes: Represent units and allowed values explicitly before performing financial calculations.
+        practical: Introduce negative exposure and fractional-cent results. Write the signed rounding rule and overflow policy before extending the expression.
+        interview: Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.
+      - title: Polars SQL, database boundaries, cloud storage, and service deployment
+        behind_the_scenes: Place computation where it meets the data, consistency and resource constraints.
+        practical: Design a FastAPI endpoint for a report that takes 30 seconds. Specify job identity, admission limits, result storage and what a client timeout means.
+        interview: Moving work to Polars can simplify analytical code but adds transfer and snapshot costs. Push work to the source when that reduces data movement without violating the contract.
+      - title: Polars capstone, RFQ reconciliation, risk limits, and rates monitoring
+        behind_the_scenes: Build a reproducible analytical projection with explicit accepted, rejected and unresolved states.
+        practical: Add duplicate limits, conflicting sequence values, a stale quote and a late RFQ correction. Write expected rejection or correction behavior for each. Present a five-minute design review with the consistency boundary and one failure trace.
+        interview: A batch projection is easy to reproduce from immutable inputs. A continuously updated report lowers freshness delay but needs durable state, replay and late-event coordination outside this small query.
 
 ongoing_practice:
   weekly:

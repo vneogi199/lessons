@@ -39,25 +39,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>International Interviews and Relocation Readiness Complete Module · core</span><span>lesson 0629 / 0644</span></div>
+    <div class="eyebrow"><span>International Interviews and Relocation Readiness Complete Module · core</span><span>lesson 0629 / 0665</span></div>
     <h1>Coding interview method, clarification, examples, invariants, brute force, optimization, complexity, and tests</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to international job search and interviews. A hiring process compares role needs with truthful evidence of your knowledge, decisions, work, and communication.</p>
+
+    <p>An input contract states accepted data and the required result. An invariant is a statement that remains true as the algorithm advances. Start with a correct simple method, then use the constraints to decide whether its cost is acceptable.</p>
     <p><a href="../reference/senior-interview-practice.html#international-interviews">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
-      <p>Turn ambiguity into a precise contract, maintain an invariant through implementation, expose tradeoffs aloud, and use tests to catch reasoning errors before the interviewer must.</p>
-      <p class="analogy">An interview is a compressed collaboration sample: the result matters, but reviewers also observe framing, assumptions, tradeoffs, verification, and communication under uncertainty.</p>
+
+      <p>Clarify the required result, explain why each step preserves correctness, and test a small counterexample before optimizing.</p>
+      <p class="analogy">For pair sum, the invariant is concrete: before index j, the Map contains values from earlier indices only. Looking up before insertion prevents reuse of the same element.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace an interview decision and its evidence</h2>
       <ol class="trace-flow" data-flow="coding-interview" aria-label="Mechanism trace: Clarify inputs and constraints then State invariant and approach then Write executable code aloud then Evidence challenges the solution. Experiment: Solve one problem under time, then replay the recording and locate the first reasoning error.">
         <li class="trace-stage"><span>01 · CONTRACT</span><strong>Clarify inputs and constraints</strong><small>Examples, edge cases, scale, and allowed tools define correctness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REASON</span><strong>State invariant and approach</strong><small>Brute force creates a baseline before justified optimization.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMPLEMENT</span><strong>Write executable code aloud</strong><small>Readable language primitives preserve the reasoning trail.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · TEST</span><strong>Evidence challenges the solution</strong><small>Boundary cases, dry runs, complexity, and debugging expose errors.</small></li>
@@ -71,8 +71,8 @@
   </div>
 
   <section class="concept-section" data-subtopic-count="8">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">Turn ambiguity into a precise contract, maintain an invariant through implementation, expose tradeoffs aloud, and use tests to catch reasoning errors before the interviewer must.</p>
+
+
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Coding interview method">
         <span>01</span>
@@ -110,36 +110,19 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CONTRACT</span>
-        <h3>Clarify inputs and constraints</h3>
-        <p>Examples, edge cases, scale, and allowed tools define correctness.</p>
-      </article><article>
-        <span>02 · REASON</span>
-        <h3>State invariant and approach</h3>
-        <p>Brute force creates a baseline before justified optimization.</p>
-      </article><article>
-        <span>03 · IMPLEMENT</span>
-        <h3>Write executable code aloud</h3>
-        <p>Readable language primitives preserve the reasoning trail.</p>
-      </article><article>
-        <span>04 · TEST</span>
-        <h3>Evidence challenges the solution</h3>
-        <p>Boundary cases, dry runs, complexity, and debugging expose errors.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Solve one problem under time, then replay the recording and locate the first reasoning error.</p><p>Look for: Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p></div>
-  </section>
+  <section class="card mechanism-walkthrough"><p>Clarify whether the result contains indices or values, whether indices must differ, and whether any valid pair is acceptable. Ask what to return when no pair exists. For this fixture, return two distinct indices or null. Duplicates are allowed. Inputs and relevant arithmetic must stay within the safe-integer contract.</p>
+<p>Try every i &lt; j pair as a baseline. This uses O(n²) time and O(1) extra space. For a large input, store prior values in a Map. At j, compute the needed partner, check the Map, then insert the current value. With expected constant-time Map operations, this uses O(n) time and O(n) extra space.</p>
+<p>Trace [3, 3] with target 6. At j = 0 the Map is empty; store 3 → 0. At j = 1 the Map contains the needed 3, so return [0, 1]. If insertion came first, the single-element input [3] could incorrectly match itself. This counterexample tests the invariant directly.</p>
+<p>The current algorithm returns on the first matching second index. When duplicate values overwrite earlier Map entries, it does not promise the earliest possible first index. A contract that requires a particular pair order needs a different selection rule.</p>
+<p>If extra memory must be O(1), revisit the baseline. Sorting and two pointers can reduce time, but mutation and original-index requirements matter. Copying values with their indices uses O(n) space. Do not claim constant extra space merely because the pointer scan uses two variables.</p>
+<p>Use minutes 0–4 to clarify the contract and examples, 4–8 for a baseline and invariant, 8–18 for implementation, and 18–25 for tests and changed constraints. These are practice targets, not an employer's scoring policy. If stuck, trace the smallest failing input and identify the first step that violates the invariant.</p></section>
 
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Run timed problems using one repeatable loop from clarification through working code, edge tests, complexity, and a measured improvement note.</p>
-    <p class="lab-scope">Core: trace the fictional fixture, then rehearse the question with truthful personal evidence and compare the worked criteria. Extension: obtain feedback and delayed recall on a changed prompt, using consented recordings and current sources where needed. Content review does not complete applications, publish profiles, send outreach, establish legal eligibility or certify interview readiness; nothing is installed.</p>
+    <p class="lab-scope">Practise on safe integers whose needed subtractions are also safe integers. The supplied function assumes that contract. It returns one valid pair, not every pair. Use a 25-minute rehearsal, then compare the feedback below; the exercise does not establish readiness for a whole interview loop.</p>
 
 
 
@@ -150,9 +133,7 @@
       <li><span>Change one condition, then run the same check again.</span></li>
       <li><span>Compare the evidence and explain the tradeoff.</span></li>
     </ol>
-    <pre aria-label="Starter code"><code>// Fictional teaching examples and planning templates, not the learner&#039;s work history.
-// Replace claims with truthful personal evidence; placeholders are not supplied tools.
-// Worked rehearsal: find two DISTINCT indices summing to target, or return null.
+    <pre aria-label="Starter code"><code>// Worked rehearsal: find two DISTINCT indices summing to target, or return null.
 // Contract for this fixture: safe integers, and all subtraction results remain safe.
 // Baseline: check all i &lt; j pairs, O(n²) time and O(1) extra space.
 // Improvement: remember earlier values. Before index j, seen contains only i &lt; j.
@@ -180,28 +161,12 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
 
 
 
-  <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Clarify inputs and constraints → State invariant and approach → Write executable code aloud → Evidence challenges the solution. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
+  <section class="card code-guide"><p>At each loop iteration, compare the Map before lookup and after insertion. Existing assertions cover a normal match, duplicate values, a single element and empty input. Add [-2, 5] with target 3 and [1, 2] with target 9 to check negatives and no match.</p></section>
 
-  <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an interview decision and its evidence from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Solve one problem under time, then replay the recording and locate the first reasoning error.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p></article>
-    </div>
-  </section>
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Optimization changes the contract</h3><p>A sorted answer may lose original indices. State the required output before proposing a different algorithm.</p></article><article><h3>Passing examples replace reasoning</h3><p>Test duplicates, an empty input, a single element, negatives and no match. Explain the invariant as well as the results.</p></article></div></section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Collaborate visibly under pressure and recover from mistakes without silently abandoning the reasoning trail.</li>
       <li>Trace an interview decision and its evidence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -212,11 +177,11 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an interview decision and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="international-interviews">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>Without copying pairSum, solve a new version that returns every distinct index pair. Use [3, 3, 3] and target 6. Then discuss a stream where only the last W elements are eligible. What changes in storage, output cost and expiry?</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Turn ambiguity into a precise contract, maintain an invariant through implementation, expose tradeoffs aloud, and use tests to catch reasoning errors before the interviewer must.</p>
+        <p>All-pairs output is [0,1], [0,2], [1,2]. Store every prior index for each value, emit matches before insertion, and count output size k: expected O(n + k) time and O(n) auxiliary storage, plus O(k) if results are collected. For a window, expire indices before lookup and keep only eligible entries; one index per value loses duplicate matches. In a self-review, mark contract, invariant, implementation, tests and tradeoff as demonstrated or needs practice. Correct output alone does not demonstrate all five.</p>
         <p class="worked-answer">Lookup before insertion preserves distinct indices, so [3,3] succeeds and a single [3] does not. The Map keeps a prior matching index, not necessarily the earliest possible pair under every selection rule. The fixture assumes safe integer subtraction and does not validate arbitrary input. Expected linear time trades for linear storage; clarify mutation and index requirements before proposing sorting.</p>
         <p>Look for: Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
@@ -225,14 +190,26 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
     </div>
   </section>
 
-  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
     <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
-    <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. Change pair sum to return every distinct index pair. For [3, 3, 3] and target 6, how many pairs are required?</h3>
+      <ol><li>Indices must differ. Treat [i,j] and [j,i] as the same pair.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. 6</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: C.</strong> 3</p>
+        <ul><li>A. One result satisfies the original any-pair contract only.</li><li>B. This omits one pair.</li><li>C. The pairs are [0,1], [0,2] and [1,2].</li><li>D. Six counts both orders of each pair.</li></ul>
+        <p>Store every eligible prior index for a value. Count output cost k separately: expected O(n + k) time for a hash-based approach. k can be quadratic.</p>
+        <p>Explain the storage difference between yielding pairs and collecting all pairs into an array.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>[concept] resolves ambiguity with a concrete question or example before assumptions become costly implementation choices.</li><li>[concept] give concrete inputs and expected outcomes. Include boundary and counterexamples so a rule&#39;s limits are visible.</li><li>An invariant is a statement that remains true before and after each relevant step. Saying it aloud makes the algorithm and debugging path easier to verify.</li><li>A [concept] is a repeatable collaboration loop: clarify, test examples, establish a correct baseline and invariant, optimize, implement, verify, and reflect.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Coding interview method: 4; clarification: 2; examples: 1; invariants: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Coding interview method: 4; clarification: 1; examples: 2; invariants: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Coding interview method: 4; clarification: 3; examples: 1; invariants: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Coding interview method: 1; clarification: 4; examples: 2; invariants: 3</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Coding interview method: 4; clarification: 2; examples: 1; invariants: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Coding interview method: 4; clarification: 1; examples: 2; invariants: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Coding interview method: 4; clarification: 3; examples: 1; invariants: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Coding interview method: 1; clarification: 4; examples: 2; invariants: 3</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: B.</strong> Coding interview method: 4; clarification: 1; examples: 2; invariants: 3</p>
@@ -241,10 +218,10 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>[concept] improves a measured objective without violating required behavior. Establish a baseline and verify the improvement under the same workload.</li><li>[concept] describes how resource use or reasoning burden grows. Distinguish algorithmic growth from implementation and operational [concept].</li><li>[concept] compare actual behavior with an explicit expectation under controlled conditions. A passing test proves only the cases and assumptions it exercises.</li><li>[concept] enumerates possibilities directly. It supplies a correctness baseline and can be the best choice at small scale.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. brute force: 4; optimization: 2; complexity: 1; tests: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. brute force: 4; optimization: 1; complexity: 2; tests: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. brute force: 4; optimization: 3; complexity: 1; tests: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. brute force: 1; optimization: 4; complexity: 2; tests: 3</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. brute force: 4; optimization: 2; complexity: 1; tests: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. brute force: 4; optimization: 1; complexity: 2; tests: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. brute force: 4; optimization: 3; complexity: 1; tests: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. brute force: 1; optimization: 4; complexity: 2; tests: 3</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: B.</strong> brute force: 4; optimization: 1; complexity: 2; tests: 3</p>
@@ -253,10 +230,10 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
       <ol><li>State invariant and approach: Brute force creates a baseline before justified optimization.</li><li>Write executable code aloud: Readable language primitives preserve the reasoning trail.</li><li>Evidence challenges the solution: Boundary cases, dry runs, complexity, and debugging expose errors.</li><li>Clarify inputs and constraints: Examples, edge cases, scale, and allowed tools define correctness.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 3 → 2 → 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: C.</strong> 4 → 1 → 2 → 3</p>
@@ -270,7 +247,7 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">

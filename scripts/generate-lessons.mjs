@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import { SENIOR_CASES, TERM_CORRECTIONS, COMMON_TERMS, REUSE_PURPOSE } from "./senior-content.mjs";
 import { typescriptReviewFor, typescriptSourceFor } from "./typescript-review.mjs";
 import { lessonMcqs, mcqMarkup } from "./lesson-mcqs.mjs";
+import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
+import { POLARS_CONTENT } from "./polars-content.mjs";
+
+const AUTHORED_CONTENT = { ...REVIEWED_CONTENT, ...POLARS_CONTENT };
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const roadmapPath = join(root, "roadmap.yaml");
@@ -4770,8 +4774,29 @@ for (let index = 0; index < 3; index += 1) {
 }
 console.assert(callbacks.map(callback => callback()).join(",") === "0,1,2");
 
-// To release retained data, remove the listener/timer/registry entry that
-// keeps the closure—and therefore its reachable environment—alive.`;
+const shared = [];
+for (var index = 0; index < 3; index += 1) shared.push(() => index);
+console.assert(shared.map(callback => callback()).join(",") === "3,3,3");
+
+let count = 0;
+const message = "Count: " + count;
+const deferred = Promise.resolve().then(() => {
+  console.assert(count === 1);
+  console.assert(message === "Count: 0");
+});
+count = 1;
+await deferred;
+
+const registry = new Map();
+function register() {
+  const payload = new Uint8Array(1024 * 1024);
+  registry.set("response", () => payload.byteLength);
+}
+register();
+console.assert(registry.get("response")() === 1024 * 1024);
+registry.delete("response");
+console.assert(registry.size === 0);
+// The registry no longer retains the callback. This does not measure GC timing.`;
 
   if (/^(Functions|this binding)/.test(title)) return `"use strict";
 const account = {
@@ -6445,21 +6470,34 @@ console.log({ elapsedMs: performance.now() - started });
 // the event loop and selected worker-pool work; the kernel owns I/O readiness.`;
 
   if (title.startsWith("Event loop phases")) return `import { readFile } from "node:fs";
+import assert from "node:assert/strict";
 
 const trace = [];
-setTimeout(() => trace.push("top-level timer"), 0);
-setImmediate(() => trace.push("top-level immediate"));
-
-readFile(new URL(import.meta.url), () => {
-  trace.push("I/O callback");
-  setTimeout(() => trace.push("I/O timer"), 0);
-  setImmediate(() => trace.push("I/O immediate"));
+const topTimer = new Promise(resolve => setTimeout(() => {
+  trace.push("top-level timer"); resolve();
+}, 0));
+const topImmediate = new Promise(resolve => setImmediate(() => {
+  trace.push("top-level immediate"); resolve();
+}));
+const io = new Promise((resolve, reject) => {
+  readFile(new URL(import.meta.url), error => {
+    if (error) { reject(error); return; }
+    trace.push("I/O callback");
+    let completed = 0;
+    const record = event => {
+      trace.push(event);
+      if (++completed === 2) resolve();
+    };
+    setTimeout(() => record("I/O timer"), 0);
+    setImmediate(() => record("I/O immediate"));
+  });
 });
-
-setTimeout(() => console.table(trace.map((event, order) => ({ order, event }))), 25);
-
-// Predict stable relationships in their scheduling context. Do not memorize
-// one top-level timer/immediate order as a universal Node guarantee.`;
+await Promise.all([topTimer, topImmediate, io]);
+assert.equal(trace.length, 5);
+assert.ok(trace.indexOf("I/O immediate") < trace.indexOf("I/O timer"));
+console.log(process.version);
+console.table(trace.map((event, order) => ({ order, event })));
+// No assertion about the relative order of the two top-level callbacks.`;
 
   if (title.startsWith("process.nextTick")) return `const trace = ["script"];
 
@@ -7591,24 +7629,36 @@ COMMIT;
 -- compare repeated intent, and check account existence and sufficient funds.
 -- This SQL fragment assumes those domain checks and is not a complete money API.`;
 
-  if (title.startsWith("MVCC,")) return `-- Run in session A.
+  if (title.startsWith("MVCC,")) return `-- 1. Session A, disposable database, outside a transaction.
+-- A pre-existing table of this name is an error: inspect it instead of replacing it.
+CREATE TABLE lesson_mvcc_accounts (id integer PRIMARY KEY, balance_cents integer NOT NULL);
+INSERT INTO lesson_mvcc_accounts VALUES (10, 100);
+
+-- 2. Session A establishes a snapshot by reading the row.
 BEGIN ISOLATION LEVEL REPEATABLE READ;
 SELECT txid_current(), txid_current_snapshot();
-SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
+SELECT xmin, xmax, ctid, balance_cents FROM lesson_mvcc_accounts WHERE id = 10;
+-- Expected balance: 100.
 
--- PAUSE A. Run these lines in a DIFFERENT psql connection B:
+-- 3. PAUSE A. Run these commented commands in connection B to the SAME database:
 -- BEGIN;
--- UPDATE accounts SET balance_cents = balance_cents + 1 WHERE id = 10
+-- UPDATE lesson_mvcc_accounts SET balance_cents = balance_cents + 1 WHERE id = 10
 -- RETURNING xmin, xmax, ctid, balance_cents;
 -- COMMIT;
+-- Expected returned balance: 101.
+-- VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
+-- Run VACUUM after B's COMMIT, while A still holds its snapshot.
 
--- RESUME A only after B commits. Running B's UPDATE in A would show A's own write
--- and would not demonstrate snapshot isolation. xmin/xmax are internals, not a
--- durable application version or a simple universal live/dead-row flag.
-SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
+-- 4. RESUME A after B commits and vacuums.
+SELECT xmin, xmax, ctid, balance_cents FROM lesson_mvcc_accounts WHERE id = 10;
+-- Expected balance: still 100.
 COMMIT;
-SELECT xmin, xmax, ctid, balance_cents FROM accounts WHERE id = 10;
-VACUUM (VERBOSE, ANALYZE) accounts;`;
+SELECT xmin, xmax, ctid, balance_cents FROM lesson_mvcc_accounts WHERE id = 10;
+-- Expected balance: 101.
+VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
+-- Compare cleanup reports before and after A releases its snapshot.
+-- For another attempt, reset to 100 only while both sessions are idle.
+-- Keep or remove this dedicated fixture according to your learning environment's policy.`;
 
   if (title.startsWith("Isolation levels")) return `-- Both sessions read two doctors on call, then each disables a different row.
 BEGIN ISOLATION LEVEL SERIALIZABLE;
@@ -9661,7 +9711,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () => { throw new 
 // Remaining protocol: conflict handling without truncating a matching suffix,
 // durable log writes, nondecreasing commitIndex bounded by the last new entry,
 // application order, election safety, leader current-term commit rule, snapshots
-// and membership changes. The old sketch incorrectly used the entire local tail.
+// and membership changes. Bound commitIndex by the last entry covered by this RPC.
 // Do not deploy this precheck; use the full algorithm and tested implementation.
 // https://raft.github.io/raft.pdf`;
 
@@ -11040,6 +11090,10 @@ function apiDistributedDiagramFor(lesson, title, flow) {
 }
 
 function teachingProfileFor(lesson, profile) {
+  return { ...baseTeachingProfileFor(lesson, profile), ...AUTHORED_CONTENT[lesson.number]?.profile };
+}
+
+function baseTeachingProfileFor(lesson, profile) {
   if (Number(lesson.number) >= 622 && Number(lesson.number) <= 644) {
     const checkpoint = {
       "0622": "The toy gives three of four must-have keywords for the first role and one of four for the second: 0.75 and 0.25, not hiring probabilities. A link existing does not establish senior depth. Weight actual responsibilities, ownership, constraints and evidence quality; sample current postings manually and distinguish unknown eligibility from a confirmed gap.",
@@ -11531,7 +11585,7 @@ function teachingProfileFor(lesson, profile) {
     const checkpoint = {
       "0214": "engines expresses compatibility, not a pin or automatic enforcement. Record the exact deployed binary and dependency artifact; the sample's broad range is not an LTS policy. argv can contain secrets, so use synthetic arguments for this diagnostic fixture.",
       "0215": "The sample mixes pool crypto, file work and network readiness; elapsed time cannot attribute delay to one layer. It needs a real .mjs file and external fetch, whose body must be consumed or cancelled in a full client. Fixed password/salt values are workload fixtures, not password-storage advice.",
-      "0216": "Compare scheduling relationships inside the I/O callback, not one universal top-level order. The 25ms print is a sample deadline, not proof every callback finished. Record read errors and completion explicitly when turning this observation into a test.",
+      "0216": "The I/O immediate precedes the timer scheduled beside it. Top-level timer and immediate order remains unasserted. Promise.all waits for explicit completion of both top-level callbacks and the I/O pair. A file-read error rejects the operation. A fixed print deadline would only sample progress, so it is not used as completion evidence.",
       "0217": "ESM evaluation already runs in microtask context, so do not apply CommonJS top-level nextTick ordering blindly. The 100000-iteration chain is a bounded starvation demonstration, not an infinite loop. Chunking via setImmediate yields opportunities but does not create CPU parallelism.",
       "0218": "The crypto batch demonstrates shared-pool pressure but does not measure file or DNS latency. Loop delay can stay modest while pool queues wait. Compare competing operations with bounded admission; changing pool size is startup configuration, not guaranteed throughput improvement.",
       "0219": "The Promise executor converts synchronous throws to rejection, and only the first completion settles the Promise. The wrapper does not cancel underlying work or undo duplicated side effects. Promisify is preferable for a conventional API; preserve method receivers for receiver-dependent callbacks.",
@@ -13622,9 +13676,10 @@ print({key: value for key, value in candidate_result.items() if key != "records"
       sourceLabel = "Google Site Reliability Engineering";
     }
     const prefix = lesson.title.startsWith("GitHub profile") ? "#" : "//";
-    const code = prefix + " Fictional teaching examples and planning templates, not the learner's work history.\n" +
-      prefix + " Replace claims with truthful personal evidence; placeholders are not supplied tools.\n" +
-      internationalInterviewCodeFor(lesson.title, profile.code);
+    const disclaimer = lesson.number === "0629" ? "" :
+      prefix + " Fictional teaching examples and planning templates, not the learner's work history.\n" +
+      prefix + " Replace claims with truthful personal evidence; placeholders are not supplied tools.\n";
+    const code = disclaimer + internationalInterviewCodeFor(lesson.title, profile.code);
     return { ...profile, code, sourceUrl, sourceLabel };
   }
   if (lesson.trackId === "api-distributed-systems") {
@@ -13978,6 +14033,13 @@ print({key: value for key, value in candidate_result.items() if key != "records"
 }
 
 const REMAINING_TRACK_PROFILES = {
+  polars: {
+    sourceLabel: "Polars official documentation",
+    sourceUrl: "https://docs.pola.rs/",
+    artifact: "tested analytical transformation with explicit schema and reconciliation",
+    analogy: "Define the row grain and follow typed columns through the query.",
+    code: ""
+  },
   "cloud-aws": {
     analogy: "AWS is a programmable city: accounts set legal boundaries, IAM issues authority, VPCs define roads, managed services operate utilities, and telemetry shows whether citizens are safe.",
     sourceLabel: "AWS Well-Architected Framework",
@@ -14231,6 +14293,40 @@ function diagramFor(lesson) {
     probe,
     evidence
   });
+
+  if (lesson.trackId === "polars") {
+    const item = POLARS_CONTENT[lesson.number];
+    return flow(`polars-${lesson.number}`, [
+      ["01 · CONTRACT", "Define the input and row grain", item.foundation],
+      ["02 · TRANSFORM", "Apply the stated operation", item.model],
+      ["03 · CHECK", "Compare values and failure behavior", item.expected]
+    ], item.challenge, item.failure + " " + item.tradeoff);
+  }
+
+  if (lesson.number === "0090") return flow("closure-bindings", [
+    ["01 · CREATE", "A call creates a local binding", "createCounter starts value at zero for this call."],
+    ["02 · RETURN", "Functions retain access", "read and increment share this call's value binding."],
+    ["03 · UPDATE", "A later call changes value", "increment writes the binding; read observes the new number."],
+    ["04 · RELEASE", "Owners release references", "Remove registry or listener references when no longer needed; other paths can still retain data."]
+  ], "Compare two counters, then predict live count and old message in the deferred callback.", "Independent values, callback outputs and registry size; heap paths are a separate retention check.");
+  if (lesson.number === "0140") return flow("generic-relationship", [
+    ["01 · DECLARE", "T connects input and output", "indexById accepts items of type T and returns Map values of type T."],
+    ["02 · INFER", "Items supply the type argument", "The caller's id, name and private fields determine the item type."],
+    ["03 · CONSTRAIN", "The id capability is checked", "T must have a string id; other fields remain part of T."],
+    ["04 · USE", "Lookup preserves fields and absence", "Map.get returns the full item type or undefined."]
+  ], "Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box<number>.", "Inferred types, expected compiler errors, duplicate-ID result and missing-key result.");
+  if (lesson.number === "0176") return flow("react-state-queue", [
+    ["01 · EVENT", "A handler reads its render's state", "With quantity 1, quantity + 1 evaluates to 2."],
+    ["02 · QUEUE", "Setters queue values or calculations", "Replacement 2 differs from an updater that adds one to pending state."],
+    ["03 · RENDER", "React calculates the next UI", "Queued updaters compose in order; component code reads the resulting snapshot."],
+    ["04 · COMMIT", "React applies required DOM changes", "The browser paints afterward. Equal state can allow React to skip work."]
+  ], "Predict three replacements, three updaters and a mixed queue from state 1.", "Final state 2, 4 and 2 for the stated queues; mutation and reset behavior in a React environment.");
+  if (lesson.number === "0447") return flow("raft-log-safety", [
+    ["01 · ELECT", "A candidate needs a majority", "Persist term and vote. Check log freshness. A term can end without a leader."],
+    ["02 · REPLICATE", "Followers check the preceding entry", "Matching index and term anchor the prefix before durable append or conflict repair."],
+    ["03 · COMMIT", "Count replicas for a current-term entry", "A majority storing it allows commitment of it and the preceding log."],
+    ["04 · APPLY", "Replicas apply committed commands in order", "A higher observed term ends old leadership. External effects need separate replay controls."]
+  ], "Partition five replicas into groups of two and three, then heal the partition.", "Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.");
 
   const apiDistributedDiagram = apiDistributedDiagramFor(lesson, title, flow);
   if (apiDistributedDiagram) return apiDistributedDiagram;
@@ -15626,7 +15722,8 @@ function diagramAriaLabel(diagram) {
 
 function traceSubjectFor(lesson) {
   const title = lesson.title.toLowerCase();
-  if (Number(lesson.number) >= 622) return "an interview decision and its evidence";
+  if (lesson.trackId === "international-interviews") return "an interview decision and its evidence";
+  if (lesson.trackId === "polars") return "a typed analytical transformation";
   if (lesson.number === "0580") return "feature geometry and ranking";
   if (lesson.number === "0595") return "source ingestion and publication";
   if (lesson.number === "0604") return "agent context selection";
@@ -17683,6 +17780,13 @@ function beginnerTrackContext(lesson) {
 }
 
 function simpleConceptExplanation(term, lesson) {
+  if (lesson.trackId === "polars") return POLARS_CONTENT[lesson.number].terms[term];
+  if (lesson.number === "0447" && term.toLowerCase() === "raft terms") {
+    return "Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.";
+  }
+  if (lesson.number === "0176" && term.toLowerCase() === "usestate") {
+    return "useState gives one component instance a remembered value. Its setter queues an update without changing the current render's value. React can skip rendering work when Object.is compares the next and current state as equal.";
+  }
   const distinctions = {
     "0070:association": "An association links instances of classes and can specify roles and multiplicity. Unlike composition, the association alone does not require exclusive whole-part ownership or coupled destruction.",
     "0071:protocols": "A structural protocol specifies the attributes and operations a compatible object must provide. Python Protocol supports static structural typing without requiring implementations to inherit from it; a matching shape alone does not establish behavioral substitutability.",
@@ -17825,17 +17929,17 @@ function simpleConceptExplanation(term, lesson) {
 function beginnerFoundationMarkup(lesson) {
   const [field, overview] = beginnerTrackContext(lesson);
   return `<section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to ${escapeHtml(field)}. ${escapeHtml(overview)}</p>
+
+    <p>${AUTHORED_CONTENT[lesson.number] ? escapeHtml(AUTHORED_CONTENT[lesson.number].foundation) : `This topic belongs to ${escapeHtml(field)}. ${escapeHtml(overview)}`}</p>
     <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>`;
 }
 
 function subtopicBreakdownMarkup(lesson) {
-  const items = lessonSubtopics(lesson.title);
+  const items = lesson.trackId === "polars" ? Object.keys(POLARS_CONTENT[lesson.number].terms) : lessonSubtopics(lesson.title);
   return `<section class="concept-section" data-subtopic-count="${items.length}">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">${escapeHtml(sentence(lesson.behind_the_scenes))}</p>
+
+${AUTHORED_CONTENT[lesson.number] ? "" : `    <p class="concept-intro">${escapeHtml(sentence(lesson.behind_the_scenes))}</p>`}
     <div class="concept-grid">
       ${items.map((term, index) => `<article class="concept-card" data-subtopic="${escapeHtml(term)}">
         <span>${String(index + 1).padStart(2, "0")}</span>
@@ -17852,7 +17956,7 @@ function dsaQuestionMarkup(lesson) {
   const questions = DSA_QUESTION_GROUPS[group] || [];
   if (!questions.length) return "";
   return `<section class="card dsa-question-bank">
-    <span class="section-label">Relevant practice questions</span>
+
     <h2>Questions for this topic</h2>
     <p>Use these canonical problems after the lesson. The badges show the source sheet alignment; sheet contents can change, so treat this as a curated cross-sheet practice set rather than a completion claim.</p>
     <ul class="dsa-question-list">
@@ -17864,7 +17968,7 @@ function dsaQuestionMarkup(lesson) {
 
 function mechanismWalkthroughMarkup(diagram) {
   return `<section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
+
     <div class="walkthrough-grid">
       ${diagram.stages.map((stage) => `<article>
         <span>${escapeHtml(stage.label)}</span>
@@ -17878,7 +17982,7 @@ function mechanismWalkthroughMarkup(diagram) {
 
 function codeReadingGuideMarkup(lesson, diagram) {
   return `<section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
+
     <ol class="steps">
       <li><span>Find the setup and the input that starts the example.</span></li>
       <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
@@ -17890,7 +17994,7 @@ function codeReadingGuideMarkup(lesson, diagram) {
 
 function commonMistakesMarkup(diagram, traceSubject) {
   return `<section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
+    <h2>Common mistakes</h2>
     <div class="mistake-grid">
       <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace ${escapeHtml(traceSubject)} from input to output.</p></article>
       <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: ${escapeHtml(diagram.probe)}</p></article>
@@ -17901,12 +18005,14 @@ function commonMistakesMarkup(diagram, traceSubject) {
 }
 
 function mcqsFor(lesson, diagram = diagramFor(lesson)) {
-  return lessonMcqs(lesson, diagram, lessonSubtopics(lesson.title).map(term => ({
+  const terms = lesson.trackId === "polars" ? Object.keys(POLARS_CONTENT[lesson.number].terms) : lessonSubtopics(lesson.title);
+  return lessonMcqs(lesson, diagram, terms.map(term => ({
     term, definition: simpleConceptExplanation(term, lesson)
   })));
 }
 
 function lessonHtml(lesson, profile) {
+  const reviewed = AUTHORED_CONTENT[lesson.number];
   const d = diagramFor(lesson);
   const senior = SENIOR_CASES[lesson.trackId];
   const traceSubject = traceSubjectFor(lesson);
@@ -17955,6 +18061,15 @@ function lessonHtml(lesson, profile) {
     ["0296", "developer-workflow", "Fixtures, mocking, coverage and IDE debugging", "api-cloud-delivery-labs.html"],
     ["0506", "aws-provisioning", "Provisioning walkthrough and least privilege", "api-cloud-delivery-labs.html"],
     ["0504", "billing", "Billing console and budget thresholds", "api-cloud-delivery-labs.html"],
+    ["0291", "python-kafka", "Python Kafka producers, consumers and replay safety", "streaming-platform-practice.html"],
+    ["0463", "python-kafka", "Python Kafka clients and offset ownership", "streaming-platform-practice.html"],
+    ["0464", "streams", "Kafka Streams topology, keyed state and recovery", "streaming-platform-practice.html"],
+    ["0460", "spark", "PySpark and Structured Streaming windows", "streaming-platform-practice.html"],
+    ["0520", "grafana", "Grafana dashboards, PromQL and alert drills", "streaming-platform-practice.html"],
+    ["0499", "aws", "AWS streaming platform design and operations", "streaming-platform-practice.html"],
+    ["0546", "docker", "Containerized stream workers and safe shutdown", "streaming-platform-practice.html"],
+    ["0576", "kubernetes", "Consumer scaling, probes and rolling updates", "streaming-platform-practice.html"],
+    ["0464", "capstone", "Rates-monitoring platform capstone", "streaming-platform-practice.html"],
     ["0491", "ecs-delivery", "Containers, ECS and GitHub Actions delivery", "api-cloud-delivery-labs.html"],
     ["0587", "context-budget", "Token budgets, sliding windows and compression", "retrieval-document-labs.html"],
     ["0588", "typed-output", "Nested schemas, discriminated unions and validation", "retrieval-document-labs.html"],
@@ -18042,17 +18157,17 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
     <h1>${escapeHtml(lesson.title)}</h1>
   </header>
 
-  ${beginnerFoundationMarkup(lesson)}
+  ${beginnerFoundationMarkup(lesson)}${lesson.trackId === "polars" ? '\n<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>' : ""}
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
+
       <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.explanation ? `\n      <p>${escapeHtml(profile.explanation)}</p>` : ""}
       <p class="analogy">${escapeHtml(profile.analogy)}</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace ${escapeHtml(traceSubject)}</h2>
       <ol class="trace-flow" data-flow="${escapeHtml(d.key)}" aria-label="${escapeHtml(diagramAriaLabel(d))}">
         ${diagramStagesMarkup(d)}
@@ -18066,12 +18181,12 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
   </div>
 
   ${subtopicBreakdownMarkup(lesson)}${lesson.number === "0596" ? '\n  <section class="card"><h2>Cross-encoder reranking</h2><p>Score query–passage pairs jointly, batch candidate scoring, and measure whether ranking quality earns its latency and cost. <a href="../reference/cross-encoder-reranking.html">Open the deep dive, offline exercise and senior interview checkpoints</a>.</p></section>' : ""}${extensionMarkup ? `\n  ${extensionMarkup}` : ""}${dsaMarkup ? `\n  ${dsaMarkup}\n` : "\n"}
-  ${mechanismWalkthroughMarkup(d)}
+  ${reviewed ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>` : mechanismWalkthroughMarkup(d)}
 
   ${dsaApproachMarkup(lesson)}
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>${escapeHtml(sentence(lesson.practical))}</p>${profile.labScope ? `\n    <p class="lab-scope">${escapeHtml(profile.labScope)}</p>` : ""}
 ${REUSE_PURPOSE[lesson.number] ? `<p>${escapeHtml(REUSE_PURPOSE[lesson.number])}</p>` : ""}
 ${lesson.trackId === "typescript" ? `<p>${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
@@ -18097,12 +18212,12 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>` : ""}
 
-  ${codeReadingGuideMarkup(lesson, d)}
+  ${reviewed ? `<section class="card code-guide"><p>${escapeHtml(reviewed.reading)}</p></section>` : codeReadingGuideMarkup(lesson, d)}
 
-  ${commonMistakesMarkup(d, traceSubject)}
+  ${reviewed ? `<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid">${reviewed.pitfalls.map(([title, text]) => `<article><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join("")}</div></section>` : commonMistakesMarkup(d, traceSubject)}
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>${escapeHtml(sentence(lesson.interview))}</li>
       <li>Trace ${escapeHtml(traceSubject)} for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -18113,11 +18228,11 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace ${escapeHtml(traceSubject)}. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="${escapeHtml(lesson.trackId)}">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>${reviewed ? escapeHtml(reviewed.rehearsal) : "Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change."}</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p class="worked-answer">${escapeHtml(profile.checkpoint)}</p>` : ""}
+        <p>${escapeHtml(reviewed ? reviewed.answer : sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p class="worked-answer">${escapeHtml(profile.checkpoint)}</p>` : ""}
         <p>Look for: ${escapeHtml(sentence(d.evidence))}</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Worked track case: ${escapeHtml(senior.title)} ↗</a></p>
@@ -18128,7 +18243,7 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
   ${mcqMarkup(mcqsFor(lesson, d), profile)}
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
@@ -18454,6 +18569,7 @@ async function generate() {
     "utf8"
   );
   const infrastructureReferences = [
+    ["polars", "polars-deep-dive-map.html", "Polars Data Engineering and Analytics", "Start with schemas and expressions, then progress through RFQ parsing, temporal joins, lazy optimization, streaming, testing and a risk-reporting capstone. Lessons 0645–0665 are an optional deep track after Python and basic SQL. At 6–8 hours per week, work through two or three lessons plus their labs rather than reading the whole track at once. Every starter needs an existing Polars environment; no runtime verification or installation is implied. See the Polars quick reference for common operations and a practice plan."],
     ["software-design", "software-design-deep-dive-map.html", "Software Design, Clean Code, and Patterns", "Software design from readable code and pragmatic DRY, KISS, and YAGNI decisions through cohesion, coupling, SOLID, composition, pattern families, safe refactoring, and application architecture boundaries."],
     ["systems-foundations", "systems-foundations-deep-dive-map.html", "Networking and Operating Systems Foundations", "Networking from application request, addressing, routing, transport, congestion, DNS, TLS, and HTTP through operating-system syscalls, processes, scheduling, synchronization, memory, storage, containers, and observability."],
     ["lld-machine-coding", "lld-machine-coding-deep-dive-map.html", "Low-Level Design and Machine Coding", "Low-level design from requirements, object modeling, relationships, interfaces, patterns, state, concurrency, persistence, and tests through parking-lot and expense-sharing cases and a timed executable capstone."],

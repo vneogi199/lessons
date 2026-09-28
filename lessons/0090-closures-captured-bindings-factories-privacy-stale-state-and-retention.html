@@ -39,40 +39,40 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow"><span>JavaScript Complete Deep Dive · core</span><span>lesson 0090 / 0644</span></div>
+    <div class="eyebrow"><span>JavaScript Complete Deep Dive · core</span><span>lesson 0090 / 0665</span></div>
     <h1>Closures, captured bindings, factories, privacy, stale state, and retention</h1>
   </header>
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-    <span class="section-label">01 · Core foundation</span>
-    <p>This topic belongs to JavaScript. JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
+
+    <p>A binding connects a variable name to its value. Lexical scope means that the location of a function in the source determines which outer variables it can use. A closure keeps access to those variables after the outer call returns.</p>
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
   <div class="grid">
     <section class="card">
-      <span class="section-label">02 · Mental model</span>
-      <p>See how function objects retain references to outer lexical environments and how closures observe mutable bindings rather than frozen value copies.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+
+      <p>A returned function can still read and update variables from its defining call. Trace those bindings separately from values calculated earlier.</p>
+      <p class="analogy">Each call to createCounter creates its own value binding. The returned read and increment functions share that binding. A second counter has a separate binding.</p>
     </section>
 
     <aside class="card blackboard">
-      <span class="section-label">03 · Blackboard system trace</span>
+
       <h2>Trace a JavaScript evaluation</h2>
-      <ol class="trace-flow" data-flow="javascript-bindings" aria-label="Mechanism trace: Code establishes bindings then A reference searches environments then The running context uses it then Value, error, or retention appears. Experiment: Shadow or capture one binding and predict every lookup and lifetime.">
-        <li class="trace-stage"><span>01 · CREATE</span><strong>Code establishes bindings</strong><small>Declaration instantiation creates and sometimes initializes names.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>A reference searches environments</strong><small>Outer links select the nearest matching binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>The running context uses it</strong><small>Calls, closures, and blocks read or update the binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Value, error, or retention appears</strong><small>Output and heap evidence reveal the selected environment.</small></li>
+      <ol class="trace-flow" data-flow="closure-bindings" aria-label="Mechanism trace: A call creates a local binding then Functions retain access then A later call changes value then Owners release references. Experiment: Compare two counters, then predict live count and old message in the deferred callback.">
+        <li class="trace-stage"><span>01 · CREATE</span><strong>A call creates a local binding</strong><small>createCounter starts value at zero for this call.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RETURN</span><strong>Functions retain access</strong><small>read and increment share this call&#039;s value binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · UPDATE</span><strong>A later call changes value</strong><small>increment writes the binding; read observes the new number.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><strong>Owners release references</strong><small>Remove registry or listener references when no longer needed; other paths can still retain data.</small></li>
       </ol>
       <div class="trace-proof">
         <span>↺ TEST THE MODEL</span>
-        <strong>Shadow or capture one binding and predict every lookup and lifetime.</strong>
-        <small><b>Inspect:</b> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</small>
+        <strong>Compare two counters, then predict live count and old message in the deferred callback.</strong>
+        <small><b>Inspect:</b> Independent values, callback outputs and registry size; heap paths are a separate retention check.</small>
       </div>
     </aside>
   </div>
 
   <section class="concept-section" data-subtopic-count="6">
-    <span class="section-label">04 · Detailed term guide</span>
-    <p class="concept-intro">See how function objects retain references to outer lexical environments and how closures observe mutable bindings rather than frozen value copies.</p>
+
+
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Closures">
         <span>01</span>
@@ -102,36 +102,17 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
-    <span class="section-label">05 · Detailed mechanism</span>
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CREATE</span>
-        <h3>Code establishes bindings</h3>
-        <p>Declaration instantiation creates and sometimes initializes names.</p>
-      </article><article>
-        <span>02 · RESOLVE</span>
-        <h3>A reference searches environments</h3>
-        <p>Outer links select the nearest matching binding.</p>
-      </article><article>
-        <span>03 · EVALUATE</span>
-        <h3>The running context uses it</h3>
-        <p>Calls, closures, and blocks read or update the binding.</p>
-      </article><article>
-        <span>04 · OBSERVE</span>
-        <h3>Value, error, or retention appears</h3>
-        <p>Output and heap evidence reveal the selected environment.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Shadow or capture one binding and predict every lookup and lifetime.</p><p>Look for: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p></div>
-  </section>
+  <section class="card mechanism-walkthrough"><p>A closure reads a binding when its body runs. It does not recompute every value that was derived from that binding. Suppose count starts at 0 and message is assigned the string "Count: 0". Updating count to 1 leaves message unchanged. A deferred callback that reads count sees 1. A callback that reads message sees "Count: 0".</p>
+<p>The loop example shows a different issue. A var loop has one shared index binding. After three iterations, each saved callback reads 3. A let loop creates a separate binding for each iteration. Its callbacks read 0, 1 and 2.</p>
+<p>The counter exposes functions but not a property that lets callers assign value directly. Object.freeze prevents changes to the returned object's properties. It does not freeze variables used by those functions. A class with a #private field is another way to enforce access. Choose based on API needs and method sharing; measure allocation cost before making a performance claim.</p>
+<p>A long-lived registry can retain a callback, which in turn retains data. Delete the registry entry when its owner finishes. If a listener, timer or another variable still refers to the callback, that path can keep the data reachable. In a heap snapshot, follow the retaining path from a root to the data. Compare paths after cleanup. Do not infer immediate collection from a smaller registry.</p></section>
 
   
 
   <section class="card lab">
-    <span class="section-label">06 · Practical lab</span>
+    <h2>Practice</h2>
     <p>Implement a private counter, fix a loop capture bug, diagnose stale asynchronous state, and release a retained object graph.</p>
-    <p class="lab-scope">Core: predict and run the supplied bounded JavaScript fixture, then explain one changed input. Use a modern Node ES module unless the snippet explicitly requests a browser. Browser comparisons, debugger/heap inspection and broader lab variants are extensions, not results established by this starter.</p>
+    <p class="lab-scope">Trace the counter, loop and deferred callback examples. The registry example removes one reference path. Use heap snapshots in an existing browser environment to investigate collection; an assertion cannot establish when the collector runs.</p>
 
 
 
@@ -161,35 +142,40 @@ for (let index = 0; index &lt; 3; index += 1) {
 }
 console.assert(callbacks.map(callback =&gt; callback()).join(&quot;,&quot;) === &quot;0,1,2&quot;);
 
-// To release retained data, remove the listener/timer/registry entry that
-// keeps the closure—and therefore its reachable environment—alive.</code></pre>
+const shared = [];
+for (var index = 0; index &lt; 3; index += 1) shared.push(() =&gt; index);
+console.assert(shared.map(callback =&gt; callback()).join(&quot;,&quot;) === &quot;3,3,3&quot;);
+
+let count = 0;
+const message = &quot;Count: &quot; + count;
+const deferred = Promise.resolve().then(() =&gt; {
+  console.assert(count === 1);
+  console.assert(message === &quot;Count: 0&quot;);
+});
+count = 1;
+await deferred;
+
+const registry = new Map();
+function register() {
+  const payload = new Uint8Array(1024 * 1024);
+  registry.set(&quot;response&quot;, () =&gt; payload.byteLength);
+}
+register();
+console.assert(registry.get(&quot;response&quot;)() === 1024 * 1024);
+registry.delete(&quot;response&quot;);
+console.assert(registry.size === 0);
+// The registry no longer retains the callback. This does not measure GC timing.</code></pre>
     <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
-    <span class="section-label">07 · Code reading guide</span>
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Code establishes bindings → A reference searches environments → The running context uses it → Value, error, or retention appears. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
+  <section class="card code-guide"><p>Save the starter as an ES module because it uses top-level await. Follow createCounter calls separately. The Promise callback runs after the synchronous count assignment. The 1 MiB registry fixture checks reference removal, not a measured reduction in heap size.</p></section>
 
-  <section class="card common-mistakes">
-    <span class="section-label">08 · Common mistakes</span>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a JavaScript evaluation from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Shadow or capture one binding and predict every lookup and lifetime.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p></article>
-    </div>
-  </section>
+  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Old derived value</h3><p>Rebuilding message inside the callback reads the current count. Keeping the old message is correct only if the callback needs the earlier snapshot.</p></article><article><h3>Incomplete cleanup</h3><p>Removing one registry entry does not remove other listeners or callback references. Inspect ownership before changing the closure.</p></article></div></section>
 
   <section class="card interview">
-    <span class="section-label">09 · Interview rehearsal</span>
+    <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Define a closure, trace one captured binding, and discuss both useful encapsulation and memory cost.</li>
       <li>Trace a JavaScript evaluation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
@@ -200,27 +186,39 @@ console.assert(callbacks.map(callback =&gt; callback()).join(&quot;,&quot;) === 
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
+      <p>A deferred callback prints Count: 0 after count becomes 1. Explain the result without saying that closures freeze values. Then describe when keeping the old message is intentional. How would you investigate a retained 10 MB response?</p>
       <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>See how function objects retain references to outer lexical environments and how closures observe mutable bindings rather than frozen value copies.</p>
+        <p>Trace the count and message bindings separately. Choose current data for a live display, or the earlier snapshot for an event record. For retention, identify the owning listener or registry, remove its reference at the correct lifecycle boundary, and inspect remaining heap paths. Do not promise a collection time.</p>
         <p class="worked-answer">The left counter reaches two while the independently created right counter stays zero. Freezing the returned API does not freeze captured state. A let loop supplies per-iteration bindings; a shared var binding changes the callbacks&#039; results. Retention requires a reachable owner: remove the listener or registry reference, then use heap evidence rather than assuming immediate collection.</p>
-        <p>Look for: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p>
+        <p>Look for: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p>
         <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
   </section>
 
-  <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
+  <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
     <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
-    <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+    <article class="senior-practice" data-mcq-kind="scenario">
+      <h3>1. count starts at 0. message is assigned &#39;Count: &#39; + count. A deferred callback reads both after count becomes 1. What does it read?</h3>
+      <ol><li>No code assigns a new value to message.</li></ol>
+      <fieldset><legend>Choose one answer</legend>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. 0 and Count: 0</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. 1 and Count: 0</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. 0 and Count: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. 1 and Count: 1</label>
+      </fieldset>
+      <details><summary>Answer and explanation</summary>
+        <p><strong>Answer: B.</strong> 1 and Count: 0</p>
+        <ul><li>A. The callback reads the updated count binding.</li><li>B. count changed; the earlier derived message did not.</li><li>C. This reverses which binding changed.</li><li>D. Updating count does not recompute message.</li></ul>
+        <p>Closures retain access to bindings. A derived string changes only when the program assigns a new string to that binding.</p>
+        <p>Move message construction into the callback. Predict the result and explain when retaining the old message would be correct.</p>
+      </details>
+    </article><article class="senior-practice" data-mcq-kind="concept-matching">
+      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>A factory is a function that creates a value or object for callers. A closure-based factory can keep instance state in its lexical environment without requiring a class.</li><li>[concept] limits which code can access state. Closures and #private elements provide different access mechanisms; a naming convention such as _secret is not enforcement.</li><li>A closure is a function together with access to the lexical environment where it was created. It captures bindings, so later updates to those bindings remain observable.</li><li>A closure retains access to lexical bindings, not necessarily frozen copies of their current values. A later assignment to a captured binding can be visible when the closure runs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Closures: 3; captured bindings: 4; factories: 2; privacy: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Closures: 3; captured bindings: 1; factories: 2; privacy: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Closures: 3; captured bindings: 4; factories: 1; privacy: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Closures: 3; captured bindings: 2; factories: 1; privacy: 4</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Closures: 3; captured bindings: 4; factories: 2; privacy: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Closures: 3; captured bindings: 1; factories: 2; privacy: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Closures: 3; captured bindings: 4; factories: 1; privacy: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Closures: 3; captured bindings: 2; factories: 1; privacy: 4</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: C.</strong> Closures: 3; captured bindings: 4; factories: 1; privacy: 2</p>
@@ -229,10 +227,10 @@ console.assert(callbacks.map(callback =&gt; callback()).join(&quot;,&quot;) === 
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
       <ol><li>[concept] occurs when deferred code uses a value or assumption from an older logical snapshot. The fix is to make current input or ownership explicit, not to abandon closures.</li><li>[concept] means an object remains reachable through a reference path. A closure, listener, or cache can retain a large object graph after the original operation ends.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. stale state: 1; retention: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. stale state: 2; retention: 1</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. stale state: 1; retention: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. stale state: 2; retention: 1</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: A.</strong> stale state: 1; retention: 2</p>
@@ -241,24 +239,24 @@ console.assert(callbacks.map(callback =&gt; callback()).join(&quot;,&quot;) === 
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
-      <ol><li>The running context uses it: Calls, closures, and blocks read or update the binding.</li><li>Value, error, or retention appears: Output and heap evidence reveal the selected environment.</li><li>Code establishes bindings: Declaration instantiation creates and sometimes initializes names.</li><li>A reference searches environments: Outer links select the nearest matching binding.</li></ol>
+      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <ol><li>A later call changes value: increment writes the binding; read observes the new number.</li><li>Owners release references: Remove registry or listener references when no longer needed; other paths can still retain data.</li><li>A call creates a local binding: createCounter starts value at zero for this call.</li><li>Functions retain access: read and increment share this call&#39;s value binding.</li></ol>
       <fieldset><legend>Choose one answer</legend>
-      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
+      <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 4 → 1 → 2</label>
       </fieldset>
       <details><summary>Answer and explanation</summary>
         <p><strong>Answer: D.</strong> 3 → 4 → 1 → 2</p>
-        <ul><li>A. At position 2, the trace uses “A reference searches environments”, not “The running context uses it”.</li><li>B. At position 2, the trace uses “A reference searches environments”, not “Value, error, or retention appears”.</li><li>C. At position 1, the trace uses “Code establishes bindings”, not “A reference searches environments”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
-        <p>Code establishes bindings: Declaration instantiation creates and sometimes initializes names.</p><p>A reference searches environments: Outer links select the nearest matching binding.</p><p>The running context uses it: Calls, closures, and blocks read or update the binding.</p><p>Value, error, or retention appears: Output and heap evidence reveal the selected environment.</p>
-        <p>Shadow or capture one binding and predict every lookup and lifetime. Evidence to inspect: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p>
+        <ul><li>A. At position 2, the trace uses “Functions retain access”, not “A later call changes value”.</li><li>B. At position 2, the trace uses “Functions retain access”, not “Owners release references”.</li><li>C. At position 1, the trace uses “A call creates a local binding”, not “Functions retain access”.</li><li>D. This reproduces the lesson’s trace.</li></ul>
+        <p>A call creates a local binding: createCounter starts value at zero for this call.</p><p>Functions retain access: read and increment share this call&#39;s value binding.</p><p>A later call changes value: increment writes the binding; read observes the new number.</p><p>Owners release references: Remove registry or listener references when no longer needed; other paths can still retain data.</p>
+        <p>Compare two counters, then predict live count and old message in the deferred callback. Evidence to inspect: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p>
       </details>
     </article>
-    <p><a href="https://tc39.es/ecma262/" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript language specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">Review the lesson source: MDN: closures and lexical scope</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
-    <span class="section-label">10 · Retrieval practice</span>
+
     <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
@@ -270,7 +268,7 @@ console.assert(callbacks.map(callback =&gt; callback()).join(&quot;,&quot;) === 
   </section>
 
   <footer class="source">
-    <div><span class="section-label">Primary source</span><br/><a href="https://tc39.es/ecma262/" target="_blank" rel="noreferrer">ECMAScript language specification ↗</a></div>
+    <div><span class="section-label">Primary source</span><br/><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">MDN: closures and lexical scope ↗</a></div>
     
     
     

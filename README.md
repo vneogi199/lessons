@@ -2,6 +2,14 @@
 
 The self-contained focus-mode tutorial application.
 
+## Polars track
+
+The [streaming-platform practice guide](reference/streaming-platform-practice.html) connects Python + Kafka, Kafka Streams, PySpark, Grafana, AWS, Docker and Kubernetes through a rates-monitoring capstone. It extends the existing tracks with worked failure cases and interview exercises. Integration snippets are not runtime-verified; nothing is installed or provisioned.
+
+The catalog now contains 665 lessons. The [Polars track](reference/polars-deep-dive-map.html) adds 21 lessons (0645–0665): typed expressions, missing data, RFQ parsing, time-series analysis, joins, nested data, file I/O, lazy plans, streaming, testing, financial units, SQL integration and a risk-reporting capstone. Each includes a worked Python fixture, assertions and interview MCQs with explanations. See the [practice guide](reference/polars-quick-reference.html) for the learning sequence.
+
+The new examples are syntax-checked, not runtime-tested. No packages were installed. Earlier review completion statements below refer to the original 644 lessons; they do not certify the new track.
+
 ## Run locally
 
 From the project root (`full-stack-ai-engineer-lessons`):
