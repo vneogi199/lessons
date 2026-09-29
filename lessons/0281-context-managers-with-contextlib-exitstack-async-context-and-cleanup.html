@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow __enter__, __exit__, exception suppression, nested reverse-order cleanup, generator-based managers, and asynchronous resource finalization.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>A with statement enters a context manager, runs the body and calls its exit method when leaving. The exit method can handle or suppress an exception. ExitStack records a changing set of resources and cleans them up in reverse order, including when a later acquisition fails. Async context managers await entry and exit. If acquisition fails before entry completes, the acquisition code must clean up anything it already opened.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Manage a dynamic set of files and locks with ExitStack and prove cleanup under success, failure, and cancellation.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -143,7 +143,7 @@ async def use_client(client):
     <ol class="interview-questions">
       <li>Explain the context-manager protocol, exception suppression, and why deterministic cleanup beats finalizers.</li>
       <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>How would you manage a dynamic set of files and locks with ExitStack and prove cleanup under success, failure, and cancellation, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,8 +154,8 @@ async def use_client(client):
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow __enter__, __exit__, exception suppression, nested reverse-order cleanup, generator-based managers, and asynchronous resource finalization.</p>
-        <p class="worked-answer">ExitStack unwinds acquired resources in reverse order if later acquisition fails. Reading every file still consumes data memory and one descriptor per open file. Async connection startup occurs before the yield: the acquisition function must own partial-startup cleanup, while cancellation during close needs a deliberate policy.</p>
+
+        <p class="worked-answer">If a later acquisition fails, ExitStack releases earlier resources in reverse order. Reading all files still uses memory for their data and one descriptor per open file. Async startup happens before yield, so the acquisition function must clean up a partial startup. Also decide what should happen if cancellation arrives during close.</p>
         <p>Look for: Object identity, type, frame locals, return value, exception, and timing.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

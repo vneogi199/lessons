@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow suspension and resumption through a preserved frame, value injection, exception injection, GeneratorExit, return values, and yield from delegation.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>Calling a generator function creates a generator without running its body. Advancing it runs the body until yield pauses execution and returns a value. The suspended frame retains local state. send and throw resume it with a value or exception, while close requests cleanup. yield from delegates this behavior to another iterator. If the generator owns a file, give it an explicit lifetime; leaving a loop does not automatically close an externally retained generator.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a streaming parser with generator cleanup and a delegated pipeline that propagates errors correctly.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -147,7 +147,7 @@ generator.close()  # injects GeneratorExit at suspension</code></pre>
     <ol class="interview-questions">
       <li>Explain generator state, yield versus return, yield from, and deterministic generator cleanup.</li>
       <li>Explain how an iteration step works, starting with the input and following it through to the result.</li>
-      <li>How would you build a streaming parser with generator cleanup and a delegated pipeline that propagates errors correctly, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,8 +158,8 @@ generator.close()  # injects GeneratorExit at suspension</code></pre>
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow suspension and resumption through a preserved frame, value injection, exception injection, GeneratorExit, return values, and yield from delegation.</p>
-        <p class="worked-answer">The generator body opens its file only when first advanced. Explicit close runs active cleanup; breaking a Python for loop does not automatically close an externally retained generator. The fixture closes flatten, not managed_lines, so it does not test file cleanup. yield from forwards more than repeated next calls.</p>
+
+        <p class="worked-answer">The file opens when the generator first advances. Calling close then runs its active cleanup. Breaking a for loop leaves an externally retained generator open. This example closes flatten, not managed_lines, so it does not check file cleanup. Explain the extra forwarding behavior of yield from as well as ordinary next calls.</p>
         <p>Look for: next calls, yielded values, generator state, cleanup log, and peak memory.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

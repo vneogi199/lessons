@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Study object reachability, CPython reference counts, generational cycle detection, weak-reference callbacks, finalizers, resurrection, and implementation differences.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>An object remains reachable while a live reference path leads to it. CPython tracks strong references and uses cyclic garbage collection to find unreachable cycles. A weak reference observes an object without keeping it alive. Finalizers and weak-reference callbacks can complicate cleanup, and resurrection can make an object reachable again. Collection details differ across implementations, so files and other external resources need explicit cleanup instead of assumptions about timing.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -100,7 +100,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Create and diagnose a reference cycle, observe collection, replace a cache with weak references, and prove explicit resource cleanup.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -138,7 +138,7 @@ print({&quot;cyclic_objects_collected&quot;: collected, &quot;thresholds&quot;: 
     <ol class="interview-questions">
       <li>Explain reference counting versus cyclic GC and why code must not depend on immediate finalization.</li>
       <li>Explain how an object&#039;s lifetime works, starting with the input and following it through to the result.</li>
-      <li>How would you create and diagnose a reference cycle, observe collection, replace a cache with weak references, and prove explicit resource cleanup, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -149,8 +149,8 @@ print({&quot;cyclic_objects_collected&quot;: collected, &quot;thresholds&quot;: 
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Study object reachability, CPython reference counts, generational cycle detection, weak-reference callbacks, finalizers, resurrection, and implementation differences.</p>
-        <p class="worked-answer">Removing root names leaves a cycle for GC to reclaim; the weak reference does not keep it alive. The collected count can include unrelated objects. Explicit close remains required for external resources; this cycle fixture does not demonstrate cache replacement, resurrection or deterministic finalization.</p>
+
+        <p class="worked-answer">After the root names are removed, the cycle remains for GC to reclaim. The weak reference does not keep it alive. The collection count may include unrelated objects. Close external resources explicitly. This example only demonstrates the cycle; cache replacement, resurrection and deterministic finalization need separate checks.</p>
         <p>Look for: Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

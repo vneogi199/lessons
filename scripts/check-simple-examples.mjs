@@ -2,11 +2,13 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
+import { PYTHON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 
 const root = new URL("../", import.meta.url);
 const manifest = JSON.parse(await readFile(new URL("lessons/manifest.json", root), "utf8"));
 const python = manifest.lessons.filter(x => x.trackId === "python");
 assert.equal(python.length, 43);
+assert.deepEqual(Object.keys(PYTHON_EXPLANATIONS).sort(), python.map(x => x.number).sort());
 assert.equal(Object.keys(SIMPLE_EXAMPLES).length, 64);
 assert.equal(new Set(Object.values(SIMPLE_EXAMPLES).map(x => x[0])).size, 64);
 for (const lesson of manifest.lessons) {
@@ -20,5 +22,10 @@ for (const lesson of manifest.lessons) {
   assert.ok(html.indexOf('id="simple-example-title"') < html.indexOf('class="card blackboard"'));
   const escapedAnswer = example[3].replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
   assert.ok(html.includes(escapedAnswer), `${lesson.number}: missing answer`);
+  if (lesson.trackId === "python") {
+    const explanation = PYTHON_EXPLANATIONS[lesson.number].replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
+    assert.ok(html.includes(explanation), `${lesson.number}: missing reviewed explanation`);
+    assert.doesNotMatch(html, /Python names are sticky notes|Core: inspect the supplied Python fixture|which evidence would prove the result/);
+  }
 }
-console.log("64 distinct Python/Polars ELI5 examples and catalog-wide cleanup checked. No lesson code executed.");
+console.log("43 Python explanations, 64 Python/Polars ELI5 examples and catalog-wide cleanup checked. No lesson code executed.");

@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand test discovery, isolation, fixture lifetimes, dependency seams, mock call recording, generated cases, random seeds, and flaky shared state.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>A test exercises a stated requirement under controlled conditions. Fixtures supply setup and cleanup; their lifetime determines which tests can share state. Mocks control a dependency and record calls, but they cannot prove that the real dependency behaves the same way. Property tests check rules across generated inputs. Control clocks, randomness and ordering when they affect the result, and investigate shared state when a test passes only sometimes.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Test a service with unit, contract, property, and failure-path tests while minimizing mocks at stable boundaries.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -151,7 +151,7 @@ test_create_project()  # Direct execution runs the check without installing pyte
     <ol class="interview-questions">
       <li>Explain fixture scope, mocks versus fakes, property-based testing, and how to diagnose flaky tests.</li>
       <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>How would you test a service with unit, contract, property, and failure-path tests while minimizing mocks at stable boundaries, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -162,8 +162,8 @@ test_create_project()  # Direct execution runs the check without installing pyte
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand test discovery, isolation, fixture lifetimes, dependency seams, mock call recording, generated cases, random seeds, and flaky shared state.</p>
-        <p class="worked-answer">The direct test checks one normalized success and an adapter interaction; autospec checks signatures, not persistence semantics. Add blank-input and failed-save cases, then test idempotent normalization across a defined domain. A testing property is an invariant, not a property descriptor. No pytest installation is needed for the direct assertions.</p>
+
+        <p class="worked-answer">The direct test checks one normalized result and a call to an adapter. autospec checks the call signature, not whether data was persisted correctly. Add blank-input and failed-save tests. Also check that normalizing twice gives the same result over a defined input domain. That is a testing property, unrelated to a property descriptor. The direct assertions do not require pytest.</p>
         <p>Look for: Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
