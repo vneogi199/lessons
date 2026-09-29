@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Event loop phases">
         <span>01</span>
@@ -106,7 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Timers run after their delay threshold has elapsed and the loop can process them. The pending-callback phase handles selected deferred I/O callbacks, including some TCP error callbacks. Poll processes ready I/O callbacks and can wait for events. Check processes setImmediate callbacks. Close callbacks report shutdown for supported handles. Internal idle and prepare phases also exist.</p>
+<section class="card mechanism-walkthrough"><p>Timers run after their delay threshold has elapsed and the loop can process them. The pending-callback phase handles selected deferred I/O callbacks, including some TCP error callbacks. Poll processes ready I/O callbacks and can wait for events. Check processes setImmediate callbacks. Close callbacks report shutdown for supported handles. Internal idle and prepare phases also exist.</p>
 <p>In Node 20 and later, libuv runs timers after polling during loop iterations. Version 1.45 retained an initial timer pass before entering the loop for compatibility. Record process.version with observations. A phase diagram is a model of repeated processing, not a promise that every phase has work on each pass.</p>
 <p>Inside the file-read callback, the immediate callback runs before the zero-delay timer scheduled beside it. The starter asserts only that relationship. Its top-level immediate and timer have no fixed relative order to assert. A zero delay is a minimum scheduling threshold, not a deadline.</p>
 <p>Promise microtasks and process.nextTick callbacks are not extra libuv phases. Node processes them at callback boundaries. Recursive nextTick scheduling can prevent the loop from reaching I/O. CommonJS and ES-module top-level ordering can differ, so do not transfer a top-level trace between them without checking its context.</p>
@@ -123,12 +122,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import { readFile } from &quot;node:fs&quot;;
 import assert from &quot;node:assert/strict&quot;;
 
@@ -158,35 +152,34 @@ assert.ok(trace.indexOf(&quot;I/O immediate&quot;) &lt; trace.indexOf(&quot;I/O 
 console.log(process.version);
 console.table(trace.map((event, order) =&gt; ({ order, event })));
 // No assertion about the relative order of the two top-level callbacks.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Each top-level promise resolves when its callback runs. The I/O promise resolves only after both callbacks created by the file read finish. A read error rejects it instead. Promise.all therefore observes completion without a guessed delay. The assertion deliberately excludes top-level order.</p></section>
+<p class="code-guide">Each top-level promise resolves when its callback runs. The I/O promise resolves only after both callbacks created by the file read finish. A read error rejects it instead. Promise.all therefore observes completion without a guessed delay. The assertion deliberately excludes top-level order.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Sampling mistaken for completion</h3><p>A timer that prints after 25 ms can miss slow I/O. The starter waits for explicit completions instead.</p></article><article><h3>One trace treated as a guarantee</h3><p>Assert the order inside the I/O callback. Keep top-level order as an observation. Inspect event-loop delay separately from dependency latency.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Sampling mistaken for completion</h3><p>A timer that prints after 25 ms can miss slow I/O. The starter waits for explicit completions instead.</p></article><article><h3>One trace treated as a guarantee</h3><p>Assert the order inside the I/O callback. Keep top-level order as an observation. Inspect event-loop delay separately from dependency latency.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Draw the event-loop phases and avoid claiming one universal ordering across all contexts.</li>
-      <li>Trace an event-loop operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
       <li>How would you instrument timers, I/O, setImmediate, and socket close callbacks and predict their ordering from the scheduling context, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Why does the I/O immediate precede its timer while top-level ordering remains unasserted? A service has low database latency but slow callbacks. How would you distinguish CPU blocking, recursive microtasks and slow I/O?</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Name the scheduling context and loop phase. Use event-loop delay and a CPU profile to investigate main-thread work. Inspect unbounded nextTick or promise chains when callbacks do not yield. Worker threads can move CPU work; increasing the I/O pool does not move arbitrary JavaScript off the main thread.</p>
         <p class="worked-answer">The I/O immediate precedes the timer scheduled beside it. Top-level timer and immediate order remains unasserted. Promise.all waits for explicit completion of both top-level callbacks and the I/O pair. A file-read error rejects the operation. A fixed print deadline would only sample progress, so it is not used as completion evidence.</p>
         <p>Look for: Event-loop delay, async trace, worker identity, callback order, and latency.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

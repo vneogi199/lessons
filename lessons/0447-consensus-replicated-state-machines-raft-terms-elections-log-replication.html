@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Consensus">
         <span>01</span>
@@ -102,7 +101,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Raft elects at most one leader per term. Split votes can leave a term without a leader. Each server persists its current term and vote before relying on them after a crash. A server that learns of a higher term updates its term and becomes a follower. A disconnected old leader may not yet know that a new term exists.</p>
+<section class="card mechanism-walkthrough"><p>Raft elects at most one leader per term. Split votes can leave a term without a leader. Each server persists its current term and vote before relying on them after a crash. A server that learns of a higher term updates its term and becomes a follower. A disconnected old leader may not yet know that a new term exists.</p>
 <p>Consider five servers A, B, C, D and E with matching logs. Three votes form a majority. A leads term 4. A partition separates A and B from C, D and E. C can win term 5 with C, D and E. A may still believe it leads, but A and B cannot form a majority to commit new commands. A must step down when it receives a valid higher-term message.</p>
 <p>A voter also checks log freshness. Compare the last entry's term first, then its index if the terms match. A longer log with an older last term is not necessarily more up to date. Majority intersection alone is insufficient without these election and log rules.</p>
 <p>A leader advances commitment by counting replicas for entries from its current term. Once such an entry is stored on a majority, it and preceding entries become committed. A majority holding an older-term entry alone does not justify the same conclusion. The paper's Figure 8 shows why that entry can still be overwritten before the current-term rule is satisfied.</p>
@@ -121,12 +120,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import assert from &quot;node:assert/strict&quot;;
 // Focused AppendEntries PRECHECK, not a Raft implementation. Trusted RPC fixture,
 // serialized dispatch, zero-based log with sentinel term 0 at index 0.
@@ -166,35 +160,34 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 // and membership changes. Bound commitIndex by the last entry covered by this RPC.
 // Do not deploy this precheck; use the full algorithm and tested implementation.
 // https://raft.github.io/raft.pdf</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Read onAppendEntries as a precheck. A higher term is persisted even when the prefix is rejected. readyForLogProcessing deliberately differs from append success. A rejected persistence promise must stop normal node processing. Tests of this adapter cannot establish election or commitment safety.</p></section>
+<p class="code-guide">Read onAppendEntries as a precheck. A higher term is persisted even when the prefix is rejected. readyForLogProcessing deliberately differs from append success. A rejected persistence promise must stop normal node processing. Tests of this adapter cannot establish election or commitment safety.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Replication confused with commitment</h3><p>An older-term entry can exist on a majority and still be unsafe to commit by replica counting alone. Explain the current-term rule before acknowledging a client.</p></article><article><h3>Consensus confused with exactly-once effects</h3><p>A client can retry after losing a reply. Applying the same request twice is an application concern. Persist request identity and results where replay must be safe.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Replication confused with commitment</h3><p>An older-term entry can exist on a majority and still be unsafe to commit by replica counting alone. Explain the current-term rule before acknowledging a client.</p></article><article><h3>Consensus confused with exactly-once effects</h3><p>A client can retry after losing a reply. Applying the same request twice is an application concern. Persist request identity and results where replay must be safe.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain what consensus solves, trace a Raft write, and distinguish leader election from failure detection and replication alone.</li>
-      <li>Trace a distributed request or message for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
       <li>How would you implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Trace the five-node partition. Who can commit? What happens to the old leader after healing? Then change membership from five servers to three. Explain which majorities the transition requires and what the precheck code cannot establish.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>C, D and E can elect a term-5 leader and commit current-term entries. A and B cannot commit alone. A steps down after learning term 5; conflicting uncommitted suffixes can be repaired. Joint consensus needs both configuration majorities. The precheck verifies durable term handling and prefix rejection only; election, append durability, commitment, application and membership safety still need the full protocol.</p>
         <p class="worked-answer">A higher term is persisted even when the prefix check fails. The success-shaped outcome deliberately says readyForLogProcessing, not append success. Trusted RPCs, serialized dispatch and durable hard-state adapter behavior are assumptions; rejecting a failed persistence promise must also stop normal node processing. Elections, conflict repair, commit rules and membership remain outside this precheck.</p>
         <p>Look for: Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

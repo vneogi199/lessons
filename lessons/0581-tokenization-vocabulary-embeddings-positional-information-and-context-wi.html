@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to large language models. A large language model processes tokens and estimates a probability for possible next tokens.</p>
+    <p>A large language model processes tokens and estimates a probability for possible next tokens.</p>
     <p><a href="../reference/senior-interview-practice.html#llm-internals">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="5">
 
-    <p class="concept-intro">Trace how text becomes IDs and vectors and why token boundaries affect cost and behavior.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Tokenization">
         <span>01</span>
@@ -98,25 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · TRACE</span>
-        <h3>Match the vocabulary</h3>
-        <p>The toy encoder chooses the longest matching piece.</p>
-      </article><article>
-        <span>02 · TRACE</span>
-        <h3>Emit token IDs</h3>
-        <p>A whole-word piece and character pieces produce different sequence lengths.</p>
-      </article><article>
-        <span>03 · TRACE</span>
-        <h3>Check unsupported text</h3>
-        <p>This toy rejects unknown text; real tokenizer fallback rules differ.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p><p>Look for: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></div>
-  </section>
 
   
 
@@ -128,12 +109,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code># Python 3.10+. A tiny greedy vocabulary, NOT a production tokenizer or BPE trainer.
 vocabulary = {&quot;cat&quot;: 0, &quot;c&quot;: 1, &quot;a&quot;: 2, &quot;t&quot;: 3, &quot; &quot;: 4}
 def encode(text, vocabulary):
@@ -157,51 +133,34 @@ else: raise AssertionError(&quot;unknown input accepted&quot;)
 # the trained vocabulary. Replacing the tokenizer alone changes model inputs.
 # Senior follow-up: account for messages, tools and output reservation in a context
 # budget. Real tokenizers may use byte fallback; inspect the provider&#039;s tokenizer.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Match the vocabulary → Emit token IDs → Check unsupported text. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a token sequence from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain tokens, embeddings, and context without anthropomorphism.</li>
-      <li>Trace a token sequence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a token sequence works, starting with the input and following it through to the result.</li>
       <li>How would you inspect tokenizer output across languages, code, whitespace, and adversarial strings, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="llm-internals">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Trace how text becomes IDs and vectors and why token boundaries affect cost and behavior.</p>
         <p class="worked-answer">The greedy vocabulary emits three IDs for cat cat; removing cat makes seven. This is not BPE training or a real model tokenizer. Token IDs carry no ordered semantic magnitude, and token embeddings differ from independently trained document embeddings. Reserve context for instructions, tools, multimodal inputs and output using the actual model&#039;s accounting rules.</p>
         <p>Look for: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#llm-internals">Worked track case: A larger context window reduces quality ↗</a></p>
       </details>
     </div>

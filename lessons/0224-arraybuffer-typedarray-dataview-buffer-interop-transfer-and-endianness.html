@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to Node.js. Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
+    <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
     <p><a href="../reference/senior-interview-practice.html#nodejs">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-    <p class="concept-intro">Relate Node Buffer views to ECMAScript binary storage, byte offsets, underlying pooled buffers, transferability, and explicit byte order.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="ArrayBuffer">
         <span>01</span>
@@ -102,29 +101,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · BYTES</span>
-        <h3>Input enters a bounded buffer</h3>
-        <p>Length, allocation, encoding, and ownership must be explicit.</p>
-      </article><article>
-        <span>02 · VIEW</span>
-        <h3>Code reads through one typed view</h3>
-        <p>Offsets, endianness, aliases, and pooled backing storage shape access.</p>
-      </article><article>
-        <span>03 · VALIDATE</span>
-        <h3>Protocol bounds are enforced</h3>
-        <p>Lengths, versions, and allowed representations reject malformed data.</p>
-      </article><article>
-        <span>04 · TRANSFER</span>
-        <h3>Owned output crosses the boundary</h3>
-        <p>A copy, view, clone, or transfer determines later mutation.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Mutate a sliced Buffer and compare it with an explicit copy and transferred ArrayBuffer.</p><p>Look for: byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p></div>
-  </section>
 
   
 
@@ -136,12 +113,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import { Buffer } from &quot;node:buffer&quot;;
 
 function decodeFrame(input) {
@@ -163,51 +135,34 @@ view[0] = 0x48;
 console.assert(copy[0] !== view[0]);
 
 const exactArrayBuffer = frame.buffer.slice(frame.byteOffset, frame.byteOffset + frame.byteLength);</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Input enters a bounded buffer → Code reads through one typed view → Protocol bounds are enforced → Owned output crosses the boundary. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an event-loop operation from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Mutate a sliced Buffer and compare it with an explicit copy and transferred ArrayBuffer.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Compare Buffer, ArrayBuffer, TypedArray, and DataView ownership and view behavior.</li>
-      <li>Trace an event-loop operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
       <li>How would you exchange a binary payload between a Buffer and worker without accidentally exposing unrelated pooled bytes, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Relate Node Buffer views to ECMAScript binary storage, byte offsets, underlying pooled buffers, transferability, and explicit byte order.</p>
         <p class="worked-answer">byteOffset and byteLength select the visible range, not the whole pooled backing buffer. The final slice makes an exact independent ArrayBuffer. No worker transfer occurs in this starter; test detachment and alias effects separately before transferring owned storage.</p>
         <p>Look for: byte dump, byteOffset, byteLength, backing identity, decoded value, allocation, and rejection.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>

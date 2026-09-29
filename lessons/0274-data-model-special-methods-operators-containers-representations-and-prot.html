@@ -43,11 +43,7 @@
     <h1>Data model, special methods, operators, containers, representations, and protocols</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>This topic belongs to Python. Python is a programming language. The Python runtime creates objects and performs the operations in a Python program.</p>
-    <p><a href="../reference/senior-interview-practice.html#python">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Python can ask a list for its length with len. Your own container can support the same operation by implementing the corresponding special method, __len__.</p><p>This is a protocol: code relies on supported behavior. A special method must obey its operation&#039;s rules; giving a method the right name is not enough if its result is invalid.</p><details><summary>Does a custom container need to inherit from list just to support len?</summary><p>No. It can implement the length protocol itself.</p></details></section>
 
   <div class="grid">
     <section class="card">
@@ -72,7 +68,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-    <p class="concept-intro">Connect syntax such as len, iteration, comparison, containment, arithmetic, calls, and with statements to their special-method dispatch.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Data model">
         <span>01</span>
@@ -102,29 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · SYNTAX</span>
-        <h3>Code performs an operation</h3>
-        <p>Attribute access, len, iteration, comparison, or a call begins.</p>
-      </article><article>
-        <span>02 · TYPE LOOKUP</span>
-        <h3>Python selects a protocol</h3>
-        <p>MRO and descriptor precedence locate behavior.</p>
-      </article><article>
-        <span>03 · METHOD</span>
-        <h3>The special method executes</h3>
-        <p>Bound objects and arguments determine the result.</p>
-      </article><article>
-        <span>04 · VALUE</span>
-        <h3>A value or exception returns</h3>
-        <p>Caller-visible behavior proves which path won.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Shadow one attribute or return NotImplemented and predict the fallback path.</p><p>Look for: MRO, descriptor calls, bound-method fields, return value, and exception.</p></div>
-  </section>
 
   
 
@@ -136,12 +109,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>from dataclasses import dataclass
 from functools import total_ordering
 
@@ -170,51 +138,34 @@ assert a != b and a &lt; b and not b &lt; a
 # Tuple tie-break keeps ordering consistent with dataclass structural equality.
 # Comparing only sums while equality compares tuples would violate total ordering.
 # https://docs.python.org/3/library/functools.html#functools.total_ordering</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Code performs an operation → Python selects a protocol → The special method executes → A value or exception returns. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an attribute or protocol operation from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Shadow one attribute or return NotImplemented and predict the fallback path.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: MRO, descriptor calls, bound-method fields, return value, and exception.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain duck typing, NotImplemented, __repr__ versus __str__, and why special methods are looked up on the type.</li>
-      <li>Trace an attribute or protocol operation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an attribute or protocol operation works, starting with the input and following it through to the result.</li>
       <li>How would you implement a small immutable collection with iteration, containment, equality, ordering, repr, and a deliberate unsupported operation, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an attribute or protocol operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="python">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Connect syntax such as len, iteration, comparison, containment, arithmetic, calls, and with statements to their special-method dispatch.</p>
         <p class="worked-answer">The scoreboard orders by total and then tuple, keeping ties compatible with its value equality. NotImplemented lets Python try the other operand&#039;s protocol; it is not an exception to raise. Containers here are Python collections, not Docker processes.</p>
         <p>Look for: MRO, descriptor calls, bound-method fields, return value, and exception.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>

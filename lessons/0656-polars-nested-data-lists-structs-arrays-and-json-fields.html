@@ -43,11 +43,7 @@
     <h1>Polars nested data, lists, structs, arrays, and JSON fields</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>A List contains a variable number of values per row. An Array has a fixed shape. A Struct contains named typed fields. Explode expands list elements into rows, changing the output grain.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Order A has legs 10 and 20. Order B has leg 30. Exploding the lists produces A/10, A/20 and B/30.</p><p>The output now has one row per leg. Repeating an order-level total on each leg and summing it later can count the same order more than once.</p><details><summary>How many rows should this explosion produce?</summary><p>Three, one for each element in the leg lists.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Struct">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>An RFQ can contain several legs. Keeping legs in a list preserves one row per RFQ; exploding creates one row per leg. Repeating an RFQ-level notional on each leg can inflate a later total unless the metric is allocated or grouped correctly.</p>
+<section class="card mechanism-walkthrough"><p>An RFQ can contain several legs. Keeping legs in a list preserves one row per RFQ; exploding creates one row per leg. Repeating an RFQ-level notional on each leg can inflate a later total unless the metric is allocated or grouped correctly.</p>
 <p>A struct gives related fields a typed shape. Extract a named field with struct.field and expand all fields with unnest when that output contract is useful. A typed JSON decode needs an explicit or verified schema and a malformed-input policy.</p>
 <p>Use list expressions for element-wise transformations inside lists when possible. Distinguish a null list, an empty list and a list containing null. Their meanings and explode behavior should be covered by fixtures on the pinned release.</p>
 <p>Arrays are appropriate when fixed width is part of the contract, such as a three-coordinate vector. A List is more natural for variable-length legs. Neither choice validates whether the legs form a permitted instrument.</p><p><a href="https://docs.pola.rs/user-guide/expressions/lists-and-arrays/">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 df = pl.DataFrame({&quot;rfq&quot;: [&quot;a&quot;, &quot;b&quot;], &quot;legs&quot;: [[10, 20], [30]], &quot;desk&quot;: [&quot;D1&quot;, &quot;D2&quot;]})
@@ -120,35 +110,34 @@ assert out.select(pl.col(&quot;identity&quot;).struct.field(&quot;rfq&quot;)).to
 expanded = df.explode(&quot;legs&quot;)
 assert expanded.select(&quot;rfq&quot;, &quot;legs&quot;).rows() == [(&quot;a&quot;, 10), (&quot;a&quot;, 20), (&quot;b&quot;, 30)]
 assert expanded.height == 3</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Each RFQ has leg total 30. Explode changes two RFQ rows into three leg rows.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Each RFQ has leg total 30. Explode changes two RFQ rows into three leg rows.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Summing an RFQ-level amount after exploding legs can count the same amount repeatedly.</p></article><article><h3>Tradeoff to defend</h3><p>Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Summing an RFQ-level amount after exploding legs can count the same amount repeatedly.</p></article><article><h3>Tradeoff to defend</h3><p>Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you add an empty list, a null list and [None]. Specify which should represent no legs versus unknown legs before aggregating, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Add an empty list, a null list and [None]. Specify which should represent no legs versus unknown legs before aggregating.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Each RFQ has leg total 30. Explode changes two RFQ rows into three leg rows. Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.</p>
         <p class="worked-answer">Each RFQ has leg total 30. Explode changes two RFQ rows into three leg rows.</p>
         <p>Look for: Summing an RFQ-level amount after exploding legs can count the same amount repeatedly. Nested storage preserves natural structure. Flat rows simplify some joins and reports but require a new key and grain contract.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

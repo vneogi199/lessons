@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to APIs and distributed systems. An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
+    <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-    <p class="concept-intro">Map data and requests to owners, move ranges or virtual nodes as capacity changes, preserve routing metadata, and control skew, hot keys, global queries, and cross-shard invariants.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Sharding">
         <span>01</span>
@@ -102,29 +101,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · ROUTE</span>
-        <h3>Key or request maps to an owner</h3>
-        <p>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</p>
-      </article><article>
-        <span>02 · SERVE</span>
-        <h3>Selected node executes local work</h3>
-        <p>Capacity, connection state, authoritative data, projection, and replication position apply.</p>
-      </article><article>
-        <span>03 · CHANGE</span>
-        <h3>Membership, load, or region state shifts</h3>
-        <p>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</p>
-      </article><article>
-        <span>04 · VERIFY</span>
-        <h3>Traffic and data settle safely</h3>
-        <p>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</p><p>Look for: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p></div>
-  </section>
 
   
 
@@ -136,12 +113,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Already-hashed integer points in a tiny [0, 99] ring; no hash library needed.
 function owner(point, ring) {
   if (!Number.isInteger(point) || point &lt; 0 || point &gt;= 100 || !Array.isArray(ring) || !ring.length ||
@@ -168,51 +140,34 @@ for (const [point, nodes] of [[-1, ring], [0, []], [0, [...ring].reverse()]]) {
 // This O(number-of-tokens) scan is a tiny fixture; use binary search at large scale.
 // Real placement also needs a stable hash, virtual nodes, migration ownership,
 // stale-routing handling and measured request skew. No migration occurs here.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Key or request maps to an owner → Selected node executes local work → Membership, load, or region state shifts → Traffic and data settle safely. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a distributed request or message from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Choose a shard key and explain resharding, hotspot, join, uniqueness, transaction, and routing consequences.</li>
-      <li>Trace a distributed request or message for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
       <li>How would you design a partition key from workload data, simulate skew and rebalancing, and measure scatter-gather fan-out and tail latency, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Map data and requests to owners, move ranges or virtual nodes as capacity changes, preserve routing metadata, and control skew, hot keys, global queries, and cross-shard invariants.</p>
         <p class="worked-answer">Adding token 40 moves exactly points 21 through 40, but all 1,000 requests for point 21 still target D. The scan validates and searches a tiny ring linearly; it measures neither hashing quality nor live migration. Data copy/catch-up, routing versions and write ownership are separate from consumer-group rebalancing. A hot key may require changing the data model, not more tokens.</p>
         <p>Look for: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

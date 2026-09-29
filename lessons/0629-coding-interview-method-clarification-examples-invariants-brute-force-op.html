@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="8">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Coding interview method">
         <span>01</span>
@@ -110,7 +109,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Clarify whether the result contains indices or values, whether indices must differ, and whether any valid pair is acceptable. Ask what to return when no pair exists. For this fixture, return two distinct indices or null. Duplicates are allowed. Inputs and relevant arithmetic must stay within the safe-integer contract.</p>
+<section class="card mechanism-walkthrough"><p>Clarify whether the result contains indices or values, whether indices must differ, and whether any valid pair is acceptable. Ask what to return when no pair exists. For this fixture, return two distinct indices or null. Duplicates are allowed. Inputs and relevant arithmetic must stay within the safe-integer contract.</p>
 <p>Try every i &lt; j pair as a baseline. This uses O(n²) time and O(1) extra space. For a large input, store prior values in a Map. At j, compute the needed partner, check the Map, then insert the current value. With expected constant-time Map operations, this uses O(n) time and O(n) extra space.</p>
 <p>Trace [3, 3] with target 6. At j = 0 the Map is empty; store 3 → 0. At j = 1 the Map contains the needed 3, so return [0, 1]. If insertion came first, the single-element input [3] could incorrectly match itself. This counterexample tests the invariant directly.</p>
 <p>The current algorithm returns on the first matching second index. When duplicate values overwrite earlier Map entries, it does not promise the earliest possible first index. A contract that requires a particular pair order needs a different selection rule.</p>
@@ -127,12 +126,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Worked rehearsal: find two DISTINCT indices summing to target, or return null.
 // Contract for this fixture: safe integers, and all subtraction results remain safe.
 // Baseline: check all i &lt; j pairs, O(n²) time and O(1) extra space.
@@ -156,35 +150,34 @@ console.assert(pairSum([3], 6) === null &amp;&amp; pairSum([], 6) === null);
 
 // Say assumptions and invariants aloud. If stuck: shrink the example, restore a
 // known-correct baseline, identify the first divergence, and ask a precise question.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>At each loop iteration, compare the Map before lookup and after insertion. Existing assertions cover a normal match, duplicate values, a single element and empty input. Add [-2, 5] with target 3 and [1, 2] with target 9 to check negatives and no match.</p></section>
+<p class="code-guide">At each loop iteration, compare the Map before lookup and after insertion. Existing assertions cover a normal match, duplicate values, a single element and empty input. Add [-2, 5] with target 3 and [1, 2] with target 9 to check negatives and no match.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Optimization changes the contract</h3><p>A sorted answer may lose original indices. State the required output before proposing a different algorithm.</p></article><article><h3>Passing examples replace reasoning</h3><p>Test duplicates, an empty input, a single element, negatives and no match. Explain the invariant as well as the results.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Optimization changes the contract</h3><p>A sorted answer may lose original indices. State the required output before proposing a different algorithm.</p></article><article><h3>Passing examples replace reasoning</h3><p>Test duplicates, an empty input, a single element, negatives and no match. Explain the invariant as well as the results.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Collaborate visibly under pressure and recover from mistakes without silently abandoning the reasoning trail.</li>
-      <li>Trace an interview decision and its evidence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an interview decision and its evidence works, starting with the input and following it through to the result.</li>
       <li>How would you run timed problems using one repeatable loop from clarification through working code, edge tests, complexity, and a measured improvement note, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an interview decision and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="international-interviews">
       <p>Without copying pairSum, solve a new version that returns every distinct index pair. Use [3, 3, 3] and target 6. Then discuss a stream where only the last W elements are eligible. What changes in storage, output cost and expiry?</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>All-pairs output is [0,1], [0,2], [1,2]. Store every prior index for each value, emit matches before insertion, and count output size k: expected O(n + k) time and O(n) auxiliary storage, plus O(k) if results are collected. For a window, expire indices before lookup and keep only eligible entries; one index per value loses duplicate matches. In a self-review, mark contract, invariant, implementation, tests and tradeoff as demonstrated or needs practice. Correct output alone does not demonstrate all five.</p>
         <p class="worked-answer">Lookup before insertion preserves distinct indices, so [3,3] succeeds and a single [3] does not. The Map keeps a prior matching index, not necessarily the earliest possible pair under every selection rule. The fixture assumes safe integer subtraction and does not validate arbitrary input. Expected linear time trades for linear storage; clarify mutation and index requirements before proposing sorting.</p>
         <p>Look for: Clarifications, invariant, examples, executable code, failing case, fix, and complexity.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#international-interviews">Worked track case: Explain an unpopular technical decision ↗</a></p>
       </details>
     </div>

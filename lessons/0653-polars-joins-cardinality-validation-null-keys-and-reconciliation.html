@@ -43,11 +43,7 @@
     <h1>Polars joins, cardinality validation, null keys, and reconciliation</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>An inner join keeps matches. A left join preserves left rows. A semi join selects left rows with a match, while an anti join selects those without one. Cardinality describes how many rows can match each key on either side.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>An order names instrument X. A reference table says X belongs to desk A. A join attaches the desk to the order.</p><p>If that reference table contains two matches for X, one order can become two output rows. Summing afterward may double its quantity. Check join cardinality before trusting the total.</p><details><summary>What should you inspect when a join increases the row count?</summary><p>Look for multiple matching rows on the other side of the join.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="cardinality">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Reference data should often have one row per instrument. If two reference rows match one trade, the join duplicates that trade and can double its reported exposure. Validate the right side rather than trusting the table name.</p>
+<section class="card mechanism-walkthrough"><p>Reference data should often have one row per instrument. If two reference rows match one trade, the join duplicates that trade and can double its reported exposure. Validate the right side rather than trusting the table name.</p>
 <p>Use validate='m:1' for the stated many-trades-to-one-reference contract where the selected engine supports that validation. Precheck uniqueness when execution constraints require it. Do not disable validation merely to make a larger query run.</p>
 <p>Null join keys do not match by default in current Polars. If you deliberately enable null matching, decide what a missing business key means. Joining all unknown IDs to one another is rarely safe for financial enrichment.</p>
 <p>Use an anti join to report unmapped instruments. A left join with null enrichment can preserve evidence; an inner join can silently discard it. Compare row counts and totals before and after enrichment. Full joins also require a policy for the resulting key columns and coalescing.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 trades = pl.DataFrame({&quot;id&quot;: [1, 2], &quot;instrument&quot;: [&quot;x&quot;, &quot;z&quot;], &quot;qty&quot;: [5, 7]})
@@ -118,35 +108,34 @@ assert out.height == trades.height
 assert out[&quot;qty&quot;].sum() == 12
 assert out[&quot;desk&quot;].to_list() == [&quot;A&quot;, None]
 assert missing[&quot;instrument&quot;].to_list() == [&quot;z&quot;]</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Both trades survive. Instrument z is reported as unmapped. Quantity remains 12.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Both trades survive. Instrument z is reported as unmapped. Quantity remains 12.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A many-to-many join can inflate totals without any parsing or arithmetic error.</p></article><article><h3>Tradeoff to defend</h3><p>Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A many-to-many join can inflate totals without any parsing or arithmetic error.</p></article><article><h3>Tradeoff to defend</h3><p>Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you duplicate reference instrument x. Predict the unvalidated total and explain why the validated join should fail, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Duplicate reference instrument x. Predict the unvalidated total and explain why the validated join should fail.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Both trades survive. Instrument z is reported as unmapped. Quantity remains 12. Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.</p>
         <p class="worked-answer">Both trades survive. Instrument z is reported as unmapped. Quantity remains 12.</p>
         <p>Look for: A many-to-many join can inflate totals without any parsing or arithmetic error. Dropping unmatched records simplifies downstream schemas but loses evidence. Preserving them requires an explicit unresolved-data state.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

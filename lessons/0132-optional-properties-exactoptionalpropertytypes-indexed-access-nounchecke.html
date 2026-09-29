@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
+    <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="5">
 
-    <p class="concept-intro">An omitted property and a present property containing undefined are different object shapes. exactOptionalPropertyTypes preserves that distinction when assigning optional fields. noUncheckedIndexedAccess makes uncertain dictionary reads include undefined. These flags add static checks; they do not validate incoming JSON.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Optional properties">
         <span>01</span>
@@ -98,29 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · RECEIVE</span>
-        <h3>Decode an update instruction</h3>
-        <p>Omitted name means keep; a string means replace; null means clear. JSON cannot carry undefined.</p>
-      </article><article>
-        <span>02 · VALIDATE</span>
-        <h3>Reject invalid supplied values</h3>
-        <p>Check own-property presence, allowed keys, and the value type before constructing NamePatch.</p>
-      </article><article>
-        <span>03 · APPLY</span>
-        <h3>Branch on presence, not truthiness</h3>
-        <p>The normalized patch preserves both an empty string and null. Neither means leave unchanged.</p>
-      </article><article>
-        <span>04 · CHECK</span>
-        <h3>Protect uncertain reads separately</h3>
-        <p>Enable both flags explicitly. An unknown dictionary key may return undefined; nullish fallback preserves a valid zero.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden?</p><p>Look for: Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</p></div>
-  </section>
 
   
 
@@ -131,12 +108,7 @@
 <p>Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Save as optional.ts, then run (the two extra flags are not enabled by strict):
 // tsc --strict --exactOptionalPropertyTypes --noUncheckedIndexedAccess --target ES2022 --outDir out optional.ts
 // node out/optional.js
@@ -205,7 +177,6 @@ function compilerExamples(key: string): void {
 console.log(&quot;Optional-property checks passed&quot;);
 // Try replacing the presence check with if (patch.name): empty and null cases fail.
 // An HTTP handler must still authorize the update and apply domain-specific rules.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 <section class="card" id="typescript-review">
@@ -218,45 +189,29 @@ console.log(&quot;Optional-property checks passed&quot;);
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Decode an update instruction → Reject invalid supplied values → Branch on presence, not truthiness → Protect uncertain reads separately. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a database query from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden?</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>A PATCH endpoint treats an omitted field as leave unchanged. How would you represent set, clear, and leave unchanged across JSON, runtime validation, and TypeScript without relying on truthiness?</li>
-      <li>Trace a database query for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a database query works, starting with the input and following it through to the result.</li>
       <li>How would you enable strict, exactOptionalPropertyTypes, and noUncheckedIndexedAccess explicitly. Run the lab to check omitted, nonempty, empty-string, and null patches; reject present undefined and invalid input. Expect Optional-property checks passed. Handle an absent dictionary key without discarding a valid zero. Then replace the presence check with truthiness and explain the failing cases, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>An omitted property and a present property containing undefined are different object shapes. exactOptionalPropertyTypes preserves that distinction when assigning optional fields. noUncheckedIndexedAccess makes uncertain dictionary reads include undefined. These flags add static checks; they do not validate incoming JSON.</p>
         <p>Look for: Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>

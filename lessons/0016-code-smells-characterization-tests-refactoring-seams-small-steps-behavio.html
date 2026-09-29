@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to software design. Software design arranges code, state, and dependencies so correct behavior is clear and future changes remain safe and reasonably small.</p>
+    <p>Software design arranges code, state, and dependencies so correct behavior is clear and future changes remain safe and reasonably small.</p>
     <p><a href="../reference/senior-interview-practice.html#software-design">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Treat smells as investigation signals, capture current observable behavior, create a controllable seam, apply one named transformation, run tests after each step, and separate structural change from feature change.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Code smells">
         <span>01</span>
@@ -106,29 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · OBSERVE</span>
-        <h3>Current behavior is captured</h3>
-        <p>Characterization tests and runtime evidence define what must remain unchanged.</p>
-      </article><article>
-        <span>02 · SEAM</span>
-        <h3>One dependency becomes controllable</h3>
-        <p>A small extraction or parameter creates a place to test and change safely.</p>
-      </article><article>
-        <span>03 · TRANSFORM</span>
-        <h3>One refactoring changes structure</h3>
-        <p>A named small step keeps the program executable and avoids mixing new behavior.</p>
-      </article><article>
-        <span>04 · VERIFY</span>
-        <h3>Behavior and design are compared</h3>
-        <p>Tests, diff, complexity, dependencies, and reader explanation confirm or reject improvement.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Refactor one smell through separate executable commits and deliberately break a characterization test between two steps.</p><p>Look for: Baseline outputs, test result per commit, diff, complexity, dependency count, runtime profile, and review explanation.</p></div>
-  </section>
 
   
 
@@ -140,12 +117,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>type LegacyOrder = { kind: &quot;standard&quot; | &quot;member&quot;; subtotal: number; shipping: number };
 
 // Characterization tests capture current observable behavior before restructuring.
@@ -171,51 +143,34 @@ for (const test of cases) {
   console.assert(refactoredTotal(test.input) === test.expected);
 }
 // Commit structural changes separately; run tests after each named small step.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Current behavior is captured → One dependency becomes controllable → One refactoring changes structure → Behavior and design are compared. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a requirement-driven code change from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Refactor one smell through separate executable commits and deliberately break a characterization test between two steps.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Baseline outputs, test result per commit, diff, complexity, dependency count, runtime profile, and review explanation.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Describe a safe refactoring sequence for untested production code and the evidence that behavior stayed stable.</li>
-      <li>Trace a requirement-driven code change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
       <li>How would you refactor a long conditional with duplicated calculations using extract function, introduce parameter object, and replace conditional with strategy while keeping every commit executable, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Treat smells as investigation signals, capture current observable behavior, create a controllable seam, apply one named transformation, run tests after each step, and separate structural change from feature change.</p>
         <p class="worked-answer">The two characterization cases preserve standard/member output, not every input, failure, side effect or timing behavior. Add zero, threshold and invalid-input cases relevant to the accepted contract before restructuring. If current behavior is a bug, record it and fix it as a separate behavior change; do not silently bless it forever. Compare the discount table with the original conditional: a smell is a reason to investigate, not proof the table is better. Review one transformation at a time and check that a deliberate wrong discount fails the tests.</p>
         <p>Look for: Baseline outputs, test result per commit, diff, complexity, dependency count, runtime profile, and review explanation.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>
       </details>
     </div>

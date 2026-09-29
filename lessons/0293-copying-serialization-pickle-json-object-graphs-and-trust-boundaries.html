@@ -43,11 +43,7 @@
     <h1>Copying, serialization, pickle, JSON, object graphs, and trust boundaries</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>This topic belongs to Python. Python is a programming language. The Python runtime creates objects and performs the operations in a Python program.</p>
-    <p><a href="../reference/senior-interview-practice.html#python">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Copying a list makes another Python object. Serializing it writes a representation that can be stored or sent. Those operations solve different problems.</p><p>JSON does not preserve every Python type or shared-reference relationship. Pickle supports more Python-specific behavior, but loading an untrusted pickle can execute code. Use a format and validation policy appropriate to the boundary.</p><details><summary>Should you unpickle an unknown file just to inspect its data?</summary><p>No. Loading untrusted pickle data is unsafe.</p></details></section>
 
   <div class="grid">
     <section class="card">
@@ -72,7 +68,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-    <p class="concept-intro">Compare shallow and deep traversal, identity preservation, recursive graphs, reduction protocols, version compatibility, and code execution during deserialization.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Copying">
         <span>01</span>
@@ -102,29 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · RECEIVE</span>
-        <h3>Untrusted data enters</h3>
-        <p>Text, bytes or paths have not earned permission to drive an operation.</p>
-      </article><article>
-        <span>02 · DECODE</span>
-        <h3>Choose a bounded format</h3>
-        <p>JSON decoding does not establish a domain schema; untrusted pickle can execute code.</p>
-      </article><article>
-        <span>03 · VALIDATE</span>
-        <h3>Establish the intended contract</h3>
-        <p>Check types, versions, sizes and authority before use.</p>
-      </article><article>
-        <span>04 · USE</span>
-        <h3>Perform the permitted operation</h3>
-        <p>Record safe rejection or a validated result; copying is not a security boundary.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Change the version, value type or path and predict which check rejects it.</p><p>Look for: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p></div>
-  </section>
 
   
 
@@ -136,12 +109,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>from copy import copy, deepcopy
 import json
 import pickle
@@ -180,51 +148,34 @@ for invalid in ([], {&quot;schema_version&quot;: True, &quot;project&quot;: {}},
 # Enforce a streaming byte limit before allocating the payload. Decide duplicate
 # JSON names and non-finite numeric policy rather than assuming json.loads rejects
 # all unwanted values. Never pickle.loads untrusted data: it can execute code.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Untrusted data enters → Choose a bounded format → Establish the intended contract → Perform the permitted operation. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a validated data boundary from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Change the version, value type or path and predict which check rejects it.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain copy versus deepcopy, pickle risks, schema evolution, and identity in serialized graphs.</li>
-      <li>Trace a validated data boundary for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a validated data boundary works, starting with the input and following it through to the result.</li>
       <li>How would you fix an aliasing defect and design a safe versioned JSON format instead of unpickling untrusted input, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a validated data boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="python">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Compare shallow and deep traversal, identity preservation, recursive graphs, reduction protocols, version compatibility, and code execution during deserialization.</p>
         <p class="worked-answer">The decoder validates the versioned envelope only, not project fields. Bound bytes before allocating the payload, then decide duplicate-name and non-finite-number policy. Deepcopy preserves graph relationships under its protocol but JSON does not preserve arbitrary identity. Never load untrusted pickle.</p>
         <p>Look for: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>

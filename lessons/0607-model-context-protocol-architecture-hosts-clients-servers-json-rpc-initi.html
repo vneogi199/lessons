@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to AI agents. An agent selects actions in a control loop. The application limits tools, state, cost, and stopping conditions.</p>
+    <p>An agent selects actions in a control loop. The application limits tools, state, cost, and stopping conditions.</p>
     <p><a href="../reference/senior-interview-practice.html#agents">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="11">
 
-    <p class="concept-intro">Follow one host-created client connection through protocol version and capability negotiation, JSON-RPC requests, responses and notifications, server discovery primitives, tool execution, resource reading, prompt retrieval, cancellation, and orderly shutdown.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Model Context Protocol architecture">
         <span>01</span>
@@ -122,29 +121,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CONNECT</span>
-        <h3>Host creates one MCP client</h3>
-        <p>A local stdio process or remote HTTP endpoint supplies the transport and trust boundary.</p>
-      </article><article>
-        <span>02 · NEGOTIATE</span>
-        <h3>Client and server initialize</h3>
-        <p>Protocol version, identities, and capabilities determine legal later requests.</p>
-      </article><article>
-        <span>03 · OPERATE</span>
-        <h3>JSON-RPC carries MCP primitives</h3>
-        <p>Tools, resources, prompts, notifications, cancellation, authorization, and consent govern work.</p>
-      </article><article>
-        <span>04 · OBSERVE</span>
-        <h3>Result or failure returns to host</h3>
-        <p>Request IDs, session state, traces, audit events, and shutdown expose the complete lifecycle.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Capture every frame for initialize, discovery, one successful call, one unsupported request, cancellation, and shutdown.</p><p>Look for: Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</p></div>
-  </section>
 
   
 
@@ -156,12 +133,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code># Partial MCP stdio dispatch lab, NOT a conforming production server.
 # It illustrates request/response shapes; initialization-state enforcement,
 # capability negotiation, cancellation and session ownership remain to implement.
@@ -247,51 +219,34 @@ while True:
         reply(request, error={&quot;code&quot;: -32602, &quot;message&quot;: str(exc)})
 # stdout is reserved for protocol frames; diagnostics belong on stderr. This
 # fixture does not process server responses or arbitrary bidirectional messages.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Host creates one MCP client → Client and server initialize → JSON-RPC carries MCP primitives → Result or failure returns to host. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an MCP session from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Capture every frame for initialize, discovery, one successful call, one unsupported request, cancellation, and shutdown.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain the responsibilities and trust boundaries of MCP hosts, clients, and servers, and distinguish protocol interoperability from model tool-selection behavior.</li>
-      <li>Trace an MCP session for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an MCP session works, starting with the input and following it through to the result.</li>
       <li>How would you build a local MCP server and host client over standard input and output, expose one tool, resource, and prompt, inspect every JSON-RPC frame, and verify unsupported capability and error behavior, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an MCP session. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="agents">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Follow one host-created client connection through protocol version and capability negotiation, JSON-RPC requests, responses and notifications, server discovery primitives, tool execution, resource reading, prompt retrieval, cancellation, and orderly shutdown.</p>
         <p class="worked-answer">The dispatcher has a two-term glossary and selected JSON-RPC errors, not a conforming MCP lifecycle. It accepts discovery without enforcing initialization, fixes one protocol version and ignores notifications. The missing client, negotiation, cancellation and output limits are explicit extension work. Never put diagnostic prose on stdout or treat a protocol request ID as business idempotency.</p>
         <p>Look for: Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#agents">Worked track case: A checkpoint replays a successful tool call ↗</a></p>
       </details>
     </div>

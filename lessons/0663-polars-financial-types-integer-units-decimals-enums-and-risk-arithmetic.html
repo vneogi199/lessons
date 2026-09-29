@@ -43,11 +43,7 @@
     <h1>Polars financial types, integer units, decimals, enums, and risk arithmetic</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>An integer amount needs a unit such as cents. Decimal arithmetic uses a stated precision and scale. An Enum has a fixed set of allowed categories. A categorical encoding compresses labels but does not automatically validate a business vocabulary.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You can store an amount as 125 cents. That integer is useful only if everyone agrees it means cents.</p><p>Specify conversion and rounding rules, and check the supported integer range. Decimal arithmetic also needs units and a rounding policy. Neither representation decides those business rules for you.</p><details><summary>Do integers remove the need to state units?</summary><p>No. The same integer can represent cents, whole units or another quantity.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="scale">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>This fixture uses integer cents for a simple exposure-times-shock calculation. It defines the rounding policy as floor division for nonnegative products. A real risk calculation must specify sign handling, aggregation level, overflow bounds and the authority for its rounding rule.</p>
+<section class="card mechanism-walkthrough"><p>This fixture uses integer cents for a simple exposure-times-shock calculation. It defines the rounding policy as floor division for nonnegative products. A real risk calculation must specify sign handling, aggregation level, overflow bounds and the authority for its rounding rule.</p>
 <p>One basis point is 1/10000 of a unit fraction. Label the rate column with its unit. Multiplying by 25 when the code expects 0.0025 produces a very different amount. Do not infer units from a dtype alone.</p>
 <p>For decimal columns, choose precision and scale explicitly and test casts, multiplication and aggregation on the installed release. Decimal support and operation rules must be checked against that release's documentation. Construct decimal inputs from decimal text rather than a binary float when exact decimal intent matters.</p>
 <p>Use Enum when unknown labels should be rejected or quarantined. Use a categorical representation for open-ended repeated labels when that contract fits. Do not use the physical category code as a portable business ID. Missing or invalid risk inputs require an unresolved result, not an invented zero.</p><p><a href="https://docs.pola.rs/api/python/stable/reference/api/polars.datatypes.Decimal.html">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 df = pl.DataFrame({&quot;exposure_cents&quot;: [100_000, 200_000], &quot;shock_bp&quot;: [25, 10], &quot;side&quot;: [&quot;BUY&quot;, &quot;SELL&quot;]})
@@ -119,35 +109,34 @@ assert out[&quot;loss_cents&quot;].to_list() == [250, 200]
 assert out.schema[&quot;side&quot;] == pl.Enum([&quot;BUY&quot;, &quot;SELL&quot;])
 assert out[&quot;loss_cents&quot;].sum() == 450
 # Bounded nonnegative synthetic inputs only. This is not a financial pricing model.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The two illustrative losses are 250 and 200 cents, totaling 450. The side column permits only the two declared labels.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The two illustrative losses are 250 and 200 cents, totaling 450. The side column permits only the two declared labels.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Binary floating-point equality or an implicit unit conversion can misclassify a value exactly at a risk limit.</p></article><article><h3>Tradeoff to defend</h3><p>Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Binary floating-point equality or an implicit unit conversion can misclassify a value exactly at a risk limit.</p></article><article><h3>Tradeoff to defend</h3><p>Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you introduce negative exposure and fractional-cent results. Write the signed rounding rule and overflow policy before extending the expression, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Introduce negative exposure and fractional-cent results. Write the signed rounding rule and overflow policy before extending the expression.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>The two illustrative losses are 250 and 200 cents, totaling 450. The side column permits only the two declared labels. Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.</p>
         <p class="worked-answer">The two illustrative losses are 250 and 200 cents, totaling 450. The side column permits only the two declared labels.</p>
         <p>Look for: Binary floating-point equality or an implicit unit conversion can misclassify a value exactly at a risk limit. Integer units give simple exact arithmetic within bounds. Decimals support explicit fractional scales but require tested precision and rounding behavior.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

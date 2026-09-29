@@ -8,7 +8,9 @@ import { lessonMcqs, mcqMarkup } from "./lesson-mcqs.mjs";
 import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
 import { POLARS_CONTENT } from "./polars-content.mjs";
 
-const AUTHORED_CONTENT = { ...REVIEWED_CONTENT, ...POLARS_CONTENT };
+import { EXPLANATION_REWRITES } from "./explanation-rewrites.mjs";
+import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
+const AUTHORED_CONTENT = { ...REVIEWED_CONTENT, ...POLARS_CONTENT, ...EXPLANATION_REWRITES };
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const roadmapPath = join(root, "roadmap.yaml");
@@ -17930,7 +17932,7 @@ function beginnerFoundationMarkup(lesson) {
   const [field, overview] = beginnerTrackContext(lesson);
   return `<section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>${AUTHORED_CONTENT[lesson.number] ? escapeHtml(AUTHORED_CONTENT[lesson.number].foundation) : `This topic belongs to ${escapeHtml(field)}. ${escapeHtml(overview)}`}</p>
+    <p>${AUTHORED_CONTENT[lesson.number] ? escapeHtml(AUTHORED_CONTENT[lesson.number].foundation) : escapeHtml(overview)}</p>
     <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>`;
 }
@@ -17939,7 +17941,6 @@ function subtopicBreakdownMarkup(lesson) {
   const items = lesson.trackId === "polars" ? Object.keys(POLARS_CONTENT[lesson.number].terms) : lessonSubtopics(lesson.title);
   return `<section class="concept-section" data-subtopic-count="${items.length}">
 
-${AUTHORED_CONTENT[lesson.number] ? "" : `    <p class="concept-intro">${escapeHtml(sentence(lesson.behind_the_scenes))}</p>`}
     <div class="concept-grid">
       ${items.map((term, index) => `<article class="concept-card" data-subtopic="${escapeHtml(term)}">
         <span>${String(index + 1).padStart(2, "0")}</span>
@@ -17966,42 +17967,11 @@ function dsaQuestionMarkup(lesson) {
   </section>`;
 }
 
-function mechanismWalkthroughMarkup(diagram) {
-  return `<section class="card mechanism-walkthrough">
-
-    <div class="walkthrough-grid">
-      ${diagram.stages.map((stage) => `<article>
-        <span>${escapeHtml(stage.label)}</span>
-        <h3>${escapeHtml(stage.name)}</h3>
-        <p>${escapeHtml(stage.detail)}</p>
-      </article>`).join("")}
-    </div>
-    <div class="diagnostic-note"><p>${escapeHtml(diagram.probe)}</p><p>Look for: ${escapeHtml(diagram.evidence)}</p></div>
-  </section>`;
-}
-
-function codeReadingGuideMarkup(lesson, diagram) {
-  return `<section class="card code-guide">
-
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>${escapeHtml(diagram.stages.map((stage) => stage.name).join(" → "))}. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>`;
-}
-
-function commonMistakesMarkup(diagram, traceSubject) {
-  return `<section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace ${escapeHtml(traceSubject)} from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: ${escapeHtml(diagram.probe)}</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: ${escapeHtml(sentence(diagram.evidence))}</p></article>
-    </div>
-  </section>`;
+function simpleExampleMarkup(lesson) {
+  const example = SIMPLE_EXAMPLES[lesson.number];
+  if (!example) return "";
+  const [story, explanation, question, answer] = example;
+  return `<section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>${escapeHtml(story)}</p><p>${escapeHtml(explanation)}</p><details><summary>${escapeHtml(question)}</summary><p>${escapeHtml(answer)}</p></details></section>`;
 }
 
 function mcqsFor(lesson, diagram = diagramFor(lesson)) {
@@ -18157,9 +18127,9 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
     <h1>${escapeHtml(lesson.title)}</h1>
   </header>
 
-  ${beginnerFoundationMarkup(lesson)}${lesson.trackId === "polars" ? '\n<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>' : ""}
+  ${simpleExampleMarkup(lesson) || beginnerFoundationMarkup(lesson)}${lesson.trackId === "polars" ? '\n<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>' : ""}
 
-  <div class="grid">
+  ${EXPLANATION_REWRITES[lesson.number] ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>\n  ` : ""}<div class="grid">
     <section class="card">
 
       <p>${escapeHtml(sentence(lesson.behind_the_scenes))}</p>${profile.explanation ? `\n      <p>${escapeHtml(profile.explanation)}</p>` : ""}
@@ -18181,7 +18151,7 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
   </div>
 
   ${subtopicBreakdownMarkup(lesson)}${lesson.number === "0596" ? '\n  <section class="card"><h2>Cross-encoder reranking</h2><p>Score query–passage pairs jointly, batch candidate scoring, and measure whether ranking quality earns its latency and cost. <a href="../reference/cross-encoder-reranking.html">Open the deep dive, offline exercise and senior interview checkpoints</a>.</p></section>' : ""}${extensionMarkup ? `\n  ${extensionMarkup}` : ""}${dsaMarkup ? `\n  ${dsaMarkup}\n` : "\n"}
-  ${reviewed ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>` : mechanismWalkthroughMarkup(d)}
+${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>` : ""}
 
   ${dsaApproachMarkup(lesson)}
 
@@ -18192,14 +18162,8 @@ ${REUSE_PURPOSE[lesson.number] ? `<p>${escapeHtml(REUSE_PURPOSE[lesson.number])}
 ${lesson.trackId === "typescript" ? `<p>${escapeHtml(typescriptReviewFor(lesson)[2])}</p>` : ""}
 ${lesson.trackId === "data-systems" && Number(lesson.number) < 381 ? `<p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>` : ""}
 ${["cloud-aws", "devops", "docker", "kubernetes"].includes(lesson.trackId) ? `<p>Infrastructure snippets are recipes or fragments, not a supplied deployment. Resolve placeholders, required files, tool versions, identity, region or cluster context, and application configuration first. Use an isolated learning environment with a cost limit and cleanup plan. Inspect commands before running: some create resources, publish images, change permissions, or alter data. Never paste them into a production session. Local content checks do not establish that the integration works.</p>` : ""}
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>${exerciseSpecification ? "Prepare the specified fixture or tabletop scenario, carry out the exercise, and save the evidence. The specification itself is not executable code." : "Run the smallest working example in its required environment and save the result."}</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>${exerciseSpecification ? "Build the specified fixture before testing it; the specification is not executable code." : "Predict the result before running the example in its required environment."} Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>${escapeHtml(profile.code)}</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review">
@@ -18212,29 +18176,29 @@ ${lesson.trackId === "typescript" ? `<section class="card" id="typescript-review
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>` : ""}
 
-  ${reviewed ? `<section class="card code-guide"><p>${escapeHtml(reviewed.reading)}</p></section>` : codeReadingGuideMarkup(lesson, d)}
+${reviewed ? `<p class="code-guide">${escapeHtml(reviewed.reading)}</p>` : ""}
 
-  ${reviewed ? `<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid">${reviewed.pitfalls.map(([title, text]) => `<article><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join("")}</div></section>` : commonMistakesMarkup(d, traceSubject)}
+${reviewed ? `<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid">${reviewed.pitfalls.map(([title, text]) => `<article><h3>${escapeHtml(title)}</h3><p>${escapeHtml(text)}</p></article>`).join("")}</div></section>` : ""}
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>${escapeHtml(sentence(lesson.interview))}</li>
-      <li>Trace ${escapeHtml(traceSubject)} for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how ${escapeHtml(traceSubject)} works, starting with the input and following it through to the result.</li>
       <li>How would you ${escapeHtml(lesson.practical.replace(/[.!?]$/, "").replace(/^./, character => character.toLowerCase()))}, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace ${escapeHtml(traceSubject)}. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="${escapeHtml(lesson.trackId)}">
-      <p>${reviewed ? escapeHtml(reviewed.rehearsal) : "Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change."}</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>${reviewed ? escapeHtml(reviewed.rehearsal) : "Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change."}</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>${escapeHtml(reviewed ? reviewed.answer : sentence(lesson.behind_the_scenes))}</p>${profile.checkpoint ? `\n        <p class="worked-answer">${escapeHtml(profile.checkpoint)}</p>` : ""}
         <p>Look for: ${escapeHtml(sentence(d.evidence))}</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#${escapeHtml(lesson.trackId)}">Worked track case: ${escapeHtml(senior.title)} ↗</a></p>
       </details>
     </div>

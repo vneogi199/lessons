@@ -43,11 +43,7 @@
     <h1>Polars as-of joins, quote freshness, and point-in-time correctness</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>An as-of join matches ordered keys by relative position instead of exact equality. Backward selects a right key no later than the left key. A tolerance limits how far away that match may be. Both inputs must meet the sortedness requirements.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A request arrives at time 12. Quotes exist at 10 and 14. The latest quote at or before the request is the one at 10.</p><p>A backward as-of join applies this rule. A tolerance can reject stale quotes. For historical decisions, also check when each quote became available.</p><details><summary>Can the time-14 quote be used for this backward match?</summary><p>No. It is later than the request.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="backward_match">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>For an RFQ at time 12, a backward join can select the quote at time 10. A quote at time 14 is in the future and is unsuitable for a historical decision. Nearest is a different policy and can select future data.</p>
+<section class="card mechanism-walkthrough"><p>For an RFQ at time 12, a backward join can select the quote at time 10. A quote at time 14 is in the future and is unsuitable for a historical decision. Nearest is a different policy and can select future data.</p>
 <p>Group the match by instrument. Otherwise, the closest preceding time could belong to a different product. When using by groups, verify sorting within each group rather than relying only on a warning or a metadata flag.</p>
 <p>Tolerance makes stale matches explicit. The example uses integer ticks: time 20 has no preceding quote within five ticks. For temporal columns, choose a duration and consistent timezone. Decide whether exact-time matches are allowed.</p>
 <p>Event time alone is insufficient when reconstructing what a trader actually knew. A quote timestamped 10 but first received at 13 was unavailable at decision time 12. Preserve arrival time and enforce the information-availability contract before the as-of match. Resolve duplicate quote times with a documented tie rule.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 requests = pl.DataFrame({&quot;instrument&quot;: [&quot;x&quot;, &quot;x&quot;], &quot;ts&quot;: [12, 20]})
@@ -118,35 +108,34 @@ out = requests.sort(&quot;ts&quot;).join_asof(
 )
 assert out[&quot;rate&quot;].to_list() == [100, None]
 assert out.height == requests.height</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Time 12 matches rate 100 at time 10. Time 20 has no fresh match because time 14 is six ticks old.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Time 12 matches rate 100 at time 10. Time 20 has no fresh match because time 14 is six ticks old.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A nearest or forward match can leak future market information into a backtest.</p></article><article><h3>Tradeoff to defend</h3><p>A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A nearest or forward match can leak future market information into a backtest.</p></article><article><h3>Tradeoff to defend</h3><p>A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you mark the time-10 quote as arriving at time 13. Explain why it must be excluded from a decision made at 12 despite passing the event-time comparison, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Mark the time-10 quote as arriving at time 13. Explain why it must be excluded from a decision made at 12 despite passing the event-time comparison.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Time 12 matches rate 100 at time 10. Time 20 has no fresh match because time 14 is six ticks old. A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.</p>
         <p class="worked-answer">Time 12 matches rate 100 at time 10. Time 20 has no fresh match because time 14 is six ticks old.</p>
         <p>Look for: A nearest or forward match can leak future market information into a backtest. A tighter freshness tolerance reduces stale marks but increases unresolved RFQs. Report both freshness and missing-match rates.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

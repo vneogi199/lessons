@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="5">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Attention">
         <span>01</span>
@@ -98,7 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>First trace the scalar example. At position zero, only value 10 is visible, so its weight is 1 and the output is 10. At position one, scores are 0 and 1. Softmax gives weights 1/(1 + e) and e/(1 + e). The weighted value is about 17.31. Changing the future value does not change position zero's output.</p>
+<section class="card mechanism-walkthrough"><p>First trace the scalar example. At position zero, only value 10 is visible, so its weight is 1 and the output is 10. At position one, scores are 0 and 1. Softmax gives weights 1/(1 + e) and e/(1 + e). The weighted value is about 17.31. Changing the future value does not change position zero's output.</p>
 <p>Now use one head, three tokens and two numbers per query and key. Q and K each have shape 3 × 2. QKᵀ has shape 3 × 3. Each row scores one query against the three keys. Divide by √2. Set future-position scores to negative infinity before applying softmax across each row. If V has shape 3 × 4, the result has shape 3 × 4.</p>
 <p>For a full head, learned matrices project the input X into Q, K and V. Scaling by √d_k limits score growth as the key dimension grows. Without scaling, large scores can make softmax too concentrated and its gradients small. Subtracting the row maximum before exponentiation prevents avoidable overflow. Scaling and numerical stabilization solve different problems.</p>
 <p>Multiple heads use separate projections. Their outputs are concatenated and projected back to the model width. For the following pre-normalization block, X has shape n × d_model. This is one block variant; the original transformer paper uses post-normalization.</p>
@@ -123,12 +122,7 @@ FFN output: n × d_model</code></pre>
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code># Python 3.10+. One scalar attention head with a causal mask; not a whole block.
 from math import exp, isclose
 queries, keys, values = [1, 1], [0, 1], [10, 20]
@@ -146,35 +140,34 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
 # With key width d, scaled dot-product attention divides scores by sqrt(d).
 # This scalar fixture has d=1. Real blocks also use learned projections, multiple
 # heads, residual paths, normalization and an MLP; this is not their implementation.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>The starter uses d = 1, so division by the square root of d would divide by one. Slicing visible keys performs the causal restriction. zip combines matching weights and values for the trusted fixture. A general function would also validate positions, lengths and finite values.</p></section>
+<p class="code-guide">The starter uses d = 1, so division by the square root of d would divide by one. Slicing visible keys performs the causal restriction. zip combines matching weights and values for the trusted fixture. A general function would also validate positions, lengths and finite values.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Wrong softmax axis</h3><p>Normalize scores across the keys visible to one query. Mask before softmax so forbidden positions receive zero weight.</p></article><article><h3>Toy mistaken for a full block</h3><p>The scalar starter has no learned projections, multi-head combination, residual addition or feed-forward network. Use the shape trace to explain these omitted parts.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Wrong softmax axis</h3><p>Normalize scores across the keys visible to one query. Mask before softmax so forbidden positions receive zero weight.</p></article><article><h3>Toy mistaken for a full block</h3><p>The scalar starter has no learned projections, multi-head combination, residual addition or feed-forward network. Use the shape trace to explain these omitted parts.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain self-attention, its cost, and why position information is needed.</li>
-      <li>Trace a token sequence for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a token sequence works, starting with the input and following it through to the result.</li>
       <li>How would you implement and visualize scaled dot-product attention on a tiny example, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a token sequence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="llm-internals">
       <p>Give every shape for the three-token head. Explain why the FFN output must return to d_model. Then double the prompt length: what grows quadratically, and what does a KV cache save during decoding?</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Scores and weights are 3 × 3; the weighted values are 3 × 4. The output projection restores model width for the residual addition. FFN weights are shared across positions, with an expanded hidden width. Dense pair count grows fourfold when length doubles. A KV cache avoids recomputing prior keys and values, at the cost of memory; it does not guarantee a fourfold latency change or eliminate prefix attention.</p>
         <p class="worked-answer">Position zero returns ten; position one returns about 17.31. Subtracting the maximum stabilizes softmax, and d=1 makes the scale factor one. The trusted fixture has only positions zero and one and matching value lengths. Dense full-sequence attention has quadratic pair interactions; this toy implements neither full blocks nor inference-cache performance.</p>
         <p>Look for: Run the Python example and retain the changed input, assertion result, and explanation. Small synthetic examples establish arithmetic and invariants, not model quality.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#llm-internals">Worked track case: A larger context window reduces quality ↗</a></p>
       </details>
     </div>

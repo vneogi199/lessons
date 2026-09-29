@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
+    <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Narrowing changes what the checker knows at a particular program point, not the variable&#039;s declared contract. A returning null branch removes null from subsequent paths; assignments establish new flow facts. typeof distinguishes primitive categories but reports object for null. in proves property presence including inherited properties, not the property&#039;s value type. instanceof checks a runtime constructor relationship, not a deserialized JSON shape.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Control-flow analysis">
         <span>01</span>
@@ -106,29 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · ENTER</span>
-        <h3>Several possible value categories</h3>
-        <p>The declared input permits string, number, Date, or null.</p>
-      </article><article>
-        <span>02 · RETURN</span>
-        <h3>Eliminate null on later paths</h3>
-        <p>The null branch returns; reaching the next statement proves that case did not apply.</p>
-      </article><article>
-        <span>03 · DISTINGUISH</span>
-        <h3>Check category before use</h3>
-        <p>typeof permits string or number operations; instanceof identifies the Date branch.</p>
-      </article><article>
-        <span>04 · REJOIN</span>
-        <h3>Keep only surviving evidence</h3>
-        <p>A check inside a non-returning branch does not remove null after that branch. Reassignment changes the current flow type.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Does in prove an own property or a string value? Use the inherited-name and numeric-name cases to justify your answer.</p><p>Look for: Narrowing checks passed; empty string and zero survive, invalid name types are rejected by the value check, and the compiler catches operations outside their proven branch.</p></div>
-  </section>
 
   
 
@@ -139,12 +116,7 @@
 <p>Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Save as narrowing.ts; tsc --strict --target ES2022 narrowing.ts
 // Then run: node narrowing.js
 function check(condition: boolean): void {
@@ -186,7 +158,6 @@ check(label(Object.create({ name: &quot;inherited&quot; })) === &quot;inherited&
 console.log(&quot;Narrowing checks passed&quot;);
 // in includes the prototype chain; use own-property validation for a JSON contract.
 // instanceof is not a JSON shape validator; deserialized dates are usually strings.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 <section class="card" id="typescript-review">
@@ -199,45 +170,29 @@ console.log(&quot;Narrowing checks passed&quot;);
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Several possible value categories → Eliminate null on later paths → Check category before use → Keep only surviving evidence. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a type-checking decision from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Does in prove an own property or a string value? Use the inherited-name and numeric-name cases to justify your answer.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Narrowing checks passed; empty string and zero survive, invalid name types are rejected by the value check, and the compiler catches operations outside their proven branch.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Why can a string-or-number variable become number after assignment without changing its declared type? Explain where narrowing stops being reliable evidence at an external boundary, across mutation, or when instanceof is applied to deserialized objects.</li>
-      <li>Trace a type-checking decision for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
       <li>How would you predict outputs for null, an empty string, zero, and a Date, then compile and run the lab; expect Narrowing checks passed. Explain both expected compiler errors. Replace the explicit null check with truthiness and find the lost valid values. Tomorrow, draw the branches from memory and contrast presence with value validation, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Narrowing changes what the checker knows at a particular program point, not the variable&#039;s declared contract. A returning null branch removes null from subsequent paths; assignments establish new flow facts. typeof distinguishes primitive categories but reports object for null. in proves property presence including inherited properties, not the property&#039;s value type. instanceof checks a runtime constructor relationship, not a deserialized JSON shape.</p>
         <p>Look for: Narrowing checks passed; empty string and zero survive, invalid name types are rejected by the value check, and the compiler catches operations outside their proven branch.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>

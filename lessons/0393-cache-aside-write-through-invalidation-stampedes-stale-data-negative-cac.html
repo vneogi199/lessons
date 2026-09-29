@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
+    <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Cache-aside">
         <span>01</span>
@@ -106,29 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · INTENT</span>
-        <h3>Application names a cache or coordination operation</h3>
-        <p>Key design, event identity, owner token, TTL, and source of truth enter.</p>
-      </article><article>
-        <span>02 · REDIS</span>
-        <h3>Atomic primitive changes shared state</h3>
-        <p>Entry, pending owner, lease, counter, or cached value becomes visible.</p>
-      </article><article>
-        <span>03 · FAILURE WINDOW</span>
-        <h3>Delay, duplicate, expiry, or outage occurs</h3>
-        <p>Old owners, missed acknowledgements, stale values, and retries challenge correctness.</p>
-      </article><article>
-        <span>04 · AUTHORITY</span>
-        <h3>Durable system accepts or rejects effect</h3>
-        <p>Idempotency, fencing, version, fallback, and business state close the proof.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p><p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></div>
-  </section>
 
   
 
@@ -140,12 +117,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Adapter core: authorize tenant/project BEFORE cache access; validate inputs.
 // Redis commands need client-enforced deadlines; DB fallback needs bounded
 // admission. Catching a rejection alone cannot stop a hung operation.
@@ -183,51 +155,34 @@ async function loadProject(tenant, id, version, redis, database) {
 // version for 15 seconds. Read the primary for read-after-write guarantees.
 // ponytail: single-flight and admission control are exercise requirements,
 // not implemented by this small adapter; add them before outage/load testing.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Application names a cache or coordination operation → Atomic primitive changes shared state → Delay, duplicate, expiry, or outage occurs → Durable system accepts or rejects effect. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a versioned cache read from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Design a cache for a concrete read path and explain invalidation, stampede, stale-read, and outage behavior.</li>
-      <li>Trace a versioned cache read for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a versioned cache read works, starting with the input and following it through to the result.</li>
       <li>How would you implement cache-aside with versioned keys, single-flight refresh, jittered TTL, negative caching, and observable fallback during Redis failure, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a versioned cache read. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Trace cache hits and misses against an authoritative store, version or invalidate entries, bound staleness, collapse concurrent fills, randomize expiry, and protect missing-value lookups.</p>
         <p class="worked-answer">The key binds tenant, ID and exact version, but the caller must obtain the authoritative version for latest reads. A 15-second negative hit can hide later creation. Cache rejection becomes a miss; a hung call still requires a client deadline. Single-flight and fallback admission are explicitly unimplemented extensions, not properties of try/catch.</p>
         <p>Look for: Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to software design. Software design arranges code, state, and dependencies so correct behavior is clear and future changes remain safe and reasonably small.</p>
+    <p>Software design arranges code, state, and dependencies so correct behavior is clear and future changes remain safe and reasonably small.</p>
     <p><a href="../reference/senior-interview-practice.html#software-design">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="8">
 
-    <p class="concept-intro">Compare organization by technical layer, dependency-inverted ports, use-case policy, feature slice, persistence abstraction, transaction boundary, and deployable module while keeping domain and operational boundaries explicit.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Architecture patterns">
         <span>01</span>
@@ -110,29 +109,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · INTENT</span>
-        <h3>A use case enters one application boundary</h3>
-        <p>Validated input, identity, transaction need, and expected outcome are explicit.</p>
-      </article><article>
-        <span>02 · POLICY</span>
-        <h3>Domain and application rules decide</h3>
-        <p>Stable business logic depends on owned ports rather than frameworks or vendors.</p>
-      </article><article>
-        <span>03 · ADAPTER</span>
-        <h3>Infrastructure performs external work</h3>
-        <p>HTTP, database, queue, clock, and model details translate at the edge.</p>
-      </article><article>
-        <span>04 · COMMIT</span>
-        <h3>One observable outcome completes</h3>
-        <p>Transaction state, response, events, tests, and telemetry prove boundary behavior.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Replace one database adapter and move one feature between folders without changing the domain or application contract.</p><p>Look for: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p></div>
-  </section>
 
   
 
@@ -144,12 +121,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>type Order = { id: string; status: &quot;draft&quot; | &quot;placed&quot; };
 interface Orders { find(id: string): Promise&lt;Order | undefined&gt;; save(order: Order): Promise&lt;void&gt; }
 interface UnitOfWork { orders: Orders; commit(): Promise&lt;void&gt;; rollback(): Promise&lt;void&gt; }
@@ -174,51 +146,34 @@ export class PlaceOrder {
 // The vertical slice owns one use case. Domain state is framework-free. HTTP
 // and database adapters point inward. The unit of work owns one transaction.
 // Keep modules in one deployment until independent operation is proven necessary.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>A use case enters one application boundary → Domain and application rules decide → Infrastructure performs external work → One observable outcome completes. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a requirement-driven code change from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Replace one database adapter and move one feature between folders without changing the domain or application contract.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Choose an architecture from team, domain, change, deployment, consistency, and operational constraints without confusing folder names with boundaries.</li>
-      <li>Trace a requirement-driven code change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
       <li>How would you organize one order workflow as a modular monolith with a vertical application slice, pure domain policy, HTTP and database adapters, explicit transaction ownership, and dependency tests, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Compare organization by technical layer, dependency-inverted ports, use-case policy, feature slice, persistence abstraction, transaction boundary, and deployable module while keeping domain and operational boundaries explicit.</p>
         <p class="worked-answer">The use case owns policy while injected persistence owns the transaction. The fake proves save/commit/rollback branching, not isolation, connection cleanup or durability. A real adapter must prevent concurrent draft-to-placed races and release resources on both success and failure. Rollback failure now preserves the original error too. A lost commit response may mean committed state; rollback cannot prove it did not commit. Define reconciliation/idempotency before retrying. Compare direct transaction code in one module with ports when substitution actually helps; moving folders or splitting deployments alone does not enforce boundaries.</p>
         <p>Look for: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>
       </details>
     </div>

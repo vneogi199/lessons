@@ -43,11 +43,7 @@
     <h1>Polars concatenation, pivots, unpivots, and schema alignment</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>Vertical concatenation appends rows. Horizontal concatenation aligns by row position, not a business key. A pivot turns category values into columns. An unpivot turns columns into name-value rows.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A row has an order ID, bid and ask. Unpivot turns it into two rows, one for each price side. Pivot can put them back into separate columns.</p><p>If two bids exist for the same order, the return trip needs a conflict or aggregation rule. Selecting first silently chooses a price.</p><details><summary>Can pivot decide which conflicting bid is correct?</summary><p>No. You must define how to reject or resolve that conflict.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="pivot">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Market exports often place bid and ask in separate columns. Unpivot produces one row per RFQ and quote side, which is convenient for shared validation or charting. Keep the original key as an index column.</p>
+<section class="card mechanism-walkthrough"><p>Market exports often place bid and ask in separate columns. Unpivot produces one row per RFQ and quote side, which is convenient for shared validation or charting. Keep the original key as an index column.</p>
 <p>A pivot requires one value per output cell or a stated aggregation. If duplicate RFQ-side rows exist, choosing first can hide conflicting quotes. Reject the conflict or specify why an aggregate is correct.</p>
 <p>Strict vertical concatenation expects compatible schemas. Diagonal concatenation aligns different column sets and fills absent fields with null; relaxed modes may coerce data types. Inspect the resulting schema rather than assuming the input types survived.</p>
 <p>Dynamic output columns can make pivot planning different from a fixed-schema lazy transform. Check the installed API's eager/lazy support. Prefer long form when new categories should not continuously change a downstream schema.</p><p><a href="https://docs.pola.rs/user-guide/transformations/concatenation/">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 wide = pl.DataFrame({&quot;rfq&quot;: [&quot;a&quot;, &quot;b&quot;], &quot;bid&quot;: [99, 101], &quot;ask&quot;: [100, 102]})
@@ -117,35 +107,34 @@ restored = long.pivot(on=&quot;side&quot;, index=&quot;rfq&quot;, values=&quot;p
 assert restored.select(&quot;rfq&quot;, &quot;bid&quot;, &quot;ask&quot;).equals(wide)
 joined_batches = pl.concat([wide.head(1), wide.tail(1)], how=&quot;vertical&quot;)
 assert joined_batches.equals(wide)</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Unpivot creates four quote-side rows. Pivot reconstructs the original values because each RFQ-side pair is unique.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Unpivot creates four quote-side rows. Pivot reconstructs the original values because each RFQ-side pair is unique.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Horizontal concatenation of differently ordered frames attaches values to the wrong business records.</p></article><article><h3>Tradeoff to defend</h3><p>Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Horizontal concatenation of differently ordered frames attaches values to the wrong business records.</p></article><article><h3>Tradeoff to defend</h3><p>Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you insert a second bid for RFQ a. Explain why selecting an arbitrary first value would be a business decision, not a harmless formatting step, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Insert a second bid for RFQ a. Explain why selecting an arbitrary first value would be a business decision, not a harmless formatting step.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Unpivot creates four quote-side rows. Pivot reconstructs the original values because each RFQ-side pair is unique. Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.</p>
         <p class="worked-answer">Unpivot creates four quote-side rows. Pivot reconstructs the original values because each RFQ-side pair is unique.</p>
         <p>Look for: Horizontal concatenation of differently ordered frames attaches values to the wrong business records. Wide data helps fixed reports. Long data handles changing categories more naturally and keeps a stable column schema.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>
