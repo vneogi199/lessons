@@ -43,11 +43,7 @@
     <h1>Polars expressions, contexts, selectors, aliases, and conditional logic</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>An expression is a description of a computation. pl.col selects input columns, pl.lit creates a literal and alias names a result. select chooses output columns; with_columns retains existing columns while adding or replacing named outputs.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Two orders have quantities 2 and 5, with prices 10 and 20. Multiplying the columns gives totals of 20 and 100.</p><p>A Polars expression describes that calculation. with_columns adds its result while keeping other columns. A later calculation that needs this new total belongs in a subsequent call.</p><details><summary>What totals should these rows produce?</summary><p>20 and 100. Each quantity uses the price from the same row.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="expression">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>Build expressions before thinking about Python loops. The quantity-times-price expression describes a calculation over columns. The execution engine decides how to perform that calculation.</p>
+<section class="card mechanism-walkthrough"><p>Build expressions before thinking about Python loops. The quantity-times-price expression describes a calculation over columns. The execution engine decides how to perform that calculation.</p>
 <p>Expressions within one with_columns call should not depend on aliases created beside them. Use a second call for a dependent column. This makes the dependency visible and avoids a missing-column error.</p>
 <p>Use selectors when the intended operation applies to a set of columns, such as numeric fields. Inspect which columns the selector expands to after a schema change. An unexpected new column can silently change a broad selection's meaning.</p>
 <p>Use &amp; and | for expression predicates, with parentheses around comparisons. Python and/or attempt to evaluate a Python truth value. In when/then/otherwise, use pl.lit for literal strings. Conditional branches must be independently valid; when does not guarantee Python-style short-circuit evaluation.</p><p><a href="https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.when.html">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 import polars.selectors as cs
 
@@ -121,35 +111,34 @@ assert out[&quot;gross&quot;].to_list() == [20, 100]
 assert out[&quot;band&quot;].to_list() == [&quot;small&quot;, &quot;review&quot;]
 assert out.select(cs.numeric()).columns == [&quot;qty&quot;, &quot;price&quot;, &quot;gross&quot;]
 assert out.filter((pl.col(&quot;qty&quot;) &gt; 2) &amp; (pl.col(&quot;price&quot;) &lt;= 20)).height == 1</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. gross is 20 and 100. The second RFQ requires review. band is excluded by the numeric selector.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. gross is 20 and 100. The second RFQ requires review. band is excluded by the numeric selector.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Writing then(&#039;review&#039;) can request a column named review instead of creating the intended literal.</p></article><article><h3>Tradeoff to defend</h3><p>Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Writing then(&#039;review&#039;) can request a column named review instead of creating the intended literal.</p></article><article><h3>Tradeoff to defend</h3><p>Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you move the band expression beside gross in the first call. Explain why relying on that new alias is invalid, then restore the explicit dependency, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Move the band expression beside gross in the first call. Explain why relying on that new alias is invalid, then restore the explicit dependency.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>gross is 20 and 100. The second RFQ requires review. band is excluded by the numeric selector. Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.</p>
         <p class="worked-answer">gross is 20 and 100. The second RFQ requires review. band is excluded by the numeric selector.</p>
         <p>Look for: Writing then(&#039;review&#039;) can request a column named review instead of creating the intended literal. Several native expressions can share a query plan. A sequence of Python row callbacks usually hides more information from the engine and adds interpreter overhead.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

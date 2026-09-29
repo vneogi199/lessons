@@ -43,11 +43,7 @@
     <h1>Polars timestamps, durations, time zones, and market event time</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>An instant identifies a point in time. Local clock text without an offset can be ambiguous. A duration is elapsed time. Event time describes when a source event occurred; arrival time describes when your pipeline received it.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Two clocks in different timezones can show different hours at the same instant. Comparing just their displayed hours gives the wrong order.</p><p>Keep timezone information and normalize timestamps for comparison. Also record arrival time: an event may happen before your system hears about it.</p><details><summary>Does an earlier event time prove the trader already received it?</summary><p>No. Arrival time can be later than event time.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="instant">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>The fixture uses explicit UTC offsets. Two differently written timestamps represent the same instant. Parse them to a timezone-aware column before deduplicating or joining.</p>
+<section class="card mechanism-walkthrough"><p>The fixture uses explicit UTC offsets. Two differently written timestamps represent the same instant. Parse them to a timezone-aware column before deduplicating or joining.</p>
 <p>convert_time_zone preserves the instant while changing its displayed local time. replace_time_zone assigns or changes the timezone interpretation of wall-clock values and can change the instant. Treat ambiguous and nonexistent daylight-saving times with an explicit policy.</p>
 <p>Store event time and ingestion time separately. Late data can arrive after a newer event. Sorting on ingestion time answers a different question from sorting on event time.</p>
 <p>Specify timestamp units at interchange boundaries. Converting to a Python datetime or JSON may lose precision that existed in a nanosecond column. A calendar day is not always a fixed 24-hour interval in a timezone with daylight saving.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 df = pl.DataFrame({&quot;text&quot;: [&quot;2026-01-01T10:00:00+0000&quot;, &quot;2026-01-01T11:00:00+0100&quot;]})
@@ -118,35 +108,34 @@ assert out[&quot;ts&quot;].n_unique() == 1
 local = out.select(pl.col(&quot;ts&quot;).dt.convert_time_zone(&quot;America/New_York&quot;))
 assert local[&quot;ts&quot;][0] == out[&quot;ts&quot;][0]
 assert local[&quot;ts&quot;].dt.hour().to_list() == [5, 5]</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Both rows represent 10:00 UTC. Their New York display is 05:00 on this winter date. Conversion preserves the instant.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Both rows represent 10:00 UTC. Their New York display is 05:00 on this winter date. Conversion preserves the instant.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Relabeling local timestamps as UTC can shift events and cause a backward as-of join to select the wrong quote.</p></article><article><h3>Tradeoff to defend</h3><p>UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Relabeling local timestamps as UTC can shift events and cause a backward as-of join to select the wrong quote.</p></article><article><h3>Tradeoff to defend</h3><p>UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you describe the policy for a source that sends a repeated local daylight-saving hour without an offset. Do not silently choose an instant, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Describe the policy for a source that sends a repeated local daylight-saving hour without an offset. Do not silently choose an instant.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Both rows represent 10:00 UTC. Their New York display is 05:00 on this winter date. Conversion preserves the instant. UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.</p>
         <p class="worked-answer">Both rows represent 10:00 UTC. Their New York display is 05:00 on this winter date. Conversion preserves the instant.</p>
         <p>Look for: Relabeling local timestamps as UTC can shift events and cause a backward as-of join to select the wrong quote. UTC simplifies comparisons. Retaining original zone and text can still be necessary for audits and market-calendar interpretation.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

@@ -4,6 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
 import { POLARS_CONTENT } from "./polars-content.mjs";
+import { EXPLANATION_REWRITES } from "./explanation-rewrites.mjs";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const lessonsDirectory = join(root, "lessons");
@@ -13,13 +14,9 @@ const traceHeadings = new Set();
 const diagramKeys = new Set();
 const requiredFragments = [
   'lang="en-US"',
-  'class="card beginner-foundation"',
   'class="card blackboard"',
   'data-subtopic-count=',
-  'class="card mechanism-walkthrough"',
   '<h2>Practice</h2>',
-  'class="card code-guide"',
-  "Common mistakes",
   '<h2>Interview practice</h2>',
   'class="card mastery"',
   "Primary source",
@@ -625,8 +622,8 @@ for (const lesson of manifest.lessons) {
   const definitions = html.split('class="concept-definition"').length - 1;
   if (definitions !== expectedSubtopics) failures.push(`${lesson.id}: expected ${expectedSubtopics} definitions, found ${definitions}`);
   const connections = html.split('class="concept-intro"').length - 1;
-  const authored = REVIEWED_CONTENT[lesson.number] ?? POLARS_CONTENT[lesson.number];
-  const expectedConnections = authored ? 0 : 1;
+  const authored = EXPLANATION_REWRITES[lesson.number] ?? REVIEWED_CONTENT[lesson.number] ?? POLARS_CONTENT[lesson.number];
+  const expectedConnections = 0;
   if (connections !== expectedConnections) failures.push(`${lesson.id}: expected ${expectedConnections} repeated term introductions, found ${connections}`);
   if (authored && !html.includes(authored.mechanism)) failures.push(`${lesson.id}: missing authored mechanism explanation`);
 }

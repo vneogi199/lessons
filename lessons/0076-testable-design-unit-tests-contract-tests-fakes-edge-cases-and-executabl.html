@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to low-level design and machine coding. Low-level design assigns behavior and state to small software parts. Machine coding turns that model into a working, tested program under a time limit.</p>
+    <p>Low-level design assigns behavior and state to small software parts. Machine coding turns that model into a working, tested program under a time limit.</p>
     <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-    <p class="concept-intro">Test public behavior and invariants through stable seams, use fakes that preserve relevant contracts, and cover boundaries without asserting private implementation structure.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Testable design">
         <span>01</span>
@@ -102,29 +101,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CLARIFY</span>
-        <h3>Prompt becomes executable requirements</h3>
-        <p>Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</p>
-      </article><article>
-        <span>02 · MODEL</span>
-        <h3>Responsibilities and ownership become code</h3>
-        <p>Entities, values, relationships, interfaces, and state transitions represent the domain.</p>
-      </article><article>
-        <span>03 · SLICE</span>
-        <h3>One end-to-end behavior runs</h3>
-        <p>The smallest implementation crosses policy and adapters while keeping state valid.</p>
-      </article><article>
-        <span>04 · PROVE + EVOLVE</span>
-        <h3>Tests and a changed requirement challenge it</h3>
-        <p>Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Add one realistic requirement after the first working slice and predict the smallest safe change.</p><p>Look for: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p></div>
-  </section>
 
   
 
@@ -136,12 +113,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>class MemoryStore:
     def __init__(self) -&gt; None: self.data: dict[str, str] = {}
     def put(self, key: str, value: str) -&gt; None:
@@ -159,51 +131,34 @@ def store_contract(make_store) -&gt; None:
     else: raise AssertionError(&quot;empty key accepted&quot;)
 
 store_contract(MemoryStore)</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Prompt becomes executable requirements → Responsibilities and ownership become code → One end-to-end behavior runs → Tests and a changed requirement challenge it. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a machine-coding use case from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Add one realistic requirement after the first working slice and predict the smallest safe change.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Demonstrate correctness continuously and explain why the chosen tests permit safe refactoring.</li>
-      <li>Trace a machine-coding use case for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a machine-coding use case works, starting with the input and following it through to the result.</li>
       <li>How would you turn a prompt into an acceptance table, run it against two adapters, and include empty, duplicate, capacity, and failure cases, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a machine-coding use case. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="lld-machine-coding">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Test public behavior and invariants through stable seams, use fakes that preserve relevant contracts, and cover boundaries without asserting private implementation structure.</p>
         <p class="worked-answer">The contract checks missing keys, overwrite semantics and empty-key rejection through public methods. Passing against MemoryStore does not validate another adapter&#039;s durability, consistency, encoding or failure behavior. Run the same applicable contract against the real adapter when available, with integration-specific cases. Compare an assertion about a returned value with one about a private dict: the latter can block harmless refactoring. Add boundary cases from actual requirements, not an arbitrary test-count target.</p>
         <p>Look for: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>
       </details>
     </div>

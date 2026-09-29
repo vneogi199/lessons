@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to TypeScript. TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
+    <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Model eventual values, recursive unwrapping, streamed iteration, generator slots, AbortSignal, and explicit result errors.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Async typing">
         <span>01</span>
@@ -106,29 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CONTRACT</span>
-        <h3>Domain types describe intent</h3>
-        <p>Commands, states, results, and ports exclude known-invalid combinations.</p>
-      </article><article>
-        <span>02 · ADAPTER</span>
-        <h3>Framework or host values are translated</h3>
-        <p>React, Node, async, storage, and model details stay at boundaries.</p>
-      </article><article>
-        <span>03 · RUNTIME</span>
-        <h3>JavaScript performs the operation</h3>
-        <p>Scheduling, I/O, cancellation, and errors remain real behavior.</p>
-      </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Types and operation agree</h3>
-        <p>Type tests, runtime tests, telemetry, and failure paths verify the design.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</p><p>Look for: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p></div>
-  </section>
 
   
 
@@ -139,12 +116,7 @@
 <p>Network integration sketch: inject or stub fetch and test non-2xx responses, malformed pages, cancellation between yielded items, consumer break, and cursor loops. Bound total work before production use.</p>
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>type Page&lt;T&gt; = { items: T[]; nextCursor?: string };
 
 async function* pages&lt;T&gt;(
@@ -172,7 +144,6 @@ async function* pages&lt;T&gt;(
 
 // Types express values and protocol slots. They do not enforce deadlines,
 // schedule work, cancel losing operations, or make rejection exhaustive.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 <section class="card" id="typescript-review">
@@ -185,45 +156,29 @@ async function* pages&lt;T&gt;(
     <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
   </section>
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Domain types describe intent → Framework or host values are translated → JavaScript performs the operation → Types and operation agree. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an iteration step from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain what async types express and which scheduling, cancellation, and rejection behavior remains runtime-only.</li>
-      <li>Trace an iteration step for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an iteration step works, starting with the input and following it through to the result.</li>
       <li>How would you type a cancellable paginated async generator and consume it with bounded work and complete cleanup, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Model eventual values, recursive unwrapping, streamed iteration, generator slots, AbortSignal, and explicit result errors.</p>
         <p>Look for: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>

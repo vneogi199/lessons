@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to data systems. A data system stores information and returns correct information when programs read or change that information.</p>
+    <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Application data patterns">
         <span>01</span>
@@ -106,29 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · CLAIM</span>
-        <h3>Claim the tenant-scoped request key</h3>
-        <p>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</p>
-      </article><article>
-        <span>02 · BRANCH</span>
-        <h3>Replay or perform the operation</h3>
-        <p>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</p>
-      </article><article>
-        <span>03 · COMMIT</span>
-        <h3>Save effect, result and event together</h3>
-        <p>One transaction commits all records or rolls them all back. Return success only after commit.</p>
-      </article><article>
-        <span>04 · RETRY</span>
-        <h3>Recover a lost response or duplicate delivery</h3>
-        <p>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Lose the response after commit, retry the same key, then reuse it with changed input.</p><p>Look for: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p></div>
-  </section>
 
   
 
@@ -140,12 +117,7 @@
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>// Integration core: db.transaction must use ONE connection, BEGIN/COMMIT,
 // roll back on every thrown error, and use READ COMMITTED isolation.
 // tx.query returns { rows }; no driver, schema or authorization is supplied.
@@ -196,51 +168,34 @@ async function renameProject(db, { tenant, requestId, projectId, name, version }
 // force UPDATE to return zero rows: no event or successful receipt may commit.
 // https://www.postgresql.org/docs/current/sql-insert.html
 // https://www.postgresql.org/docs/current/transaction-iso.html</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Claim the tenant-scoped request key → Replay or perform the operation → Save effect, result and event together → Recover a lost response or duplicate delivery. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a replay-safe command from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Lose the response after commit, retry the same key, then reuse it with changed input.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain how database transactions support idempotent APIs and reliable event publication without claiming distributed atomicity.</li>
-      <li>Trace a replay-safe command for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a replay-safe command works, starting with the input and following it through to the result.</li>
       <li>How would you implement a duplicate-safe command with version checking and a transactional outbox, then consume it idempotently, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a replay-safe command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Move application invariants into conditional writes and durable records while tracing duplicate requests, event publication gaps, keyset boundaries, replica lag, and retry behavior.</p>
         <p class="worked-answer">The conflict branch uses a separate Read Committed statement after claim contention to obtain the committed receipt. It never falls through into business writes. A stale version rolls back this claim and does not cache a failure. Existing fake checks cannot prove database uniqueness, rollback, concurrent visibility or consumer inbox atomicity.</p>
         <p>Look for: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

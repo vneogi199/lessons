@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to React. React converts component data into a user interface. React updates the interface when relevant data changes.</p>
+    <p>React converts component data into a user interface. React updates the interface when relevant data changes.</p>
     <p><a href="../reference/senior-interview-practice.html#react">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="5">
 
-    <p class="concept-intro">Match state identity and lifetime to the tree, eliminate contradictory or redundant state, and derive values during render.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="State modeling">
         <span>01</span>
@@ -98,29 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · EVENT</span>
-        <h3>User or server supplies intent</h3>
-        <p>A click, action, response, or queued update begins.</p>
-      </article><article>
-        <span>02 · QUEUE</span>
-        <h3>React records the update</h3>
-        <p>Priority and update order determine pending work.</p>
-      </article><article>
-        <span>03 · RENDER</span>
-        <h3>React computes a new tree</h3>
-        <p>Components read one state snapshot and reconcile.</p>
-      </article><article>
-        <span>04 · COMMIT</span>
-        <h3>Visible UI changes atomically</h3>
-        <p>DOM mutations and layout work become observable.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Queue two related updates and predict which state snapshot each callback reads.</p><p>Look for: Rendered values, Profiler events, commit count, and interaction responsiveness.</p></div>
-  </section>
 
   
 
@@ -132,12 +109,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>function Selection({ items }) {
   // Store identity; derive the selected object from current props.
   const [selectedId, setSelectedId] = useState(null);
@@ -151,51 +123,34 @@
     onSelect={setSelectedId}
   /&gt;;
 }</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>User or server supplies intent → React records the update → React computes a new tree → Visible UI changes atomically. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a state update from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Queue two related updates and predict which state snapshot each callback reads.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Rendered values, Profiler events, commit count, and interaction responsiveness.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Diagnose state synchronization defects and explain where state should live.</li>
-      <li>Trace a state update for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a state update works, starting with the input and following it through to the result.</li>
       <li>How would you refactor a duplicated-state interface into one normalized source of truth with explicit ownership boundaries, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a state update. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="react">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Match state identity and lifetime to the tree, eliminate contradictory or redundant state, and derive values during render.</p>
         <p class="worked-answer">Store the selected identity and derive its current object from items. The visible ID now becomes null when that item is absent; the stored ID can select it again if it returns. Decide whether this restoration is intended before adding reset logic. Derived completion counts need no synchronization Effect.</p>
         <p>Look for: Rendered values, Profiler events, commit count, and interaction responsiveness.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
       </details>
     </div>

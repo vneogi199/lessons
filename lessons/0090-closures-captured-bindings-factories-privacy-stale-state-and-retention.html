@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="6">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Closures">
         <span>01</span>
@@ -102,7 +101,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>A closure reads a binding when its body runs. It does not recompute every value that was derived from that binding. Suppose count starts at 0 and message is assigned the string "Count: 0". Updating count to 1 leaves message unchanged. A deferred callback that reads count sees 1. A callback that reads message sees "Count: 0".</p>
+<section class="card mechanism-walkthrough"><p>A closure reads a binding when its body runs. It does not recompute every value that was derived from that binding. Suppose count starts at 0 and message is assigned the string "Count: 0". Updating count to 1 leaves message unchanged. A deferred callback that reads count sees 1. A callback that reads message sees "Count: 0".</p>
 <p>The loop example shows a different issue. A var loop has one shared index binding. After three iterations, each saved callback reads 3. A let loop creates a separate binding for each iteration. Its callbacks read 0, 1 and 2.</p>
 <p>The counter exposes functions but not a property that lets callers assign value directly. Object.freeze prevents changes to the returned object's properties. It does not freeze variables used by those functions. A class with a #private field is another way to enforce access. Choose based on API needs and method sharing; measure allocation cost before making a performance claim.</p>
 <p>A long-lived registry can retain a callback, which in turn retains data. Delete the registry entry when its owner finishes. If a listener, timer or another variable still refers to the callback, that path can keep the data reachable. In a heap snapshot, follow the retaining path from a root to the data. Compare paths after cleanup. Do not infer immediate collection from a smaller registry.</p></section>
@@ -117,12 +116,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>function createCounter() {
   let value = 0; // one captured binding, not a copied primitive
   return Object.freeze({
@@ -165,35 +159,34 @@ console.assert(registry.get(&quot;response&quot;)() === 1024 * 1024);
 registry.delete(&quot;response&quot;);
 console.assert(registry.size === 0);
 // The registry no longer retains the callback. This does not measure GC timing.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Save the starter as an ES module because it uses top-level await. Follow createCounter calls separately. The Promise callback runs after the synchronous count assignment. The 1 MiB registry fixture checks reference removal, not a measured reduction in heap size.</p></section>
+<p class="code-guide">Save the starter as an ES module because it uses top-level await. Follow createCounter calls separately. The Promise callback runs after the synchronous count assignment. The 1 MiB registry fixture checks reference removal, not a measured reduction in heap size.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Old derived value</h3><p>Rebuilding message inside the callback reads the current count. Keeping the old message is correct only if the callback needs the earlier snapshot.</p></article><article><h3>Incomplete cleanup</h3><p>Removing one registry entry does not remove other listeners or callback references. Inspect ownership before changing the closure.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Old derived value</h3><p>Rebuilding message inside the callback reads the current count. Keeping the old message is correct only if the callback needs the earlier snapshot.</p></article><article><h3>Incomplete cleanup</h3><p>Removing one registry entry does not remove other listeners or callback references. Inspect ownership before changing the closure.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Define a closure, trace one captured binding, and discuss both useful encapsulation and memory cost.</li>
-      <li>Trace a JavaScript evaluation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
       <li>How would you implement a private counter, fix a loop capture bug, diagnose stale asynchronous state, and release a retained object graph, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>A deferred callback prints Count: 0 after count becomes 1. Explain the result without saying that closures freeze values. Then describe when keeping the old message is intentional. How would you investigate a retained 10 MB response?</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Trace the count and message bindings separately. Choose current data for a live display, or the earlier snapshot for an event record. For retention, identify the owning listener or registry, remove its reference at the correct lifecycle boundary, and inspect remaining heap paths. Do not promise a collection time.</p>
         <p class="worked-answer">The left counter reaches two while the independently created right counter stays zero. Freezing the returned API does not freeze captured state. A let loop supplies per-iteration bindings; a shared var binding changes the callbacks&#039; results. Retention requires a reachable owner: remove the listener or registry reference, then use heap evidence rather than assuming immediate collection.</p>
         <p>Look for: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>

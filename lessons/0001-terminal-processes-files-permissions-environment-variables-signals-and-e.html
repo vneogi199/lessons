@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to software engineering work. Software engineering uses repeatable tools and records to change software safely.</p>
+    <p>Software engineering uses repeatable tools and records to change software safely.</p>
     <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -73,7 +73,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-    <p class="concept-intro">Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Terminal">
         <span>01</span>
@@ -108,29 +107,7 @@
   </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/data-preparation-and-terminal.html#terminal">Linux terminal basics: navigation, files, pipes and safe commands</a></li></ul></section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · PRODUCE</span>
-        <h3>Exit with status 7</h3>
-        <p>The producer fails even though it sends no bytes.</p>
-      </article><article>
-        <span>02 · CONSUME</span>
-        <h3>tee succeeds</h3>
-        <p>The final process can return zero while the producer failed.</p>
-      </article><article>
-        <span>03 · COLLECT</span>
-        <h3>Apply pipeline policy</h3>
-        <p>Default Bash reports the last status; pipefail reports the rightmost nonzero status.</p>
-      </article><article>
-        <span>04 · VERIFY</span>
-        <h3>Capture immediately</h3>
-        <p>Save $? before any other command overwrites it, then check the required outcome.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>What happens if both processes fail?</p><p>Look for: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p></div>
-  </section>
 
   
 
@@ -142,12 +119,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code># Run with Bash, not an arbitrary sh. No files or services are changed.
 # Predict: does a successful consumer make a failed producer successful?
 set +e
@@ -165,51 +137,34 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
 # Senior follow-up: distinguish a signal, process exit, and successful work.
 # A zero exit code is only the program&#039;s claim; verify the required artifact.
 # Never dump the entire environment into a diagnostic log: it can contain secrets.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Exit with status 7 → tee succeeds → Apply pipeline policy → Capture immediately. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace an engineering change from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: What happens if both processes fail?</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain what happens between entering a command and seeing its output.</li>
-      <li>Trace an engineering change for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
       <li>How would you build diagnostic shell workflows and troubleshoot a broken local service, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="engineering-foundations">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
         <p class="worked-answer">If both commands fail with statuses 7 then 3, pipefail reports 3, not 7. Without pipefail the last command also reports 3. Explain why checking only the final status loses information; compare capturing Bash PIPESTATUS immediately with explicitly checking each stage. A service that exits zero but writes a truncated artifact still failed its contract. For a shutdown incident, distinguish a requested signal, observed process termination and completed cleanup before calling it safe.</p>
         <p>Look for: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>
       </details>
     </div>

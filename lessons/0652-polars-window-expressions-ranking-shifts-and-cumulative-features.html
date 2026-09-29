@@ -43,11 +43,7 @@
     <h1>Polars window expressions, ranking, shifts, and cumulative features</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>A window expression applies a calculation within groups and maps the result to rows. over identifies the groups. A shift reads a prior or later position under the defined ordering; it does not infer event chronology.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Two orders belong to desk A, with quantities 2 and 3. You want each order to show the desk total of 5 beside it.</p><p>A window expression can attach that total while keeping both rows. A grouped aggregation instead reduces them to one row. Sort deliberately before asking for a previous value.</p><details><summary>Does this window calculation reduce the two orders to one row?</summary><p>No. It retains both orders and attaches the group result.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="window">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>A grouped mean produces one row per instrument. A mean with over('instrument') can attach that mean to each existing quote row. Use this for deviations, shares and group-relative checks.</p>
+<section class="card mechanism-walkthrough"><p>A grouped mean produces one row per instrument. A mean with over('instrument') can attach that mean to each existing quote row. Use this for deviations, shares and group-relative checks.</p>
 <p>Sort before position-sensitive features. In the example, each instrument's previous rate is the preceding timestamp's rate. If equal timestamps are possible, add a deterministic sequence rule.</p>
 <p>Cumulative calculations need the same ordering discipline. Ranking needs a tie method such as dense, ordinal or average. State whether tied quotes should receive equal ranks.</p>
 <p>A full-group mean can use future observations when applied to historical prediction. For a backtest, define the information available at each decision time. A window expression is a computational tool, not a guarantee against look-ahead bias.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 
 df = pl.DataFrame({&quot;instrument&quot;: [&quot;x&quot;, &quot;x&quot;, &quot;y&quot;], &quot;ts&quot;: [2, 1, 1], &quot;rate&quot;: [102, 100, 200]})
@@ -119,35 +109,34 @@ out = df.sort([&quot;instrument&quot;, &quot;ts&quot;]).with_columns(
 assert out[&quot;previous&quot;].to_list() == [None, 100, None]
 assert out[&quot;group_mean&quot;].to_list() == [101.0, 101.0, 200.0]
 assert out.height == df.height</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The first row of each instrument has no previous rate. The group mean is repeated without reducing the number of rows.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The first row of each instrument has no previous rate. The group mean is repeated without reducing the number of rows.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A global shift can copy instrument x&#039;s last value into instrument y&#039;s first row.</p></article><article><h3>Tradeoff to defend</h3><p>Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>A global shift can copy instrument x&#039;s last value into instrument y&#039;s first row.</p></article><article><h3>Tradeoff to defend</h3><p>Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you use this feature in a historical trading decision. Which columns use information that was not yet available? Replace them with a trailing calculation, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Use this feature in a historical trading decision. Which columns use information that was not yet available? Replace them with a trailing calculation.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>The first row of each instrument has no previous rate. The group mean is repeated without reducing the number of rows. Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.</p>
         <p class="worked-answer">The first row of each instrument has no previous rate. The group mean is repeated without reducing the number of rows.</p>
         <p>Look for: A global shift can copy instrument x&#039;s last value into instrument y&#039;s first row. Window expressions avoid a separate aggregate-and-join, but row order and mapping strategy still need a clear contract.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

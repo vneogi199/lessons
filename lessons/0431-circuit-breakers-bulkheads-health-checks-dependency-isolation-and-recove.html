@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to APIs and distributed systems. An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
+    <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="5">
 
-    <p class="concept-intro">Bound failure propagation through separate resource pools and temporary call suppression while using realistic readiness and cautious recovery probes instead of binary magical health.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Circuit breakers">
         <span>01</span>
@@ -98,29 +97,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · BUDGET</span>
-        <h3>Request enters with finite value</h3>
-        <p>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</p>
-      </article><article>
-        <span>02 · DEPENDENCY</span>
-        <h3>Work consumes time and capacity</h3>
-        <p>Latency distribution, fan-out, saturation, and partial failure shape progress.</p>
-      </article><article>
-        <span>03 · CONTROL</span>
-        <h3>System cancels, retries, isolates, or sheds</h3>
-        <p>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</p>
-      </article><article>
-        <span>04 · EVIDENCE</span>
-        <h3>Outcome closes every resource</h3>
-        <p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p><p>Look for: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></div>
-  </section>
 
   
 
@@ -132,12 +109,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import assert from &quot;node:assert/strict&quot;;
 // Focus: half-open probe admission/completion, using a synthetic monotonic clock.
 // The failure-counting policy has already opened this breaker at time zero.
@@ -176,51 +148,34 @@ assert.throws(() =&gt; finishProbe(breaker, true, 222, 100), /no active probe/);
 // Readiness asks whether this instance can serve its contract, not whether
 // every optional dependency is healthy.
 // https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Request enters with finite value → Work consumes time and capacity → System cancels, retries, isolates, or sheds → Outcome closes every resource. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace dependency isolation and recovery from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Slow one dependency past its budget while increasing arrival rate beyond service capacity.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain circuit-breaker states and tradeoffs and distinguish dependency health from service readiness and end-to-end correctness.</li>
-      <li>Trace dependency isolation and recovery for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how dependency isolation and recovery works, starting with the input and following it through to the result.</li>
       <li>How would you isolate two dependencies with bulkheads, open a breaker from rolling evidence, test half-open recovery, and prevent probe traffic from causing an outage, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace dependency isolation and recovery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Bound failure propagation through separate resource pools and temporary call suppression while using realistic readiness and cautious recovery probes instead of binary magical health.</p>
         <p class="worked-answer">The fake clock tests one half-open probe and cooldown, not rolling failure classification or enforced bulkheads. Probe inputs are trusted fixture values. A hung probe remains half-open; an external reset requires generations so a late completion cannot close a newer breaker. One successful probe closes this example, not necessarily a production recovery policy.</p>
         <p>Look for: Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>

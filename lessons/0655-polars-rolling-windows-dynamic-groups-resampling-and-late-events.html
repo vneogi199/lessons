@@ -43,11 +43,7 @@
     <h1>Polars rolling windows, dynamic groups, resampling, and late events</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>A row window counts observations. A time window covers a duration. Dynamic grouping assigns rows to interval boundaries. These produce different results when event spacing is irregular.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Events arrive at 00:00, 00:01 and 00:02. Two-minute buckets that include the start and exclude the end put the first two together. The third starts the next bucket.</p><p>A two-row window is different: it takes two observations even if they are an hour apart. Choose rows or elapsed time based on the report&#039;s question.</p><details><summary>Does a two-row average always cover two minutes?</summary><p>No. Its time span depends on when the observations occurred.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="dynamic_group">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>The first two events fall in the half-open interval [00:00, 00:02). The event exactly at 00:02 belongs to the next interval. Explicit boundary closure prevents double counting or unexplained edge changes.</p>
+<section class="card mechanism-walkthrough"><p>The first two events fall in the half-open interval [00:00, 00:02). The event exactly at 00:02 belongs to the next interval. Explicit boundary closure prevents double counting or unexplained edge changes.</p>
 <p>A trailing two-minute window anchored at each row answers a different question from two-minute reporting buckets. Likewise, a rolling mean of two observations can span seconds or hours. Choose the unit from the business requirement.</p>
 <p>Dynamic grouping does not automatically create every empty interval. If a chart requires a continuous grid, construct or upsample that grid and specify whether missing buckets mean zero activity or unknown data.</p>
 <p>A LazyFrame streaming engine processes batches of a bounded query; it is not a Kafka event-time processor with watermarks. For late events, define whether to reopen a bucket, publish a correction or quarantine the record. Preserve a version or cutoff for reproducible reports.</p><p><a href="https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.group_by_dynamic.html">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>from datetime import datetime, timedelta
 import polars as pl
 
@@ -117,35 +107,34 @@ buckets = df.group_by_dynamic(&quot;ts&quot;, every=&quot;2m&quot;, period=&quot
 assert buckets[&quot;qty&quot;].to_list() == [3, 4]
 rolling = df.with_columns(pl.col(&quot;qty&quot;).rolling_mean(window_size=2).alias(&quot;last_two&quot;))
 assert rolling[&quot;last_two&quot;].to_list() == [None, 1.5, 3.0]</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Bucket sums are 3 and 4. The two-row rolling mean has no full first window, then produces 1.5 and 3.0.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. Bucket sums are 3 and 4. The two-row rolling mean has no full first window, then produces 1.5 and 3.0.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Calling a two-row average a two-minute average hides irregular event spacing.</p></article><article><h3>Tradeoff to defend</h3><p>Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Calling a two-row average a two-minute average hides irregular event spacing.</p></article><article><h3>Tradeoff to defend</h3><p>Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you move the final event forward by an hour. Explain which row-window result stays the same and which time-bucket assignment changes, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Move the final event forward by an hour. Explain which row-window result stays the same and which time-bucket assignment changes.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Bucket sums are 3 and 4. The two-row rolling mean has no full first window, then produces 1.5 and 3.0. Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.</p>
         <p class="worked-answer">Bucket sums are 3 and 4. The two-row rolling mean has no full first window, then produces 1.5 and 3.0.</p>
         <p>Look for: Calling a two-row average a two-minute average hides irregular event spacing. Reopening late buckets improves completeness but changes previously published values. Immutable cutoffs are easier to reproduce but need a late-data disclosure.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

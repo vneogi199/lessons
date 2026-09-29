@@ -43,11 +43,7 @@
     <h1>Polars lazy plans, predicate pushdown, projection pushdown, and explain</h1>
   </header>
 
-  <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
-
-    <p>A LazyFrame represents a query. collect executes it and returns a DataFrame. Projection pushdown reduces requested columns near a source; predicate pushdown moves eligible filters toward the source. An optimizer must preserve the query&#039;s meaning.</p>
-    <p><a href="../reference/senior-interview-practice.html#polars">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
-  </section>
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You need one column from a file, and only rows for desk A. A lazy query describes that request before collecting the result.</p><p>The engine may move selection and filtering toward the source to avoid unnecessary reading. Starting with a scan preserves this opportunity; calling lazy after an eager read cannot undo that read.</p><details><summary>Can a lazy plan undo a completed eager file read?</summary><p>No. Start with a lazy source when source-read optimization matters.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
   <div class="grid">
@@ -73,7 +69,6 @@
 
   <section class="concept-section" data-subtopic-count="2">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="LazyFrame">
         <span>01</span>
@@ -87,7 +82,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>The query selects positive quantities and doubles them. Before collect, it describes the work. explain lets you inspect the planned operations. A plan is evidence of intended execution, not a measurement of elapsed time or bytes read.</p>
+<section class="card mechanism-walkthrough"><p>The query selects positive quantities and doubles them. Before collect, it describes the work. explain lets you inspect the planned operations. A plan is evidence of intended execution, not a measurement of elapsed time or bytes read.</p>
 <p>Use scan_csv or scan_parquet when the source read should participate in optimization. Calling read_parquet(...).lazy() starts after eager materialization, so it cannot undo that read.</p>
 <p>A filter cannot always move across an aggregation, outer join or opaque Python function without changing results. Likewise, output expressions may need columns that are not returned. Interpret pushdown by dependencies instead of expecting every filter to reach a scan.</p>
 <p>Use collect_schema when you need planned names and types, while recognizing that schema resolution may require source metadata. Avoid repeated collect calls in a loop when they execute the same expensive source repeatedly. Pin versions before comparing plan text; exact formatting is not a stable test contract.</p><p><a href="https://docs.pola.rs/user-guide/lazy/query-plan/">Related official documentation</a>.</p></section>
@@ -102,12 +97,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>import polars as pl
 from polars.testing import assert_frame_equal
 
@@ -116,35 +106,34 @@ query = df.lazy().filter(pl.col(&quot;qty&quot;) &gt; 0).select(&quot;id&quot;, 
 assert query.collect_schema()[&quot;double_qty&quot;] == pl.Int64
 print(query.explain(optimized=True))
 assert_frame_equal(query.collect(), pl.DataFrame({&quot;id&quot;: [2, 3], &quot;double_qty&quot;: [4, 6]}))</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning.</p></section>
+<p class="code-guide">Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Reading a large file eagerly and adding lazy() afterward cannot recover the memory already used to read it.</p></article><article><h3>Tradeoff to defend</h3><p>Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Failure to diagnose</h3><p>Reading a large file eagerly and adding lazy() afterward cannot recover the memory already used to read it.</p></article><article><h3>Tradeoff to defend</h3><p>Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</li>
-      <li>Trace a typed analytical transformation for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a typed analytical transformation works, starting with the input and following it through to the result.</li>
       <li>How would you replace the source with a Parquet scan in a disposable fixture. Compare optimized and unoptimized explanations without asserting an exact plan string, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a typed analytical transformation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="polars">
       <p>Replace the source with a Parquet scan in a disposable fixture. Compare optimized and unoptimized explanations without asserting an exact plan string.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning. Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</p>
         <p class="worked-answer">The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning.</p>
         <p>Look for: Reading a large file eagerly and adding lazy() afterward cannot recover the memory already used to read it. Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#polars">Worked track case: An RFQ report doubles exposure after enrichment ↗</a></p>
       </details>
     </div>

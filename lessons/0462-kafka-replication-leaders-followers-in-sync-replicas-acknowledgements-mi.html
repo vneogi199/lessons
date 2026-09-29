@@ -45,7 +45,7 @@
 
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
-    <p>This topic belongs to microservices, domain-driven design, and event-driven systems. These approaches divide business responsibilities, define ownership, and move changes between components through explicit contracts and events.</p>
+    <p>These approaches divide business responsibilities, define ownership, and move changes between components through explicit contracts and events.</p>
     <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="9">
 
-    <p class="concept-intro">Replicate each partition from one leader to followers, track sufficiently caught-up replicas, combine producer acknowledgement with minimum replica policy, elect replacement leaders through cluster metadata, and avoid unsafe recovery claims.</p>
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="Kafka replication">
         <span>01</span>
@@ -114,29 +113,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough">
 
-    <div class="walkthrough-grid">
-      <article>
-        <span>01 · PRODUCE</span>
-        <h3>Producer forms a keyed batch</h3>
-        <p>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</p>
-      </article><article>
-        <span>02 · APPEND</span>
-        <h3>Partition leader writes its log</h3>
-        <p>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</p>
-      </article><article>
-        <span>03 · FETCH</span>
-        <h3>Consumer group owns partitions</h3>
-        <p>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</p>
-      </article><article>
-        <span>04 · SETTLE</span>
-        <h3>Effect and position become recoverable</h3>
-        <p>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</p>
-      </article>
-    </div>
-    <div class="diagnostic-note"><p>Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.</p><p>Look for: Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p></div>
-  </section>
 
   
 
@@ -148,12 +125,7 @@
 
 
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code># Topic durability policy: a leader accepts an all-replicas acknowledgement
 # only while at least two in-sync replicas are available.
 kafka-configs.sh --bootstrap-server localhost:9092 --alter \
@@ -173,51 +145,34 @@ kafka-topics.sh --bootstrap-server localhost:9092 \
 
 # replication.factor=3, min.insync.replicas=2, and acks=all tolerate one replica
 # loss for writes. If another required replica is unavailable, safe writes fail.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide">
 
-    <ol class="steps">
-      <li><span>Find the setup and the input that starts the example.</span></li>
-      <li><span>Follow the lines that read state, make a decision, or produce an output.</span></li>
-      <li><span>Change one input. Predict the result, run the code, and compare.</span></li>
-    </ol>
-    <p>Producer forms a keyed batch → Partition leader writes its log → Consumer group owns partitions → Effect and position become recoverable. This is a model of the topic, not a claim that every stage is implemented by the starter. For an exercise specification, build the stated fixture before collecting runtime evidence.</p>
-  </section>
 
-  <section class="card common-mistakes">
-    <h2>Common mistakes</h2>
-    <div class="mistake-grid">
-      <article><h3>Memorizing the label</h3><p>A definition is not enough. Trace a domain command and event from input to output.</p></article>
-      <article><h3>Testing only success</h3><p>The happy path can hide a weak design. Try this failure: Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.</p></article>
-      <article><h3>Changing too much</h3><p>Change one condition at a time. Otherwise, you will not know what caused the result.</p></article>
-      <article><h3>Guessing</h3><p>Check the system instead: Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p></article>
-    </div>
-  </section>
+
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Derive Kafka durability and availability from replication factor, acknowledgements, ISR policy, unclean election, and failure timing.</li>
-      <li>Trace a domain command and event for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a domain command and event works, starting with the input and following it through to the result.</li>
       <li>How would you run a three-broker lab, stop leaders and followers under different acknowledgement settings, inspect ISR changes and elections, and record which acknowledged events survive, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a domain command and event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="service-architecture-events">
-      <p>Revisit your proposed implementation of this lab. Compare it with one simpler alternative. State the assumption that would make you choose differently, the evidence you would collect, and who owns the change.</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Replicate each partition from one leader to followers, track sufficiently caught-up replicas, combine producer acknowledgement with minimum replica policy, elect replacement leaders through cluster metadata, and avoid unsafe recovery claims.</p>
         <p class="worked-answer">With three replicas, min ISR two and acks all, successful writes depend on eligible ISR and election policy, not just three configured copies. acks all is not exactly two acknowledgements or per-write filesystem fsync. The property names are client configuration, not shell commands. Separate partition leadership from controller metadata quorum and test the exact failure/durability assumptions.</p>
         <p>Look for: Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Worked track case: An event is published twice after a crash ↗</a></p>
       </details>
     </div>

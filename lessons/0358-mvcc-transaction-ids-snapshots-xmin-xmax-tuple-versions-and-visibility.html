@@ -72,7 +72,6 @@
 
   <section class="concept-section" data-subtopic-count="7">
 
-
     <div class="concept-grid">
       <article class="concept-card" data-subtopic="MVCC">
         <span>01</span>
@@ -106,7 +105,7 @@
     </div>
   </section>
 
-  <section class="card mechanism-walkthrough"><p>The fixture begins with balance_cents = 100. Session A starts Repeatable Read and reads 100. That read establishes its snapshot. Session B updates the balance to 101 and commits. A still reads 100. After A commits, its next statement reads 101.</p>
+<section class="card mechanism-walkthrough"><p>The fixture begins with balance_cents = 100. Session A starts Repeatable Read and reads 100. That read establishes its snapshot. Session B updates the balance to 101 and commits. A still reads 100. After A commits, its next statement reads 101.</p>
 <p>Repeat the exercise with Read Committed after resetting the balance while both sessions are idle. A's second SELECT now reads 101 because each statement takes a fresh snapshot. Repeatable Read provides a stable transaction view, but concurrent writes can require a transaction retry. Read Committed permits fresher results between statements; it does not guarantee a stable view across a report's separate queries.</p>
 <p>xmin identifies the inserting transaction. xmax can contain deletion or locking information. Visibility also depends on transaction status and the reader's snapshot. Do not compare these fields as timestamps or use them as permanent application versions. ctid identifies a physical row-version location and can change.</p>
 <p>While A holds its old snapshot, VACUUM must retain versions that A can still need. After A commits, those versions can become removable, unless another snapshot or retention requirement still needs them. VACUUM output depends on other activity. Compare its verbose reports; do not expect one universal tuple count or immediate file shrinkage.</p>
@@ -124,12 +123,7 @@
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
 
-    <ol class="steps">
-      <li><span>Predict the state changes and one likely failure.</span></li>
-      <li><span>Run the smallest working example in its required environment and save the result.</span></li>
-      <li><span>Change one condition, then run the same check again.</span></li>
-      <li><span>Compare the evidence and explain the tradeoff.</span></li>
-    </ol>
+    <p>Predict the result before running the example in its required environment. Then change one input and compare the results.</p>
     <pre aria-label="Starter code"><code>-- 1. Session A, disposable database, outside a transaction.
 -- A pre-existing table of this name is an error: inspect it instead of replacing it.
 CREATE TABLE lesson_mvcc_accounts (id integer PRIMARY KEY, balance_cents integer NOT NULL);
@@ -160,35 +154,34 @@ VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
 -- Compare cleanup reports before and after A releases its snapshot.
 -- For another attempt, reset to 100 only while both sessions are idle.
 -- Keep or remove this dedicated fixture according to your learning environment&#039;s policy.</code></pre>
-    <p class="practice-notes">Record your prediction, observation, and revised model separately from the snippet.</p>
   </section>
 
 
 
-  <section class="card code-guide"><p>The B commands are comments so pasting the A block cannot accidentally perform both roles in one connection. Copy those commands into B without their comment markers. Pause A at step 3. Record each balance and both verbose vacuum reports before comparing them.</p></section>
+<p class="code-guide">The B commands are comments so pasting the A block cannot accidentally perform both roles in one connection. Copy those commands into B without their comment markers. Pause A at step 3. Record each balance and both verbose vacuum reports before comparing them.</p>
 
-  <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Both sessions use one connection</h3><p>The reader can see its own writes. That does not demonstrate a concurrent transaction&#039;s visibility. Use two connections and pause at the indicated boundaries.</p></article><article><h3>More vacuum solves every backlog</h3><p>Vacuum cannot remove a version that an active snapshot still needs. Investigate the long transaction and its owner before changing cleanup settings.</p></article></div></section>
+<section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Both sessions use one connection</h3><p>The reader can see its own writes. That does not demonstrate a concurrent transaction&#039;s visibility. Use two connections and pause at the indicated boundaries.</p></article><article><h3>More vacuum solves every backlog</h3><p>Vacuum cannot remove a version that an active snapshot still needs. Investigate the long transaction and its owner before changing cleanup settings.</p></article></div></section>
 
   <section class="card interview">
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain PostgreSQL MVCC from a row update to snapshot visibility and identify the cleanup cost it creates.</li>
-      <li>Trace a database transaction for this lesson from its initiating input through the underlying mechanism to the observable output.</li>
+      <li>Explain how a database transaction works, starting with the input and following it through to the result.</li>
       <li>How would you use two psql sessions and page or transaction metadata to observe old and new versions before and after commit and vacuum, and which evidence would prove the result?</li>
-      <li>Name one realistic failure mode, the first diagnostic signal you would inspect, and the tradeoff in your proposed fix.</li>
+      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Predict all four balances. Explain why a busy table can grow while autovacuum runs. Would Read Committed be a suitable replacement for a multi-query financial report?</p>
-      <p>Tomorrow, without notes, explain the mechanism in 90 seconds, predict one failure, and say what would change your design. Then reopen the checkpoint and correct any gap. If the explanation still depends on the notes, repeat the smallest relevant exercise before trying again.</p>
+      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>A reads 100, B returns 101, A still reads 100, then A reads 101 after commit. An old snapshot can hold back cleanup. Choose a report&#039;s consistency requirement before changing isolation: independent fresh statements and one stable report snapshot are different contracts. Account for retry handling and transaction duration.</p>
         <p class="worked-answer">Session B must really be a different connection, with A&#039;s snapshot established before B commits. A sees its snapshot until commit, then a new statement sees later committed data. xmin/xmax/ctid are diagnostics, not durable application versions. Vacuum cannot remove versions still required by an old snapshot.</p>
         <p>Look for: Transaction IDs, locks, snapshots, error code, retry, and final rows.</p>
-        <p>A strong answer makes a falsifiable prediction, states a limitation, and adapts when the constraint changes. Naming the technology or repeating this guide is not enough.</p>
+        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>

@@ -8,6 +8,7 @@ const read = name => readFile(new URL(name, root), "utf8");
 const html = await read("lesson.html");
 const css = await read("styles.css");
 const app = await read("app.js");
+assert.match(css, /\.catalog-tools\s*\{[^}]*position:\s*sticky;[^}]*top:\s*0;[^}]*z-index:\s*2;[^}]*flex-shrink:\s*0;[^}]*background:\s*var\(--sidebar\)/);
 assert.match(html, /id="toggle-catalog"[^>]*aria-expanded="false"[^>]*aria-controls="course-sidebar"/);
 assert.match(html, /id="course-sidebar"/);
 assert.match(css, /\.sidebar\.catalog-open\s*\{\s*display:\s*block/);
