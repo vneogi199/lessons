@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow a name through local, enclosing, global, and builtins scopes while distinguishing compile-time scope analysis from runtime namespace lookup.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>A name must be resolved to an object before Python can use it. Namespaces hold those bindings, and scope rules determine where Python looks. Each function call has a frame that holds its execution state. An assignment inside a function can make a name local throughout that function, including lines before the assignment. A closure keeps access to an enclosing binding, so later changes to that binding can affect its result.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Inspect frames and closures, reproduce UnboundLocalError, and fix a scope design without using global state.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -149,7 +149,7 @@ def broken():
     <ol class="interview-questions">
       <li>Explain LEGB, local-variable determination, closures, global, nonlocal, and why assignment changes name resolution.</li>
       <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>How would you inspect frames and closures, reproduce UnboundLocalError, and fix a scope design without using global state, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -160,8 +160,8 @@ def broken():
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow a name through local, enclosing, global, and builtins scopes while distinguishing compile-time scope analysis from runtime namespace lookup.</p>
-        <p class="worked-answer">A closure retains bindings in cells, not frozen values. Assignment makes a function name local even before that statement executes; calling broken demonstrates UnboundLocalError. Frame inspection can itself retain objects, so release the inspection reference as the starter does.</p>
+
+        <p class="worked-answer">The closure keeps a binding in a cell, so its value is not frozen when the closure is created. Assignment makes the name local throughout the function; calling broken demonstrates UnboundLocalError. Inspecting a frame can keep its objects alive. Release the inspection reference as the example does.</p>
         <p>Look for: Object identity, type, frame locals, return value, exception, and timing.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

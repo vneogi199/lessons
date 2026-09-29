@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Distinguish Unicode code points from encoded bytes, trace encode and decode operations, and understand normalization and malformed-input policies.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>Text and encoded bytes are different representations. A string holds Unicode text; encoding turns that text into bytes, and decoding turns bytes back into text under a chosen encoding. One character can require several UTF-8 bytes. Replacing a single byte can therefore make the data invalid. Normalization can make selected text forms compare alike, but it cannot establish identity or eliminate every visually confusing name.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a file and HTTP text boundary that handles UTF-8, invalid bytes, normalization, and binary payloads explicitly.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -147,7 +147,7 @@ assert (text[:-1] + &quot;!&quot;).encode(&quot;utf-8&quot;).decode(&quot;utf-8&
     <ol class="interview-questions">
       <li>Explain str versus bytes, mojibake, Unicode normalization, and where encoding should happen.</li>
       <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>How would you build a file and HTTP text boundary that handles UTF-8, invalid bytes, normalization, and binary payloads explicitly, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,8 +158,8 @@ assert (text[:-1] + &quot;!&quot;).encode(&quot;utf-8&quot;).decode(&quot;utf-8&
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Distinguish Unicode code points from encoded bytes, trace encode and decode operations, and understand normalization and malformed-input policies.</p>
-        <p class="worked-answer">Replacing one UTF-8 byte is not replacing one character: the broken decode is intentional. Normalize only under a stated equivalence policy; normalization is not authentication or a defense against every visually confusable name. Character count also differs from user-perceived grapheme count.</p>
+
+        <p class="worked-answer">The failed decode is intentional: changing one UTF-8 byte can damage a character. Normalize text only when the application has defined which forms should compare alike. Normalization does not authenticate a name or handle every visually confusable name. A user-perceived character, or grapheme, can also contain more than one code point.</p>
         <p>Look for: Object identity, type, frame locals, return value, exception, and timing.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

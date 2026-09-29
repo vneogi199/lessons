@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand extension-module loading, reference ownership, Python-to-native conversion, ABI compatibility, buffer sharing, GIL transitions, and crash containment limits.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>Calling native code crosses a boundary with its own memory and error rules. The Python C API handles Python objects and reference ownership; an FFI describes calls into another compiled library. Conversions and copies can erase the expected speed benefit. Buffer sharing avoids some copies but requires a valid layout and lifetime. The stable ABI improves compatibility across Python releases at the cost of access to some internals. Native memory bugs can crash the process.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Call a small native library through ctypes or cffi, validate inputs, benchmark copying, and document ownership and failure risks.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -140,7 +140,7 @@ assert result == 2.5
     <ol class="interview-questions">
       <li>Explain when native code helps, the stable ABI tradeoff, reference-count bugs, and zero-copy buffer boundaries.</li>
       <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>How would you call a small native library through ctypes or cffi, validate inputs, benchmark copying, and document ownership and failure risks, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -151,8 +151,8 @@ assert result == 2.5
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand extension-module loading, reference ownership, Python-to-native conversion, ABI compatibility, buffer sharing, GIL transitions, and crash containment limits.</p>
-        <p class="worked-answer">libstats.so is an unsupplied platform-specific artifact. argtypes and restype describe an ABI contract, not proof the native function obeys it. Establish nonzero length, pointer lifetime and error behavior before calling; a native memory bug can crash Python, and an ordinary C library is not a Python stable-ABI extension.</p>
+
+        <p class="worked-answer">You must supply a compatible platform-specific libstats.so. argtypes and restype declare the expected ABI; they cannot prove that the library obeys it. Check nonzero length, pointer lifetime and error behavior before calling. A native memory bug can crash Python. An ordinary C library is also different from a Python stable-ABI extension.</p>
         <p>Look for: Object identity, type, frame locals, return value, exception, and timing.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>

@@ -48,8 +48,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate algorithmic cost, interpreter overhead, allocation, I/O waits, cache behavior, warmup, variance, and observer effects.</p>
-      <p class="analogy">Python names are sticky notes attached to objects: assignment moves a note, mutation changes the object, and protocols define which tools know how to use it.</p>
+      <p>A slow result can come from the algorithm, Python execution overhead, allocation or waiting for I/O. Profile a representative workload to locate the cost before changing code. Benchmarks need repeated runs with stated inputs, warmup and system conditions. Measurement tools add overhead of their own. A cache saves repeated work but introduces memory use and stale-value policy; measure the complete operation after adding it.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Profile a slow pipeline with cProfile, tracemalloc, and timeit, then optimize the measured bottleneck and report the before-and-after evidence.</p>
-    <p class="lab-scope">Core: inspect the supplied Python fixture, predict a result and a failure, then compare with the worked answer criteria. Run only self-contained standard-library examples with an available compatible interpreter. Extension: supply missing adapters or files and gather the requested type-checking, concurrency, packaging and operational evidence. Syntax or a local fake does not establish external integration, and no installation is required for this review.</p>
+    <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
 
 
@@ -142,7 +142,7 @@ print({&quot;seconds&quot;: seconds, &quot;peak_bytes&quot;: peak, &quot;result_
     <ol class="interview-questions">
       <li>Explain a disciplined Python optimization workflow and why microbenchmarks can mislead.</li>
       <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>How would you profile a slow pipeline with cProfile, tracemalloc, and timeit, then optimize the measured bottleneck and report the before-and-after evidence, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,8 +153,8 @@ print({&quot;seconds&quot;: seconds, &quot;peak_bytes&quot;: peak, &quot;result_
       <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate algorithmic cost, interpreter overhead, allocation, I/O waits, cache behavior, warmup, variance, and observer effects.</p>
-        <p class="worked-answer">set removes duplicates and sorting adds an ordering cost. timeit reports total time for 20 runs here, not one request&#039;s tail latency. Allocation tracing remains enabled and changes measurement overhead; compare instrumented diagnosis separately from an uninstrumented baseline. No cache or optimization has yet been validated.</p>
+
+        <p class="worked-answer">set removes duplicates, then sorting adds the cost of ordering. timeit reports the total for 20 runs, which is not one request&#039;s tail latency. Allocation tracing is still enabled and adds overhead. Use it for diagnosis, then compare against an uninstrumented baseline. The example does not yet validate a cache or an optimization.</p>
         <p>Look for: Object identity, type, frame locals, return value, exception, and timing.</p>
         <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
