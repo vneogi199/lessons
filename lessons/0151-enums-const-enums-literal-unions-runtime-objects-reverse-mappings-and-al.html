@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0151" data-bespoke-example="0151" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Use a runtime catalog to check status text</figcaption>
+<p>The ProjectStatus object has three own keys: draft, active and archived. Their values use the same words.</p>
+<div class="foundation-grid"><div>active<br>String and own key<br>Accept</div><div>deleted<br>String but no own key<br>Reject</div><div>toString<br>Inherited name, not an own key<br>Reject</div></div>
+<details><summary>Why does the parser need an object if a union names the same words?</summary><p>The object exists at runtime for the membership check. The type-only union is erased.</p></details>
+<details><summary>What assumption would break if active's value changed to enabled?</summary><p>The parser checks keys and returns the input as a value type. That is valid here because keys and values match. A changed catalog would need a matching parser change.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>An enum normally produces a runtime object as well as a type. Numeric enums also provide reverse mappings; string enums do not. A literal union is erased, while an as-const lookup object retains values that code can inspect. Const enum inlining can embed dependency values in consumer output. Choose based on runtime use and compatibility, then define stable wire values independently of the chosen syntax.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-narrowing" aria-label="Mechanism trace: A value begins with a possible type then Control flow tests the runtime value then Checker removes impossible cases then Branch returns or reaches never. Experiment: Add one new discriminated variant and observe every non-exhaustive consumer.">
-        <li class="trace-stage"><span>01 · DECLARED</span><strong>A value begins with a possible type</strong><small>Its declaration describes every permitted variant.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVIDENCE</span><strong>Control flow tests the runtime value</strong><small>A discriminant, guard, equality, or reachability fact is learned.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NARROW</span><strong>Checker removes impossible cases</strong><small>Only operations valid for the remaining variants are allowed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><strong>Branch returns or reaches never</strong><small>Diagnostics and type tests expose missing or unsafe paths.</small></li>
+        <li class="trace-stage"><span>01 · DECLARED</span><details class="trace-explanation" open><summary>A value begins with a possible type</summary><p>Its declaration describes every permitted variant.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVIDENCE</span><details class="trace-explanation"><summary>Control flow tests the runtime value</summary><p>A discriminant, guard, equality, or reachability fact is learned.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NARROW</span><details class="trace-explanation"><summary>Checker removes impossible cases</summary><p>Only operations valid for the remaining variants are allowed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><details class="trace-explanation"><summary>Branch returns or reaches never</summary><p>Diagnostics and type tests expose missing or unsafe paths.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Add one new discriminated variant and observe every non-exhaustive consumer.</strong>
-        <small><b>Inspect:</b> Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Hover type at each branch, diagnostic, never assertion, runtime guard test, and output.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Enums">
-        <span>01</span>
-        <h3>Enums</h3>
+      <details class="concept-card" data-subtopic="Enums">
+        <summary>Enums</summary>
         <p class="concept-definition">An enum creates a named type and normally a runtime object. Numeric enums also emit reverse mappings, while const enums may inline values.</p>
-      </article><article class="concept-card" data-subtopic="const enums">
-        <span>02</span>
-        <h3>const enums</h3>
+      </details><details class="concept-card" data-subtopic="const enums">
+        <summary>const enums</summary>
         <p class="concept-definition">Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.</p>
-      </article><article class="concept-card" data-subtopic="literal unions">
-        <span>03</span>
-        <h3>literal unions</h3>
+      </details><details class="concept-card" data-subtopic="literal unions">
+        <summary>literal unions</summary>
         <p class="concept-definition">A literal union is erased but precisely limits values during checking. Pair it with a runtime as-const object or parser when enumeration is required at runtime.</p>
-      </article><article class="concept-card" data-subtopic="runtime objects">
-        <span>04</span>
-        <h3>runtime objects</h3>
+      </details><details class="concept-card" data-subtopic="runtime objects">
+        <summary>runtime objects</summary>
         <p class="concept-definition">Runtime objects survive emission and can be inspected or called; type aliases and interfaces do not create corresponding objects.</p>
-      </article><article class="concept-card" data-subtopic="reverse mappings">
-        <span>05</span>
-        <h3>reverse mappings</h3>
+      </details><details class="concept-card" data-subtopic="reverse mappings">
+        <summary>reverse mappings</summary>
         <p class="concept-definition">Numeric enum objects map numbers back to member names as well as names to numbers. String enums do not emit that reverse mapping.</p>
-      </article><article class="concept-card" data-subtopic="alternatives">
-        <span>06</span>
-        <h3>alternatives</h3>
+      </details><details class="concept-card" data-subtopic="alternatives">
+        <summary>alternatives</summary>
         <p class="concept-definition">Compare literal unions, lookup objects, and enums by emitted behavior, wire stability, discoverability, and compilation constraints, not syntax preference alone.</p>
-      </article>
+      </details>
     </div>
   </section>
 

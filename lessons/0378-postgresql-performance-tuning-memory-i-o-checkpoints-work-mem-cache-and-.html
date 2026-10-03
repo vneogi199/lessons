@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0378" data-bespoke-example="0378" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Investigate temporary writes before increasing memory</figcaption><p>Practice fixture: a frequent query shows temporary blocks written while latency rises under concurrency.</p><div class="foundation-grid"><div>Query evidence<br>Temporary writes<br>Actual sort or hash behavior</div><div>Workload evidence<br>Concurrent operations<br>Host memory and I/O</div><div>Candidate change<br>Measure under same workload</div></div><details><summary>Is work_mem a single global memory allocation?</summary><p>No. Multiple operations and sessions can consume work memory. Account for concurrency before increasing it.</p></details><details><summary>Does removing a spill automatically establish safe capacity?</summary><p>No. Check total memory pressure, latency and errors under representative load.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Tune the measured bottleneck under representative concurrency. Work_mem applies to individual operations, so several operations, workers and queries can multiply memory demand. Hash work can have an additional multiplier. Shared buffers and the OS cache are separate layers. Keep throughput, errors, latency and memory together in the comparison. A diagnostics query by itself provides neither a load test nor a justified configuration change.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a diagnostic experiment</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="postgres-diagnostics" aria-label="Mechanism trace: Define the slow or failing workload then Locate waiting and repeated work then Test one bounded intervention then Check improvement and regressions. Experiment: A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.">
-        <li class="trace-stage"><span>01 · SYMPTOM</span><strong>Define the slow or failing workload</strong><small>Record request shape, concurrency, time window and the affected service objective.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><strong>Locate waiting and repeated work</strong><small>Session waits, query statistics, plans and host metrics narrow the hypothesis.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Test one bounded intervention</strong><small>Use representative data and hold workload conditions steady enough for comparison.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Check improvement and regressions</strong><small>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</small></li>
+        <li class="trace-stage"><span>01 · SYMPTOM</span><details class="trace-explanation" open><summary>Define the slow or failing workload</summary><p>Record request shape, concurrency, time window and the affected service objective.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><details class="trace-explanation"><summary>Locate waiting and repeated work</summary><p>Session waits, query statistics, plans and host metrics narrow the hypothesis.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><details class="trace-explanation"><summary>Test one bounded intervention</summary><p>Use representative data and hold workload conditions steady enough for comparison.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><details class="trace-explanation"><summary>Check improvement and regressions</summary><p>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.</strong>
-        <small><b>Inspect:</b> Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +76,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="PostgreSQL performance tuning">
-        <span>01</span>
-        <h3>PostgreSQL performance tuning</h3>
+      <details class="concept-card" data-subtopic="PostgreSQL performance tuning">
+        <summary>PostgreSQL performance tuning</summary>
         <p class="concept-definition">PostgreSQL tuning starts from workload and plan evidence, then changes queries, indexes, concurrency, or settings with measurements.</p>
-      </article><article class="concept-card" data-subtopic="memory">
-        <span>02</span>
-        <h3>memory</h3>
+      </details><details class="concept-card" data-subtopic="memory">
+        <summary>memory</summary>
         <p class="concept-definition">Memory holds active code and data. Measure retained objects, buffers, and peak allocation, not just average usage.</p>
-      </article><article class="concept-card" data-subtopic="I/O">
-        <span>03</span>
-        <h3>I/O</h3>
+      </details><details class="concept-card" data-subtopic="I/O">
+        <summary>I/O</summary>
         <p class="concept-definition">Input/output moves data between a process and external devices or systems. Waiting for I/O differs from consuming CPU.</p>
-      </article><article class="concept-card" data-subtopic="checkpoints">
-        <span>04</span>
-        <h3>checkpoints</h3>
+      </details><details class="concept-card" data-subtopic="checkpoints">
+        <summary>checkpoints</summary>
         <p class="concept-definition">Checkpoints establish recovery progress by coordinating dirty-page persistence and WAL recovery boundaries.</p>
-      </article><article class="concept-card" data-subtopic="work_mem">
-        <span>05</span>
-        <h3>work_mem</h3>
+      </details><details class="concept-card" data-subtopic="work_mem">
+        <summary>work_mem</summary>
         <p class="concept-definition">work_mem influences memory available to individual query operations, so concurrent operations can multiply total usage.</p>
-      </article><article class="concept-card" data-subtopic="cache">
-        <span>06</span>
-        <h3>cache</h3>
+      </details><details class="concept-card" data-subtopic="cache">
+        <summary>cache</summary>
         <p class="concept-definition">Database caching reuses pages or results at different layers; warm-cache behavior can hide storage costs.</p>
-      </article><article class="concept-card" data-subtopic="capacity testing">
-        <span>07</span>
-        <h3>capacity testing</h3>
+      </details><details class="concept-card" data-subtopic="capacity testing">
+        <summary>capacity testing</summary>
         <p class="concept-definition">Load testing applies a defined workload and checks latency, errors, saturation, and recovery rather than only maximum throughput.</p>
-      </article>
+      </details>
     </div>
   </section>
 

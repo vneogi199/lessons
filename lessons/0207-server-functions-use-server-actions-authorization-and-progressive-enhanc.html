@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#react">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0207" data-bespoke-example="0207" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Authorize the project after validating the form</figcaption>
+<p>Suppose the session user is u1 and the requested project belongs to u2. The form fields are otherwise valid.</p>
+<div class="foundation-grid"><div>Session<br>Authenticated u1</div><div>Parsed form<br>Valid project ID</div><div>Ownership check<br>u2 differs from u1<br>Return Not found<br>No update</div></div>
+<details><summary>Does use server make every caller authorized?</summary><p>No. The function still checks the session and ownership before writing.</p></details>
+<details><summary>Does passing requestId prove retries are deduplicated?</summary><p>No. The database adapter must enforce the intended idempotency contract. This call site only passes the key.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Treat a Server Function as a network mutation that callers can reach. Validate a narrow input contract, authenticate the caller and authorize the actual write. A separate ownership read can become stale before a later write, so the database operation must enforce the required permission boundary. Supplying an idempotency key does not by itself create durable replay behavior. Verify progressive enhancement in the actual framework and form setup.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a render and commit cycle</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="react-server-client" aria-label="Mechanism trace: A route or action reaches the server then React produces server output then Serializable data crosses then The browser resumes interaction. Experiment: Move one value across the server/client boundary and predict whether serialization succeeds.">
-        <li class="trace-stage"><span>01 · REQUEST</span><strong>A route or action reaches the server</strong><small>Authenticate and load server-owned data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVER</span><strong>React produces server output</strong><small>Render HTML or a serialized component/action result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BOUNDARY</span><strong>Serializable data crosses</strong><small>Code and non-serializable values stay on their side.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLIENT</span><strong>The browser resumes interaction</strong><small>Hydration or a client update makes behavior observable.</small></li>
+        <li class="trace-stage"><span>01 · REQUEST</span><details class="trace-explanation" open><summary>A route or action reaches the server</summary><p>Authenticate and load server-owned data.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVER</span><details class="trace-explanation"><summary>React produces server output</summary><p>Render HTML or a serialized component/action result.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BOUNDARY</span><details class="trace-explanation"><summary>Serializable data crosses</summary><p>Code and non-serializable values stay on their side.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLIENT</span><details class="trace-explanation"><summary>The browser resumes interaction</summary><p>Hydration or a client update makes behavior observable.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Move one value across the server/client boundary and predict whether serialization succeeds.</strong>
-        <small><b>Inspect:</b> Server logs, payload shape, hydration warnings, bundle size, and interactive behavior.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Server logs, payload shape, hydration warnings, bundle size, and interactive behavior.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Server Functions">
-        <span>01</span>
-        <h3>Server Functions</h3>
+      <details class="concept-card" data-subtopic="Server Functions">
+        <summary>Server Functions</summary>
         <p class="concept-definition">A Server Function is an async function that client-side React can ask the server to run. Treat it like a public network mutation: validate its arguments, authenticate the caller, authorize the action, and handle failure.</p>
-      </article><article class="concept-card" data-subtopic="use server">
-        <span>02</span>
-        <h3>use server</h3>
+      </details><details class="concept-card" data-subtopic="use server">
+        <summary>use server</summary>
         <p class="concept-definition">The use server directive identifies supported server functions in an integrated environment; it does not replace authentication or authorization.</p>
-      </article><article class="concept-card" data-subtopic="actions">
-        <span>03</span>
-        <h3>actions</h3>
+      </details><details class="concept-card" data-subtopic="actions">
+        <summary>actions</summary>
         <p class="concept-definition">Actions are deliberate operations that change state or produce effects. Identify who owns them and whether they can be safely repeated.</p>
-      </article><article class="concept-card" data-subtopic="authorization">
-        <span>04</span>
-        <h3>authorization</h3>
+      </details><details class="concept-card" data-subtopic="authorization">
+        <summary>authorization</summary>
         <p class="concept-definition">Authorization decides whether the authenticated user may perform a server operation on a particular resource. A Server Function must enforce this itself; hiding a client button is insufficient.</p>
-      </article><article class="concept-card" data-subtopic="progressive enhancement">
-        <span>05</span>
-        <h3>progressive enhancement</h3>
+      </details><details class="concept-card" data-subtopic="progressive enhancement">
+        <summary>progressive enhancement</summary>
         <p class="concept-definition">Progressive enhancement preserves useful baseline browser behavior while adding richer client capabilities.</p>
-      </article>
+      </details>
     </div>
   </section>
 

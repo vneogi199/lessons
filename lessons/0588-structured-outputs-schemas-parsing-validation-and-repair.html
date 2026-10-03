@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#ai-application-engineering">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0588" data-bespoke-example="0588" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Correct JSON can still request an unauthorized entity</figcaption><p>The fixture expects a small object containing an entity ID.</p><div class="foundation-grid"><div>Broken JSON<br>Parser rejects</div><div>Wrong object shape<br>Schema rejects</div><div>Correct shape, forbidden ID<br>Authorization rejects</div></div><details><summary>Does schema compliance grant access to that entity?</summary><p>No. Validate business constraints and authority separately.</p></details><details><summary>Should parsing repair continue without a limit?</summary><p>No. Bound repair attempts and output size. Never let repaired model fields become trusted authority.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Parsing checks whether output follows a grammar. Schema validation checks its shape, and domain validation checks whether the values are usable. A valid entity ID can still refer to an unauthorized resource. Handle refusal and incomplete output before ordinary success. Bound repair attempts and use a defined fallback when a correction cannot establish the required contract.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a model request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="model-request" aria-label="Mechanism trace: Application builds model input then Request crosses an API boundary then Output is parsed and checked then Product publishes or executes. Experiment: Return malformed or delayed model output and verify the product fails safely.">
-        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Application builds model input</strong><small>Instructions, messages, schemas, and permissions are explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PROVIDER</span><strong>Request crosses an API boundary</strong><small>Rate limits, latency, caching, and failure modes apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Output is parsed and checked</strong><small>Schema, policy, and grounding decide whether it is usable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ACT</span><strong>Product publishes or executes</strong><small>Fallbacks and observability control user-visible impact.</small></li>
+        <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Application builds model input</summary><p>Instructions, messages, schemas, and permissions are explicit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PROVIDER</span><details class="trace-explanation"><summary>Request crosses an API boundary</summary><p>Rate limits, latency, caching, and failure modes apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><details class="trace-explanation"><summary>Output is parsed and checked</summary><p>Schema, policy, and grounding decide whether it is usable.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ACT</span><details class="trace-explanation"><summary>Product publishes or executes</summary><p>Fallbacks and observability control user-visible impact.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Return malformed or delayed model output and verify the product fails safely.</strong>
-        <small><b>Inspect:</b> Request version, raw response, parse error, retry/fallback, latency, cost, and final action.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Request version, raw response, parse error, retry/fallback, latency, cost, and final action.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Structured outputs">
-        <span>01</span>
-        <h3>Structured outputs</h3>
+      <details class="concept-card" data-subtopic="Structured outputs">
+        <summary>Structured outputs</summary>
         <p class="concept-definition">Structured outputs require model output to follow a machine-readable shape such as a JSON schema.</p>
-      </article><article class="concept-card" data-subtopic="schemas">
-        <span>02</span>
-        <h3>schemas</h3>
+      </details><details class="concept-card" data-subtopic="schemas">
+        <summary>schemas</summary>
         <p class="concept-definition">A schema defines allowed fields, types, required values, and structural constraints for data.</p>
-      </article><article class="concept-card" data-subtopic="parsing">
-        <span>03</span>
-        <h3>parsing</h3>
+      </details><details class="concept-card" data-subtopic="parsing">
+        <summary>parsing</summary>
         <p class="concept-definition">Parsing converts model output text or bytes into a structured value according to grammar rules.</p>
-      </article><article class="concept-card" data-subtopic="validation">
-        <span>04</span>
-        <h3>validation</h3>
+      </details><details class="concept-card" data-subtopic="validation">
+        <summary>validation</summary>
         <p class="concept-definition">Validation checks whether a parsed value follows the required schema and domain rules.</p>
-      </article><article class="concept-card" data-subtopic="repair">
-        <span>05</span>
-        <h3>repair</h3>
+      </details><details class="concept-card" data-subtopic="repair">
+        <summary>repair</summary>
         <p class="concept-definition">Repair handles invalid output through a bounded correction step, a retry, or a deterministic fallback.</p>
-      </article>
+      </details>
     </div>
   </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/ai-data-extensions.html#pydantic-ai">Pydantic AI: typed outputs, dependencies and testing</a></li><li><a href="../reference/retrieval-document-labs.html#typed-output">Nested schemas, discriminated unions and validation</a></li></ul></section>

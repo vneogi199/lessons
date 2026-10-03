@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0131" data-bespoke-example="0131" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A public type does not remove a private field</figcaption>
+<p>The internal object has name Ada and admin true. A second variable refers to it with the PublicProfile type.</p>
+<div class="foundation-grid"><div>internal<br>name: Ada<br>admin: true</div><div>publicView<br>Same object<br>JSON still contains admin</div><div>Explicit projection<br>New object<br>name: Ada only</div></div>
+<details><summary>Why can the variable pass when a fresh literal with admin is rejected?</summary><p>The fresh literal receives an excess-property check. Structural compatibility still permits the existing object because it has the required string name.</p></details>
+<details><summary>Does the strict input parser accept the internal object?</summary><p>No. Its unknown-key check rejects admin. Runtime validation and explicit response projection serve different purposes: one controls accepted input, and the other controls exported fields.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Structural compatibility asks whether the source supplies the target&#039;s required members with compatible types, not whether both objects have identical keys. Fresh object literals receive additional excess-property checks. Assigning a stored object or using satisfies does not strip fields or validate runtime input. Explicit projection controls response fields; a runtime parser enforces an incoming unknown-field policy.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-structural-boundary" aria-label="Mechanism trace: Compare required members then Fresh literals get an extra check then Select public response fields then Enforce the incoming contract. Experiment: Should a write endpoint reject unknown fields while a reader tolerates additions? Explain typo detection, compatibility, and rollout consequences before choosing a policy.">
-        <li class="trace-stage"><span>01 · CHECK</span><strong>Compare required members</strong><small>A stored object with a string name satisfies PublicProfile even if it also has admin.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DISTINGUISH</span><strong>Fresh literals get an extra check</strong><small>Passing the literal directly catches its unexpected admin key; storing it first does not remove the key.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROJECT</span><strong>Select public response fields</strong><small>Annotations and satisfies leave the original object unchanged. Build a new object to omit private fields.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VALIDATE</span><strong>Enforce the incoming contract</strong><small>The parser rejects unknown keys and wrong shapes at runtime; authorization remains a separate responsibility.</small></li>
+        <li class="trace-stage"><span>01 · CHECK</span><details class="trace-explanation" open><summary>Compare required members</summary><p>A stored object with a string name satisfies PublicProfile even if it also has admin.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DISTINGUISH</span><details class="trace-explanation"><summary>Fresh literals get an extra check</summary><p>Passing the literal directly catches its unexpected admin key; storing it first does not remove the key.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROJECT</span><details class="trace-explanation"><summary>Select public response fields</summary><p>Annotations and satisfies leave the original object unchanged. Build a new object to omit private fields.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VALIDATE</span><details class="trace-explanation"><summary>Enforce the incoming contract</summary><p>The parser rejects unknown keys and wrong shapes at runtime; authorization remains a separate responsibility.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Should a write endpoint reject unknown fields while a reader tolerates additions? Explain typo detection, compatibility, and rollout consequences before choosing a policy.</strong>
-        <small><b>Inspect:</b> Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Assignability">
-        <span>01</span>
-        <h3>Assignability</h3>
+      <details class="concept-card" data-subtopic="Assignability">
+        <summary>Assignability</summary>
         <p class="concept-definition">Assignability asks whether a source type can safely be used where a target type is expected under TypeScript&#039;s compatibility rules.</p>
-      </article><article class="concept-card" data-subtopic="structural compatibility">
-        <span>02</span>
-        <h3>structural compatibility</h3>
+      </details><details class="concept-card" data-subtopic="structural compatibility">
+        <summary>structural compatibility</summary>
         <p class="concept-definition">Compatibility depends on members, not a shared declared name. An object with a string name can satisfy {name: string} while carrying extra fields. This does not remove those fields, and class private or protected members introduce additional compatibility rules.</p>
-      </article><article class="concept-card" data-subtopic="freshness">
-        <span>03</span>
-        <h3>freshness</h3>
+      </details><details class="concept-card" data-subtopic="freshness">
+        <summary>freshness</summary>
         <p class="concept-definition">Freshness is the temporary exactness-like check applied to newly written object literals, which catches likely misspelled or unintended excess properties.</p>
-      </article><article class="concept-card" data-subtopic="excess property checks">
-        <span>04</span>
-        <h3>excess property checks</h3>
+      </details><details class="concept-card" data-subtopic="excess property checks">
+        <summary>excess property checks</summary>
         <p class="concept-definition">An excess property check rejects unexpected keys on a fresh object literal. It does not turn TypeScript object types into exact closed schemas.</p>
-      </article><article class="concept-card" data-subtopic="open object types">
-        <span>05</span>
-        <h3>open object types</h3>
+      </details><details class="concept-card" data-subtopic="open object types">
+        <summary>open object types</summary>
         <p class="concept-definition">An object type usually describes required structure, not an exact list of runtime keys. Extra fields can survive assignment and serialization. Fresh-literal excess-property checks catch likely mistakes; use explicit projection or runtime validation when the boundary needs an exact field policy.</p>
-      </article>
+      </details>
     </div>
   </section>
 

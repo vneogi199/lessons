@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0162" data-bespoke-example="0162" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Test the accepted inputs and the actual result</figcaption>
+<p>The first function receives the readonly pair [1, 2]. Its contract requires at least one item.</p>
+<div class="foundation-grid"><div>Positive type check<br>Result type is 1 or 2</div><div>Negative type check<br>Empty tuple must be rejected</div><div>Runtime check<br>Returned value must equal 1</div></div>
+<details><summary>Could a function returning 2 pass the stated result-type check?</summary><p>Yes. The type permits either literal. The runtime assertion checks the stronger promise that the function returns the first item.</p></details>
+<details><summary>What if a later signature starts accepting empty arrays?</summary><p>The expected-error directive becomes unused and the type check fails. It protects the rejected-input contract.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Type tests check accepted and rejected programs. Runtime tests check the behavior of executed code. Both matter at an API boundary. An unused ts-expect-error catches the loss of an expected rejection, but the directive does not identify which error occurred. Keep the negative example narrow so an unrelated diagnostic cannot make it pass. Test published declarations from a consumer as well as local source.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-contract-test" aria-label="Mechanism trace: Contract states accepted and rejected use then Compiler evaluates assignability then JavaScript exercises real behavior then A change must satisfy both suites. Experiment: Change the API so one negative type test becomes valid and verify the test suite catches it.">
-        <li class="trace-stage"><span>01 · EXPECT</span><strong>Contract states accepted and rejected use</strong><small>Positive and negative examples define the public relationship.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECK</span><strong>Compiler evaluates assignability</strong><small>Expected errors and type equalities verify static behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><strong>JavaScript exercises real behavior</strong><small>Boundary, success, failure, and cleanup tests verify runtime behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REGRESS</span><strong>A change must satisfy both suites</strong><small>Declarations and implementation cannot drift silently.</small></li>
+        <li class="trace-stage"><span>01 · EXPECT</span><details class="trace-explanation" open><summary>Contract states accepted and rejected use</summary><p>Positive and negative examples define the public relationship.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECK</span><details class="trace-explanation"><summary>Compiler evaluates assignability</summary><p>Expected errors and type equalities verify static behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><details class="trace-explanation"><summary>JavaScript exercises real behavior</summary><p>Boundary, success, failure, and cleanup tests verify runtime behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REGRESS</span><details class="trace-explanation"><summary>A change must satisfy both suites</summary><p>Declarations and implementation cannot drift silently.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change the API so one negative type test becomes valid and verify the test suite catches it.</strong>
-        <small><b>Inspect:</b> ts-expect-error status, type assertions, emitted code, runtime assertions, and consumer declarations.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> ts-expect-error status, type assertions, emitted code, runtime assertions, and consumer declarations.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Type testing">
-        <span>01</span>
-        <h3>Type testing</h3>
+      <details class="concept-card" data-subtopic="Type testing">
+        <summary>Type testing</summary>
         <p class="concept-definition">Type testing compiles examples expected to succeed or fail and asserts inferred relationships. It complements but cannot replace runtime behavior tests.</p>
-      </article><article class="concept-card" data-subtopic="ts-expect-error">
-        <span>02</span>
-        <h3>ts-expect-error</h3>
+      </details><details class="concept-card" data-subtopic="ts-expect-error">
+        <summary>ts-expect-error</summary>
         <p class="concept-definition">ts-expect-error requires the next line to produce a diagnostic and itself fails when the expected error disappears, making negative type behavior testable.</p>
-      </article><article class="concept-card" data-subtopic="assignability assertions">
-        <span>03</span>
-        <h3>assignability assertions</h3>
+      </details><details class="concept-card" data-subtopic="assignability assertions">
+        <summary>assignability assertions</summary>
         <p class="concept-definition">Assignability asks whether a source type can safely be used where a target type is expected under TypeScript&#039;s compatibility rules.</p>
-      </article><article class="concept-card" data-subtopic="declaration tests">
-        <span>04</span>
-        <h3>declaration tests</h3>
+      </details><details class="concept-card" data-subtopic="declaration tests">
+        <summary>declaration tests</summary>
         <p class="concept-definition">Declaration tests compile consumer examples against the published .d.ts API to check accepted and rejected usage.</p>
-      </article><article class="concept-card" data-subtopic="runtime tests">
-        <span>05</span>
-        <h3>runtime tests</h3>
+      </details><details class="concept-card" data-subtopic="runtime tests">
+        <summary>runtime tests</summary>
         <p class="concept-definition">Runtime tests execute behavior, including malformed inputs and failures. They cannot alone prove the checker rejects an invalid program.</p>
-      </article><article class="concept-card" data-subtopic="contract evidence">
-        <span>06</span>
-        <h3>contract evidence</h3>
+      </details><details class="concept-card" data-subtopic="contract evidence">
+        <summary>contract evidence</summary>
         <p class="concept-definition">Contract evidence combines accepted programs, rejected programs, runtime assertions, and deployment or consumer checks appropriate to the boundary.</p>
-      </article>
+      </details>
     </div>
   </section>
 

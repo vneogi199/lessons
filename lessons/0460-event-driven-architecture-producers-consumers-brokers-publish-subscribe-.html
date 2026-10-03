@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0460" data-bespoke-example="0460" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">One failed subscriber does not undo another</figcaption><p>Two in-memory subscribers receive event B-43. One throws. The other records the order ID.</p><div class="foundation-grid"><div>Subscriber one<br>Throws an error</div><div>Subscriber two<br>Records B-43</div><div>Publish result<br>Reports partial fan-out failure</div></div><details><summary>Does publish failure mean no subscriber ran?</summary><p>No. The successful subscriber's effect remains.</p></details><details><summary>After removing the throwing subscriber, does delivery become durable?</summary><p>No. This broker still stores subscriptions and work only in memory. It has no persistent delivery position.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Events let consumers react independently to a completed fact. A small notification may require another read; an event carrying state can update a local view directly. Choose between choreography and orchestration based on how the workflow will be understood and recovered. The in-memory dispatcher invokes all handlers, but a failed handler does not undo successful effects and a hung handler can keep the result pending.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a domain command and event</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="event-driven-workflow" aria-label="Mechanism trace: Producer commits a business event then Durable channel stores and fans out then Independent consumer applies local policy then Outcome and failure remain visible. Experiment: Publish one valid event twice, one incompatible event, and one out-of-order event while a consumer is unavailable.">
-        <li class="trace-stage"><span>01 · FACT</span><strong>Producer commits a business event</strong><small>Stable identity, type, version, subject, time, and payload express a completed fact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and fans out</strong><small>Partition, ordering, retention, delivery position, and flow control define transport behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REACT</span><strong>Independent consumer applies local policy</strong><small>Validation, authorization, idempotency, retry, and transaction ownership protect its effect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Outcome and failure remain visible</strong><small>Correlation, lag, quarantine, replay, schema governance, and business metrics support recovery.</small></li>
+        <li class="trace-stage"><span>01 · FACT</span><details class="trace-explanation" open><summary>Producer commits a business event</summary><p>Stable identity, type, version, subject, time, and payload express a completed fact.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><details class="trace-explanation"><summary>Durable channel stores and fans out</summary><p>Partition, ordering, retention, delivery position, and flow control define transport behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REACT</span><details class="trace-explanation"><summary>Independent consumer applies local policy</summary><p>Validation, authorization, idempotency, retry, and transaction ownership protect its effect.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><details class="trace-explanation"><summary>Outcome and failure remain visible</summary><p>Correlation, lag, quarantine, replay, schema governance, and business metrics support recovery.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Publish one valid event twice, one incompatible event, and one out-of-order event while a consumer is unavailable.</strong>
-        <small><b>Inspect:</b> Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.</small></details>
       </div>
     </aside>
   </div>
@@ -73,43 +76,34 @@
   <section class="concept-section" data-subtopic-count="9">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Event-driven architecture">
-        <span>01</span>
-        <h3>Event-driven architecture</h3>
+      <details class="concept-card" data-subtopic="Event-driven architecture">
+        <summary>Event-driven architecture</summary>
         <p class="concept-definition">Event-driven architecture connects producers and consumers through events about occurrences or changes. Durability, ordering and replay depend on the chosen transport and application contracts; the architectural style alone does not provide them.</p>
-      </article><article class="concept-card" data-subtopic="producers">
-        <span>02</span>
-        <h3>producers</h3>
+      </details><details class="concept-card" data-subtopic="producers">
+        <summary>producers</summary>
         <p class="concept-definition">A producer creates and publishes a message under a declared schema, key, identity, and delivery policy.</p>
-      </article><article class="concept-card" data-subtopic="consumers">
-        <span>03</span>
-        <h3>consumers</h3>
+      </details><details class="concept-card" data-subtopic="consumers">
+        <summary>consumers</summary>
         <p class="concept-definition">A consumer reads messages, validates them, applies local work, records progress, and handles retries and duplicates.</p>
-      </article><article class="concept-card" data-subtopic="brokers">
-        <span>04</span>
-        <h3>brokers</h3>
+      </details><details class="concept-card" data-subtopic="brokers">
+        <summary>brokers</summary>
         <p class="concept-definition">A broker stores or routes messages between producers and consumers and applies retention and delivery rules.</p>
-      </article><article class="concept-card" data-subtopic="publish-subscribe">
-        <span>05</span>
-        <h3>publish-subscribe</h3>
+      </details><details class="concept-card" data-subtopic="publish-subscribe">
+        <summary>publish-subscribe</summary>
         <p class="concept-definition">Publish-subscribe gives each independent subscription its own delivery or position for a publication.</p>
-      </article><article class="concept-card" data-subtopic="event notification">
-        <span>06</span>
-        <h3>event notification</h3>
+      </details><details class="concept-card" data-subtopic="event notification">
+        <summary>event notification</summary>
         <p class="concept-definition">Event notification announces that something changed and expects consumers to obtain any extra state separately.</p>
-      </article><article class="concept-card" data-subtopic="event-carried state transfer">
-        <span>07</span>
-        <h3>event-carried state transfer</h3>
+      </details><details class="concept-card" data-subtopic="event-carried state transfer">
+        <summary>event-carried state transfer</summary>
         <p class="concept-definition">Event-carried state transfer includes enough changed state for consumers to update a local view without calling the producer.</p>
-      </article><article class="concept-card" data-subtopic="choreography">
-        <span>08</span>
-        <h3>choreography</h3>
+      </details><details class="concept-card" data-subtopic="choreography">
+        <summary>choreography</summary>
         <p class="concept-definition">Choreography lets services react to events without one central coordinator, which reduces central coupling but can hide the overall workflow.</p>
-      </article><article class="concept-card" data-subtopic="orchestration">
-        <span>09</span>
-        <h3>orchestration</h3>
+      </details><details class="concept-card" data-subtopic="orchestration">
+        <summary>orchestration</summary>
         <p class="concept-definition">Orchestration uses an explicit coordinator to direct steps and recovery in a multi-service workflow.</p>
-      </article>
+      </details>
     </div>
   </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/streaming-platform-practice.html#spark">PySpark and Structured Streaming windows</a></li></ul></section>

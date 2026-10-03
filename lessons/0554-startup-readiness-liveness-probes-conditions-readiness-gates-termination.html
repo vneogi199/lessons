@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#kubernetes">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0554" data-bespoke-example="0554" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Readiness failure need not restart the process</figcaption><p>The disposable app has separate readiness and liveness checks.</p><div class="foundation-grid"><div>Readiness fails<br>Not eligible for normal service traffic</div><div>Liveness remains healthy<br>No liveness-triggered restart</div><div>Liveness later fails<br>Restart can follow configured thresholds</div></div><details><summary>Should every slow database response fail liveness?</summary><p>Not automatically. That can restart every instance without fixing the dependency.</p></details><details><summary>Does removing readiness immediately finish all in-flight work?</summary><p>No. Measure draining and enforce a bounded termination policy.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Startup probes protect initialization, readiness controls normal traffic eligibility, and liveness can trigger a restart. A liveness check that depends on a shared failed database can restart healthy application processes across the fleet. During termination, preStop uses part of the same grace budget. Account for endpoint propagation and existing connections when defining bounded draining.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace Kubernetes desired state and observed behavior</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="kubernetes-api-reconcile" aria-label="Mechanism trace: Client submits desired API state then Request is authorized and stored then Controller or node agent acts then Reality is reported through the API. Experiment: Change one spec field and watch API, controller, scheduler, and node evidence.">
-        <li class="trace-stage"><span>01 · APPLY</span><strong>Client submits desired API state</strong><small>Identity, object version, spec, and field ownership enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · API SERVER</span><strong>Request is authorized and stored</strong><small>Admission, validation, conversion, etcd, and watch events apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Controller or node agent acts</strong><small>Observed state is moved toward the declared spec.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Reality is reported through the API</strong><small>Conditions, events, resources, and data-plane behavior show progress.</small></li>
+        <li class="trace-stage"><span>01 · APPLY</span><details class="trace-explanation" open><summary>Client submits desired API state</summary><p>Identity, object version, spec, and field ownership enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · API SERVER</span><details class="trace-explanation"><summary>Request is authorized and stored</summary><p>Admission, validation, conversion, etcd, and watch events apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><details class="trace-explanation"><summary>Controller or node agent acts</summary><p>Observed state is moved toward the declared spec.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><details class="trace-explanation"><summary>Reality is reported through the API</summary><p>Conditions, events, resources, and data-plane behavior show progress.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one spec field and watch API, controller, scheduler, and node evidence.</strong>
-        <small><b>Inspect:</b> Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +76,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Startup">
-        <span>01</span>
-        <h3>Startup</h3>
+      <details class="concept-card" data-subtopic="Startup">
+        <summary>Startup</summary>
         <p class="concept-definition">A startup probe allows a container to finish initialization before liveness and readiness probing begins. It is useful when startup duration differs from steady-state health.</p>
-      </article><article class="concept-card" data-subtopic="readiness">
-        <span>02</span>
-        <h3>readiness</h3>
+      </details><details class="concept-card" data-subtopic="readiness">
+        <summary>readiness</summary>
         <p class="concept-definition">Readiness indicates whether a container is ready to serve traffic. A failed readiness probe removes readiness; it does not itself restart the container.</p>
-      </article><article class="concept-card" data-subtopic="liveness probes">
-        <span>03</span>
-        <h3>liveness probes</h3>
+      </details><details class="concept-card" data-subtopic="liveness probes">
+        <summary>liveness probes</summary>
         <p class="concept-definition">A liveness probe checks whether restarting a container may recover it. Repeated failures trigger a restart; dependence on a shared failing service can create a restart storm.</p>
-      </article><article class="concept-card" data-subtopic="conditions">
-        <span>04</span>
-        <h3>conditions</h3>
+      </details><details class="concept-card" data-subtopic="conditions">
+        <summary>conditions</summary>
         <p class="concept-definition">Conditions report typed observations such as readiness, not a complete explanation of application correctness.</p>
-      </article><article class="concept-card" data-subtopic="readiness gates">
-        <span>05</span>
-        <h3>readiness gates</h3>
+      </details><details class="concept-card" data-subtopic="readiness gates">
+        <summary>readiness gates</summary>
         <p class="concept-definition">Readiness gates require additional named Pod status conditions to be true before the Pod is ready, alongside container readiness. An external controller must publish the relevant condition; missing conditions are not success.</p>
-      </article><article class="concept-card" data-subtopic="termination">
-        <span>06</span>
-        <h3>termination</h3>
+      </details><details class="concept-card" data-subtopic="termination">
+        <summary>termination</summary>
         <p class="concept-definition">Termination coordinates lifecycle hooks, signals, grace periods, and eventual forceful stopping.</p>
-      </article><article class="concept-card" data-subtopic="grace periods">
-        <span>07</span>
-        <h3>grace periods</h3>
+      </details><details class="concept-card" data-subtopic="grace periods">
+        <summary>grace periods</summary>
         <p class="concept-definition">Grace periods bound orderly termination; applications and attached work must fit within the configured time.</p>
-      </article><article class="concept-card" data-subtopic="draining">
-        <span>08</span>
-        <h3>draining</h3>
+      </details><details class="concept-card" data-subtopic="draining">
+        <summary>draining</summary>
         <p class="concept-definition">Draining stops new work and allows bounded existing work to finish or be safely released before shutdown.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A generator can hand you one item, pause, then continue when you ask for another. Its paused work keeps the local state needed to continue.</p><p>yield marks that pause. This lets you avoid building all results at once, but the suspended generator can still retain objects and resources. Resource cleanup needs a deliberate owner.</p><details><summary>Does yielding discard all local variables?</summary><p>No. The generator retains the state needed to resume.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0278" data-bespoke-example="0278" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Pause flattening at a yielded value</figcaption>
+<p>The groups are [a, b] and [c]. The caller requests one item and then closes the generator.</p>
+<div class="foundation-grid"><div>First next<br>Enter first group<br>Yield a</div><div>Suspended position<br>b and c not yet yielded</div><div>close<br>Inject GeneratorExit<br>Stop traversal</div></div>
+<details><summary>Does creating the generator eagerly build a flat list?</summary><p>No. Values are produced as the caller advances it.</p></details>
+<details><summary>How does managed_lines release its file after an early close?</summary><p>Its finally block closes the handle when execution unwinds. The caller must still manage the generator's lifecycle rather than relying on delayed collection.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Calling a generator function creates a generator without running its body. Advancing it runs the body until yield pauses execution and returns a value. The suspended frame retains local state. send and throw resume it with a value or exception, while close requests cleanup. yield from delegates this behavior to another iterator. If the generator owns a file, give it an explicit lifetime; leaving a loop does not automatically close an externally retained generator.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an iteration step</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-iteration" aria-label="Mechanism trace: A source can produce traversal then State tracks the current position then One value crosses at a time then Traversal ends explicitly. Experiment: Consume only three values from a very large source, then close it early.">
-        <li class="trace-stage"><span>01 · ITERABLE</span><strong>A source can produce traversal</strong><small>Calling iter asks for an iterator.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ITERATOR</span><strong>State tracks the current position</strong><small>The iterator is normally single-use.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NEXT / YIELD</span><strong>One value crosses at a time</strong><small>A generator frame suspends after yielding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STOP</span><strong>Traversal ends explicitly</strong><small>StopIteration, close, or an exception completes the flow.</small></li>
+        <li class="trace-stage"><span>01 · ITERABLE</span><details class="trace-explanation" open><summary>A source can produce traversal</summary><p>Calling iter asks for an iterator.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ITERATOR</span><details class="trace-explanation"><summary>State tracks the current position</summary><p>The iterator is normally single-use.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NEXT / YIELD</span><details class="trace-explanation"><summary>One value crosses at a time</summary><p>A generator frame suspends after yielding.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STOP</span><details class="trace-explanation"><summary>Traversal ends explicitly</summary><p>StopIteration, close, or an exception completes the flow.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Consume only three values from a very large source, then close it early.</strong>
-        <small><b>Inspect:</b> next calls, yielded values, generator state, cleanup log, and peak memory.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> next calls, yielded values, generator state, cleanup log, and peak memory.</small></details>
       </div>
     </aside>
   </div>
@@ -69,35 +76,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Generators">
-        <span>01</span>
-        <h3>Generators</h3>
+      <details class="concept-card" data-subtopic="Generators">
+        <summary>Generators</summary>
         <p class="concept-definition">A generator is an iterator backed by a suspended Python frame. Each next resumes execution until yield, return, or an exception.</p>
-      </article><article class="concept-card" data-subtopic="yield">
-        <span>02</span>
-        <h3>yield</h3>
+      </details><details class="concept-card" data-subtopic="yield">
+        <summary>yield</summary>
         <p class="concept-definition">yield emits a value and suspends the generator while preserving its local state and instruction position. Calling the generator function creates the generator without running its body.</p>
-      </article><article class="concept-card" data-subtopic="generator frames">
-        <span>03</span>
-        <h3>generator frames</h3>
+      </details><details class="concept-card" data-subtopic="generator frames">
+        <summary>generator frames</summary>
         <p class="concept-definition">A frame is the runtime record for one executing code block. It connects bytecode, local and global namespaces, the instruction position, and the caller frame.</p>
-      </article><article class="concept-card" data-subtopic="send">
-        <span>04</span>
-        <h3>send</h3>
+      </details><details class="concept-card" data-subtopic="send">
+        <summary>send</summary>
         <p class="concept-definition">Generator send resumes execution while supplying the value of the suspended yield expression.</p>
-      </article><article class="concept-card" data-subtopic="throw">
-        <span>05</span>
-        <h3>throw</h3>
+      </details><details class="concept-card" data-subtopic="throw">
+        <summary>throw</summary>
         <p class="concept-definition">Generator throw raises an exception at the suspension point, allowing the generator&#039;s handlers or cleanup to respond.</p>
-      </article><article class="concept-card" data-subtopic="close">
-        <span>06</span>
-        <h3>close</h3>
+      </details><details class="concept-card" data-subtopic="close">
+        <summary>close</summary>
         <p class="concept-definition">Generator close requests termination and cleanup through GeneratorExit; it is not a normal request for another item.</p>
-      </article><article class="concept-card" data-subtopic="delegation">
-        <span>07</span>
-        <h3>delegation</h3>
+      </details><details class="concept-card" data-subtopic="delegation">
+        <summary>delegation</summary>
         <p class="concept-definition">yield from delegates iteration and parts of the generator protocol to another iterable or generator.</p>
-      </article>
+      </details>
     </div>
   </section>
 

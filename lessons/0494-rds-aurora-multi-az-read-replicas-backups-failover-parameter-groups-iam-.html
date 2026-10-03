@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#cloud-aws">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0494" data-bespoke-example="0494" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Writer loss and accidental deletion need different recovery paths</figcaption><p>Compare a failed writer with a valid transaction that accidentally deletes data.</p><div class="foundation-grid"><div>Writer failure<br>Reconnect to valid writer<br>Resolve uncertain transactions</div><div>Accidental deletion<br>Replicas may contain deletion<br>Recover earlier data from backup history</div></div><details><summary>Does a read replica automatically undo the deletion?</summary><p>No. Replication can carry the same unwanted change.</p></details><details><summary>Does a connection proxy remove uncertainty about an interrupted commit?</summary><p>No. The application still needs a safe retry or reconciliation decision.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A managed database still needs query, connection and recovery decisions. Name the deployment type: a traditional Multi-AZ standby has a different role from a readable cluster replica. Replica freshness affects which reads are safe to route. A proxy can reduce connection pressure, but it cannot resolve every interrupted commit. Test failover and restoration as different recovery paths.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an AWS service request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="aws-data-request" aria-label="Mechanism trace: Workload requests data then Service checks the boundary then Managed data plane performs work then Data or a typed failure returns. Experiment: Change consistency, capacity, or failure state and predict the returned data and latency.">
-        <li class="trace-stage"><span>01 · ACCESS</span><strong>Workload requests data</strong><small>Identity, endpoint, key or query, and consistency need are explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><strong>Service checks the boundary</strong><small>Policies, encryption keys, network path, and resource state apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STORE / READ</span><strong>Managed data plane performs work</strong><small>Partitions, replicas, caches, locks, and capacity shape behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Data or a typed failure returns</strong><small>Latency, capacity, durability, and audit signals are observable.</small></li>
+        <li class="trace-stage"><span>01 · ACCESS</span><details class="trace-explanation" open><summary>Workload requests data</summary><p>Identity, endpoint, key or query, and consistency need are explicit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><details class="trace-explanation"><summary>Service checks the boundary</summary><p>Policies, encryption keys, network path, and resource state apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STORE / READ</span><details class="trace-explanation"><summary>Managed data plane performs work</summary><p>Partitions, replicas, caches, locks, and capacity shape behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><details class="trace-explanation"><summary>Data or a typed failure returns</summary><p>Latency, capacity, durability, and audit signals are observable.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change consistency, capacity, or failure state and predict the returned data and latency.</strong>
-        <small><b>Inspect:</b> Request metrics, throttles, query or key, replica state, audit event, and restored data.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Request metrics, throttles, query or key, replica state, audit event, and restored data.</small></details>
       </div>
     </aside>
   </div>
@@ -73,43 +76,34 @@
   <section class="concept-section" data-subtopic-count="9">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="RDS">
-        <span>01</span>
-        <h3>RDS</h3>
+      <details class="concept-card" data-subtopic="RDS">
+        <summary>RDS</summary>
         <p class="concept-definition">RDS manages database infrastructure tasks while the customer still owns schema, queries, connections, access, migrations, performance, and recovery verification.</p>
-      </article><article class="concept-card" data-subtopic="Aurora">
-        <span>02</span>
-        <h3>Aurora</h3>
+      </details><details class="concept-card" data-subtopic="Aurora">
+        <summary>Aurora</summary>
         <p class="concept-definition">Amazon Aurora separates database compute from managed replicated cluster storage under engine-specific contracts. Writer/reader endpoints, failover and recovery semantics differ from a conventional standalone database.</p>
-      </article><article class="concept-card" data-subtopic="Multi-AZ">
-        <span>03</span>
-        <h3>Multi-AZ</h3>
+      </details><details class="concept-card" data-subtopic="Multi-AZ">
+        <summary>Multi-AZ</summary>
         <p class="concept-definition">Multi-AZ database deployments place supported database components across zones for resilience. Traditional RDS standby instances and readable Multi-AZ cluster replicas have different roles; identify the deployment type.</p>
-      </article><article class="concept-card" data-subtopic="read replicas">
-        <span>04</span>
-        <h3>read replicas</h3>
+      </details><details class="concept-card" data-subtopic="read replicas">
+        <summary>read replicas</summary>
         <p class="concept-definition">Read replicas serve eligible read traffic with an explicit replication and freshness contract. They may lag and do not automatically preserve every session&#039;s read-your-writes behavior.</p>
-      </article><article class="concept-card" data-subtopic="backups">
-        <span>05</span>
-        <h3>backups</h3>
+      </details><details class="concept-card" data-subtopic="backups">
+        <summary>backups</summary>
         <p class="concept-definition">Backups retain recoverable database state independently of the current serving copy. Retention, encryption-key access, restore duration and validation determine practical recovery.</p>
-      </article><article class="concept-card" data-subtopic="failover">
-        <span>06</span>
-        <h3>failover</h3>
+      </details><details class="concept-card" data-subtopic="failover">
+        <summary>failover</summary>
         <p class="concept-definition">Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
-      </article><article class="concept-card" data-subtopic="parameter groups">
-        <span>07</span>
-        <h3>parameter groups</h3>
+      </details><details class="concept-card" data-subtopic="parameter groups">
+        <summary>parameter groups</summary>
         <p class="concept-definition">Database parameter groups collect engine configuration applied at instance or cluster scope. Changes may apply dynamically or require restart, so review engine/version and rollout effects.</p>
-      </article><article class="concept-card" data-subtopic="IAM auth">
-        <span>08</span>
-        <h3>IAM auth</h3>
+      </details><details class="concept-card" data-subtopic="IAM auth">
+        <summary>IAM auth</summary>
         <p class="concept-definition">IAM database authentication uses supported temporary authentication tokens to establish database connections. Database users, privileges, TLS and token generation remain configured separately from IAM permission to connect.</p>
-      </article><article class="concept-card" data-subtopic="RDS Proxy">
-        <span>09</span>
-        <h3>RDS Proxy</h3>
+      </details><details class="concept-card" data-subtopic="RDS Proxy">
+        <summary>RDS Proxy</summary>
         <p class="concept-definition">RDS Proxy manages database connection pools and supported authentication/failover behavior. Session pinning and transaction state affect multiplexing; it cannot resolve every unknown commit outcome.</p>
-      </article>
+      </details>
     </div>
   </section>
 

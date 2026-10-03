@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0447" data-bespoke-example="0447" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A newer term does not prove a matching log</figcaption><p>The candidate has term 3 and a term-3 entry at index 1. AppendEntries arrives with term 4 but claims that index 1 has term 2.</p><div class="foundation-grid"><div>Persist hard state<br>Term 4<br>Clear previous vote</div><div>Step down<br>Become follower</div><div>Compare log prefix<br>Local term 3 differs from 2<br>Reject prefix</div></div><details><summary>Should the node keep term 3 because the prefix failed?</summary><p>No. It has already learned and persisted the higher term.</p></details><details><summary>Does a matching prefix mean replication has succeeded?</summary><p>No. This starter only marks the request ready for log processing. Durable entries and commit rules still need implementation.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Raft elects at most one leader per term. Trace log replication, the current-term commitment rule and safe membership changes under a network partition.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a distributed request or message</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="raft-log-safety" aria-label="Mechanism trace: A candidate needs a majority then Followers check the preceding entry then Count replicas for a current-term entry then Replicas apply committed commands in order. Experiment: Partition five replicas into groups of two and three, then heal the partition.">
-        <li class="trace-stage"><span>01 · ELECT</span><strong>A candidate needs a majority</strong><small>Persist term and vote. Check log freshness. A term can end without a leader.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICATE</span><strong>Followers check the preceding entry</strong><small>Matching index and term anchor the prefix before durable append or conflict repair.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Count replicas for a current-term entry</strong><small>A majority storing it allows commitment of it and the preceding log.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · APPLY</span><strong>Replicas apply committed commands in order</strong><small>A higher observed term ends old leadership. External effects need separate replay controls.</small></li>
+        <li class="trace-stage"><span>01 · ELECT</span><details class="trace-explanation" open><summary>A candidate needs a majority</summary><p>Persist term and vote. Check log freshness. A term can end without a leader.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICATE</span><details class="trace-explanation"><summary>Followers check the preceding entry</summary><p>Matching index and term anchor the prefix before durable append or conflict repair.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><details class="trace-explanation"><summary>Count replicas for a current-term entry</summary><p>A majority storing it allows commitment of it and the preceding log.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · APPLY</span><details class="trace-explanation"><summary>Replicas apply committed commands in order</summary><p>A higher observed term ends old leadership. External effects need separate replay controls.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Partition five replicas into groups of two and three, then heal the partition.</strong>
-        <small><b>Inspect:</b> Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Consensus">
-        <span>01</span>
-        <h3>Consensus</h3>
+      <details class="concept-card" data-subtopic="Consensus">
+        <summary>Consensus</summary>
         <p class="concept-definition">Consensus lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</p>
-      </article><article class="concept-card" data-subtopic="replicated state machines">
-        <span>02</span>
-        <h3>replicated state machines</h3>
+      </details><details class="concept-card" data-subtopic="replicated state machines">
+        <summary>replicated state machines</summary>
         <p class="concept-definition">Replicated state machines apply an agreed command sequence to deterministic state transitions across replicas.</p>
-      </article><article class="concept-card" data-subtopic="Raft terms">
-        <span>03</span>
-        <h3>Raft terms</h3>
+      </details><details class="concept-card" data-subtopic="Raft terms">
+        <summary>Raft terms</summary>
         <p class="concept-definition">Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</p>
-      </article><article class="concept-card" data-subtopic="elections">
-        <span>04</span>
-        <h3>elections</h3>
+      </details><details class="concept-card" data-subtopic="elections">
+        <summary>elections</summary>
         <p class="concept-definition">Elections select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</p>
-      </article><article class="concept-card" data-subtopic="log replication">
-        <span>05</span>
-        <h3>log replication</h3>
+      </details><details class="concept-card" data-subtopic="log replication">
+        <summary>log replication</summary>
         <p class="concept-definition">Log replication distributes ordered records and establishes commitment under a consensus or replication protocol.</p>
-      </article><article class="concept-card" data-subtopic="safety">
-        <span>06</span>
-        <h3>safety</h3>
+      </details><details class="concept-card" data-subtopic="safety">
+        <summary>safety</summary>
         <p class="concept-definition">Distributed-systems safety means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break safety, but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#039;s guarantees.</p>
-      </article>
+      </details>
     </div>
   </section>
 

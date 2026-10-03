@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0392" data-bespoke-example="0392" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Recover pending work without assuming the old worker died</figcaption><p>Worker A reads an entry and pauses before acknowledgment. Worker B later claims it after the idle threshold.</p><div class="foundation-grid"><div>A<br>Entry pending<br>May still resume</div><div>B<br>Claims idle entry<br>May process it too</div><div>Business effect<br>Needs atomic deduplication</div></div><details><summary>Does a claim prove A can no longer act?</summary><p>No. Idle time is not proof of death.</p></details><details><summary>Can trimming remove a body whose pending reference remains?</summary><p>Yes. Choose retention from replay needs and test stalled consumers before trimming.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A consumer group records deliveries that remain pending until acknowledged. XACK removes pending status, not the stream entry or an external effect. Claiming stale work can overlap a slow original consumer, so duplicate safety must hold under that overlap. Retention can remove bodies that a consumer still needs. Define acknowledgement, replay and trimming together instead of treating the pending list as a completed-work ledger.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a stream delivery</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="redis-coordination" aria-label="Mechanism trace: Application names a cache or coordination operation then Atomic primitive changes shared state then Delay, duplicate, expiry, or outage occurs then Durable system accepts or rejects effect. Experiment: Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.">
-        <li class="trace-stage"><span>01 · INTENT</span><strong>Application names a cache or coordination operation</strong><small>Key design, event identity, owner token, TTL, and source of truth enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REDIS</span><strong>Atomic primitive changes shared state</strong><small>Entry, pending owner, lease, counter, or cached value becomes visible.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE WINDOW</span><strong>Delay, duplicate, expiry, or outage occurs</strong><small>Old owners, missed acknowledgements, stale values, and retries challenge correctness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUTHORITY</span><strong>Durable system accepts or rejects effect</strong><small>Idempotency, fencing, version, fallback, and business state close the proof.</small></li>
+        <li class="trace-stage"><span>01 · INTENT</span><details class="trace-explanation" open><summary>Application names a cache or coordination operation</summary><p>Key design, event identity, owner token, TTL, and source of truth enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REDIS</span><details class="trace-explanation"><summary>Atomic primitive changes shared state</summary><p>Entry, pending owner, lease, counter, or cached value becomes visible.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE WINDOW</span><details class="trace-explanation"><summary>Delay, duplicate, expiry, or outage occurs</summary><p>Old owners, missed acknowledgements, stale values, and retries challenge correctness.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUTHORITY</span><details class="trace-explanation"><summary>Durable system accepts or rejects effect</summary><p>Idempotency, fencing, version, fallback, and business state close the proof.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Pause one worker beyond its lease or acknowledgement window, then let another worker proceed.</strong>
-        <small><b>Inspect:</b> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Owner token, fencing value, stream PEL, delivery count, cache version, database row, and duplicate effects.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +76,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Redis Streams">
-        <span>01</span>
-        <h3>Redis Streams</h3>
+      <details class="concept-card" data-subtopic="Redis Streams">
+        <summary>Redis Streams</summary>
         <p class="concept-definition">A Redis Stream is an append-oriented sequence of ID-addressed entries. Consumer groups track delivery progress and pending ownership for retryable processing.</p>
-      </article><article class="concept-card" data-subtopic="entries">
-        <span>02</span>
-        <h3>entries</h3>
+      </details><details class="concept-card" data-subtopic="entries">
+        <summary>entries</summary>
         <p class="concept-definition">Stream entries are ordered records identified within a Redis stream, with field-value payloads.</p>
-      </article><article class="concept-card" data-subtopic="consumer groups">
-        <span>03</span>
-        <h3>consumer groups</h3>
+      </details><details class="concept-card" data-subtopic="consumer groups">
+        <summary>consumer groups</summary>
         <p class="concept-definition">Consumer groups coordinate delivery among consumers while tracking pending work separately from stream storage.</p>
-      </article><article class="concept-card" data-subtopic="pending entries">
-        <span>04</span>
-        <h3>pending entries</h3>
+      </details><details class="concept-card" data-subtopic="pending entries">
+        <summary>pending entries</summary>
         <p class="concept-definition">Pending entries have been delivered to a group consumer but not acknowledged under that group&#039;s tracking.</p>
-      </article><article class="concept-card" data-subtopic="acknowledgements">
-        <span>05</span>
-        <h3>acknowledgements</h3>
+      </details><details class="concept-card" data-subtopic="acknowledgements">
+        <summary>acknowledgements</summary>
         <p class="concept-definition">A stream acknowledgement clears group pending status; it does not itself atomically commit an external side effect.</p>
-      </article><article class="concept-card" data-subtopic="claiming">
-        <span>06</span>
-        <h3>claiming</h3>
+      </details><details class="concept-card" data-subtopic="claiming">
+        <summary>claiming</summary>
         <p class="concept-definition">Claiming transfers eligible pending work to another consumer for recovery, potentially repeating prior side effects.</p>
-      </article><article class="concept-card" data-subtopic="trimming">
-        <span>07</span>
-        <h3>trimming</h3>
+      </details><details class="concept-card" data-subtopic="trimming">
+        <summary>trimming</summary>
         <p class="concept-definition">Trimming removes stream history under a retention policy; consider pending consumers and replay requirements.</p>
-      </article><article class="concept-card" data-subtopic="idempotency">
-        <span>08</span>
-        <h3>idempotency</h3>
+      </details><details class="concept-card" data-subtopic="idempotency">
+        <summary>idempotency</summary>
         <p class="concept-definition">Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
-      </article>
+      </details>
     </div>
   </section>
 

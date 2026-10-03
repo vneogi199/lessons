@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0063" data-bespoke-example="0063" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Share CPU turns with a quantum of two</figcaption>
+<p>Both tasks are ready initially. api needs 5 units and worker needs 3. The simulation has one CPU and no I/O.</p>
+<div class="foundation-grid"><div>First round<br>api runs 2; remaining 3<br>worker runs 2; remaining 1</div><div>Second round<br>api runs 2; remaining 1<br>worker runs 1; completes</div><div>Last turn<br>api runs 1; completes</div><div>Total useful work<br>5 + 3 = 8 units</div></div>
+<details><summary>Why reject a quantum of zero?</summary><p>No task would make progress. Positive bursts and a positive quantum ensure remaining work decreases.</p></details>
+<details><summary>Does this prove a smaller quantum always improves real latency?</summary><p>No. The simulation omits context-switch cost, I/O, priorities and other CPUs. Measure the actual scheduler workload.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A process owns an execution and resource context; its threads commonly share memory. The scheduler chooses runnable work for finite CPUs, saving and restoring state as it switches execution. Those switches have direct and cache-related costs. Separate processes exchange data through IPC, with ownership and synchronization rules of their own. Concurrency permits overlapping progress, but parallel execution also needs available CPUs. Distinguish runnable work from blocked work when explaining elapsed time.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a process crossing a kernel boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="scheduler-progress" aria-label="Mechanism trace: Require positive work and quantum then Pop the next ready task then Consume at most one quantum then Keep unfinished tasks only. Experiment: What loop invariant proves termination for positive finite bursts?">
-        <li class="trace-stage"><span>01 · VALIDATE</span><strong>Require positive work and quantum</strong><small>Zero quantum cannot reduce remaining work; reject it before the loop.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SELECT</span><strong>Pop the next ready task</strong><small>The ready queue gives each runnable task a turn.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><strong>Consume at most one quantum</strong><small>Remaining work decreases by min(quantum, remaining).</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REQUEUE</span><strong>Keep unfinished tasks only</strong><small>Positive remaining work goes to the back; completed work leaves the queue.</small></li>
+        <li class="trace-stage"><span>01 · VALIDATE</span><details class="trace-explanation" open><summary>Require positive work and quantum</summary><p>Zero quantum cannot reduce remaining work; reject it before the loop.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SELECT</span><details class="trace-explanation"><summary>Pop the next ready task</summary><p>The ready queue gives each runnable task a turn.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><details class="trace-explanation"><summary>Consume at most one quantum</summary><p>Remaining work decreases by min(quantum, remaining).</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REQUEUE</span><details class="trace-explanation"><summary>Keep unfinished tasks only</summary><p>Positive remaining work goes to the back; completed work leaves the queue.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>What loop invariant proves termination for positive finite bursts?</strong>
-        <small><b>Inspect:</b> The total remaining burst decreases on every iteration; empty input yields an empty trace.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> The total remaining burst decreases on every iteration; empty input yields an empty trace.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Processes">
-        <span>01</span>
-        <h3>Processes</h3>
+      <details class="concept-card" data-subtopic="Processes">
+        <summary>Processes</summary>
         <p class="concept-definition">Processes are operating-system execution units with their own resource and address-space context; they may contain multiple threads.</p>
-      </article><article class="concept-card" data-subtopic="threads">
-        <span>02</span>
-        <h3>threads</h3>
+      </details><details class="concept-card" data-subtopic="threads">
+        <summary>threads</summary>
         <p class="concept-definition">Threads execute within a process and commonly share its memory, making concurrent access and lifetime coordination important.</p>
-      </article><article class="concept-card" data-subtopic="process control blocks">
-        <span>03</span>
-        <h3>process control blocks</h3>
+      </details><details class="concept-card" data-subtopic="process control blocks">
+        <summary>process control blocks</summary>
         <p class="concept-definition">A process control block stores kernel bookkeeping for an execution context, including scheduling and resource state.</p>
-      </article><article class="concept-card" data-subtopic="context switches">
-        <span>04</span>
-        <h3>context switches</h3>
+      </details><details class="concept-card" data-subtopic="context switches">
+        <summary>context switches</summary>
         <p class="concept-definition">A context switch saves one execution context and restores another, with direct work and possible cache-related costs.</p>
-      </article><article class="concept-card" data-subtopic="CPU scheduling">
-        <span>05</span>
-        <h3>CPU scheduling</h3>
+      </details><details class="concept-card" data-subtopic="CPU scheduling">
+        <summary>CPU scheduling</summary>
         <p class="concept-definition">CPU scheduling selects runnable work according to policy, balancing responsiveness, throughput, and fairness.</p>
-      </article><article class="concept-card" data-subtopic="IPC">
-        <span>06</span>
-        <h3>IPC</h3>
+      </details><details class="concept-card" data-subtopic="IPC">
+        <summary>IPC</summary>
         <p class="concept-definition">Inter-process communication transfers data or coordination between processes, using mechanisms such as pipes, sockets, or shared memory. Each mechanism has ownership and synchronization costs.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0450" data-bespoke-example="0450" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Route the request, then choose a healthy target</figcaption><p>In the example, an API host or a path starting with /api/ selects the API route. Within the local zone, healthy targets A and B have eight and two outstanding requests.</p><div class="foundation-grid"><div>HTTP route<br>Host or path selects API</div><div>Target selection<br>A: healthy, 8<br>B: healthy, 2<br>Choose B</div><div>Remote C: unhealthy, 0<br>Excluded despite low count</div></div><details><summary>Can an ordinary layer-4 selector inspect the HTTP path to make this choice?</summary><p>No. Path-based routing needs HTTP-aware layer-7 handling.</p></details><details><summary>What happens when no healthy local target remains?</summary><p>The supplied selector considers healthy targets in other zones. It does not make unhealthy C eligible.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A transport balancer selects a target for a connection. An HTTP balancer can inspect requests and route by host or path after the required TLS termination. Connection lifetime, retries and health checks affect both designs. The example classifies routes and prefers healthy local targets. Its path match is not host authorization, and its selector does not implement a running proxy.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a load-balanced connection and request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="load-balancer-path" aria-label="Mechanism trace: Client opens a transport connection then Balancer chooses Layer 4 or Layer 7 data then Policy chooses a healthy target then Target response returns through the path. Experiment: Hold one connection open, drain its target, fail a health check, and compare packet and HTTP evidence through L4 and L7 balancers.">
-        <li class="trace-stage"><span>01 · FLOW</span><strong>Client opens a transport connection</strong><small>Source and destination addresses, ports, protocol, TLS intent, and connection lifetime enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CLASSIFY</span><strong>Balancer chooses Layer 4 or Layer 7 data</strong><small>A transport balancer maps flows; an HTTP balancer terminates and parses requests for content routing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SELECT</span><strong>Policy chooses a healthy target</strong><small>Round robin, least work, hashing, locality, affinity, capacity, and draining constrain selection.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FORWARD</span><strong>Target response returns through the path</strong><small>Connection reuse, headers, retries, source identity, logs, metrics, and failures expose behavior.</small></li>
+        <li class="trace-stage"><span>01 · FLOW</span><details class="trace-explanation" open><summary>Client opens a transport connection</summary><p>Source and destination addresses, ports, protocol, TLS intent, and connection lifetime enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CLASSIFY</span><details class="trace-explanation"><summary>Balancer chooses Layer 4 or Layer 7 data</summary><p>A transport balancer maps flows; an HTTP balancer terminates and parses requests for content routing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SELECT</span><details class="trace-explanation"><summary>Policy chooses a healthy target</summary><p>Round robin, least work, hashing, locality, affinity, capacity, and draining constrain selection.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FORWARD</span><details class="trace-explanation"><summary>Target response returns through the path</summary><p>Connection reuse, headers, retries, source identity, logs, metrics, and failures expose behavior.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Hold one connection open, drain its target, fail a health check, and compare packet and HTTP evidence through L4 and L7 balancers.</strong>
-        <small><b>Inspect:</b> Five-tuple, connection table, TLS endpoint, HTTP route, target choice, health state, outstanding work, latency, retry, headers, and logs.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Five-tuple, connection table, TLS endpoint, HTTP route, target choice, health state, outstanding work, latency, retry, headers, and logs.</small></details>
       </div>
     </aside>
   </div>
@@ -73,47 +76,37 @@
   <section class="concept-section" data-subtopic-count="10">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Layer 4">
-        <span>01</span>
-        <h3>Layer 4</h3>
+      <details class="concept-card" data-subtopic="Layer 4">
+        <summary>Layer 4</summary>
         <p class="concept-definition">Layer-4 balancing operates primarily on transport connections rather than application request semantics.</p>
-      </article><article class="concept-card" data-subtopic="Layer 7 load balancing">
-        <span>02</span>
-        <h3>Layer 7 load balancing</h3>
+      </details><details class="concept-card" data-subtopic="Layer 7 load balancing">
+        <summary>Layer 7 load balancing</summary>
         <p class="concept-definition">Layer-7 balancing uses application information such as HTTP routes, with protocol parsing and policy costs.</p>
-      </article><article class="concept-card" data-subtopic="transport flows">
-        <span>03</span>
-        <h3>transport flows</h3>
+      </details><details class="concept-card" data-subtopic="transport flows">
+        <summary>transport flows</summary>
         <p class="concept-definition">A transport flow is a connection identified by network and transport addresses whose packets must reach a consistent backend while that connection is active.</p>
-      </article><article class="concept-card" data-subtopic="HTTP routing">
-        <span>04</span>
-        <h3>HTTP routing</h3>
+      </details><details class="concept-card" data-subtopic="HTTP routing">
+        <summary>HTTP routing</summary>
         <p class="concept-definition">HTTP routing selects a backend from application data such as host, path, method, header, or cookie after TLS is terminated where inspection is required.</p>
-      </article><article class="concept-card" data-subtopic="algorithms">
-        <span>05</span>
-        <h3>algorithms</h3>
+      </details><details class="concept-card" data-subtopic="algorithms">
+        <summary>algorithms</summary>
         <p class="concept-definition">A load-balancing algorithm selects an eligible target using rules such as round robin, least outstanding work, hashing, or weighted capacity.</p>
-      </article><article class="concept-card" data-subtopic="health checks">
-        <span>06</span>
-        <h3>health checks</h3>
+      </details><details class="concept-card" data-subtopic="health checks">
+        <summary>health checks</summary>
         <p class="concept-definition">A health check tests whether a target should receive new traffic. It must represent readiness without causing synchronized overload or hiding dependency failure.</p>
-      </article><article class="concept-card" data-subtopic="affinity">
-        <span>07</span>
-        <h3>affinity</h3>
+      </details><details class="concept-card" data-subtopic="affinity">
+        <summary>affinity</summary>
         <p class="concept-definition">Affinity attempts to keep related connections or requests on the same target, which can help local session state but creates uneven load and failover limits.</p>
-      </article><article class="concept-card" data-subtopic="TLS">
-        <span>08</span>
-        <h3>TLS</h3>
+      </details><details class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
         <p class="concept-definition">TLS placement decides where traffic is decrypted, which identity is authenticated, which routing data becomes visible, and whether encryption continues to the backend.</p>
-      </article><article class="concept-card" data-subtopic="proxies">
-        <span>09</span>
-        <h3>proxies</h3>
+      </details><details class="concept-card" data-subtopic="proxies">
+        <summary>proxies</summary>
         <p class="concept-definition">A proxy handles traffic on behalf of another endpoint. Its routing, timeout, buffering, trust, and header behavior can change the end-to-end result.</p>
-      </article><article class="concept-card" data-subtopic="failure modes">
-        <span>10</span>
-        <h3>failure modes</h3>
+      </details><details class="concept-card" data-subtopic="failure modes">
+        <summary>failure modes</summary>
         <p class="concept-definition">Load-balancer failure modes include unhealthy targets, stale health, overload, connection resets, retry amplification, uneven hashing, proxy timeout mismatch, and loss of a balancing tier.</p>
-      </article>
+      </details>
     </div>
   </section>
 

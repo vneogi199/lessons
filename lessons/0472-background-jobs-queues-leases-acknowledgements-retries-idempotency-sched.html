@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#quality-security">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0472" data-bespoke-example="0472" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">An expired attempt cannot delete a new owner's job</figcaption><p>Attempt A pauses beyond its lease. Attempt B reclaims the job with a new attempt UUID.</p><div class="foundation-grid"><div>A held old lease<br>Lease expires</div><div>B claims job<br>New owner UUID</div><div>A resumes<br>Owner predicate fails<br>No acknowledgment of B's work</div></div><details><summary>Does expiry prevent A from making an external call?</summary><p>No. A paused process can resume. Protect effects with idempotency or reconciliation separately.</p></details><details><summary>Can a retry update omit the owner check?</summary><p>No. Retry, heartbeat and dead-letter changes need the same live-owner predicate and affected-row check.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A worker claims durable work for a limited time, applies an effect and records completion. A crash can allow another worker to claim it while the first worker is still active. An attempt token protects lease settlement, but external I/O needs its own duplicate protection. The shown delay formula also leaves jitter and maximum attempts to implement. Define those limits together with shutdown and recovery.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a background job delivery</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="background-job" aria-label="Mechanism trace: Transaction makes work durable then One worker reserves delivery then Handler applies an idempotent effect then Acknowledge, retry, or dead-letter. Experiment: Crash after the business effect but before acknowledgment, wait for the lease to expire, and let another worker receive the same job.">
-        <li class="trace-stage"><span>01 · ENQUEUE</span><strong>Transaction makes work durable</strong><small>Payload reference, idempotency key, schedule, attempt budget, and trace context become a job.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LEASE</span><strong>One worker reserves delivery</strong><small>A visibility deadline or database lock prevents normal concurrent handling without guaranteeing uniqueness.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Handler applies an idempotent effect</strong><small>Heartbeats, deadlines, cancellation, and graceful shutdown manage long work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Acknowledge, retry, or dead-letter</strong><small>Crash recovery, exponential backoff, poison work, lag, and business outcome remain inspectable.</small></li>
+        <li class="trace-stage"><span>01 · ENQUEUE</span><details class="trace-explanation" open><summary>Transaction makes work durable</summary><p>Payload reference, idempotency key, schedule, attempt budget, and trace context become a job.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LEASE</span><details class="trace-explanation"><summary>One worker reserves delivery</summary><p>A visibility deadline or database lock prevents normal concurrent handling without guaranteeing uniqueness.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Handler applies an idempotent effect</summary><p>Heartbeats, deadlines, cancellation, and graceful shutdown manage long work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Acknowledge, retry, or dead-letter</summary><p>Crash recovery, exponential backoff, poison work, lag, and business outcome remain inspectable.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Crash after the business effect but before acknowledgment, wait for the lease to expire, and let another worker receive the same job.</strong>
-        <small><b>Inspect:</b> Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Job and idempotency IDs, enqueue commit, lease owner/deadline, attempts, heartbeat, business effect count, retry time, dead letter, and queue lag.</small></details>
       </div>
     </aside>
   </div>
@@ -73,43 +76,34 @@
   <section class="concept-section" data-subtopic-count="9">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Background jobs">
-        <span>01</span>
-        <h3>Background jobs</h3>
+      <details class="concept-card" data-subtopic="Background jobs">
+        <summary>Background jobs</summary>
         <p class="concept-definition">A background job is durable work executed outside the request that created it. The user-facing request stores intent, while workers process that intent later.</p>
-      </article><article class="concept-card" data-subtopic="queues">
-        <span>02</span>
-        <h3>queues</h3>
+      </details><details class="concept-card" data-subtopic="queues">
+        <summary>queues</summary>
         <p class="concept-definition">A queue stores ready work between producers and consumers, absorbs bursts, and exposes lag, delivery, retry, and dead-letter state.</p>
-      </article><article class="concept-card" data-subtopic="leases">
-        <span>03</span>
-        <h3>leases</h3>
+      </details><details class="concept-card" data-subtopic="leases">
+        <summary>leases</summary>
         <p class="concept-definition">A lease temporarily assigns a job to one worker until a deadline. If the worker disappears, expiry makes the unacknowledged job available again.</p>
-      </article><article class="concept-card" data-subtopic="acknowledgements">
-        <span>04</span>
-        <h3>acknowledgements</h3>
+      </details><details class="concept-card" data-subtopic="acknowledgements">
+        <summary>acknowledgements</summary>
         <p class="concept-definition">An acknowledgement tells the queue that processing completed and the delivery can be removed. A crash before acknowledgement normally causes redelivery.</p>
-      </article><article class="concept-card" data-subtopic="retries">
-        <span>05</span>
-        <h3>retries</h3>
+      </details><details class="concept-card" data-subtopic="retries">
+        <summary>retries</summary>
         <p class="concept-definition">Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
-      </article><article class="concept-card" data-subtopic="idempotency">
-        <span>06</span>
-        <h3>idempotency</h3>
+      </details><details class="concept-card" data-subtopic="idempotency">
+        <summary>idempotency</summary>
         <p class="concept-definition">Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
-      </article><article class="concept-card" data-subtopic="scheduling">
-        <span>07</span>
-        <h3>scheduling</h3>
+      </details><details class="concept-card" data-subtopic="scheduling">
+        <summary>scheduling</summary>
         <p class="concept-definition">Job scheduling makes work eligible at a future time while preserving durable identity, cancellation, and behavior after downtime.</p>
-      </article><article class="concept-card" data-subtopic="dead letters">
-        <span>08</span>
-        <h3>dead letters</h3>
+      </details><details class="concept-card" data-subtopic="dead letters">
+        <summary>dead letters</summary>
         <p class="concept-definition">A dead-letter store isolates jobs that exhausted attempts or cannot succeed, preserving error context for inspection, repair, replay, or deliberate discard.</p>
-      </article><article class="concept-card" data-subtopic="worker shutdown">
-        <span>09</span>
-        <h3>worker shutdown</h3>
+      </details><details class="concept-card" data-subtopic="worker shutdown">
+        <summary>worker shutdown</summary>
         <p class="concept-definition">Worker shutdown stops claiming new jobs, gives in-flight work a deadline to finish, and safely releases or lets leases expire before the process exits.</p>
-      </article>
+      </details>
     </div>
   </section>
 

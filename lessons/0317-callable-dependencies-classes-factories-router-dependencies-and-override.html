@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0317" data-bespoke-example="0317" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reuse a configured write-scope check</figcaption><p>can_write stores the required scope projects:write.</p><div class="foundation-grid"><div>Principal has projects:read only<br>Missing write scope<br>403</div><div>Principal has projects:write<br>Return principal<br>Continue dependency resolution</div></div><details><summary>Does creating RequiresScope authenticate anyone?</summary><p>No. It configures a callable. PrincipalDep supplies the authenticated principal when the dependency runs.</p></details><details><summary>Should a fake-principal override remain after a test?</summary><p>No. Restore overrides so later tests do not accidentally bypass real dependencies.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A configured callable can carry dependency policy, such as a required scope, without storing mutable request identity. Decorator dependencies run checks even when the endpoint does not receive their return value. Test overrides use the original callable as a key. Creating an equivalent-looking callable may create a different key, and overrides must be restored afterward. Choose placement so shared behavior remains visible to maintainers.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a dependency lifetime</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="fastapi-dependencies" aria-label="Mechanism trace: Endpoint declares requirements then FastAPI solves prerequisites then Values are acquired and cached then Yield resources close in reverse. Experiment: Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.">
-        <li class="trace-stage"><span>01 · SIGNATURE</span><strong>Endpoint declares requirements</strong><small>Annotated parameters identify dependency callables.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GRAPH</span><strong>FastAPI solves prerequisites</strong><small>Sub-dependencies are ordered before their consumers.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REQUEST SCOPE</span><strong>Values are acquired and cached</strong><small>Each node normally runs once for this request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · UNWIND</span><strong>Yield resources close in reverse</strong><small>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</small></li>
+        <li class="trace-stage"><span>01 · SIGNATURE</span><details class="trace-explanation" open><summary>Endpoint declares requirements</summary><p>Annotated parameters identify dependency callables.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GRAPH</span><details class="trace-explanation"><summary>FastAPI solves prerequisites</summary><p>Sub-dependencies are ordered before their consumers.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REQUEST SCOPE</span><details class="trace-explanation"><summary>Values are acquired and cached</summary><p>Each node normally runs once for this request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · UNWIND</span><details class="trace-explanation"><summary>Yield resources close in reverse</summary><p>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.</strong>
-        <small><b>Inspect:</b> Dependency call log, cache reuse, exception path, and resource-close events.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Dependency call log, cache reuse, exception path, and resource-close events.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Callable dependencies">
-        <span>01</span>
-        <h3>Callable dependencies</h3>
+      <details class="concept-card" data-subtopic="Callable dependencies">
+        <summary>Callable dependencies</summary>
         <p class="concept-definition">A callable dependency is a function or object that FastAPI calls to produce a value for another dependency or endpoint.</p>
-      </article><article class="concept-card" data-subtopic="classes">
-        <span>02</span>
-        <h3>classes</h3>
+      </details><details class="concept-card" data-subtopic="classes">
+        <summary>classes</summary>
         <p class="concept-definition">A dependency class stores configuration or state and uses its constructor or call method as part of dependency resolution.</p>
-      </article><article class="concept-card" data-subtopic="factories">
-        <span>03</span>
-        <h3>factories</h3>
+      </details><details class="concept-card" data-subtopic="factories">
+        <summary>factories</summary>
         <p class="concept-definition">A dependency factory creates and returns a configured dependency callable.</p>
-      </article><article class="concept-card" data-subtopic="router dependencies">
-        <span>04</span>
-        <h3>router dependencies</h3>
+      </details><details class="concept-card" data-subtopic="router dependencies">
+        <summary>router dependencies</summary>
         <p class="concept-definition">Router dependencies apply shared dependency checks or side effects to every operation included in a router.</p>
-      </article><article class="concept-card" data-subtopic="overrides">
-        <span>05</span>
-        <h3>overrides</h3>
+      </details><details class="concept-card" data-subtopic="overrides">
+        <summary>overrides</summary>
         <p class="concept-definition">A dependency override replaces a registered dependency with another callable, usually for tests or controlled application composition.</p>
-      </article>
+      </details>
     </div>
   </section>
 

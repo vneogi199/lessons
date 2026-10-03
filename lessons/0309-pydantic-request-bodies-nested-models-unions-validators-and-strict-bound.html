@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0309" data-bespoke-example="0309" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Check the order total after checking its fields</figcaption>
+<p>Assume a valid payment object. Compare quantity 100 with two integer unit prices.</p>
+<div class="foundation-grid"><div>100 × 100,000 cents<br>Total: 10,000,000<br>At limit<br>Pass total check</div><div>100 × 100,001 cents<br>Total: 10,000,100<br>Above limit<br>Reject</div><div>Payment kind<br>card selects token model<br>invoice selects purchase-order model</div></div>
+<details><summary>Does a valid quantity alone prove the total is allowed?</summary><p>No. The model-level validator checks the relationship between quantity and unit price.</p></details>
+<details><summary>Does the outer extra-forbid setting automatically impose that same policy on every nested model?</summary><p>No. Review each nested model's configuration. A strict boundary needs deliberate rules at every level.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A request model turns decoded input into checked values. Nested models and discriminated unions define which shapes are accepted, while validators add required rules. A parent&#039;s strict or extra-field policy does not automatically establish every separately defined nested model&#039;s policy. Set those boundaries explicitly. A validated price is still client input and must not override authoritative server pricing without a business rule permitting it.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an HTTP request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="fastapi-validation" aria-label="Mechanism trace: Untrusted HTTP values arrive then Protocol representation is decoded then Pydantic applies the schema then Endpoint receives a typed value. Experiment: Send one valid payload and three malformed boundary cases.">
-        <li class="trace-stage"><span>01 · WIRE</span><strong>Untrusted HTTP values arrive</strong><small>Path, query, headers, cookies, or body carry text and bytes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Protocol representation is decoded</strong><small>Content type and parameter source determine parsing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Pydantic applies the schema</strong><small>Conversion, constraints, and validators produce data or errors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ARGUMENT</span><strong>Endpoint receives a typed value</strong><small>Invalid input instead becomes a structured 422 response.</small></li>
+        <li class="trace-stage"><span>01 · WIRE</span><details class="trace-explanation" open><summary>Untrusted HTTP values arrive</summary><p>Path, query, headers, cookies, or body carry text and bytes.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><details class="trace-explanation"><summary>Protocol representation is decoded</summary><p>Content type and parameter source determine parsing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><details class="trace-explanation"><summary>Pydantic applies the schema</summary><p>Conversion, constraints, and validators produce data or errors.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ARGUMENT</span><details class="trace-explanation"><summary>Endpoint receives a typed value</summary><p>Invalid input instead becomes a structured 422 response.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Send one valid payload and three malformed boundary cases.</strong>
-        <small><b>Inspect:</b> Parsed types, validation error locations, status code, and generated schema.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Parsed types, validation error locations, status code, and generated schema.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Pydantic request bodies">
-        <span>01</span>
-        <h3>Pydantic request bodies</h3>
+      <details class="concept-card" data-subtopic="Pydantic request bodies">
+        <summary>Pydantic request bodies</summary>
         <p class="concept-definition">A request body is the main representation sent by a client. FastAPI parses its content type and gives the decoded value to Pydantic for validation.</p>
-      </article><article class="concept-card" data-subtopic="nested models">
-        <span>02</span>
-        <h3>nested models</h3>
+      </details><details class="concept-card" data-subtopic="nested models">
+        <summary>nested models</summary>
         <p class="concept-definition">A nested model contains another validated model as a field and represents structured data at multiple levels.</p>
-      </article><article class="concept-card" data-subtopic="unions">
-        <span>03</span>
-        <h3>unions</h3>
+      </details><details class="concept-card" data-subtopic="unions">
+        <summary>unions</summary>
         <p class="concept-definition">A union states that a value can match one of several declared types or shapes.</p>
-      </article><article class="concept-card" data-subtopic="validators">
-        <span>04</span>
-        <h3>validators</h3>
+      </details><details class="concept-card" data-subtopic="validators">
+        <summary>validators</summary>
         <p class="concept-definition">A validator runs custom checks or transformations while Pydantic creates a validated model.</p>
-      </article><article class="concept-card" data-subtopic="strict boundaries">
-        <span>05</span>
-        <h3>strict boundaries</h3>
+      </details><details class="concept-card" data-subtopic="strict boundaries">
+        <summary>strict boundaries</summary>
         <p class="concept-definition">A strict boundary rejects unexpected coercion and converts external data into an explicit trusted representation.</p>
-      </article>
+      </details>
     </div>
   </section>
 

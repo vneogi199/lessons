@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#cloud-aws">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0484" data-bespoke-example="0484" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">The response uses the client's temporary port</figcaption><p>Paper connection: client port 50000 sends to server port 443. A stateless subnet ACL blocks the return destination port 50000.</p><div class="foundation-grid"><div>Request<br>50000 → 443</div><div>Response<br>443 → 50000</div><div>Return ACL denies 50000<br>Connection cannot complete normally</div></div><details><summary>Does a stateful security group make the separate ACL stateful?</summary><p>No. Both controls must allow the required traffic under their own rules.</p></details><details><summary>Does one rejected flow-log entry prove the complete application cause?</summary><p>No. Combine filtering evidence with routes, DNS and endpoint checks.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Diagnose a failed connection from name resolution through forward and return paths. Security groups track allowed connections; stateless network ACLs must permit the return direction explicitly. A flow-log ACCEPT record shows a network observation, not a completed TLS or application exchange. Check the failing layer before widening a rule, and account for missing or delayed telemetry.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace untrusted input crossing a boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="aws-network-request" aria-label="Mechanism trace: Client selects an endpoint then Network controls admit traffic then Edge or load balancer selects target then Return traffic reaches the client. Experiment: Break one route or rule, predict the failure layer, then prove it from network evidence.">
-        <li class="trace-stage"><span>01 · NAME / ROUTE</span><strong>Client selects an endpoint</strong><small>DNS, address family, and route tables choose a path.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FILTER</span><strong>Network controls admit traffic</strong><small>Gateways, security groups, NACLs, and firewalls decide.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><strong>Edge or load balancer selects target</strong><small>Health, listener, cache, and target policy apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>Return traffic reaches the client</strong><small>State, latency, headers, and logs expose the path.</small></li>
+        <li class="trace-stage"><span>01 · NAME / ROUTE</span><details class="trace-explanation" open><summary>Client selects an endpoint</summary><p>DNS, address family, and route tables choose a path.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FILTER</span><details class="trace-explanation"><summary>Network controls admit traffic</summary><p>Gateways, security groups, NACLs, and firewalls decide.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><details class="trace-explanation"><summary>Edge or load balancer selects target</summary><p>Health, listener, cache, and target policy apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><details class="trace-explanation"><summary>Return traffic reaches the client</summary><p>State, latency, headers, and logs expose the path.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Break one route or rule, predict the failure layer, then prove it from network evidence.</strong>
-        <small><b>Inspect:</b> DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Security groups">
-        <span>01</span>
-        <h3>Security groups</h3>
+      <details class="concept-card" data-subtopic="Security groups">
+        <summary>Security groups</summary>
         <p class="concept-definition">A security group is a stateful allow-list attached to network interfaces. Return traffic for an allowed connection is recognized automatically.</p>
-      </article><article class="concept-card" data-subtopic="network ACLs">
-        <span>02</span>
-        <h3>network ACLs</h3>
+      </details><details class="concept-card" data-subtopic="network ACLs">
+        <summary>network ACLs</summary>
         <p class="concept-definition">A network ACL is a stateless ordered allow-and-deny filter at the subnet boundary. Both directions and ephemeral ports must be modeled.</p>
-      </article><article class="concept-card" data-subtopic="Network Firewall">
-        <span>03</span>
-        <h3>Network Firewall</h3>
+      </details><details class="concept-card" data-subtopic="Network Firewall">
+        <summary>Network Firewall</summary>
         <p class="concept-definition">AWS Network Firewall applies configured network inspection rules to traffic routed through its endpoints. Correct routing and stateful path symmetry matter; creating a firewall does not automatically inspect every VPC packet.</p>
-      </article><article class="concept-card" data-subtopic="DNS Resolver">
-        <span>04</span>
-        <h3>DNS Resolver</h3>
+      </details><details class="concept-card" data-subtopic="DNS Resolver">
+        <summary>DNS Resolver</summary>
         <p class="concept-definition">The VPC DNS resolver resolves names under VPC settings and private hosted-zone associations. Resolver endpoints and rules support hybrid DNS; name resolution and IP reachability are separate checks.</p>
-      </article><article class="concept-card" data-subtopic="VPC Flow Logs">
-        <span>05</span>
-        <h3>VPC Flow Logs</h3>
+      </details><details class="concept-card" data-subtopic="VPC Flow Logs">
+        <summary>VPC Flow Logs</summary>
         <p class="concept-definition">VPC Flow Logs record supported IP traffic metadata and accept/reject observations. They are not packet payload captures, do not cover every traffic type, and require configured delivery and retention.</p>
-      </article><article class="concept-card" data-subtopic="packet diagnosis">
-        <span>06</span>
-        <h3>packet diagnosis</h3>
+      </details><details class="concept-card" data-subtopic="packet diagnosis">
+        <summary>packet diagnosis</summary>
         <p class="concept-definition">Packet diagnosis follows DNS, address family, forward and return routes, filters, transport handshake and application response. Use evidence from the failing layer before changing rules.</p>
-      </article>
+      </details>
     </div>
   </section>
 

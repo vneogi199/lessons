@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#react">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0203" data-bespoke-example="0203" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A render proposal can be replaced before commit</figcaption>
+<p>Practice fixture: a non-urgent results update is in progress when the user types another character.</p>
+<div class="foundation-grid"><div>Results proposal A<br>Render work in progress</div><div>Urgent input update B<br>New work needs attention</div><div>Committed UI<br>Inspect the actual displayed state<br>Do not infer it from render logs alone</div></div>
+<details><summary>Can a log inside render prove that version appeared on screen?</summary><p>No. Render work can be restarted or discarded before commit.</p></details>
+<details><summary>Should the exercise assert an exact number of render calls?</summary><p>No. Observe committed behavior and correctness. Fiber scheduling details do not promise one render per update.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A fiber records React&#039;s work for a component or host element. Render work calculates a candidate tree and can pause, restart or be abandoned. Commit applies the accepted host changes without time-slicing that commit. Keep render free of external effects because a proposed tree may never reach the screen. Fiber fields and lane numbers explain an implementation; they are not stable application APIs or database rollback guarantees.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a render and commit cycle</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="react-render" aria-label="Mechanism trace: Props, state, and context then Components return elements then Fiber work compares trees then React updates the host UI. Experiment: Change one input or key and predict which component state is preserved.">
-        <li class="trace-stage"><span>01 · INPUT</span><strong>Props, state, and context</strong><small>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RENDER</span><strong>Components return elements</strong><small>Pure functions describe the next interface tree.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Fiber work compares trees</strong><small>Type, position, and key decide preservation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>React updates the host UI</strong><small>DOM changes, refs, and commit effects become visible.</small></li>
+        <li class="trace-stage"><span>01 · INPUT</span><details class="trace-explanation" open><summary>Props, state, and context</summary><p>Treat each render&#039;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RENDER</span><details class="trace-explanation"><summary>Components return elements</summary><p>Pure functions describe the next interface tree.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><details class="trace-explanation"><summary>Fiber work compares trees</summary><p>Type, position, and key decide preservation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><details class="trace-explanation"><summary>React updates the host UI</summary><p>DOM changes, refs, and commit effects become visible.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one input or key and predict which component state is preserved.</strong>
-        <small><b>Inspect:</b> React DevTools, render count, DOM mutations, focus, and displayed state.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> React DevTools, render count, DOM mutations, focus, and displayed state.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Fiber nodes">
-        <span>01</span>
-        <h3>Fiber nodes</h3>
+      <details class="concept-card" data-subtopic="Fiber nodes">
+        <summary>Fiber nodes</summary>
         <p class="concept-definition">A fiber is React&#039;s internal work record for a component or host element. Fiber trees let React pause and resume render work while keeping DOM mutations inside an atomic commit.</p>
-      </article><article class="concept-card" data-subtopic="reconciliation">
-        <span>02</span>
-        <h3>reconciliation</h3>
+      </details><details class="concept-card" data-subtopic="reconciliation">
+        <summary>reconciliation</summary>
         <p class="concept-definition">Reconciliation compares the previous and next element descriptions and decides which fibers can be reused. Element type, position, and key guide preservation or replacement.</p>
-      </article><article class="concept-card" data-subtopic="render work">
-        <span>03</span>
-        <h3>render work</h3>
+      </details><details class="concept-card" data-subtopic="render work">
+        <summary>render work</summary>
         <p class="concept-definition">Render work computes desired UI and may be repeated or abandoned; keep it free of external side effects.</p>
-      </article><article class="concept-card" data-subtopic="commit work">
-        <span>04</span>
-        <h3>commit work</h3>
+      </details><details class="concept-card" data-subtopic="commit work">
+        <summary>commit work</summary>
         <p class="concept-definition">Commit work applies accepted changes to the host environment and coordinates relevant lifecycle work.</p>
-      </article><article class="concept-card" data-subtopic="lanes">
-        <span>05</span>
-        <h3>lanes</h3>
+      </details><details class="concept-card" data-subtopic="lanes">
+        <summary>lanes</summary>
         <p class="concept-definition">Lanes are internal priority buckets for pending React updates. They help the scheduler work on urgent updates first and defer or restart less urgent rendering.</p>
-      </article><article class="concept-card" data-subtopic="scheduling">
-        <span>06</span>
-        <h3>scheduling</h3>
+      </details><details class="concept-card" data-subtopic="scheduling">
+        <summary>scheduling</summary>
         <p class="concept-definition">Scheduling decides which ready work gets execution resources and when. Queuing and priorities affect latency and fairness.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0376" data-bespoke-example="0376" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Apply the tenant policy with a constrained runtime role</figcaption><p>The trusted application sets transaction-local tenant 42 while connected as app_runtime.</p><div class="foundation-grid"><div>Row tenant 42<br>Matches policy<br>Eligible to read</div><div>Row tenant 7<br>Does not match<br>Hidden by policy</div><div>Proposed write tenant 7<br>Fails WITH CHECK</div></div><details><summary>Should this fixture be tested as the table owner?</summary><p>No. Use the intended constrained role, without owner, superuser or BYPASSRLS privileges.</p></details><details><summary>Does the custom setting protect against a client allowed arbitrary SQL?</summary><p>No. Such a client can change it. Trusted identity assignment and SQL-injection prevention remain essential.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Connection authentication, SQL privileges and row policies protect different boundaries. A matching authentication rule does not grant every operation. Row-level security also has owner and privileged-role bypass rules, so test with the actual restricted role. A tenant setting supplied by trusted application code is not protection against arbitrary SQL access. Require appropriate transport verification alongside grants and explicit read and write policies.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace untrusted input crossing a boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="postgres-access" aria-label="Mechanism trace: Client establishes a protected connection then Server applies the matching connection rule then Role and object privileges restrict SQL then Applicable row policies constrain access. Experiment: Test the same request as runtime role and owner, then change tenant context and attempt a forbidden write.">
-        <li class="trace-stage"><span>01 · CONNECT</span><strong>Client establishes a protected connection</strong><small>TLS configuration and client certificate verification are distinct from password authentication.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><strong>Server applies the matching connection rule</strong><small>pg_hba.conf selects an authentication method; success does not grant every SQL operation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><strong>Role and object privileges restrict SQL</strong><small>Database connection, schema access, table privileges and ownership have separate effects.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FILTER</span><strong>Applicable row policies constrain access</strong><small>RLS evaluates row visibility and writes, subject to owner and privileged-role bypass rules.</small></li>
+        <li class="trace-stage"><span>01 · CONNECT</span><details class="trace-explanation" open><summary>Client establishes a protected connection</summary><p>TLS configuration and client certificate verification are distinct from password authentication.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><details class="trace-explanation"><summary>Server applies the matching connection rule</summary><p>pg_hba.conf selects an authentication method; success does not grant every SQL operation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><details class="trace-explanation"><summary>Role and object privileges restrict SQL</summary><p>Database connection, schema access, table privileges and ownership have separate effects.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FILTER</span><details class="trace-explanation"><summary>Applicable row policies constrain access</summary><p>RLS evaluates row visibility and writes, subject to owner and privileged-role bypass rules.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Test the same request as runtime role and owner, then change tenant context and attempt a forbidden write.</strong>
-        <small><b>Inspect:</b> Connection role, TLS verification settings, grants, policy definitions, returned rows and rejected writes; redact secrets.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Connection role, TLS verification settings, grants, policy definitions, returned rows and rejected writes; redact secrets.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +76,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Authentication">
-        <span>01</span>
-        <h3>Authentication</h3>
+      <details class="concept-card" data-subtopic="Authentication">
+        <summary>Authentication</summary>
         <p class="concept-definition">Authentication verifies evidence of a principal&#039;s identity. It does not by itself grant permission to every resource or action.</p>
-      </article><article class="concept-card" data-subtopic="pg_hba.conf">
-        <span>02</span>
-        <h3>pg_hba.conf</h3>
+      </details><details class="concept-card" data-subtopic="pg_hba.conf">
+        <summary>pg_hba.conf</summary>
         <p class="concept-definition">pg_hba.conf controls matching client-authentication rules; rule order and connection attributes determine the applied method.</p>
-      </article><article class="concept-card" data-subtopic="TLS">
-        <span>03</span>
-        <h3>TLS</h3>
+      </details><details class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
         <p class="concept-definition">TLS protects a connection&#039;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</p>
-      </article><article class="concept-card" data-subtopic="roles">
-        <span>04</span>
-        <h3>roles</h3>
+      </details><details class="concept-card" data-subtopic="roles">
+        <summary>roles</summary>
         <p class="concept-definition">A role is PostgreSQL&#039;s unified identity and privilege object. A role may log in, own objects, inherit memberships, or act as a permission group.</p>
-      </article><article class="concept-card" data-subtopic="privileges">
-        <span>05</span>
-        <h3>privileges</h3>
+      </details><details class="concept-card" data-subtopic="privileges">
+        <summary>privileges</summary>
         <p class="concept-definition">Permissions authorize specific operations on resources. Grant only what is needed and distinguish identity from allowed actions.</p>
-      </article><article class="concept-card" data-subtopic="default privileges">
-        <span>06</span>
-        <h3>default privileges</h3>
+      </details><details class="concept-card" data-subtopic="default privileges">
+        <summary>default privileges</summary>
         <p class="concept-definition">Default privileges govern permissions assigned to future objects created by relevant roles, not retroactively all existing objects.</p>
-      </article><article class="concept-card" data-subtopic="row-level security">
-        <span>07</span>
-        <h3>row-level security</h3>
+      </details><details class="concept-card" data-subtopic="row-level security">
+        <summary>row-level security</summary>
         <p class="concept-definition">Row-level security adds table policies that filter which rows a role may read or change. Object owners and privileged roles require special attention because they may bypass policies.</p>
-      </article>
+      </details>
     </div>
   </section>
 

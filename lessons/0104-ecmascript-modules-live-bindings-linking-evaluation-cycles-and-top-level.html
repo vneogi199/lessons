@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0104" data-bespoke-example="0104" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">An import observes the exporter's binding</figcaption>
+<p>Split the labelled code into counter.mjs and feature.mjs. The counter module exports count, initially zero.</p>
+<div class="foundation-grid"><div>counter.mjs<br>count binding: 0 → 1<br>increment changes that binding</div><div>feature.mjs<br>Imported count → live view<br>After increment(): reads 1</div></div>
+<details><summary>Was the initial zero copied into an independent imported variable?</summary><p>No. The import observes the exporter's binding. It is a read-only view for the importer.</p></details>
+<details><summary>Does this fixture establish that every cyclic module graph initializes safely?</summary><p>No. It contains no cycle. Early reads of uninitialized lexical bindings in a cycle can fail.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>An ES module is resolved and linked before evaluation. Imports are live bindings, so an exported value can change while the importer cannot reassign that binding. Cycles can expose a binding before initialization. Top-level await can delay dependent evaluation; it does not create another thread. Split the labelled module files before running the example, and add a cycle explicitly if that is the behavior you want to test.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a module import</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-modules" aria-label="Mechanism trace: Host identifies each module then The dependency graph connects then Modules execute in graph order then Importer observes live exports. Experiment: Create a two-module cycle and move one early read across initialization.">
-        <li class="trace-stage"><span>01 · RESOLVE</span><strong>Host identifies each module</strong><small>Specifiers become module records under host rules.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><strong>The dependency graph connects</strong><small>Environments and live import bindings are initialized.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>Modules execute in graph order</strong><small>Cycles and top-level await can delay or expose early reads.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Importer observes live exports</strong><small>Loaded chunks, values, or failures prove the boundary.</small></li>
+        <li class="trace-stage"><span>01 · RESOLVE</span><details class="trace-explanation" open><summary>Host identifies each module</summary><p>Specifiers become module records under host rules.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><details class="trace-explanation"><summary>The dependency graph connects</summary><p>Environments and live import bindings are initialized.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><details class="trace-explanation"><summary>Modules execute in graph order</summary><p>Cycles and top-level await can delay or expose early reads.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><details class="trace-explanation"><summary>Importer observes live exports</summary><p>Loaded chunks, values, or failures prove the boundary.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Create a two-module cycle and move one early read across initialization.</strong>
-        <small><b>Inspect:</b> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="ECMAScript modules">
-        <span>01</span>
-        <h3>ECMAScript modules</h3>
+      <details class="concept-card" data-subtopic="ECMAScript modules">
+        <summary>ECMAScript modules</summary>
         <p class="concept-definition">An ECMAScript module is parsed in strict mode, declares imports and exports, and participates in a resolved, linked, then evaluated dependency graph.</p>
-      </article><article class="concept-card" data-subtopic="live bindings">
-        <span>02</span>
-        <h3>live bindings</h3>
+      </details><details class="concept-card" data-subtopic="live bindings">
+        <summary>live bindings</summary>
         <p class="concept-definition">A live import binding reads the exporter&#039;s current binding value. The importer cannot reassign it, and it is not a one-time property copy.</p>
-      </article><article class="concept-card" data-subtopic="linking">
-        <span>03</span>
-        <h3>linking</h3>
+      </details><details class="concept-card" data-subtopic="linking">
+        <summary>linking</summary>
         <p class="concept-definition">Module linking connects imports and exports and prepares module environments before evaluation. Live bindings can exist before their values are initialized, which matters in cycles.</p>
-      </article><article class="concept-card" data-subtopic="evaluation">
-        <span>04</span>
-        <h3>evaluation</h3>
+      </details><details class="concept-card" data-subtopic="evaluation">
+        <summary>evaluation</summary>
         <p class="concept-definition">Module evaluation executes module code after linking. Dependencies, cycles, and top-level await determine when exported values become usable.</p>
-      </article><article class="concept-card" data-subtopic="cycles">
-        <span>05</span>
-        <h3>cycles</h3>
+      </details><details class="concept-card" data-subtopic="cycles">
+        <summary>cycles</summary>
         <p class="concept-definition">A module cycle occurs when dependencies eventually lead back to a module already in the graph. An early read of an uninitialized lexical export can throw even though linking succeeded.</p>
-      </article><article class="concept-card" data-subtopic="top-level await">
-        <span>06</span>
-        <h3>top-level await</h3>
+      </details><details class="concept-card" data-subtopic="top-level await">
+        <summary>top-level await</summary>
         <p class="concept-definition">Top-level await makes a module&#039;s evaluation asynchronous and can delay dependent modules. Cycles involving asynchronous evaluation require particular care.</p>
-      </article>
+      </details>
     </div>
   </section>
 

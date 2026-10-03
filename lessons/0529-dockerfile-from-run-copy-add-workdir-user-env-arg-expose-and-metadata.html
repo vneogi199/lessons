@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#docker">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0529" data-bespoke-example="0529" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Build arguments do not automatically become runtime variables</figcaption><p>The exercise declares BUILD_LABEL as ARG and APP_MODE=demo as ENV, then runs with APP_MODE=changed.</p><div class="foundation-grid"><div>Build input<br>BUILD_LABEL</div><div>Runtime environment<br>APP_MODE becomes changed</div><div>Working directory<br>/work</div></div><details><summary>Will BUILD_LABEL necessarily exist in the running process environment?</summary><p>No. ARG does not automatically create a runtime environment variable.</p></details><details><summary>Does EXPOSE publish the application port on the host?</summary><p>No. It documents a port. Port publishing is a separate runtime configuration.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Dockerfile instructions either change build output or set configuration for later execution. RUN executes during the build; CMD supplies runtime defaults. ENV persists defaults, while ARG has build-time scope. Neither is a safe place for secrets. EXPOSE documents a port without publishing it. Inspect the final user and filesystem permissions to see whether the configured process can actually run.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an image build and delivery</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="docker-image-build" aria-label="Mechanism trace: Builder receives declared inputs then BuildKit evaluates dependencies then Layers and config form a manifest then Registry and policy inspect output. Experiment: Change one dependency and predict exactly which build nodes invalidate.">
-        <li class="trace-stage"><span>01 · CONTEXT</span><strong>Builder receives declared inputs</strong><small>Dockerfile, context, base digests, args, and mounts enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD GRAPH</span><strong>BuildKit evaluates dependencies</strong><small>Cache keys decide which operations execute or reuse output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMAGE</span><strong>Layers and config form a manifest</strong><small>Content digests identify immutable platform artifacts.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Registry and policy inspect output</strong><small>SBOM, provenance, signature, scan, and test attach evidence.</small></li>
+        <li class="trace-stage"><span>01 · CONTEXT</span><details class="trace-explanation" open><summary>Builder receives declared inputs</summary><p>Dockerfile, context, base digests, args, and mounts enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD GRAPH</span><details class="trace-explanation"><summary>BuildKit evaluates dependencies</summary><p>Cache keys decide which operations execute or reuse output.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMAGE</span><details class="trace-explanation"><summary>Layers and config form a manifest</summary><p>Content digests identify immutable platform artifacts.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><details class="trace-explanation"><summary>Registry and policy inspect output</summary><p>SBOM, provenance, signature, scan, and test attach evidence.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one dependency and predict exactly which build nodes invalidate.</strong>
-        <small><b>Inspect:</b> Context size, build log, cache hits, layer history, digest, SBOM, and signature.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Context size, build log, cache hits, layer history, digest, SBOM, and signature.</small></details>
       </div>
     </aside>
   </div>
@@ -73,47 +76,37 @@
   <section class="concept-section" data-subtopic-count="10">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Dockerfile FROM">
-        <span>01</span>
-        <h3>Dockerfile FROM</h3>
+      <details class="concept-card" data-subtopic="Dockerfile FROM">
+        <summary>Dockerfile FROM</summary>
         <p class="concept-definition">FROM selects a base image or starts a build stage, establishing its initial filesystem and metadata.</p>
-      </article><article class="concept-card" data-subtopic="RUN">
-        <span>02</span>
-        <h3>RUN</h3>
+      </details><details class="concept-card" data-subtopic="RUN">
+        <summary>RUN</summary>
         <p class="concept-definition">RUN executes a build step and records resulting filesystem changes, not a command that runs on every container startup.</p>
-      </article><article class="concept-card" data-subtopic="COPY">
-        <span>03</span>
-        <h3>COPY</h3>
+      </details><details class="concept-card" data-subtopic="COPY">
+        <summary>COPY</summary>
         <p class="concept-definition">COPY adds selected build-context or stage files into an image.</p>
-      </article><article class="concept-card" data-subtopic="ADD">
-        <span>04</span>
-        <h3>ADD</h3>
+      </details><details class="concept-card" data-subtopic="ADD">
+        <summary>ADD</summary>
         <p class="concept-definition">ADD supports additional source-handling behavior beyond COPY; use it only when that behavior is intended.</p>
-      </article><article class="concept-card" data-subtopic="WORKDIR">
-        <span>05</span>
-        <h3>WORKDIR</h3>
+      </details><details class="concept-card" data-subtopic="WORKDIR">
+        <summary>WORKDIR</summary>
         <p class="concept-definition">WORKDIR sets the working directory for subsequent applicable build and runtime instructions.</p>
-      </article><article class="concept-card" data-subtopic="USER">
-        <span>06</span>
-        <h3>USER</h3>
+      </details><details class="concept-card" data-subtopic="USER">
+        <summary>USER</summary>
         <p class="concept-definition">USER selects the identity for subsequent applicable instructions and container execution; permissions must support the chosen identity.</p>
-      </article><article class="concept-card" data-subtopic="ENV">
-        <span>07</span>
-        <h3>ENV</h3>
+      </details><details class="concept-card" data-subtopic="ENV">
+        <summary>ENV</summary>
         <p class="concept-definition">ENV stores environment defaults in image configuration and is not a safe secret-storage mechanism.</p>
-      </article><article class="concept-card" data-subtopic="ARG">
-        <span>08</span>
-        <h3>ARG</h3>
+      </details><details class="concept-card" data-subtopic="ARG">
+        <summary>ARG</summary>
         <p class="concept-definition">ARG supplies build-time variables with scope rules; values may leak through build metadata or history and are not secret mounts.</p>
-      </article><article class="concept-card" data-subtopic="EXPOSE">
-        <span>09</span>
-        <h3>EXPOSE</h3>
+      </details><details class="concept-card" data-subtopic="EXPOSE">
+        <summary>EXPOSE</summary>
         <p class="concept-definition">EXPOSE documents intended listening ports; it does not publish them to the host by itself.</p>
-      </article><article class="concept-card" data-subtopic="metadata">
-        <span>10</span>
-        <h3>metadata</h3>
+      </details><details class="concept-card" data-subtopic="metadata">
+        <summary>metadata</summary>
         <p class="concept-definition">Metadata describes another object, such as identity, version, or ownership. It can affect behavior and may contain sensitive information.</p>
-      </article>
+      </details>
     </div>
   </section>
 

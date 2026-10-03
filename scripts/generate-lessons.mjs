@@ -10,6 +10,7 @@ import { POLARS_CONTENT } from "./polars-content.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
+import { BESPOKE_EXAMPLES } from "./bespoke-examples.mjs";
 const AUTHORED_CONTENT = { ...REVIEWED_CONTENT, ...POLARS_CONTENT, ...EXPLANATION_REWRITES };
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -15709,11 +15710,23 @@ function diagramStagesMarkup(diagram) {
   return diagram.stages.map((stage, index) =>
     '<li class="trace-stage">' +
       '<span>' + escapeHtml(stage.label) + '</span>' +
-      '<strong>' + escapeHtml(stage.name) + '</strong>' +
-      '<small>' + escapeHtml(stage.detail) + '</small>' +
+      '<details class="trace-explanation"' + (index === 0 ? ' open' : '') + '><summary>' + escapeHtml(stage.name) + '</summary>' +
+      '<p>' + escapeHtml(stage.detail) + '</p></details>' +
       (index < diagram.stages.length - 1 ? '<i aria-hidden="true">↓</i>' : '') +
     '</li>'
   ).join("");
+}
+
+function mechanismMapMarkup(lesson, diagram) {
+  // 0265 already has a reference-sharing map beside its worked example.
+  if (lesson.number === "0265") return "";
+  if (BESPOKE_EXAMPLES[lesson.number]) return `<figure class="card mechanism-map" data-lesson-map="${escapeHtml(lesson.number)}" data-bespoke-example="${escapeHtml(lesson.number)}" aria-labelledby="mechanism-map-caption">${BESPOKE_EXAMPLES[lesson.number]}</figure>`;
+  const names = diagram.stages.map(stage => stage.name);
+  return `<figure class="card mechanism-map" data-lesson-map="${escapeHtml(lesson.number)}" aria-labelledby="mechanism-map-caption">
+    <figcaption id="mechanism-map-caption">Map of the walkthrough</figcaption>
+    <ol style="--map-stages:${names.length}">${names.map((name, index) => `<li><span>${escapeHtml(name)}</span>${index < names.length - 1 ? '<span class="map-arrow" aria-hidden="true"></span>' : ""}</li>`).join("")}</ol>
+    <p>Arrows show the walkthrough order. The steps below explain the conditions and exceptions.</p>
+  </figure>`;
 }
 
 function diagramAriaLabel(diagram) {
@@ -17943,11 +17956,10 @@ function subtopicBreakdownMarkup(lesson) {
   return `<section class="concept-section" data-subtopic-count="${items.length}">
 
     <div class="concept-grid">
-      ${items.map((term, index) => `<article class="concept-card" data-subtopic="${escapeHtml(term)}">
-        <span>${String(index + 1).padStart(2, "0")}</span>
-        <h3>${escapeHtml(term)}</h3>
+      ${items.map((term) => `<details class="concept-card" data-subtopic="${escapeHtml(term)}">
+        <summary>${escapeHtml(term)}</summary>
         <p class="concept-definition">${escapeHtml(simpleConceptExplanation(term, lesson))}</p>
-      </article>`).join("")}
+      </details>`).join("")}
     </div>
   </section>`;
 }
@@ -18097,6 +18109,8 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -18130,7 +18144,7 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
 
   ${simpleExampleMarkup(lesson) || beginnerFoundationMarkup(lesson)}${lesson.trackId === "polars" ? '\n<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>' : ""}
 
-  ${EXPLANATION_REWRITES[lesson.number] ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>\n  ` : ""}<div class="grid">
+  ${EXPLANATION_REWRITES[lesson.number] ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>\n  ` : ""}${mechanismMapMarkup(lesson, d)}<div class="grid">
     <section class="card">
 
       <p>${escapeHtml(PYTHON_EXPLANATIONS[lesson.number] || LESSON_EXPLANATIONS[lesson.number] || profile.explanation || sentence(lesson.behind_the_scenes))}</p>
@@ -18140,13 +18154,14 @@ ${!profile.analogy || (lesson.trackId === "python" && !EXPLANATION_REWRITES[less
     <aside class="card blackboard">
 
       <h2>Trace ${escapeHtml(traceSubject)}</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="${escapeHtml(d.key)}" aria-label="${escapeHtml(diagramAriaLabel(d))}">
         ${diagramStagesMarkup(d)}
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>${escapeHtml(d.probe)}</strong>
-        <small><b>Inspect:</b> ${escapeHtml(d.evidence)}</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> ${escapeHtml(d.evidence)}</small></details>
       </div>
     </aside>
   </div>

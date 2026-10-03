@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0384" data-bespoke-example="0384" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Follow list insertion and movement direction</figcaption><p>LPUSH receives job-1 then job-2 into an empty ready list.</p><div class="foundation-grid"><div>Ready head to tail<br>job-2, job-1</div><div>Move RIGHT to processing LEFT<br>Remove job-1</div><div>After move<br>Ready: job-2<br>Processing: job-1</div></div><details><summary>Does moving job-1 prove it was processed?</summary><p>No. It only changes its list location. Recovery and acknowledgment remain to be implemented.</p></details><details><summary>Which tied leaderboard member comes first in the shown reverse ordering?</summary><p>user:3 precedes user:2 at score 2190 because the reverse member ordering breaks the tie.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Choose a collection from its operations. Lists preserve push and pop order, sets provide membership without sorted order, and sorted sets associate members with scores and rank. Define tie behavior explicitly. Moving a job into a processing list changes ownership data without completing its effect or acknowledgement. Recovery and slow-consumer behavior remain part of the queue design.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a Redis command</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="redis-command" aria-label="Mechanism trace: Client frames one or more commands then Redis parses and schedules work then Data structure changes atomically then Ordered evidence returns. Experiment: Increase one value or batch size and predict event-loop occupancy and buffer growth.">
-        <li class="trace-stage"><span>01 · CLIENT</span><strong>Client frames one or more commands</strong><small>Connection, identity, key, arguments, and deadlines enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVENT LOOP</span><strong>Redis parses and schedules work</strong><small>Protocol, client buffers, expiration, and command complexity apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMAND</span><strong>Data structure changes atomically</strong><small>The selected encoding and algorithm determine CPU and memory work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REPLY</span><strong>Ordered evidence returns</strong><small>Reply, latency, memory, key state, and errors expose the result.</small></li>
+        <li class="trace-stage"><span>01 · CLIENT</span><details class="trace-explanation" open><summary>Client frames one or more commands</summary><p>Connection, identity, key, arguments, and deadlines enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVENT LOOP</span><details class="trace-explanation"><summary>Redis parses and schedules work</summary><p>Protocol, client buffers, expiration, and command complexity apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMAND</span><details class="trace-explanation"><summary>Data structure changes atomically</summary><p>The selected encoding and algorithm determine CPU and memory work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REPLY</span><details class="trace-explanation"><summary>Ordered evidence returns</summary><p>Reply, latency, memory, key state, and errors expose the result.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Increase one value or batch size and predict event-loop occupancy and buffer growth.</strong>
-        <small><b>Inspect:</b> RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> RESP frame, command complexity, reply order, latency percentiles, memory usage, and key state.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Redis lists">
-        <span>01</span>
-        <h3>Redis lists</h3>
+      <details class="concept-card" data-subtopic="Redis lists">
+        <summary>Redis lists</summary>
         <p class="concept-definition">Redis lists support ordered pushes and pops and selected blocking operations, but are not a full durable workflow protocol.</p>
-      </article><article class="concept-card" data-subtopic="sets">
-        <span>02</span>
-        <h3>sets</h3>
+      </details><details class="concept-card" data-subtopic="sets">
+        <summary>sets</summary>
         <p class="concept-definition">Redis sets store unique members and support membership and set algebra without a sorted-order contract.</p>
-      </article><article class="concept-card" data-subtopic="sorted sets">
-        <span>03</span>
-        <h3>sorted sets</h3>
+      </details><details class="concept-card" data-subtopic="sorted sets">
+        <summary>sorted sets</summary>
         <p class="concept-definition">A sorted set maps unique members to numeric scores and maintains score order, enabling rank, range, priority, and leaderboard operations.</p>
-      </article><article class="concept-card" data-subtopic="blocking operations">
-        <span>04</span>
-        <h3>blocking operations</h3>
+      </details><details class="concept-card" data-subtopic="blocking operations">
+        <summary>blocking operations</summary>
         <p class="concept-definition">Blocking Redis operations wait for a condition such as available list data while the server continues other client work.</p>
-      </article><article class="concept-card" data-subtopic="indexes">
-        <span>05</span>
-        <h3>indexes</h3>
+      </details><details class="concept-card" data-subtopic="indexes">
+        <summary>indexes</summary>
         <p class="concept-definition">An index stores an alternative access structure to reduce selected query work at storage and update cost.</p>
-      </article><article class="concept-card" data-subtopic="leaderboard patterns">
-        <span>06</span>
-        <h3>leaderboard patterns</h3>
+      </details><details class="concept-card" data-subtopic="leaderboard patterns">
+        <summary>leaderboard patterns</summary>
         <p class="concept-definition">Leaderboards commonly use sorted sets with explicit score ties, ranking, update, and retention policies.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0121" data-bespoke-example="0121" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Validate data keys and request destinations separately</figcaption>
+<p>The fixture accepts a flat string-valued record and a same-origin HTTPS URL. Neither helper performs network access.</p>
+<div class="foundation-grid"><div>Record input<br>name: Ada → accepted<br>__proto__: blocked → rejected<br>Output has null prototype</div><div>URL input<br>/projects → app.example → accepted<br>evil.example → rejected<br>Embedded credentials → rejected</div></div>
+<details><summary>Can safeRecord safely inspect arbitrary hostile objects with executable getters?</summary><p>Not as a general guarantee. Object.entries can invoke getters. Use parsed, bounded data at this boundary.</p></details>
+<details><summary>Does same-origin URL acceptance authorize every endpoint or handle redirects?</summary><p>No. Endpoint privileges and redirects need separate controls. This local policy is not a complete SSRF defense.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Untrusted data becomes dangerous when code gives it authority, interprets it as instructions or lets it alter shared object behavior. Validate the accepted shape before using it. A null-prototype record and blocked property names protect a narrow merge contract, not every possible input. Parsed data and executable objects with getters have different risks. URL checks also need separate decisions about redirects, endpoint permissions and server-side access.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace untrusted input crossing a boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-boundary" aria-label="Mechanism trace: External data reaches code then One explicit format is decoded then Policy creates trusted data then A bounded operation proceeds. Experiment: Send a malicious key or pathological string and verify rejection before the dangerous operation.">
-        <li class="trace-stage"><span>01 · UNTRUSTED</span><strong>External data reaches code</strong><small>Text, keys, URLs, modules, or bytes carry attacker-controlled shape.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>One explicit format is decoded</strong><small>Size, grammar, schema, and version constrain interpretation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Policy creates trusted data</strong><small>Unsafe keys, authority, executable sinks, and limits are rejected.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · USE</span><strong>A bounded operation proceeds</strong><small>Output, denial, timing, and mutation evidence expose safety.</small></li>
+        <li class="trace-stage"><span>01 · UNTRUSTED</span><details class="trace-explanation" open><summary>External data reaches code</summary><p>Text, keys, URLs, modules, or bytes carry attacker-controlled shape.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><details class="trace-explanation"><summary>One explicit format is decoded</summary><p>Size, grammar, schema, and version constrain interpretation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><details class="trace-explanation"><summary>Policy creates trusted data</summary><p>Unsafe keys, authority, executable sinks, and limits are rejected.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · USE</span><details class="trace-explanation"><summary>A bounded operation proceeds</summary><p>Output, denial, timing, and mutation evidence expose safety.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Send a malicious key or pathological string and verify rejection before the dangerous operation.</strong>
-        <small><b>Inspect:</b> Validated representation, prototype state, regex timing, error, audit event, and dependency provenance.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Validated representation, prototype state, regex timing, error, audit event, and dependency provenance.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="JavaScript security">
-        <span>01</span>
-        <h3>JavaScript security</h3>
+      <details class="concept-card" data-subtopic="JavaScript security">
+        <summary>JavaScript security</summary>
         <p class="concept-definition">JavaScript security requires controlling untrusted values at executable, object-mutation, network, and dependency boundaries. TypeScript checks or a framework do not remove those runtime responsibilities.</p>
-      </article><article class="concept-card" data-subtopic="prototype pollution">
-        <span>02</span>
-        <h3>prototype pollution</h3>
+      </details><details class="concept-card" data-subtopic="prototype pollution">
+        <summary>prototype pollution</summary>
         <p class="concept-definition">Prototype pollution occurs when untrusted property paths modify shared prototypes or special keys, changing behavior of unrelated objects.</p>
-      </article><article class="concept-card" data-subtopic="injection">
-        <span>03</span>
-        <h3>injection</h3>
+      </details><details class="concept-card" data-subtopic="injection">
+        <summary>injection</summary>
         <p class="concept-definition">Injection occurs when untrusted data is interpreted as instructions by a command, query, template, or other interpreter. Preserve the data/code boundary with the appropriate safe API.</p>
-      </article><article class="concept-card" data-subtopic="eval">
-        <span>04</span>
-        <h3>eval</h3>
+      </details><details class="concept-card" data-subtopic="eval">
+        <summary>eval</summary>
         <p class="concept-definition">eval parses and executes a string as JavaScript. Avoid giving untrusted data this capability; use structured data and explicit operations instead.</p>
-      </article><article class="concept-card" data-subtopic="supply chain">
-        <span>05</span>
-        <h3>supply chain</h3>
+      </details><details class="concept-card" data-subtopic="supply chain">
+        <summary>supply chain</summary>
         <p class="concept-definition">The software supply chain includes source, dependencies, build tools, artifacts, registries, and delivery systems. A compromise at any trusted stage can affect the shipped application.</p>
-      </article><article class="concept-card" data-subtopic="trust boundaries">
-        <span>06</span>
-        <h3>trust boundaries</h3>
+      </details><details class="concept-card" data-subtopic="trust boundaries">
+        <summary>trust boundaries</summary>
         <p class="concept-definition">A trust boundary separates data or authority with different levels of trust. Validate input and enforce permission when crossing it before performing privileged work.</p>
-      </article>
+      </details>
     </div>
   </section>
 

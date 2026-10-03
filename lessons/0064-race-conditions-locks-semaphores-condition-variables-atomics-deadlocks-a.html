@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0064" data-bespoke-example="0064" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Opposite transfers use the same lock order</figcaption>
+<p>Accounts A and B each start at 100. One thread transfers 10 from A to B; another transfers 20 from B to A.</p>
+<div class="foundation-grid"><div>Both threads<br>Acquire lower-object-id lock<br>Then higher-object-id lock<br>Transfer while holding both</div><div>Final balances<br>A: 100 − 10 + 20 = 110<br>B: 100 + 10 − 20 = 90<br>Total: 200</div></div>
+<details><summary>Why not always lock the source account first?</summary><p>The opposite transfers could each hold one account and wait for the other. A common acquisition order removes that circular wait for this operation.</p></details>
+<details><summary>Do separately created Account objects for the same business account share protection?</summary><p>No. Their locks are different. This design requires one shared object per account and cooperating readers and writers. It is not a cross-process transaction.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A lock must protect the complete rule that concurrent operations could break. For a transfer, both the balance check and the debit and credit belong under the locks. Acquiring shared locks in a consistent order prevents circular acquisition for this operation. Every participant must use the same locks. A semaphore limits permits, while a condition variable waits for a predicate that must be rechecked after waking. Several atomic operations do not automatically make their combination atomic.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a process crossing a kernel boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="ordered-account-locks" aria-label="Mechanism trace: Reject self-transfer and invalid amount then Sort live objects by identity then Check funds while holding locks then Exit both lock contexts. Experiment: What breaks if two objects represent the same bank account?">
-        <li class="trace-stage"><span>01 · GUARD</span><strong>Reject self-transfer and invalid amount</strong><small>Acquiring the same non-reentrant lock twice would deadlock.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ORDER</span><strong>Sort live objects by identity</strong><small>Both transfer directions acquire the same two locks in the same order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Check funds while holding locks</strong><small>Debit and credit occur together in the cooperating process.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><strong>Exit both lock contexts</strong><small>Verify balances and failed-transfer preservation; this is not durable storage.</small></li>
+        <li class="trace-stage"><span>01 · GUARD</span><details class="trace-explanation" open><summary>Reject self-transfer and invalid amount</summary><p>Acquiring the same non-reentrant lock twice would deadlock.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ORDER</span><details class="trace-explanation"><summary>Sort live objects by identity</summary><p>Both transfer directions acquire the same two locks in the same order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><details class="trace-explanation"><summary>Check funds while holding locks</summary><p>Debit and credit occur together in the cooperating process.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><details class="trace-explanation"><summary>Exit both lock contexts</summary><p>Verify balances and failed-transfer preservation; this is not durable storage.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>What breaks if two objects represent the same bank account?</strong>
-        <small><b>Inspect:</b> One shared object/lock per account is required; lock ordering alone does not enforce domain identity.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> One shared object/lock per account is required; lock ordering alone does not enforce domain identity.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +80,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Race conditions">
-        <span>01</span>
-        <h3>Race conditions</h3>
+      <details class="concept-card" data-subtopic="Race conditions">
+        <summary>Race conditions</summary>
         <p class="concept-definition">A race condition makes correctness depend on an uncontrolled ordering of concurrent actions.</p>
-      </article><article class="concept-card" data-subtopic="locks">
-        <span>02</span>
-        <h3>locks</h3>
+      </details><details class="concept-card" data-subtopic="locks">
+        <summary>locks</summary>
         <p class="concept-definition">A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</p>
-      </article><article class="concept-card" data-subtopic="semaphores">
-        <span>03</span>
-        <h3>semaphores</h3>
+      </details><details class="concept-card" data-subtopic="semaphores">
+        <summary>semaphores</summary>
         <p class="concept-definition">A semaphore controls access using a count of permits. It can bound concurrent operations, but the waiting queue and cancellation behavior also need limits.</p>
-      </article><article class="concept-card" data-subtopic="condition variables">
-        <span>04</span>
-        <h3>condition variables</h3>
+      </details><details class="concept-card" data-subtopic="condition variables">
+        <summary>condition variables</summary>
         <p class="concept-definition">A condition variable lets a thread wait for a predicate protected by a lock. Recheck the predicate after waking because notification alone does not establish it.</p>
-      </article><article class="concept-card" data-subtopic="atomics">
-        <span>05</span>
-        <h3>atomics</h3>
+      </details><details class="concept-card" data-subtopic="atomics">
+        <summary>atomics</summary>
         <p class="concept-definition">Atomic operations provide indivisible access and specified memory-ordering guarantees; composing several atomics does not automatically preserve a larger invariant.</p>
-      </article><article class="concept-card" data-subtopic="deadlocks">
-        <span>06</span>
-        <h3>deadlocks</h3>
+      </details><details class="concept-card" data-subtopic="deadlocks">
+        <summary>deadlocks</summary>
         <p class="concept-definition">A deadlock is a cycle of operations waiting for resources held by one another. Consistent ordering, bounded waits, and smaller critical sections can help prevent or recover from it.</p>
-      </article><article class="concept-card" data-subtopic="lock ordering">
-        <span>07</span>
-        <h3>lock ordering</h3>
+      </details><details class="concept-card" data-subtopic="lock ordering">
+        <summary>lock ordering</summary>
         <p class="concept-definition">Lock ordering requires code paths to acquire shared locks in a consistent order. It prevents a common class of circular waits when multiple locks are needed.</p>
-      </article>
+      </details>
     </div>
   </section>
 

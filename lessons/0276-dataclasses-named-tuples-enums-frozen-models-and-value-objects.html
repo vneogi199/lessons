@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A small record might contain an RFQ ID and quantity. A dataclass can generate routine methods for that record, so you can focus on its fields and rules.</p><p>A frozen dataclass blocks ordinary field assignment. It does not freeze a list held inside a field. If you need a value that cannot change, inspect its contents as well as the outer record.</p><details><summary>Does frozen make a nested list immutable?</summary><p>No. The list can still be mutable.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0276" data-bespoke-example="0276" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Add money only when its currencies match</figcaption>
+<p>Use finite Decimal amounts and the Currency enum from the example.</p>
+<div class="foundation-grid"><div>2 USD + 3 USD<br>Same currency<br>New value: 5 USD</div><div>2 USD + 3 EUR<br>Different currencies<br>Raise currency mismatch</div><div>NaN USD<br>Non-finite amount<br>Reject at construction</div></div>
+<details><summary>Does frozen automatically validate the annotated amount type?</summary><p>No. __post_init__ performs the explicit runtime checks.</p></details>
+<details><summary>Are the input tags preserved by addition?</summary><p>No. The implementation creates a Money value without tags. A production contract must state how metadata and rounding should work.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A dataclass generates routine methods for a record. Named tuples provide tuple-based records, and enums name a defined set of values. A frozen dataclass blocks ordinary field reassignment, but a field can still refer to a mutable child. Type annotations describe expected values; runtime checks enforce requirements such as a finite amount or a valid currency. Decide which fields define value equality and which metadata should survive an operation.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a Python operation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-object-protocol" aria-label="Mechanism trace: Code performs an operation then Python selects a protocol then The special method executes then A value or exception returns. Experiment: Shadow one attribute or return NotImplemented and predict the fallback path.">
-        <li class="trace-stage"><span>01 · SYNTAX</span><strong>Code performs an operation</strong><small>Attribute access, len, iteration, comparison, or a call begins.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TYPE LOOKUP</span><strong>Python selects a protocol</strong><small>MRO and descriptor precedence locate behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · METHOD</span><strong>The special method executes</strong><small>Bound objects and arguments determine the result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VALUE</span><strong>A value or exception returns</strong><small>Caller-visible behavior proves which path won.</small></li>
+        <li class="trace-stage"><span>01 · SYNTAX</span><details class="trace-explanation" open><summary>Code performs an operation</summary><p>Attribute access, len, iteration, comparison, or a call begins.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TYPE LOOKUP</span><details class="trace-explanation"><summary>Python selects a protocol</summary><p>MRO and descriptor precedence locate behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · METHOD</span><details class="trace-explanation"><summary>The special method executes</summary><p>Bound objects and arguments determine the result.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VALUE</span><details class="trace-explanation"><summary>A value or exception returns</summary><p>Caller-visible behavior proves which path won.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Shadow one attribute or return NotImplemented and predict the fallback path.</strong>
-        <small><b>Inspect:</b> MRO, descriptor calls, bound-method fields, return value, and exception.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> MRO, descriptor calls, bound-method fields, return value, and exception.</small></details>
       </div>
     </aside>
   </div>
@@ -69,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Dataclasses">
-        <span>01</span>
-        <h3>Dataclasses</h3>
+      <details class="concept-card" data-subtopic="Dataclasses">
+        <summary>Dataclasses</summary>
         <p class="concept-definition">A dataclass generates common methods from annotated fields. It reduces boilerplate but does not perform general runtime type validation.</p>
-      </article><article class="concept-card" data-subtopic="named tuples">
-        <span>02</span>
-        <h3>named tuples</h3>
+      </details><details class="concept-card" data-subtopic="named tuples">
+        <summary>named tuples</summary>
         <p class="concept-definition">Named tuples are tuple subclasses whose fields also have names. They support positional access and unpacking while making records clearer; their outer structure is immutable, but referenced children may be mutable.</p>
-      </article><article class="concept-card" data-subtopic="enums">
-        <span>03</span>
-        <h3>enums</h3>
+      </details><details class="concept-card" data-subtopic="enums">
+        <summary>enums</summary>
         <p class="concept-definition">An Enum defines a closed set of named singleton members. It communicates domain choices more clearly than scattered strings or integers.</p>
-      </article><article class="concept-card" data-subtopic="frozen models">
-        <span>04</span>
-        <h3>frozen models</h3>
+      </details><details class="concept-card" data-subtopic="frozen models">
+        <summary>frozen models</summary>
         <p class="concept-definition">Frozen models restrict field assignment under their library&#039;s contract; nested mutable objects may still change.</p>
-      </article><article class="concept-card" data-subtopic="value objects">
-        <span>05</span>
-        <h3>value objects</h3>
+      </details><details class="concept-card" data-subtopic="value objects">
+        <summary>value objects</summary>
         <p class="concept-definition">Value objects represent meaning through their values rather than lifecycle identity, such as an amount with currency.</p>
-      </article>
+      </details>
     </div>
   </section>
 

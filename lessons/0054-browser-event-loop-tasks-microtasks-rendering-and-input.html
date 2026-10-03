@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#web-platform">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0054" data-bespoke-example="0054" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Known callback order and unknown relative order</figcaption>
+<p>One browser task records sync and schedules a microtask, a zero-delay timer and an animation callback.</p>
+<div class="foundation-grid"><div>Guaranteed start in this fixture<br>sync<br>↓<br>microtask</div><div>Later callbacks<br>timer<br>animation callback<br>No portable order asserted between these two</div></div>
+<details><summary>Does awaiting an already-resolved promise guarantee a paint before continuing?</summary><p>No. It yields through the microtask mechanism. That does not require input processing or a paint between continuations.</p></details>
+<details><summary>Does an animation callback prove the screen has already painted?</summary><p>No. It runs before a rendering opportunity. Observe actual browser behavior when checking input delay or painting.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Synchronous JavaScript runs before its queued continuations. At a microtask checkpoint, queued microtasks run and may enqueue more microtasks; this can delay tasks and rendering. A zero-delay timer becomes eligible later, not immediately. Animation callbacks let code prepare for a rendering update, but neither a callback nor an awaited promise proves that pixels were displayed. Rendering opportunities depend on browser scheduling and page visibility. Split long work or move suitable computation to a worker when measurement shows main-thread contention.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a browser request or event</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="browser-0054" aria-label="Mechanism trace: Run synchronous work then Drain microtasks then Observe host scheduling. Experiment: Change the stated fixture condition and compare the observable result.">
-        <li class="trace-stage"><span>01 · TRACE</span><strong>Run synchronous work</strong><small>Queueing callbacks does not execute them before the current code finishes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><strong>Drain microtasks</strong><small>The queued microtask runs at a checkpoint before later task processing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><strong>Observe host scheduling</strong><small>Timer and animation opportunities depend on browser scheduling; an animation callback is not a paint receipt.</small></li>
+        <li class="trace-stage"><span>01 · TRACE</span><details class="trace-explanation" open><summary>Run synchronous work</summary><p>Queueing callbacks does not execute them before the current code finishes.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><details class="trace-explanation"><summary>Drain microtasks</summary><p>The queued microtask runs at a checkpoint before later task processing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><details class="trace-explanation"><summary>Observe host scheduling</summary><p>Timer and animation opportunities depend on browser scheduling; an animation callback is not a paint receipt.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change the stated fixture condition and compare the observable result.</strong>
-        <small><b>Inspect:</b> Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Browser event loop">
-        <span>01</span>
-        <h3>Browser event loop</h3>
+      <details class="concept-card" data-subtopic="Browser event loop">
+        <summary>Browser event loop</summary>
         <p class="concept-definition">The browser event loop selects ready tasks and coordinates script execution, microtasks, rendering, and user input.</p>
-      </article><article class="concept-card" data-subtopic="tasks">
-        <span>02</span>
-        <h3>tasks</h3>
+      </details><details class="concept-card" data-subtopic="tasks">
+        <summary>tasks</summary>
         <p class="concept-definition">A task is a scheduled unit of browser work such as a timer callback, event callback, or initial script.</p>
-      </article><article class="concept-card" data-subtopic="microtasks">
-        <span>03</span>
-        <h3>microtasks</h3>
+      </details><details class="concept-card" data-subtopic="microtasks">
+        <summary>microtasks</summary>
         <p class="concept-definition">A microtask is high-priority follow-up work that the browser drains after current JavaScript and before the next task.</p>
-      </article><article class="concept-card" data-subtopic="rendering">
-        <span>04</span>
-        <h3>rendering</h3>
+      </details><details class="concept-card" data-subtopic="rendering">
+        <summary>rendering</summary>
         <p class="concept-definition">Rendering converts document state and styles into pixels that the user can see.</p>
-      </article><article class="concept-card" data-subtopic="input">
-        <span>05</span>
-        <h3>input</h3>
+      </details><details class="concept-card" data-subtopic="input">
+        <summary>input</summary>
         <p class="concept-definition">Browser input is a user or device event such as a click, key press, touch, or pointer movement.</p>
-      </article>
+      </details>
     </div>
   </section>
 

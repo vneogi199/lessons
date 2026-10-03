@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0371" data-bespoke-example="0371" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Many client connections share fewer server connections</figcaption><p>The sketch permits 500 clients and configures a normal server-pool size of 20.</p><div class="foundation-grid"><div>Client side<br>Many connected clients</div><div>Waiting clients<br>Queue for a server connection</div><div>Transaction pool<br>Reuse connections between transactions</div></div><details><summary>Does max_client_conn 500 mean 500 concurrent database queries?</summary><p>No. Client connections and active server connections are different limits.</p></details><details><summary>Can session state be assumed to stay on one server connection across transactions?</summary><p>No. Transaction pooling can assign a different server connection. Review session-dependent features before adopting it.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A pool bounds database work and queues excess demand. Its wait time consumes the caller&#039;s budget, while transaction duration determines how long capacity stays occupied. Transaction pooling does not promise one server session across successive transactions. Check settings, locks and prepared-statement assumptions against the mode and version. Pool limits may apply per database and user rather than as one service-wide ceiling.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a pooled transaction</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="postgres-pool" aria-label="Mechanism trace: Client requests database capacity then Pool assigns a server connection then Backend runs the transaction then Connection becomes reusable. Experiment: Increase pool size under the same workload; predict queue time and database contention before measuring.">
-        <li class="trace-stage"><span>01 · ARRIVE</span><strong>Client requests database capacity</strong><small>A bounded pool admits or queues work; waiting consumes the caller&#039;s deadline.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BORROW</span><strong>Pool assigns a server connection</strong><small>In transaction pooling, ownership lasts for a transaction rather than the whole client session.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Backend runs the transaction</strong><small>Queries, lock waits, CPU and I/O determine how long this capacity remains occupied.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><strong>Connection becomes reusable</strong><small>Commit or rollback ends transaction ownership; session-dependent features need explicit compatibility checks.</small></li>
+        <li class="trace-stage"><span>01 · ARRIVE</span><details class="trace-explanation" open><summary>Client requests database capacity</summary><p>A bounded pool admits or queues work; waiting consumes the caller&#039;s deadline.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BORROW</span><details class="trace-explanation"><summary>Pool assigns a server connection</summary><p>In transaction pooling, ownership lasts for a transaction rather than the whole client session.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Backend runs the transaction</summary><p>Queries, lock waits, CPU and I/O determine how long this capacity remains occupied.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><details class="trace-explanation"><summary>Connection becomes reusable</summary><p>Commit or rollback ends transaction ownership; session-dependent features need explicit compatibility checks.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Increase pool size under the same workload; predict queue time and database contention before measuring.</strong>
-        <small><b>Inspect:</b> Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Client wait, active backends, transaction duration, errors, throughput and tail latency at each tested pool size.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Connections">
-        <span>01</span>
-        <h3>Connections</h3>
+      <details class="concept-card" data-subtopic="Connections">
+        <summary>Connections</summary>
         <p class="concept-definition">A PostgreSQL connection normally owns a backend process and session state. A pool bounds that finite resource and queues excess demand instead of overwhelming the server.</p>
-      </article><article class="concept-card" data-subtopic="sessions">
-        <span>02</span>
-        <h3>sessions</h3>
+      </details><details class="concept-card" data-subtopic="sessions">
+        <summary>sessions</summary>
         <p class="concept-definition">Database sessions retain connection-level state such as settings and temporary objects, which pooling can complicate.</p>
-      </article><article class="concept-card" data-subtopic="prepared statements">
-        <span>03</span>
-        <h3>prepared statements</h3>
+      </details><details class="concept-card" data-subtopic="prepared statements">
+        <summary>prepared statements</summary>
         <p class="concept-definition">Prepared statements reuse parsed or planned statement state subject to server, driver, and pool behavior.</p>
-      </article><article class="concept-card" data-subtopic="PgBouncer">
-        <span>04</span>
-        <h3>PgBouncer</h3>
+      </details><details class="concept-card" data-subtopic="PgBouncer">
+        <summary>PgBouncer</summary>
         <p class="concept-definition">PgBouncer pools PostgreSQL connections; its pooling mode changes which session assumptions remain valid.</p>
-      </article><article class="concept-card" data-subtopic="pool sizing">
-        <span>05</span>
-        <h3>pool sizing</h3>
+      </details><details class="concept-card" data-subtopic="pool sizing">
+        <summary>pool sizing</summary>
         <p class="concept-definition">Pool sizing bounds concurrent database work against capacity rather than equating more connections with more throughput.</p>
-      </article><article class="concept-card" data-subtopic="transaction pooling">
-        <span>06</span>
-        <h3>transaction pooling</h3>
+      </details><details class="concept-card" data-subtopic="transaction pooling">
+        <summary>transaction pooling</summary>
         <p class="concept-definition">Transaction pooling assigns a server connection for a transaction, so callers cannot assume stable server-session ownership between transactions.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0462" data-bespoke-example="0462" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Stop writes when the safe replica set is too small</figcaption><p>The topic has three replicas, minimum ISR 2 and producer acknowledgments set to all.</p><div class="foundation-grid"><div>Three in-sync replicas<br>Wait for current ISR</div><div>Two in-sync replicas<br>Policy still permits writes</div><div>One in-sync replica<br>Policy rejects safe writes</div></div><details><summary>Does acks=all always wait for exactly two replicas?</summary><p>No. It waits for the full current in-sync replica set. The minimum is an admission requirement.</p></details><details><summary>Why not elect an out-of-sync replica just to restore writes?</summary><p>That can lose acknowledged history. The fixture disables unclean leader election.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A partition leader accepts writes while followers copy its log. Durability depends on eligible replicas, acknowledgement settings and election policy. With acks=all, the full current in-sync replica set participates; min.insync.replicas sets the minimum eligible size. Three configured copies alone do not establish the guarantee. Distinguish partition leadership from controller metadata and examine the precise failure timing.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a domain command and event</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="kafka-record" aria-label="Mechanism trace: Producer forms a keyed batch then Partition leader writes its log then Consumer group owns partitions then Effect and position become recoverable. Experiment: Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.">
-        <li class="trace-stage"><span>01 · PRODUCE</span><strong>Producer forms a keyed batch</strong><small>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><strong>Partition leader writes its log</strong><small>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FETCH</span><strong>Consumer group owns partitions</strong><small>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Effect and position become recoverable</strong><small>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</small></li>
+        <li class="trace-stage"><span>01 · PRODUCE</span><details class="trace-explanation" open><summary>Producer forms a keyed batch</summary><p>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><details class="trace-explanation"><summary>Partition leader writes its log</summary><p>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FETCH</span><details class="trace-explanation"><summary>Consumer group owns partitions</summary><p>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Effect and position become recoverable</summary><p>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.</strong>
-        <small><b>Inspect:</b> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</small></details>
       </div>
     </aside>
   </div>
@@ -73,43 +76,34 @@
   <section class="concept-section" data-subtopic-count="9">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Kafka replication">
-        <span>01</span>
-        <h3>Kafka replication</h3>
+      <details class="concept-card" data-subtopic="Kafka replication">
+        <summary>Kafka replication</summary>
         <p class="concept-definition">Kafka replicates each partition across brokers. Writes go to its leader; configured consumers can read from suitable followers as well as the leader.</p>
-      </article><article class="concept-card" data-subtopic="leaders">
-        <span>02</span>
-        <h3>leaders</h3>
+      </details><details class="concept-card" data-subtopic="leaders">
+        <summary>leaders</summary>
         <p class="concept-definition">A partition leader receives client operations and defines the ordered log that followers copy.</p>
-      </article><article class="concept-card" data-subtopic="followers">
-        <span>03</span>
-        <h3>followers</h3>
+      </details><details class="concept-card" data-subtopic="followers">
+        <summary>followers</summary>
         <p class="concept-definition">Followers fetch the leader&#039;s records and may become leader after a valid election.</p>
-      </article><article class="concept-card" data-subtopic="in-sync replicas">
-        <span>04</span>
-        <h3>in-sync replicas</h3>
+      </details><details class="concept-card" data-subtopic="in-sync replicas">
+        <summary>in-sync replicas</summary>
         <p class="concept-definition">In-sync replicas are copies that meet Kafka&#039;s configured lag requirements and may participate in durable acknowledgement and safe election.</p>
-      </article><article class="concept-card" data-subtopic="acknowledgements">
-        <span>05</span>
-        <h3>acknowledgements</h3>
+      </details><details class="concept-card" data-subtopic="acknowledgements">
+        <summary>acknowledgements</summary>
         <p class="concept-definition">Producer acknowledgements define how many replication conditions must be met before a send reports success.</p>
-      </article><article class="concept-card" data-subtopic="min.insync.replicas">
-        <span>06</span>
-        <h3>min.insync.replicas</h3>
+      </details><details class="concept-card" data-subtopic="min.insync.replicas">
+        <summary>min.insync.replicas</summary>
         <p class="concept-definition">With acks=all, min.insync.replicas sets the minimum eligible ISR size for a successful write. It is not a request to wait for exactly that many replicas: acks=all waits for the full current ISR.</p>
-      </article><article class="concept-card" data-subtopic="controllers">
-        <span>07</span>
-        <h3>controllers</h3>
+      </details><details class="concept-card" data-subtopic="controllers">
+        <summary>controllers</summary>
         <p class="concept-definition">Kafka controllers coordinate cluster metadata, broker state, and partition leadership.</p>
-      </article><article class="concept-card" data-subtopic="elections">
-        <span>08</span>
-        <h3>elections</h3>
+      </details><details class="concept-card" data-subtopic="elections">
+        <summary>elections</summary>
         <p class="concept-definition">A leader election selects a replica to serve a partition after assignment or failure.</p>
-      </article><article class="concept-card" data-subtopic="failure recovery">
-        <span>09</span>
-        <h3>failure recovery</h3>
+      </details><details class="concept-card" data-subtopic="failure recovery">
+        <summary>failure recovery</summary>
         <p class="concept-definition">Failure recovery elects leaders, catches replicas up, restarts processing, and verifies durability and consumer progress after faults.</p>
-      </article>
+      </details>
     </div>
   </section>
 

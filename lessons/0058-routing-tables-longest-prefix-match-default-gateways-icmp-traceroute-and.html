@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0058" data-bespoke-example="0058" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">The most specific matching route wins</figcaption>
+<p>Look up destination 10.42.7.8 in the fixture's routing table.</p>
+<div class="foundation-grid"><div>Matching prefixes<br>0.0.0.0/0<br>10.0.0.0/8<br>10.42.0.0/16</div><div>Choose /16<br>Longest matching prefix<br>Gateway: 10.42.0.1</div></div>
+<details><summary>Which route handles 8.8.8.8 in this table?</summary><p>The default /0 route, through 192.0.2.1. Neither more-specific private prefix matches.</p></details>
+<details><summary>What does the fixture's reverse NAT entry map?</summary><p>203.0.113.5:40001 maps to 10.42.0.9:53000. One mapping illustrates address translation; it is not a complete connection tracker or firewall.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A routing table maps destination prefixes to interfaces or next hops. When several routes match, longest-prefix matching selects the most specific one. A default route applies when no more specific route matches. Routers update hop limits, and ICMP can report network errors. NAT rewrites addresses or ports and needs a reverse mapping for returning traffic. Traceroute infers a path from responses; filtering and asymmetric return routes limit what missing replies tell you.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a request from application to wire</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="network-packet-path" aria-label="Mechanism trace: Application creates a message then Names and peers become addresses then Bytes cross layered networks then The destination observes the request. Experiment: Change one address, route, MTU, or loss condition and predict where the exchange changes.">
-        <li class="trace-stage"><span>01 · APP</span><strong>Application creates a message</strong><small>A URL, payload, and protocol semantics define the intended exchange.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE + CONNECT</span><strong>Names and peers become addresses</strong><small>DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRANSPORT + ROUTE</span><strong>Bytes cross layered networks</strong><small>TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PEER</span><strong>The destination observes the request</strong><small>Acknowledgments, responses, packet captures, and errors expose the outcome.</small></li>
+        <li class="trace-stage"><span>01 · APP</span><details class="trace-explanation" open><summary>Application creates a message</summary><p>A URL, payload, and protocol semantics define the intended exchange.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE + CONNECT</span><details class="trace-explanation"><summary>Names and peers become addresses</summary><p>DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRANSPORT + ROUTE</span><details class="trace-explanation"><summary>Bytes cross layered networks</summary><p>TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PEER</span><details class="trace-explanation"><summary>The destination observes the request</summary><p>Acknowledgments, responses, packet captures, and errors expose the outcome.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one address, route, MTU, or loss condition and predict where the exchange changes.</strong>
-        <small><b>Inspect:</b> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Routing tables">
-        <span>01</span>
-        <h3>Routing tables</h3>
+      <details class="concept-card" data-subtopic="Routing tables">
+        <summary>Routing tables</summary>
         <p class="concept-definition">Routing tables associate destination prefixes with next hops or interfaces.</p>
-      </article><article class="concept-card" data-subtopic="longest-prefix match">
-        <span>02</span>
-        <h3>longest-prefix match</h3>
+      </details><details class="concept-card" data-subtopic="longest-prefix match">
+        <summary>longest-prefix match</summary>
         <p class="concept-definition">Longest-prefix matching selects the most specific applicable destination prefix from the routing table.</p>
-      </article><article class="concept-card" data-subtopic="default gateways">
-        <span>03</span>
-        <h3>default gateways</h3>
+      </details><details class="concept-card" data-subtopic="default gateways">
+        <summary>default gateways</summary>
         <p class="concept-definition">A default gateway is the next hop used when no more specific route matches a destination.</p>
-      </article><article class="concept-card" data-subtopic="ICMP">
-        <span>04</span>
-        <h3>ICMP</h3>
+      </details><details class="concept-card" data-subtopic="ICMP">
+        <summary>ICMP</summary>
         <p class="concept-definition">ICMP carries network control and error information; it does not provide application transport reliability.</p>
-      </article><article class="concept-card" data-subtopic="traceroute">
-        <span>05</span>
-        <h3>traceroute</h3>
+      </details><details class="concept-card" data-subtopic="traceroute">
+        <summary>traceroute</summary>
         <p class="concept-definition">Traceroute probes increasing hop limits to infer a path from responses. Filtering and asymmetric routing limit what the result proves.</p>
-      </article><article class="concept-card" data-subtopic="NAT">
-        <span>06</span>
-        <h3>NAT</h3>
+      </details><details class="concept-card" data-subtopic="NAT">
+        <summary>NAT</summary>
         <p class="concept-definition">NAT rewrites network addresses, often ports too, while tracking mappings. It complicates end-to-end addressing and is not authentication.</p>
-      </article>
+      </details>
     </div>
   </section>
 

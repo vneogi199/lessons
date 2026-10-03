@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -46,7 +48,7 @@
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You need one column from a file, and only rows for desk A. A lazy query describes that request before collecting the result.</p><p>The engine may move selection and filtering toward the source to avoid unnecessary reading. Starting with a scan preserves this opportunity; calling lazy after an eager read cannot undo that read.</p><details><summary>Can a lazy plan undo a completed eager file read?</summary><p>No. Start with a lazy source when source-read optimization matters.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0659" data-bespoke-example="0659" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Filter rows and select only the result columns</figcaption><p>The source has IDs 1, 2 and 3 with quantities −1, 2 and 3, plus an unused string column.</p><div class="foundation-grid"><div>Filter qty greater than 0<br>Keep IDs 2 and 3</div><div>Project result<br>id and qty × 2</div><div>Output<br>(2, 4), (3, 6)</div></div><details><summary>Does defining a lazy query execute the full result immediately?</summary><p>No. The fixture collects the result explicitly.</p></details><details><summary>Does this in-memory fixture prove Parquet I/O was reduced by pushdown?</summary><p>No. Inspect plans and measure an appropriate scan workload before making that claim.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A lazy query lets the engine optimize several operations together before collecting results.</p>
@@ -56,13 +58,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a typed analytical transformation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="polars-0659" aria-label="Mechanism trace: Define the input and row grain then Apply the stated operation then Compare values and failure behavior. Experiment: Replace the source with a Parquet scan in a disposable fixture. Compare optimized and unoptimized explanations without asserting an exact plan string.">
-        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Define the input and row grain</strong><small>A LazyFrame represents a query. collect executes it and returns a DataFrame. Projection pushdown reduces requested columns near a source; predicate pushdown moves eligible filters toward the source. An optimizer must preserve the query&#039;s meaning.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><strong>Apply the stated operation</strong><small>A lazy query lets the engine optimize several operations together before collecting results.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><strong>Compare values and failure behavior</strong><small>The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning.</small></li>
+        <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Define the input and row grain</summary><p>A LazyFrame represents a query. collect executes it and returns a DataFrame. Projection pushdown reduces requested columns near a source; predicate pushdown moves eligible filters toward the source. An optimizer must preserve the query&#039;s meaning.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><details class="trace-explanation"><summary>Apply the stated operation</summary><p>A lazy query lets the engine optimize several operations together before collecting results.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><details class="trace-explanation"><summary>Compare values and failure behavior</summary><p>The result contains IDs 2 and 3 with doubled quantities 4 and 6. The unused column is absent from the output. This in-memory fixture does not measure file pruning.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Replace the source with a Parquet scan in a disposable fixture. Compare optimized and unoptimized explanations without asserting an exact plan string.</strong>
-        <small><b>Inspect:</b> Reading a large file eagerly and adding lazy() afterward cannot recover the memory already used to read it. Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Reading a large file eagerly and adding lazy() afterward cannot recover the memory already used to read it. Lazy optimization benefits compound queries. A small already-materialized frame may not gain enough to justify a complex execution setup; measure equivalent work.</small></details>
       </div>
     </aside>
   </div>
@@ -70,15 +73,13 @@
   <section class="concept-section" data-subtopic-count="2">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="LazyFrame">
-        <span>01</span>
-        <h3>LazyFrame</h3>
+      <details class="concept-card" data-subtopic="LazyFrame">
+        <summary>LazyFrame</summary>
         <p class="concept-definition">A query representation that executes at an explicit collection or sink boundary.</p>
-      </article><article class="concept-card" data-subtopic="pushdown">
-        <span>02</span>
-        <h3>pushdown</h3>
+      </details><details class="concept-card" data-subtopic="pushdown">
+        <summary>pushdown</summary>
         <p class="concept-definition">Moving an eligible operation nearer its source while preserving meaning.</p>
-      </article>
+      </details>
     </div>
   </section>
 

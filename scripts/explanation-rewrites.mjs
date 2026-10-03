@@ -677,8 +677,8 @@ assert queue.popleft() == "a"`,
       checkpoint: "Assignment shares the original list. A shallow copy separates outer slots only. Mutation of a shared child reaches both views; replacement of a copied outer slot does not. The tuple permits child mutation but rejects slot replacement."
     },
     mechanism: `<h2>Reading and updating a list</h2>
-<p>In quantities = [10, 20, 30], the first item is quantities[0], which gives 10. Python counts indexes from zero. A negative index counts from the other end, so quantities[-1] gives 30.</p>
-<p>You can replace the second item with quantities[1] = 25, or add an item at the end with append(40). This ability to change a list after creating it is what mutable means.</p>
+<p>A list keeps items in order. In quantities = [10, 20, 30], the first item is 10. Its index, or position number, is 0. So quantities[0] gives 10. A negative index counts from the end: quantities[-1] gives 30.</p>
+<p>You can change a list after you create it. This is what mutable means. quantities[1] = 25 replaces the second item. append(40) adds an item at the end.</p>
 <h2>What happens when you copy a list?</h2>
 <pre><code>quantities = [10, 20, 30]
 alias = quantities
@@ -689,8 +689,22 @@ outer_copy = quantities[:]
 outer_copy[0] = 99
 print(quantities[0])  # 10
 print(outer_copy[0])  # 99</code></pre>
-<p>After alias = quantities, both names refer to the same list. That is why appending through alias also changes what you see through quantities: [10, 20, 30, 40]. In the practice code, alias is quantities checks whether the two names refer to the very same object. Two separate lists could contain equal values without passing that check.</p>
-<p>The slice quantities[:] creates a separate list. You can replace outer_copy[0] with 99 and leave quantities[0] at 10. For this list of numbers, that gives you the independence you need. With a list inside the list, there is another object to account for:</p>
+<p>alias = quantities gives the same list a second name. Appending through either name changes that one list. Both names now show [10, 20, 30, 40]. The check alias is quantities asks whether the names refer to the same object. Two separate lists can hold equal values and still fail this check.</p>
+<p>The slice quantities[:] creates a separate outer list. Replacing outer_copy[0] changes only the copy. quantities[0] stays 10.</p>
+<p>A nested list is a list inside another list. Copying the outer list does not copy its inner lists. A reference is a link to an object. The arrows below show these links after legs.copy(), before either list changes.</p>
+<figure data-lesson-map="0265" style="margin:24px 0" aria-labelledby="copy-map-caption">
+<div data-copy-map="shared-references" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+  <div style="border:1px solid currentColor;border-radius:8px;padding:12px">legs<br>[0] → A<br>[1] → B</div>
+  <div style="border:1px solid currentColor;border-radius:8px;padding:12px">shallow<br>[0] → A<br>[1] → B</div>
+  <div style="border:1px solid currentColor;border-radius:8px;padding:12px">Inner list A<br>[10, 20]</div>
+  <div style="border:1px solid currentColor;border-radius:8px;padding:12px">Inner list B<br>[30]</div>
+</div>
+<figcaption id="copy-map-caption">Two outer lists at the top. Two shared inner lists at the bottom. An arrow means “refers to”. Both index-0 items refer to A. Both index-1 items refer to B.</figcaption>
+</figure>
+<p>Predict each change before opening its answer. Follow the steps in order.</p>
+<details data-copy-prediction="mutate"><summary>1. Append 99 to shallow[0]. What does legs[0] contain?</summary><p>It contains [10, 20, 99]. Both arrows at index 0 still lead to the same inner list. Appending changes that shared list.</p></details>
+<details data-copy-prediction="replace"><summary>2. Set shallow[1] to [70]. Does legs[1] change?</summary><p>No. legs[1] still contains [30]. The arrow from shallow[1] now leads to a new list, [70]. The arrow from legs[1] still leads to B, which contains [30].</p><p>After both steps, legs is [[10, 20, 99], [30]]. shallow is [[10, 20, 99], [70]].</p></details>
+<p>Compare your predictions with the code:</p>
 <pre><code>legs = [[10, 20], [30]]
 shallow = legs.copy()
 shallow[0].append(99)
@@ -699,21 +713,21 @@ print(legs)  # [[10, 20, 99], [30]]
 shallow[1] = [70]
 print(legs[1])     # [30]
 print(shallow[1])  # [70]</code></pre>
-<p>legs.copy() copies the outer list. It leaves the two inner lists shared. So shallow[0].append(99) changes the first inner list, and you see [10, 20, 99] through both legs and shallow. This is a shallow copy.</p>
-<p>The next assignment, shallow[1] = [70], does something different. It replaces the second item in shallow with a new list. Nothing changes the second item in legs, which still holds [30]. Follow the brackets when reading these lines: are you replacing an outer item, or changing the list that item refers to?</p>
+<p>This is a shallow copy: the outer lists are separate, but their items still refer to the same objects. When you read a change, ask which object it changes. Appending changes an inner list. Assigning to shallow[1] replaces a reference in the outer list.</p>
 <p>In the full example, deepcopy also copies the inner lists, so independent stays unchanged. That can be useful when a calculation needs to change nested data. It can also copy far more than the calculation needs, and some resources cannot meaningfully be copied. Decide what the caller may change before choosing between a deep copy, copying just the affected part, or an immutable data model. See <a href="https://docs.python.org/3/library/copy.html">Python's copying rules</a>.</p>
 <h2>Tuples can contain mutable objects</h2>
 <p>Consider record = ("RFQ-1", [10, 20]). You cannot replace either of its two items: record[0] = "RFQ-2" raises TypeError. But record[1].append(30) works. It changes the list already held in the second position, without replacing that position.</p>
 <p>A tuple like this therefore cannot serve as an immutable snapshot. It also cannot be a dictionary key, because its list item is unhashable.</p>
 <h2>Slices, ranges and unpacking</h2>
-<p>A slice uses start:stop:step. The stop index is excluded. quantities[1:3] selects indexes 1 and 2, giving [20, 30]. quantities[::-1] walks backward and produces a reversed list. Slice bounds can extend past the sequence, so quantities[99:] is empty. In contrast, directly reading quantities[99] raises IndexError. A zero slice step raises ValueError.</p>
+<p>A slice uses start:stop:step. It stops before the stop index. quantities[1:3] selects indexes 1 and 2, giving [20, 30]. quantities[::-1] produces a reversed list.</p>
+<p>A slice can extend past the end: quantities[99:] gives an empty list. Directly reading quantities[99] raises IndexError because that item does not exist. A zero slice step raises ValueError.</p>
 <p>A range describes an integer progression. range(2, 9, 3) yields 2, 5 and 8; the stop value 9 is excluded. It does not store a separate item for every integer in the progression. Converting it to a list allocates those items. Slicing a range produces another compact range, so do not apply list-copy costs to it.</p>
 <p>Unpacking assigns successive values to names. first, *middle, last = range(5) assigns 0 to first, [1, 2, 3] to middle and 4 to last. The starred target receives a list. Without a starred target, the number of values must match the number of targets. Too few or too many values raise ValueError; silently ignoring extra fields requires an explicit rule.</p>
 <h2>Why some list operations cost more</h2>
 <p>CPython stores a list's references in a resizable array. An index identifies a position directly. Appending is usually cheap, but occasionally the array must grow and copy its references. Spread over many appends, that extra work gives an amortized constant cost per append. Individual appends can still take different amounts of time.</p>
 <p>Inserting at the front requires shifting the existing references. The longer the list, the more work that takes. A slice of k items also copies k references into new outer storage, so its time and space costs grow with the slice size.</p>
 <p>For a FIFO job queue, removing the first list item over and over pays that shifting cost repeatedly. deque supports efficient operations at both ends: append adds a job and popleft removes the oldest. A list is still useful when you need direct indexed access. These operation costs help you choose a container; you would need measurements to establish latency in your own application. See <a href="https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-queues">the queue example</a>.</p>`,
-    reading: "Work through one block at a time and write down the values you expect. For the copies, also ask which names share an object. The tuple example catches TypeError deliberately so the remaining checks can run. The code has not been run as part of this prose edit.",
+    reading: "Work through one block at a time and write down the values you expect. For each copy, draw arrows to the objects that remain shared. The tuple example catches TypeError so the remaining checks can run.",
     pitfalls: [
       ["A report changes its source", "A shallow copy still shares nested legs. Copy the mutable part that the calculation owns, or avoid mutating source data. Verify both source and result after the calculation."],
       ["Repeated rows share storage", "[[0] * 3] * 3 repeats references to one row. Changing one cell appears in every row. [[0] * 3 for _ in range(3)] creates a separate row each time."],

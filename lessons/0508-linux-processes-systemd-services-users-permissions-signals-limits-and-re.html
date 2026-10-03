@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#devops">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0508" data-bespoke-example="0508" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Count handles after the request finishes</figcaption><p>Hypothetical bounded fixture: a process starts with 20 descriptors. A request opens 5 and should close them.</p><div class="foundation-grid"><div>Before<br>20 descriptors</div><div>During request<br>25 descriptors</div><div>After cleanup<br>Expected return to 20</div></div><details><summary>What does a rising count after repeated requests suggest?</summary><p>Investigate leaked ownership or unfinished work. Compare with the process limit before blaming host-wide exhaustion.</p></details><details><summary>Does a restart prove the leak is fixed?</summary><p>No. Repeat the bounded workload and verify cleanup.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A service can exhaust its own resources while the host still has spare capacity. Inspect its identity, limits, descriptors and exit state to locate the problem. Repeated bounded work can reveal whether descriptor use returns to its baseline. A restart may restore service temporarily without fixing a leak. Graceful cleanup requires a handled signal; SIGKILL gives the process no such opportunity.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an operational diagnosis and response</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="operations-diagnosis" aria-label="Mechanism trace: Name the affected request or workload then Identify the failing layer then Check one hypothesis safely then Confirm recovery without a hidden regression. Experiment: The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.">
-        <li class="trace-stage"><span>01 · SCOPE</span><strong>Name the affected request or workload</strong><small>Capture the symptom, time window, recent changes and expected behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Identify the failing layer</strong><small>Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TEST</span><strong>Check one hypothesis safely</strong><small>Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Confirm recovery without a hidden regression</strong><small>Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</small></li>
+        <li class="trace-stage"><span>01 · SCOPE</span><details class="trace-explanation" open><summary>Name the affected request or workload</summary><p>Capture the symptom, time window, recent changes and expected behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><details class="trace-explanation"><summary>Identify the failing layer</summary><p>Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TEST</span><details class="trace-explanation"><summary>Check one hypothesis safely</summary><p>Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><details class="trace-explanation"><summary>Confirm recovery without a hidden regression</summary><p>Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.</strong>
-        <small><b>Inspect:</b> Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +76,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Linux processes">
-        <span>01</span>
-        <h3>Linux processes</h3>
+      <details class="concept-card" data-subtopic="Linux processes">
+        <summary>Linux processes</summary>
         <p class="concept-definition">Linux processes own execution and resource contexts observed through process, signal, and filesystem interfaces.</p>
-      </article><article class="concept-card" data-subtopic="systemd">
-        <span>02</span>
-        <h3>systemd</h3>
+      </details><details class="concept-card" data-subtopic="systemd">
+        <summary>systemd</summary>
         <p class="concept-definition">systemd manages services and related units with dependency, restart, logging, and resource-control configuration.</p>
-      </article><article class="concept-card" data-subtopic="services">
-        <span>03</span>
-        <h3>services</h3>
+      </details><details class="concept-card" data-subtopic="services">
+        <summary>services</summary>
         <p class="concept-definition">Services are managed workloads with defined startup, readiness, shutdown, and recovery behavior.</p>
-      </article><article class="concept-card" data-subtopic="users">
-        <span>04</span>
-        <h3>users</h3>
+      </details><details class="concept-card" data-subtopic="users">
+        <summary>users</summary>
         <p class="concept-definition">Users are identities under which actions are attributed and authorized. Shared or overly privileged identities obscure accountability.</p>
-      </article><article class="concept-card" data-subtopic="permissions">
-        <span>05</span>
-        <h3>permissions</h3>
+      </details><details class="concept-card" data-subtopic="permissions">
+        <summary>permissions</summary>
         <p class="concept-definition">Permissions authorize specific operations on resources. Grant only what is needed and distinguish identity from allowed actions.</p>
-      </article><article class="concept-card" data-subtopic="signals">
-        <span>06</span>
-        <h3>signals</h3>
+      </details><details class="concept-card" data-subtopic="signals">
+        <summary>signals</summary>
         <p class="concept-definition">A signal notifies a process of an event such as termination. Some can be handled for cleanup; SIGKILL cannot be caught or used for graceful shutdown.</p>
-      </article><article class="concept-card" data-subtopic="limits">
-        <span>07</span>
-        <h3>limits</h3>
+      </details><details class="concept-card" data-subtopic="limits">
+        <summary>limits</summary>
         <p class="concept-definition">Resource limits bound consumption or admission, such as memory, CPU, payload size, or concurrency. Define rejection and recovery behavior.</p>
-      </article><article class="concept-card" data-subtopic="resource diagnosis">
-        <span>08</span>
-        <h3>resource diagnosis</h3>
+      </details><details class="concept-card" data-subtopic="resource diagnosis">
+        <summary>resource diagnosis</summary>
         <p class="concept-definition">Resource diagnosis connects symptoms to CPU, memory, I/O, queues, and limits using measurements before changing capacity or configuration.</p>
-      </article>
+      </details>
     </div>
   </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/data-preparation-and-terminal.html#linux-users">Linux users and groups: permission and access-testing walkthrough</a></li></ul></section>
