@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0066" data-bespoke-example="0066" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Visible replacement and durable replacement are separate</figcaption>
+<p>The fixture replaces state.bin through a temporary file in the same trusted directory.</p>
+<div class="foundation-grid"><div>Prepare content<br>Write temporary file<br>Flush Python buffer<br>fsync file</div><div>Replace the name<br>Temporary file → state.bin<br>Then fsync directory<br>Clean up temporary path</div></div>
+<details><summary>Directory fsync raises after replacement. Does the exception prove the old file is still at the path?</summary><p>No. The replacement may already be visible. Failure at that point does not roll it back.</p></details>
+<details><summary>Does reading committed bytes once establish power-loss durability?</summary><p>No. It checks observed content, not survival of a crash. Filesystem and storage guarantees need appropriate crash testing.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A file operation passes through descriptors, filesystem logic, caches and device queues before data reaches persistent storage. A successful write can leave data buffered. Journaling supports recovery for selected changes without making every application write durable. For replacement, stage a file in the same trusted directory, sync its content, replace the name and sync the directory. If that final sync fails, replacement may already be visible. Report the uncertain state rather than assuming the exception rolled it back.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a process crossing a kernel boundary</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="durable-file-replacement" aria-label="Mechanism trace: Create an owned temporary file then Flush and fsync file data then Atomically change the name then Persist namespace change. Experiment: If directory fsync fails, can the caller safely assume the old file remains?">
-        <li class="trace-stage"><span>01 · STAGE</span><strong>Create an owned temporary file</strong><small>Unique same-directory staging avoids sharing one fixed temporary name.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SYNC</span><strong>Flush and fsync file data</strong><small>Do not replace the visible destination before staged data is ready.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REPLACE</span><strong>Atomically change the name</strong><small>Readers see the old or new file, not a partially rewritten destination.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SYNC DIRECTORY</span><strong>Persist namespace change</strong><small>A later sync failure does not roll back an already completed rename.</small></li>
+        <li class="trace-stage"><span>01 · STAGE</span><details class="trace-explanation" open><summary>Create an owned temporary file</summary><p>Unique same-directory staging avoids sharing one fixed temporary name.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SYNC</span><details class="trace-explanation"><summary>Flush and fsync file data</summary><p>Do not replace the visible destination before staged data is ready.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REPLACE</span><details class="trace-explanation"><summary>Atomically change the name</summary><p>Readers see the old or new file, not a partially rewritten destination.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SYNC DIRECTORY</span><details class="trace-explanation"><summary>Persist namespace change</summary><p>A later sync failure does not roll back an already completed rename.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>If directory fsync fails, can the caller safely assume the old file remains?</strong>
-        <small><b>Inspect:</b> No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence.</small></details>
       </div>
     </aside>
   </div>
@@ -73,47 +80,37 @@
   <section class="concept-section" data-subtopic-count="10">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="I/O">
-        <span>01</span>
-        <h3>I/O</h3>
+      <details class="concept-card" data-subtopic="I/O">
+        <summary>I/O</summary>
         <p class="concept-definition">Input/output moves data between a process and external devices or systems. Waiting for I/O differs from consuming CPU.</p>
-      </article><article class="concept-card" data-subtopic="disks">
-        <span>02</span>
-        <h3>disks</h3>
+      </details><details class="concept-card" data-subtopic="disks">
+        <summary>disks</summary>
         <p class="concept-definition">Magnetic disks persist data on rotating media; seek and rotational latency make access patterns important.</p>
-      </article><article class="concept-card" data-subtopic="SSDs">
-        <span>03</span>
-        <h3>SSDs</h3>
+      </details><details class="concept-card" data-subtopic="SSDs">
+        <summary>SSDs</summary>
         <p class="concept-definition">SSDs persist data in flash, with erase/write constraints and controller behavior affecting latency, endurance, and recovery.</p>
-      </article><article class="concept-card" data-subtopic="files">
-        <span>04</span>
-        <h3>files</h3>
+      </details><details class="concept-card" data-subtopic="files">
+        <summary>files</summary>
         <p class="concept-definition">Files expose named or referenced byte sequences through operating-system APIs, with permissions, lifecycle, and durability behavior.</p>
-      </article><article class="concept-card" data-subtopic="directories">
-        <span>05</span>
-        <h3>directories</h3>
+      </details><details class="concept-card" data-subtopic="directories">
+        <summary>directories</summary>
         <p class="concept-definition">Directories map names to filesystem objects. Path resolution and permissions determine which object an operation reaches.</p>
-      </article><article class="concept-card" data-subtopic="VFS">
-        <span>06</span>
-        <h3>VFS</h3>
+      </details><details class="concept-card" data-subtopic="VFS">
+        <summary>VFS</summary>
         <p class="concept-definition">A virtual filesystem layer presents common file operations over different filesystem implementations.</p>
-      </article><article class="concept-card" data-subtopic="buffering">
-        <span>07</span>
-        <h3>buffering</h3>
+      </details><details class="concept-card" data-subtopic="buffering">
+        <summary>buffering</summary>
         <p class="concept-definition">Buffering temporarily stores data between producers and consumers. Unbounded buffering converts a throughput mismatch into memory exhaustion.</p>
-      </article><article class="concept-card" data-subtopic="caching">
-        <span>08</span>
-        <h3>caching</h3>
+      </details><details class="concept-card" data-subtopic="caching">
+        <summary>caching</summary>
         <p class="concept-definition">Caching reuses stored results to avoid repeated work. Define key scope, freshness, invalidation, memory limits, and behavior on misses.</p>
-      </article><article class="concept-card" data-subtopic="journaling">
-        <span>09</span>
-        <h3>journaling</h3>
+      </details><details class="concept-card" data-subtopic="journaling">
+        <summary>journaling</summary>
         <p class="concept-definition">Journaling records selected filesystem changes to support recovery after interruption. It does not imply every application write is durable.</p>
-      </article><article class="concept-card" data-subtopic="durability">
-        <span>10</span>
-        <h3>durability</h3>
+      </details><details class="concept-card" data-subtopic="durability">
+        <summary>durability</summary>
         <p class="concept-definition">Durability means acknowledged data survives the failures covered by a stated contract. Buffered writes may require explicit synchronization.</p>
-      </article>
+      </details>
     </div>
   </section>
 

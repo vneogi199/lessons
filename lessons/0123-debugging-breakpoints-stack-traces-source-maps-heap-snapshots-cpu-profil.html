@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0123" data-bespoke-example="0123" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Follow the value to the first incorrect transformation</figcaption>
+<p>For the input “ Ada ”, inspect the normalization steps around a wrong-result report.</p>
+<div class="foundation-grid"><div>Expected value path<br>Trim → Ada<br>NFC → Ada<br>Lowercase → ada</div><div>Debugging boundary<br>Pause for this failing input<br>Inspect before and after each step<br>Keep the smallest reproduction</div></div>
+<details><summary>Would a heap snapshot be the first evidence for a wrong lowercase result?</summary><p>Usually a value-focused breakpoint or minimal test is more direct. Heap retaining paths answer a different question about retained memory.</p></details>
+<details><summary>Does the passing normalization test establish a CPU hotspot or memory leak?</summary><p>No. Profiles and heap evidence require their own workload and observations. Repeat the original failing workload after the fix.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Choose evidence that can explain the symptom. A conditional breakpoint helps locate a wrong value. Matching source maps connect transformed code to its source. Heap snapshots show retaining relationships, while CPU profiles locate computation. These tools answer different questions. Pausing execution can change timing, so reproduce the original workload again after the fix and keep the regression test.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a diagnostic experiment</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-engine" aria-label="Mechanism trace: Program creates executable work then Execution records observed behavior then Engine optimizes or collects then Profiles expose the outcome. Experiment: Warm a representative workload, change one object shape or retaining edge, and profile both runs.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>Program creates executable work</strong><small>Parsing and object allocation establish runtime inputs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FEEDBACK</span><strong>Execution records observed behavior</strong><small>Types, shapes, calls, allocations, and timing form evidence.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPT</span><strong>Engine optimizes or collects</strong><small>Guards, tiers, deoptimization, and GC respond to reality.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Profiles expose the outcome</strong><small>Latency, CPU, heap, and retaining paths test the explanation.</small></li>
+        <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Program creates executable work</summary><p>Parsing and object allocation establish runtime inputs.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FEEDBACK</span><details class="trace-explanation"><summary>Execution records observed behavior</summary><p>Types, shapes, calls, allocations, and timing form evidence.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPT</span><details class="trace-explanation"><summary>Engine optimizes or collects</summary><p>Guards, tiers, deoptimization, and GC respond to reality.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><details class="trace-explanation"><summary>Profiles expose the outcome</summary><p>Latency, CPU, heap, and retaining paths test the explanation.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Warm a representative workload, change one object shape or retaining edge, and profile both runs.</strong>
-        <small><b>Inspect:</b> Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Bytecode or optimization log, CPU profile, heap snapshot, GC events, percentiles, and output.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +80,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Debugging">
-        <span>01</span>
-        <h3>Debugging</h3>
+      <details class="concept-card" data-subtopic="Debugging">
+        <summary>Debugging</summary>
         <p class="concept-definition">Debugging tests explanations for an observed failure. Reproduce the symptom, preserve evidence, isolate one cause, and verify a targeted change against the original case.</p>
-      </article><article class="concept-card" data-subtopic="breakpoints">
-        <span>02</span>
-        <h3>breakpoints</h3>
+      </details><details class="concept-card" data-subtopic="breakpoints">
+        <summary>breakpoints</summary>
         <p class="concept-definition">A breakpoint pauses execution at a selected location or condition so you can inspect values and control flow. Pausing can change concurrency and timing behavior.</p>
-      </article><article class="concept-card" data-subtopic="stack traces">
-        <span>03</span>
-        <h3>stack traces</h3>
+      </details><details class="concept-card" data-subtopic="stack traces">
+        <summary>stack traces</summary>
         <p class="concept-definition">A stack trace records call locations associated with execution or failure. Match it to the deployed artifact and account for asynchronous boundaries and source maps.</p>
-      </article><article class="concept-card" data-subtopic="source maps">
-        <span>04</span>
-        <h3>source maps</h3>
+      </details><details class="concept-card" data-subtopic="source maps">
+        <summary>source maps</summary>
         <p class="concept-definition">A source map relates generated code locations to original source. Debuggers and error systems need the exact deployed map and artifact to reconstruct reliable stacks.</p>
-      </article><article class="concept-card" data-subtopic="heap snapshots">
-        <span>05</span>
-        <h3>heap snapshots</h3>
+      </details><details class="concept-card" data-subtopic="heap snapshots">
+        <summary>heap snapshots</summary>
         <p class="concept-definition">A heap snapshot records objects and their retaining relationships at a point in time. Compare snapshots under controlled workloads to investigate unexpected retention.</p>
-      </article><article class="concept-card" data-subtopic="CPU profiles">
-        <span>06</span>
-        <h3>CPU profiles</h3>
+      </details><details class="concept-card" data-subtopic="CPU profiles">
+        <summary>CPU profiles</summary>
         <p class="concept-definition">A CPU profile samples or records where execution spends CPU time. It does not directly measure time spent waiting for an external service.</p>
-      </article><article class="concept-card" data-subtopic="tracing">
-        <span>07</span>
-        <h3>tracing</h3>
+      </details><details class="concept-card" data-subtopic="tracing">
+        <summary>tracing</summary>
         <p class="concept-definition">A distributed trace connects spans of work across an operation, such as an HTTP request and its database calls. Sampling and missing instrumentation limit what a trace proves.</p>
-      </article>
+      </details>
     </div>
   </section>
 

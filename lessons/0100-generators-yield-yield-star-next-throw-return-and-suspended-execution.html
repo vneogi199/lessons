@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0100" data-bespoke-example="0100" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A value sent by next resumes the suspended yield</figcaption>
+<p>The supplied generator stores the value sent back into each yield as command.</p>
+<div class="foundation-grid"><div>next()<br>Yields 1<br>done: false</div><div>next()<br>Resumes and yields 2<br>done: false</div><div>next("stop")<br>command becomes stop<br>Returns stopped<br>done: true</div><div>Cleanup<br>finally runs as the started generator exits</div></div>
+<details><summary>What if return is called before the first next?</summary><p>The body has never started, so its finally is not entered. Do not acquire a resource outside the body while assuming this finally always releases it.</p></details>
+<details><summary>Is this generator a cancellable network paginator?</summary><p>No. It is a synchronous range with a command protocol. Network work and cancellation ownership require additional behavior.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Calling a generator creates an iterator without running its body. next starts or resumes it until a yield or completion. A later next call can supply the value of a suspended yield expression; the first call has no suspended expression to receive an argument. return and throw also resume control flow. Cleanup can itself yield, so requesting return need not complete the generator in one step.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an iteration step</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-iteration" aria-label="Mechanism trace: Consumer asks for traversal then Iterator advances once then Lazy work preserves position then Completion releases traversal. Experiment: Break from a generator-backed for-of loop and verify its finally block runs.">
-        <li class="trace-stage"><span>01 · ITERABLE</span><strong>Consumer asks for traversal</strong><small>Symbol.iterator returns an iterator object.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NEXT</span><strong>Iterator advances once</strong><small>State produces one value and a done flag.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND</span><strong>Lazy work preserves position</strong><small>A generator pauses its execution context at yield.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLOSE</span><strong>Completion releases traversal</strong><small>Return, throw, break, or exhaustion finishes the protocol.</small></li>
+        <li class="trace-stage"><span>01 · ITERABLE</span><details class="trace-explanation" open><summary>Consumer asks for traversal</summary><p>Symbol.iterator returns an iterator object.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NEXT</span><details class="trace-explanation"><summary>Iterator advances once</summary><p>State produces one value and a done flag.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND</span><details class="trace-explanation"><summary>Lazy work preserves position</summary><p>A generator pauses its execution context at yield.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLOSE</span><details class="trace-explanation"><summary>Completion releases traversal</summary><p>Return, throw, break, or exhaustion finishes the protocol.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Break from a generator-backed for-of loop and verify its finally block runs.</strong>
-        <small><b>Inspect:</b> next inputs, iterator results, generator state, return call, and cleanup log.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> next inputs, iterator results, generator state, return call, and cleanup log.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +80,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Generators">
-        <span>01</span>
-        <h3>Generators</h3>
+      <details class="concept-card" data-subtopic="Generators">
+        <summary>Generators</summary>
         <p class="concept-definition">A generator object is both iterator and suspended computation. Calling next, throw, or return resumes it until another yield or completion.</p>
-      </article><article class="concept-card" data-subtopic="yield">
-        <span>02</span>
-        <h3>yield</h3>
+      </details><details class="concept-card" data-subtopic="yield">
+        <summary>yield</summary>
         <p class="concept-definition">yield suspends a generator and exposes a value to its consumer. A later next(value) resumes execution and supplies the result of the suspended yield expression.</p>
-      </article><article class="concept-card" data-subtopic="yield star">
-        <span>03</span>
-        <h3>yield star</h3>
+      </details><details class="concept-card" data-subtopic="yield star">
+        <summary>yield star</summary>
         <p class="concept-definition">yield* delegates iteration to another iterable. It forwards traversal operations according to the delegation protocol and can return the delegate&#039;s completion value.</p>
-      </article><article class="concept-card" data-subtopic="next">
-        <span>04</span>
-        <h3>next</h3>
+      </details><details class="concept-card" data-subtopic="next">
+        <summary>next</summary>
         <p class="concept-definition">A generator&#039;s next(value) resumes execution. Its result reports a yielded or returned value and whether the generator has completed; the first supplied value has no suspended yield to receive it.</p>
-      </article><article class="concept-card" data-subtopic="throw">
-        <span>05</span>
-        <h3>throw</h3>
+      </details><details class="concept-card" data-subtopic="throw">
+        <summary>throw</summary>
         <p class="concept-definition">throw raises an exception. A generator&#039;s throw(error) resumes it by throwing at its suspended point, where a surrounding catch may handle the error.</p>
-      </article><article class="concept-card" data-subtopic="return">
-        <span>06</span>
-        <h3>return</h3>
+      </details><details class="concept-card" data-subtopic="return">
+        <summary>return</summary>
         <p class="concept-definition">return completes the current function with a value. Calling a generator&#039;s return(value) requests completion and can execute finally blocks before it finishes.</p>
-      </article><article class="concept-card" data-subtopic="suspended execution">
-        <span>07</span>
-        <h3>suspended execution</h3>
+      </details><details class="concept-card" data-subtopic="suspended execution">
+        <summary>suspended execution</summary>
         <p class="concept-definition">Suspended execution preserves a generator or async function&#039;s continuation while other work proceeds. Resuming it continues from that point rather than calling the function from the beginning.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0463" data-bespoke-example="0463" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Commit the next offset after local effects</figcaption><p>A valid one-partition batch contains offsets 10 and 12. A gap is allowed, for example after compaction.</p><div class="foundation-grid"><div>Offset 10<br>Inbox and effect commit</div><div>Offset 12<br>Inbox and effect commit</div><div>Consumer position<br>Commit 13</div></div><details><summary>What if the process crashes before committing 13?</summary><p>The broker can repeat the batch. Durable inbox claims must prevent repeated local effects.</p></details><details><summary>Would offsets 12 then 10 be accepted?</summary><p>No. The starter checks the full batch and rejects decreasing offsets before applying effects.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A producer batches records and can use identity and sequence numbers to suppress supported retry duplicates. Consumers track positions in assigned partitions. A Kafka transaction can couple produced records with consumed offsets, while an external database remains a separate boundary. The example preserves offset precision and commits the next position. Rebalances still require protection against a stale worker&#039;s effects.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a domain command and event</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="kafka-record" aria-label="Mechanism trace: Producer forms a keyed batch then Partition leader writes its log then Consumer group owns partitions then Effect and position become recoverable. Experiment: Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.">
-        <li class="trace-stage"><span>01 · PRODUCE</span><strong>Producer forms a keyed batch</strong><small>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><strong>Partition leader writes its log</strong><small>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FETCH</span><strong>Consumer group owns partitions</strong><small>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Effect and position become recoverable</strong><small>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</small></li>
+        <li class="trace-stage"><span>01 · PRODUCE</span><details class="trace-explanation" open><summary>Producer forms a keyed batch</summary><p>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><details class="trace-explanation"><summary>Partition leader writes its log</summary><p>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FETCH</span><details class="trace-explanation"><summary>Consumer group owns partitions</summary><p>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Effect and position become recoverable</summary><p>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.</strong>
-        <small><b>Inspect:</b> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</small></details>
       </div>
     </aside>
   </div>
@@ -73,47 +76,37 @@
   <section class="concept-section" data-subtopic-count="10">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Kafka producers">
-        <span>01</span>
-        <h3>Kafka producers</h3>
+      <details class="concept-card" data-subtopic="Kafka producers">
+        <summary>Kafka producers</summary>
         <p class="concept-definition">Kafka producers choose partitions, batch and compress records, retry sends, and report broker acknowledgements.</p>
-      </article><article class="concept-card" data-subtopic="batching">
-        <span>02</span>
-        <h3>batching</h3>
+      </details><details class="concept-card" data-subtopic="batching">
+        <summary>batching</summary>
         <p class="concept-definition">Batching groups records into fewer network requests to improve throughput at the cost of bounded waiting and memory.</p>
-      </article><article class="concept-card" data-subtopic="compression">
-        <span>03</span>
-        <h3>compression</h3>
+      </details><details class="concept-card" data-subtopic="compression">
+        <summary>compression</summary>
         <p class="concept-definition">Compression reduces network and storage bytes for a record batch while using producer and consumer CPU.</p>
-      </article><article class="concept-card" data-subtopic="idempotence">
-        <span>04</span>
-        <h3>idempotence</h3>
+      </details><details class="concept-card" data-subtopic="idempotence">
+        <summary>idempotence</summary>
         <p class="concept-definition">Kafka producer idempotence uses producer identity and sequence numbers to prevent retry duplicates within its supported session guarantees.</p>
-      </article><article class="concept-card" data-subtopic="transactions">
-        <span>05</span>
-        <h3>transactions</h3>
+      </details><details class="concept-card" data-subtopic="transactions">
+        <summary>transactions</summary>
         <p class="concept-definition">Kafka transactions commit output records and included consumed-offset updates together. Consumers need read_committed to hide aborted transactional records. An external database write or payment is not automatically part of that transaction.</p>
-      </article><article class="concept-card" data-subtopic="consumers">
-        <span>06</span>
-        <h3>consumers</h3>
+      </details><details class="concept-card" data-subtopic="consumers">
+        <summary>consumers</summary>
         <p class="concept-definition">A consumer reads messages, validates them, applies local work, records progress, and handles retries and duplicates.</p>
-      </article><article class="concept-card" data-subtopic="consumer groups">
-        <span>07</span>
-        <h3>consumer groups</h3>
+      </details><details class="concept-card" data-subtopic="consumer groups">
+        <summary>consumer groups</summary>
         <p class="concept-definition">A traditional Kafka consumer group assigns each partition to one member at a time. Assignment does not stop a stale worker&#039;s external effects; safe handoff and effect protection still matter. Share groups use different assignment semantics.</p>
-      </article><article class="concept-card" data-subtopic="rebalancing">
-        <span>08</span>
-        <h3>rebalancing</h3>
+      </details><details class="concept-card" data-subtopic="rebalancing">
+        <summary>rebalancing</summary>
         <p class="concept-definition">Rebalancing changes partition ownership when membership or subscription changes and requires safe pause, handoff, and offset behavior.</p>
-      </article><article class="concept-card" data-subtopic="offsets">
-        <span>09</span>
-        <h3>offsets</h3>
+      </details><details class="concept-card" data-subtopic="offsets">
+        <summary>offsets</summary>
         <p class="concept-definition">An offset is a record position in one Kafka partition; a committed offset records where a consumer group plans to resume.</p>
-      </article><article class="concept-card" data-subtopic="ordering">
-        <span>10</span>
-        <h3>ordering</h3>
+      </details><details class="concept-card" data-subtopic="ordering">
+        <summary>ordering</summary>
         <p class="concept-definition">Kafka guarantees record order inside one partition, not one global order across all partitions.</p>
-      </article>
+      </details>
     </div>
   </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/streaming-platform-practice.html#python-kafka">Python Kafka clients and offset ownership</a></li></ul></section>

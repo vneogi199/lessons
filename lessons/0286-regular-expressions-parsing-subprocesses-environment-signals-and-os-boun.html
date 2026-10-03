@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You need to run a command with a filename supplied by a user. Passing the filename as a separate argument avoids treating it as shell syntax.</p><p>That does not prove the filename is permitted. Check allowed paths and the command&#039;s own options too. A regular expression can check a simple format, but it does not establish authorization.</p><details><summary>Does avoiding a shell make every supplied filename safe?</summary><p>No. Path and command-specific rules still apply.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0286" data-bespoke-example="0286" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reject tokens that do not fit the revision policy</figcaption>
+<p>The validator requires a complete conservative token before calling Git.</p>
+<div class="foundation-grid"><div>abc123<br>Matches policy</div><div>--help<br>Invalid first character<br>Reject</div><div>main;echo injected<br>Invalid punctuation<br>Reject</div><div>abc123 plus newline<br>Full match fails<br>Reject</div></div>
+<details><summary>Does an argument list alone eliminate option injection?</summary><p>No. A program can interpret a supplied argument as an option. The token policy and option delimiter address that boundary here.</p></details>
+<details><summary>Does passing the regex establish that Git can resolve the token?</summary><p>No. Git can still exit unsuccessfully. check=True turns that outcome into an exception.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A subprocess has its own arguments, environment and streams. Passing an argument list avoids shell interpretation, but the called program can still treat an argument as an option. Pipes can fill, output can consume memory, and timeouts need a termination policy. Signals let processes coordinate shutdown. Regular expressions have a separate risk: backtracking on an unsuitable pattern or large input can consume excessive time.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a Python operation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-execution" aria-label="Mechanism trace: Python syntax enters a code block then A runtime namespace is created then Objects perform the operation then State, value, or exception emerges. Experiment: Change one binding, type, or mutable object and predict the resulting behavior.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>Python syntax enters a code block</strong><small>The compiler determines names and produces executable code.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FRAME</span><strong>A runtime namespace is created</strong><small>Names bind to objects while instructions execute.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROTOCOL</span><strong>Objects perform the operation</strong><small>Type-defined behavior controls conversion and dispatch.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>State, value, or exception emerges</strong><small>Tests and inspection make the behavior observable.</small></li>
+        <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Python syntax enters a code block</summary><p>The compiler determines names and produces executable code.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FRAME</span><details class="trace-explanation"><summary>A runtime namespace is created</summary><p>Names bind to objects while instructions execute.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROTOCOL</span><details class="trace-explanation"><summary>Objects perform the operation</summary><p>Type-defined behavior controls conversion and dispatch.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><details class="trace-explanation"><summary>State, value, or exception emerges</summary><p>Tests and inspection make the behavior observable.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one binding, type, or mutable object and predict the resulting behavior.</strong>
-        <small><b>Inspect:</b> Object identity, type, frame locals, return value, exception, and timing.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Object identity, type, frame locals, return value, exception, and timing.</small></details>
       </div>
     </aside>
   </div>
@@ -69,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Regular expressions">
-        <span>01</span>
-        <h3>Regular expressions</h3>
+      <details class="concept-card" data-subtopic="Regular expressions">
+        <summary>Regular expressions</summary>
         <p class="concept-definition">Regular expressions match text patterns; poorly chosen patterns or unbounded inputs can cause excessive processing.</p>
-      </article><article class="concept-card" data-subtopic="parsing">
-        <span>02</span>
-        <h3>parsing</h3>
+      </details><details class="concept-card" data-subtopic="parsing">
+        <summary>parsing</summary>
         <p class="concept-definition">Parsing converts a representation into structured values. Syntax acceptance does not establish domain validity or permission.</p>
-      </article><article class="concept-card" data-subtopic="subprocesses">
-        <span>03</span>
-        <h3>subprocesses</h3>
+      </details><details class="concept-card" data-subtopic="subprocesses">
+        <summary>subprocesses</summary>
         <p class="concept-definition">A subprocess is a separate OS process with arguments, environment, standard streams, exit status, and signals. Passing an argument list avoids accidental shell interpretation.</p>
-      </article><article class="concept-card" data-subtopic="environment">
-        <span>04</span>
-        <h3>environment</h3>
+      </details><details class="concept-card" data-subtopic="environment">
+        <summary>environment</summary>
         <p class="concept-definition">Environment values are external configuration, often strings or absent values. Parse them rather than trusting implicit conversion.</p>
-      </article><article class="concept-card" data-subtopic="signals">
-        <span>05</span>
-        <h3>signals</h3>
+      </details><details class="concept-card" data-subtopic="signals">
+        <summary>signals</summary>
         <p class="concept-definition">A signal is an asynchronous OS notification delivered to a process. Handlers should perform minimal work and coordinate an orderly shutdown path.</p>
-      </article><article class="concept-card" data-subtopic="OS boundaries">
-        <span>06</span>
-        <h3>OS boundaries</h3>
+      </details><details class="concept-card" data-subtopic="OS boundaries">
+        <summary>OS boundaries</summary>
         <p class="concept-definition">OS boundaries expose paths, environment, permissions, subprocesses, and platform-dependent behavior requiring explicit validation.</p>
-      </article>
+      </details>
     </div>
   </section>
 

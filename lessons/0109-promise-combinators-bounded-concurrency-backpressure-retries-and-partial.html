@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0109" data-bespoke-example="0109" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A failed item keeps its input position</figcaption>
+<p>The pool processes [1,2,3,4] with limit 2. Values double except that 3 throws.</p>
+<div class="foundation-grid"><div>Indexed results<br>0 → fulfilled, 2<br>1 → fulfilled, 4<br>2 → rejected<br>3 → fulfilled, 8</div><div>Concurrency boundary<br>At most two awaited operations active<br>Results remain in input order</div></div>
+<details><summary>Does one rejection stop all remaining items?</summary><p>No. Workers record the rejection and continue. The final array includes the result for input 4.</p></details>
+<details><summary>Does limit 2 bound total memory and operation duration?</summary><p>No. Inputs and results still occupy linear space, and a hanging operation can prevent completion. Deadlines and streaming need separate controls.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Promise combinators describe how results settle; they do not automatically limit work or cancel it. A bounded pool controls how many operations are active at once. It must handle synchronous throws as well as rejected promises and preserve the intended result order. Keeping the entire input and output still uses memory proportional to the batch. A stuck operation needs its own deadline or cancellation support.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a concurrent task</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-jobs" aria-label="Mechanism trace: Synchronous code runs then Async work registers continuation then Event loop chooses ready work then Continuation observes state. Experiment: Mix a timer, resolved promise, and synchronous log; predict exact output order.">
-        <li class="trace-stage"><span>01 · STACK</span><strong>Synchronous code runs</strong><small>Calls execute until the stack becomes empty.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Async work registers continuation</strong><small>Promise reactions and tasks enter different queues.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><strong>Event loop chooses ready work</strong><small>Microtasks drain before the next task and render opportunity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><strong>Continuation observes state</strong><small>Order, errors, and UI timing expose the scheduling model.</small></li>
+        <li class="trace-stage"><span>01 · STACK</span><details class="trace-explanation" open><summary>Synchronous code runs</summary><p>Calls execute until the stack becomes empty.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Async work registers continuation</summary><p>Promise reactions and tasks enter different queues.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><details class="trace-explanation"><summary>Event loop chooses ready work</summary><p>Microtasks drain before the next task and render opportunity.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><details class="trace-explanation"><summary>Continuation observes state</summary><p>Order, errors, and UI timing expose the scheduling model.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Mix a timer, resolved promise, and synchronous log; predict exact output order.</strong>
-        <small><b>Inspect:</b> Console order, task timestamps, unhandled rejection, and render timing.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Console order, task timestamps, unhandled rejection, and render timing.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Promise combinators">
-        <span>01</span>
-        <h3>Promise combinators</h3>
+      <details class="concept-card" data-subtopic="Promise combinators">
+        <summary>Promise combinators</summary>
         <p class="concept-definition">Promise.all, allSettled, any, and race combine settlement outcomes in different ways. They do not limit how much work was already started or cancel losing operations automatically.</p>
-      </article><article class="concept-card" data-subtopic="bounded concurrency">
-        <span>02</span>
-        <h3>bounded concurrency</h3>
+      </details><details class="concept-card" data-subtopic="bounded concurrency">
+        <summary>bounded concurrency</summary>
         <p class="concept-definition">Bounded concurrency limits how many operations may be in flight. It protects memory, sockets, rate limits, downstream capacity, and tail latency.</p>
-      </article><article class="concept-card" data-subtopic="backpressure">
-        <span>03</span>
-        <h3>backpressure</h3>
+      </details><details class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
         <p class="concept-definition">Backpressure makes producers slow down or reject work when consumers reach capacity. A queue without a meaningful bound merely postpones overload.</p>
-      </article><article class="concept-card" data-subtopic="retries">
-        <span>04</span>
-        <h3>retries</h3>
+      </details><details class="concept-card" data-subtopic="retries">
+        <summary>retries</summary>
         <p class="concept-definition">A retry makes another attempt after failure or uncertainty. Bound attempts and elapsed time, and repeat side effects only when their contract supports safe retries.</p>
-      </article><article class="concept-card" data-subtopic="partial failure">
-        <span>05</span>
-        <h3>partial failure</h3>
+      </details><details class="concept-card" data-subtopic="partial failure">
+        <summary>partial failure</summary>
         <p class="concept-definition">Partial failure means some operations succeed while others fail or remain uncertain. Decide whether to return partial results, compensate, retry safely, or fail the overall operation.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#software-design">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0015" data-bespoke-example="0015" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A small workflow with one forbidden shortcut</figcaption>
+<p>The state table permits approval before sending.</p>
+<div class="foundation-grid"><div>Allowed path<br>draft → approve → approved<br>approved → send → sent</div><div>Rejected path<br>draft → send<br>No transition exists<br>State stays draft</div></div>
+<details><summary>A listener throws after approval. Does the state return to draft?</summary><p>No. State changes before listeners run. It remains approved, and the thrown error prevents later listeners from running.</p></details>
+<details><summary>Does reaching sent prove that an external notification was delivered?</summary><p>No. This fixture records a local transition. It does not perform or verify external delivery.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Behavioral patterns make control flow explicit. A Strategy selects an algorithm, while State selects behavior for a lifecycle state. An Observer sends notifications, so the design must specify callback order and what happens when a listener throws or dispatches again. A Command stores a request, but storing it does not implement durable retries or undo. Choose the pattern from the required behavior, then test ordering, failure and cleanup.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a requirement-driven code change</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="pattern-decision" aria-label="Mechanism trace: A repeated design pressure appears then Competing needs shape the choice then A named pattern assigns responsibilities then Evidence tests the added indirection. Experiment: Implement the direct design first, add one real variation, then compare it with the smallest suitable pattern.">
-        <li class="trace-stage"><span>01 · PROBLEM</span><strong>A repeated design pressure appears</strong><small>Current requirements, change axes, constraints, and direct-design pain are observable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FORCES</span><strong>Competing needs shape the choice</strong><small>Simplicity, coupling, lifetime, state, failure, performance, and team understanding conflict.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STRUCTURE</span><strong>A named pattern assigns responsibilities</strong><small>Objects, functions, messages, and dependencies cooperate for a stated intent.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSEQUENCE</span><strong>Evidence tests the added indirection</strong><small>Change cost, tests, traces, failure behavior, and alternatives show whether the pattern earns its complexity.</small></li>
+        <li class="trace-stage"><span>01 · PROBLEM</span><details class="trace-explanation" open><summary>A repeated design pressure appears</summary><p>Current requirements, change axes, constraints, and direct-design pain are observable.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FORCES</span><details class="trace-explanation"><summary>Competing needs shape the choice</summary><p>Simplicity, coupling, lifetime, state, failure, performance, and team understanding conflict.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STRUCTURE</span><details class="trace-explanation"><summary>A named pattern assigns responsibilities</summary><p>Objects, functions, messages, and dependencies cooperate for a stated intent.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSEQUENCE</span><details class="trace-explanation"><summary>Evidence tests the added indirection</summary><p>Change cost, tests, traces, failure behavior, and alternatives show whether the pattern earns its complexity.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Implement the direct design first, add one real variation, then compare it with the smallest suitable pattern.</strong>
-        <small><b>Inspect:</b> Requirement delta, dependency graph, files changed, test cases, runtime trace, failure path, and deleted or added code.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Requirement delta, dependency graph, files changed, test cases, runtime trace, failure path, and deleted or added code.</small></details>
       </div>
     </aside>
   </div>
@@ -73,51 +80,40 @@
   <section class="concept-section" data-subtopic-count="11">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Behavioral patterns">
-        <span>01</span>
-        <h3>Behavioral patterns</h3>
+      <details class="concept-card" data-subtopic="Behavioral patterns">
+        <summary>Behavioral patterns</summary>
         <p class="concept-definition">Behavioral patterns make algorithms, requests, transitions, notifications, traversal, coordination, snapshots, or operations explicit.</p>
-      </article><article class="concept-card" data-subtopic="Strategy">
-        <span>02</span>
-        <h3>Strategy</h3>
+      </details><details class="concept-card" data-subtopic="Strategy">
+        <summary>Strategy</summary>
         <p class="concept-definition">Strategy represents interchangeable algorithms behind one contract and lets a caller or policy select one explicitly.</p>
-      </article><article class="concept-card" data-subtopic="Observer">
-        <span>03</span>
-        <h3>Observer</h3>
+      </details><details class="concept-card" data-subtopic="Observer">
+        <summary>Observer</summary>
         <p class="concept-definition">Observer lets subscribers receive notifications from a subject and requires clear delivery order, error, reentrancy, and unsubscribe behavior.</p>
-      </article><article class="concept-card" data-subtopic="Command">
-        <span>04</span>
-        <h3>Command</h3>
+      </details><details class="concept-card" data-subtopic="Command">
+        <summary>Command</summary>
         <p class="concept-definition">Command represents a request as data or an object so it can be queued, logged, authorized, retried, undone, or dispatched separately from its sender.</p>
-      </article><article class="concept-card" data-subtopic="State">
-        <span>05</span>
-        <h3>State</h3>
+      </details><details class="concept-card" data-subtopic="State">
+        <summary>State</summary>
         <p class="concept-definition">The State pattern moves behavior that varies by lifecycle state into explicit state-specific transitions or handlers.</p>
-      </article><article class="concept-card" data-subtopic="Chain of Responsibility">
-        <span>06</span>
-        <h3>Chain of Responsibility</h3>
+      </details><details class="concept-card" data-subtopic="Chain of Responsibility">
+        <summary>Chain of Responsibility</summary>
         <p class="concept-definition">Chain of Responsibility passes a request through ordered handlers until one handles it or the chain ends.</p>
-      </article><article class="concept-card" data-subtopic="Template Method">
-        <span>07</span>
-        <h3>Template Method</h3>
+      </details><details class="concept-card" data-subtopic="Template Method">
+        <summary>Template Method</summary>
         <p class="concept-definition">Template Method fixes an algorithm skeleton in a base operation while selected steps are supplied or overridden.</p>
-      </article><article class="concept-card" data-subtopic="Iterator">
-        <span>08</span>
-        <h3>Iterator</h3>
+      </details><details class="concept-card" data-subtopic="Iterator">
+        <summary>Iterator</summary>
         <p class="concept-definition">Iterator exposes sequential access to a collection without revealing its storage representation.</p>
-      </article><article class="concept-card" data-subtopic="Mediator">
-        <span>09</span>
-        <h3>Mediator</h3>
+      </details><details class="concept-card" data-subtopic="Mediator">
+        <summary>Mediator</summary>
         <p class="concept-definition">Mediator centralizes a defined interaction between peers so they do not all depend directly on one another.</p>
-      </article><article class="concept-card" data-subtopic="Memento">
-        <span>10</span>
-        <h3>Memento</h3>
+      </details><details class="concept-card" data-subtopic="Memento">
+        <summary>Memento</summary>
         <p class="concept-definition">Memento captures restorable state without exposing private representation beyond an authorized owner.</p>
-      </article><article class="concept-card" data-subtopic="Visitor">
-        <span>11</span>
-        <h3>Visitor</h3>
+      </details><details class="concept-card" data-subtopic="Visitor">
+        <summary>Visitor</summary>
         <p class="concept-definition">Visitor adds operations across a stable set of element variants through double dispatch, trading easy new operations for difficult new element types.</p>
-      </article>
+      </details>
     </div>
   </section>
 

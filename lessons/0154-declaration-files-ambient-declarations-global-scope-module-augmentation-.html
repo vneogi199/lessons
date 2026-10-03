@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0154" data-bespoke-example="0154" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A declaration promises a parser; JavaScript supplies it</figcaption>
+<p>The package declares parseProject in dist/index.d.ts and directs runtime imports to dist/index.js.</p>
+<div class="foundation-grid"><div>Declaration file<br>Input: unknown<br>Output: Project<br>No parser body</div><div>JavaScript file<br>Must implement parseProject<br>Must perform the promised checks</div></div>
+<details><summary>Can a declaration file alone validate an incoming record?</summary><p>No. It contains type information. The runtime needs executable parsing code.</p></details>
+<details><summary>Does an accepted declaration prove the implementation returns a valid Project?</summary><p>No. Declarations can be inaccurate. Check the implementation and test the package's runtime behavior separately.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A declaration file describes code that must exist elsewhere. It does not implement that code. An inaccurate declaration can therefore make an unsafe call look valid to the checker. Module augmentation extends a known contract, while script declarations can affect shared global scope. Library declarations also state assumptions: including DOM types does not create browser APIs in Node. Test declarations against their actual implementation.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-project" aria-label="Mechanism trace: Host and project rules are selected then Imports connect source and declarations then Projects check and emit in order then Real host loads the artifact. Experiment: Pack or build one module and consume it from a clean project using the real host rules.">
-        <li class="trace-stage"><span>01 · CONFIG</span><strong>Host and project rules are selected</strong><small>Target, libraries, modules, resolution, and inputs define the program.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>Imports connect source and declarations</strong><small>Specifiers, package conditions, and references form a graph.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BUILD</span><strong>Projects check and emit in order</strong><small>Caches, declarations, JavaScript, and maps cross boundaries.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Real host loads the artifact</strong><small>A clean consumer proves runtime and type surfaces agree.</small></li>
+        <li class="trace-stage"><span>01 · CONFIG</span><details class="trace-explanation" open><summary>Host and project rules are selected</summary><p>Target, libraries, modules, resolution, and inputs define the program.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><details class="trace-explanation"><summary>Imports connect source and declarations</summary><p>Specifiers, package conditions, and references form a graph.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BUILD</span><details class="trace-explanation"><summary>Projects check and emit in order</summary><p>Caches, declarations, JavaScript, and maps cross boundaries.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><details class="trace-explanation"><summary>Real host loads the artifact</summary><p>A clean consumer proves runtime and type surfaces agree.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Pack or build one module and consume it from a clean project using the real host rules.</strong>
-        <small><b>Inspect:</b> traceResolution, explainFiles, build log, package contents, emitted specifier, declaration, and runtime import.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> traceResolution, explainFiles, build log, package contents, emitted specifier, declaration, and runtime import.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Declaration files">
-        <span>01</span>
-        <h3>Declaration files</h3>
+      <details class="concept-card" data-subtopic="Declaration files">
+        <summary>Declaration files</summary>
         <p class="concept-definition">A declaration file describes the static surface of existing runtime code without implementing it. An inaccurate declaration makes unsafe code appear checked.</p>
-      </article><article class="concept-card" data-subtopic="ambient declarations">
-        <span>02</span>
-        <h3>ambient declarations</h3>
+      </details><details class="concept-card" data-subtopic="ambient declarations">
+        <summary>ambient declarations</summary>
         <p class="concept-definition">An ambient declaration tells TypeScript a value, module, or global exists elsewhere. It emits no code to create that runtime value.</p>
-      </article><article class="concept-card" data-subtopic="global scope">
-        <span>03</span>
-        <h3>global scope</h3>
+      </details><details class="concept-card" data-subtopic="global scope">
+        <summary>global scope</summary>
         <p class="concept-definition">Declarations in script files can contribute to shared global scope. Module files isolate declarations unless they explicitly augment globals.</p>
-      </article><article class="concept-card" data-subtopic="module augmentation">
-        <span>04</span>
-        <h3>module augmentation</h3>
+      </details><details class="concept-card" data-subtopic="module augmentation">
+        <summary>module augmentation</summary>
         <p class="concept-definition">Module augmentation merges additional declarations into an existing module&#039;s types. Runtime implementation must still supply the augmented behavior.</p>
-      </article><article class="concept-card" data-subtopic="lib selection">
-        <span>05</span>
-        <h3>lib selection</h3>
+      </details><details class="concept-card" data-subtopic="lib selection">
+        <summary>lib selection</summary>
         <p class="concept-definition">The lib option chooses standard declaration sets assumed available, such as ECMAScript, DOM, or WebWorker APIs. It does not install those APIs at runtime.</p>
-      </article>
+      </details>
     </div>
   </section>
 

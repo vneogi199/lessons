@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0430" data-bespoke-example="0430" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reject the second operation while the only slot is occupied</figcaption><p>Admission limit is 1. Operation A remains pending.</p><div class="foundation-grid"><div>A enters<br>Active count 1</div><div>B arrives<br>At limit<br>503<br>B's work never starts</div><div>A settles<br>Finally restores slot</div></div><details><summary>Does this gate queue B until A finishes?</summary><p>No. It sheds excess work without a waiting queue.</p></details><details><summary>Should a caller timeout release A's slot while A still runs?</summary><p>No. Release on actual settlement, or the active-work bound becomes inaccurate.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>When arrivals exceed service capacity, unfinished work accumulates. Bound admission and queues before memory or latency becomes unbounded. The example limits active operations in one local object; it is neither a request-rate limit nor a fleet-wide bound. A hung operation keeps its slot. Define what callers receive when work is rejected and how upstream queues remain bounded too.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a distributed request or message</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="resilience-budget" aria-label="Mechanism trace: Request enters with finite value then Work consumes time and capacity then System cancels, retries, isolates, or sheds then Outcome closes every resource. Experiment: Slow one dependency past its budget while increasing arrival rate beyond service capacity.">
-        <li class="trace-stage"><span>01 · BUDGET</span><strong>Request enters with finite value</strong><small>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DEPENDENCY</span><strong>Work consumes time and capacity</strong><small>Latency distribution, fan-out, saturation, and partial failure shape progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><strong>System cancels, retries, isolates, or sheds</strong><small>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Outcome closes every resource</strong><small>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</small></li>
+        <li class="trace-stage"><span>01 · BUDGET</span><details class="trace-explanation" open><summary>Request enters with finite value</summary><p>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DEPENDENCY</span><details class="trace-explanation"><summary>Work consumes time and capacity</summary><p>Latency distribution, fan-out, saturation, and partial failure shape progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><details class="trace-explanation"><summary>System cancels, retries, isolates, or sheds</summary><p>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><details class="trace-explanation"><summary>Outcome closes every resource</summary><p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Slow one dependency past its budget while increasing arrival rate beyond service capacity.</strong>
-        <small><b>Inspect:</b> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Deadline remaining, attempts, queue depth, active work, breaker state, shed count, p99 latency, dependency load, and open resources.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Overload control">
-        <span>01</span>
-        <h3>Overload control</h3>
+      <details class="concept-card" data-subtopic="Overload control">
+        <summary>Overload control</summary>
         <p class="concept-definition">Overload control bounds admission, queues, and concurrency so excess demand fails predictably instead of collapsing capacity.</p>
-      </article><article class="concept-card" data-subtopic="bounded queues">
-        <span>02</span>
-        <h3>bounded queues</h3>
+      </details><details class="concept-card" data-subtopic="bounded queues">
+        <summary>bounded queues</summary>
         <p class="concept-definition">Bounded queues cap waiting work by items, bytes or another explicit resource budget. When full, producers must wait, reject, shed or use an explicitly safe alternative; a queue bound does not itself bound active work or total upstream memory.</p>
-      </article><article class="concept-card" data-subtopic="backpressure">
-        <span>03</span>
-        <h3>backpressure</h3>
+      </details><details class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
         <p class="concept-definition">Backpressure makes a fast producer slow, wait, shed, or reject when a consumer cannot safely keep up.</p>
-      </article><article class="concept-card" data-subtopic="admission">
-        <span>04</span>
-        <h3>admission</h3>
+      </details><details class="concept-card" data-subtopic="admission">
+        <summary>admission</summary>
         <p class="concept-definition">Admission control decides whether new work may consume limited capacity using concurrency, queue, priority, quota, or resource budgets.</p>
-      </article><article class="concept-card" data-subtopic="load shedding">
-        <span>05</span>
-        <h3>load shedding</h3>
+      </details><details class="concept-card" data-subtopic="load shedding">
+        <summary>load shedding</summary>
         <p class="concept-definition">Load shedding rejects selected work early when serving it would push the system beyond safe capacity and harm more requests.</p>
-      </article><article class="concept-card" data-subtopic="degradation">
-        <span>06</span>
-        <h3>degradation</h3>
+      </details><details class="concept-card" data-subtopic="degradation">
+        <summary>degradation</summary>
         <p class="concept-definition">Degradation deliberately reduces features or freshness to preserve essential service under pressure.</p>
-      </article>
+      </details>
     </div>
   </section>
 

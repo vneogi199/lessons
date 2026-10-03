@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0083" data-bespoke-example="0083" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Choose a numeric representation before adding money</figcaption>
+<p>The examples compare fractional Number arithmetic with integer BigInt arithmetic.</p>
+<div class="foundation-grid"><div>Number fractions<br>0.1 + 0.2<br>Not exactly equal to 0.3</div><div>Integer cents<br>199n + 299n = 498n<br>Exact integer addition</div></div>
+<details><summary>Does the integer-cent result define a complete currency policy?</summary><p>No. You still need currency, scale, rounding and serialization rules. The helper only accepts two BigInt operands and adds them.</p></details>
+<details><summary>Why can MAX_SAFE_INTEGER + 1 equal MAX_SAFE_INTEGER + 2?</summary><p>Number cannot distinguish every integer at that magnitude. An integer-looking value is not necessarily a safely represented integer.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>JavaScript Number uses binary floating-point arithmetic. Some decimal fractions cannot be represented exactly, and integers beyond the safe range can lose precision. BigInt supports integer arithmetic but cannot be mixed directly with Number arithmetic. For money, choose a representation together with currency scale and rounding rules. Adding EPSILON to every calculation does not supply those rules or fix every floating-point error.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a JavaScript evaluation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-evaluation" aria-label="Mechanism trace: Source code requests an operation then Language rules select conversions then The operation changes control or state then A value or exception appears. Experiment: Change one operand type or binding and predict the exact value and type.">
-        <li class="trace-stage"><span>01 · EXPRESSION</span><strong>Source code requests an operation</strong><small>Values and references enter the evaluation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><strong>Language rules select conversions</strong><small>Type, equality, property, or call semantics apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>The operation changes control or state</strong><small>Scopes, prototypes, and closures affect behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>A value or exception appears</strong><small>A focused example reveals the specification path.</small></li>
+        <li class="trace-stage"><span>01 · EXPRESSION</span><details class="trace-explanation" open><summary>Source code requests an operation</summary><p>Values and references enter the evaluation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><details class="trace-explanation"><summary>Language rules select conversions</summary><p>Type, equality, property, or call semantics apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>The operation changes control or state</summary><p>Scopes, prototypes, and closures affect behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>A value or exception appears</summary><p>A focused example reveals the specification path.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one operand type or binding and predict the exact value and type.</strong>
-        <small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Numbers">
-        <span>01</span>
-        <h3>Numbers</h3>
+      <details class="concept-card" data-subtopic="Numbers">
+        <summary>Numbers</summary>
         <p class="concept-definition">Number is JavaScript&#039;s binary64 numeric type. It includes finite values, infinities, NaN, and signed zero. Integers are exactly representable throughout the safe-integer range; many decimal fractions are rounded.</p>
-      </article><article class="concept-card" data-subtopic="IEEE-754">
-        <span>02</span>
-        <h3>IEEE-754</h3>
+      </details><details class="concept-card" data-subtopic="IEEE-754">
+        <summary>IEEE-754</summary>
         <p class="concept-definition">JavaScript Number normally uses IEEE-754 binary64 floating point. Many decimal fractions lack an exact binary representation, so arithmetic can contain small rounding errors.</p>
-      </article><article class="concept-card" data-subtopic="NaN">
-        <span>03</span>
-        <h3>NaN</h3>
+      </details><details class="concept-card" data-subtopic="NaN">
+        <summary>NaN</summary>
         <p class="concept-definition">NaN is a Number value representing an invalid numeric result. It is the only JavaScript value not strictly equal to itself; Number.isNaN tests it without coercion.</p>
-      </article><article class="concept-card" data-subtopic="signed zero">
-        <span>04</span>
-        <h3>signed zero</h3>
+      </details><details class="concept-card" data-subtopic="signed zero">
+        <summary>signed zero</summary>
         <p class="concept-definition">Number has positive and negative zero. They compare strictly equal, but Object.is and operations such as reciprocal division can distinguish them.</p>
-      </article><article class="concept-card" data-subtopic="BigInt">
-        <span>05</span>
-        <h3>BigInt</h3>
+      </details><details class="concept-card" data-subtopic="BigInt">
+        <summary>BigInt</summary>
         <p class="concept-definition">BigInt represents integers of arbitrary magnitude within available memory. Its arithmetic is exact for integers but it cannot mix implicitly with Number arithmetic.</p>
-      </article><article class="concept-card" data-subtopic="numeric precision">
-        <span>06</span>
-        <h3>numeric precision</h3>
+      </details><details class="concept-card" data-subtopic="numeric precision">
+        <summary>numeric precision</summary>
         <p class="concept-definition">Numeric precision limits which values a representation distinguishes. Number safely distinguishes consecutive integers through 2^53−1; use a suitable exact representation when rounding would violate the contract.</p>
-      </article>
+      </details>
     </div>
   </section>
 

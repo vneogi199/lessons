@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A module lets several files use the same definitions. Importing it makes those definitions available without copying its source into every caller.</p><p>Python normally reuses a module recorded in sys.modules. If two modules import each other during initialization, one may observe the other before it has finished defining everything. Moving shared definitions to a separate module can remove that cycle.</p><details><summary>Does every ordinary import rerun the entire module?</summary><p>No. Python normally reuses the cached module.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0271" data-bespoke-example="0271" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Import the cached package twice</figcaption>
+<p>The example imports projects twice in the same process without removing its cache entry.</p>
+<div class="foundation-grid"><div>First import<br>Load projects<br>Cache module in sys.modules</div><div>Second import<br>Return cached module</div><div>Identity check<br>first is second<br>Both are sys.modules[projects]</div></div>
+<details><summary>Does the second import construct an independent package instance?</summary><p>No. It returns the cached module in this example.</p></details>
+<details><summary>Does listing ProjectService in __all__ implement the class?</summary><p>No. The package imports it from service. The multi-file example needs that implementation.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Import creates or retrieves a module object with its own namespace. Finders locate the module, loaders initialize it, and sys.modules caches it. A module can enter that cache before its code finishes running. If two modules import each other, one can therefore see the other only partly initialized. Moving shared policy to a lower-level module can remove the cycle; delaying an import only changes when it occurs.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a module import</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-import" aria-label="Mechanism trace: Code requests a module then sys.modules is checked then A spec chooses the loader then A name receives the module. Experiment: Import the same module twice, then create a small circular import.">
-        <li class="trace-stage"><span>01 · STATEMENT</span><strong>Code requests a module</strong><small>The import name and current package define the search.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CACHE</span><strong>sys.modules is checked</strong><small>An existing module object can satisfy the import immediately.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FIND + LOAD</span><strong>A spec chooses the loader</strong><small>The module is created, cached early, then executed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · BIND</span><strong>A name receives the module</strong><small>Callers observe exports or a partially initialized cycle.</small></li>
+        <li class="trace-stage"><span>01 · STATEMENT</span><details class="trace-explanation" open><summary>Code requests a module</summary><p>The import name and current package define the search.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CACHE</span><details class="trace-explanation"><summary>sys.modules is checked</summary><p>An existing module object can satisfy the import immediately.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FIND + LOAD</span><details class="trace-explanation"><summary>A spec chooses the loader</summary><p>The module is created, cached early, then executed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · BIND</span><details class="trace-explanation"><summary>A name receives the module</summary><p>Callers observe exports or a partially initialized cycle.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Import the same module twice, then create a small circular import.</strong>
-        <small><b>Inspect:</b> sys.modules identity, module spec, execution log, bound names, and failure traceback.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> sys.modules identity, module spec, execution log, bound names, and failure traceback.</small></details>
       </div>
     </aside>
   </div>
@@ -69,35 +76,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Modules">
-        <span>01</span>
-        <h3>Modules</h3>
+      <details class="concept-card" data-subtopic="Modules">
+        <summary>Modules</summary>
         <p class="concept-definition">A module is an object with a namespace, usually initialized by executing one source file. Import normally creates it once per interpreter and caches it in sys.modules.</p>
-      </article><article class="concept-card" data-subtopic="packages">
-        <span>02</span>
-        <h3>packages</h3>
+      </details><details class="concept-card" data-subtopic="packages">
+        <summary>packages</summary>
         <p class="concept-definition">A package organizes modules under a dotted import namespace. Its filesystem layout, distribution metadata, and public import API are related but separate concerns.</p>
-      </article><article class="concept-card" data-subtopic="imports">
-        <span>03</span>
-        <h3>imports</h3>
+      </details><details class="concept-card" data-subtopic="imports">
+        <summary>imports</summary>
         <p class="concept-definition">Import searches for a module, creates its object, places it in sys.modules, and asks a loader to execute it. Early cache insertion is why cycles see partially initialized modules.</p>
-      </article><article class="concept-card" data-subtopic="sys.modules">
-        <span>04</span>
-        <h3>sys.modules</h3>
+      </details><details class="concept-card" data-subtopic="sys.modules">
+        <summary>sys.modules</summary>
         <p class="concept-definition">sys.modules caches imported module objects by name and affects later imports and partially initialized circular imports.</p>
-      </article><article class="concept-card" data-subtopic="finders">
-        <span>05</span>
-        <h3>finders</h3>
+      </details><details class="concept-card" data-subtopic="finders">
+        <summary>finders</summary>
         <p class="concept-definition">Import finders locate module specifications using the configured import machinery.</p>
-      </article><article class="concept-card" data-subtopic="loaders">
-        <span>06</span>
-        <h3>loaders</h3>
+      </details><details class="concept-card" data-subtopic="loaders">
+        <summary>loaders</summary>
         <p class="concept-definition">Import loaders create or execute modules according to a module specification.</p>
-      </article><article class="concept-card" data-subtopic="circular imports">
-        <span>07</span>
-        <h3>circular imports</h3>
+      </details><details class="concept-card" data-subtopic="circular imports">
+        <summary>circular imports</summary>
         <p class="concept-definition">Circular imports form a dependency cycle while modules are being initialized. Python registers a module before executing its body, so another module can encounter it before a requested attribute exists. Moving shared contracts out of the cycle addresses the dependency rather than repeatedly clearing the import cache.</p>
-      </article>
+      </details>
     </div>
   </section>
 

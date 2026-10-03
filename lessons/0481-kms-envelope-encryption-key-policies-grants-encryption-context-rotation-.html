@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#cloud-aws">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0481" data-bespoke-example="0481" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Encrypted data still needs permission to recover its key</figcaption><p>The envelope-encryption exercise stores ciphertext and an encrypted data key. The application needs the plaintext data key to decrypt the data.</p><div class="foundation-grid"><div>Stored material<br>Ciphertext and encrypted key</div><div>Key service request<br>Caller permission and context checked</div><div>Decrypt denied<br>Application cannot recover plaintext key</div></div><details><summary>Should the encryption context contain a secret?</summary><p>No. It is authenticated metadata, not secret storage.</p></details><details><summary>Does key rotation automatically revoke every caller?</summary><p>No. Rotation and permission revocation are separate mechanisms.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Envelope encryption uses a data key for the payload and a protected key to encrypt that data key. The encrypting process still handles plaintext, so its access matters. Preserve the encrypted key and matching nonsecret context for recovery. Key rotation and password rotation have different effects: the latter also requires the database and clients to agree on the active secret.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an AWS service request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="aws-authorization" aria-label="Mechanism trace: A signed AWS request arrives then Authorization policies combine then Explicit deny or effective allow then Verify the configured audit evidence. Experiment: Run one allowed and one explicitly denied request with the same role.">
-        <li class="trace-stage"><span>01 · PRINCIPAL</span><strong>A signed AWS request arrives</strong><small>Identity, session, action, resource, and context are known.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Authorization policies combine</strong><small>Identity, resource, boundary, session, and SCP rules apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECISION</span><strong>Explicit deny or effective allow</strong><small>The service accepts or rejects the requested action.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUDIT</span><strong>Verify the configured audit evidence</strong><small>Check that the relevant management or data events are enabled and retained; not every operation is automatically logged.</small></li>
+        <li class="trace-stage"><span>01 · PRINCIPAL</span><details class="trace-explanation" open><summary>A signed AWS request arrives</summary><p>Identity, session, action, resource, and context are known.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><details class="trace-explanation"><summary>Authorization policies combine</summary><p>Identity, resource, boundary, session, and SCP rules apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECISION</span><details class="trace-explanation"><summary>Explicit deny or effective allow</summary><p>The service accepts or rejects the requested action.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUDIT</span><details class="trace-explanation"><summary>Verify the configured audit evidence</summary><p>Check that the relevant management or data events are enabled and retained; not every operation is automatically logged.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Run one allowed and one explicitly denied request with the same role.</strong>
-        <small><b>Inspect:</b> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +76,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="KMS">
-        <span>01</span>
-        <h3>KMS</h3>
+      <details class="concept-card" data-subtopic="KMS">
+        <summary>KMS</summary>
         <p class="concept-definition">KMS protects cryptographic keys and performs controlled cryptographic operations. Envelope encryption uses a KMS-protected data key while bulk data is encrypted outside KMS.</p>
-      </article><article class="concept-card" data-subtopic="envelope encryption">
-        <span>02</span>
-        <h3>envelope encryption</h3>
+      </details><details class="concept-card" data-subtopic="envelope encryption">
+        <summary>envelope encryption</summary>
         <p class="concept-definition">Envelope encryption encrypts data locally with a data key and encrypts that key with a separately protected key. Store the encrypted data key with ciphertext; tightly control exposure and lifetime of its plaintext form.</p>
-      </article><article class="concept-card" data-subtopic="key policies">
-        <span>03</span>
-        <h3>key policies</h3>
+      </details><details class="concept-card" data-subtopic="key policies">
+        <summary>key policies</summary>
         <p class="concept-definition">A KMS key policy governs access to that key and can enable delegation through IAM policies. A broad IAM allow alone may be insufficient without the required key policy and cross-account permissions.</p>
-      </article><article class="concept-card" data-subtopic="grants">
-        <span>04</span>
-        <h3>grants</h3>
+      </details><details class="concept-card" data-subtopic="grants">
+        <summary>grants</summary>
         <p class="concept-definition">KMS grants delegate specified operations on a key, often to an AWS service acting for a workload. Constraints, retirement and revocation determine the scope and lifetime of delegated access.</p>
-      </article><article class="concept-card" data-subtopic="encryption context">
-        <span>05</span>
-        <h3>encryption context</h3>
+      </details><details class="concept-card" data-subtopic="encryption context">
+        <summary>encryption context</summary>
         <p class="concept-definition">KMS encryption context is nonsecret authenticated metadata bound to supported cryptographic operations. Decryption requires matching context; context can also constrain policy and may appear in audit records.</p>
-      </article><article class="concept-card" data-subtopic="rotation">
-        <span>06</span>
-        <h3>rotation</h3>
+      </details><details class="concept-card" data-subtopic="rotation">
+        <summary>rotation</summary>
         <p class="concept-definition">Rotation changes active key material or a secret through the service&#039;s supported process. KMS key rotation retains old material for decryption; rotating a database password additionally requires coordinating the database and its clients.</p>
-      </article><article class="concept-card" data-subtopic="Secrets Manager">
-        <span>07</span>
-        <h3>Secrets Manager</h3>
+      </details><details class="concept-card" data-subtopic="Secrets Manager">
+        <summary>Secrets Manager</summary>
         <p class="concept-definition">AWS Secrets Manager stores versioned secrets, controls retrieval and supports configured rotation workflows. Applications still own caching, refresh, safe use and avoiding secret disclosure.</p>
-      </article>
+      </details>
     </div>
   </section>
 

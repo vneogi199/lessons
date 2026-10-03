@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#nodejs">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0227" data-bespoke-example="0227" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Pause when the writable queue reaches its threshold</figcaption>
+<p>The producer writes 1,024-byte chunks into a sink with a 16,384-byte highWaterMark.</p>
+<div class="foundation-grid"><div>write returns true<br>Producer may continue</div><div>write returns false<br>Chunk accepted<br>Pause further writes</div><div>drain event<br>Resume production</div><div>After end<br>Wait for finish</div></div>
+<details><summary>Should a false-returning chunk be written again after drain?</summary><p>No. It was already accepted. Resending it would duplicate data.</p></details>
+<details><summary>Why is finish needed after the write loop?</summary><p>Queued writes may still be processing. Ending input and completing the writable are separate events.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>When write returns false, the producer must pause until drain. False means pressure, not that the write failed. HighWaterMark is a queue threshold rather than a total-memory cap. The producer must also handle errors and premature closure while waiting. Corking groups writes until uncork or end; scheduling uncork on the next tick is something the caller does, not automatic behavior.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an event-loop operation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="node-stream" aria-label="Mechanism trace: Bytes arrive in chunks then Readable state holds data then Transform or destination pulls then Pipeline completes or destroys. Experiment: Slow the destination and confirm memory stays bounded.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>Bytes arrive in chunks</strong><small>A file, socket, or producer controls chunk timing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUFFER</span><strong>Readable state holds data</strong><small>High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUMER</span><strong>Transform or destination pulls</strong><small>Backpressure pauses upstream when writes cannot keep up.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><strong>Pipeline completes or destroys</strong><small>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</small></li>
+        <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Bytes arrive in chunks</summary><p>A file, socket, or producer controls chunk timing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUFFER</span><details class="trace-explanation"><summary>Readable state holds data</summary><p>High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUMER</span><details class="trace-explanation"><summary>Transform or destination pulls</summary><p>Backpressure pauses upstream when writes cannot keep up.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><details class="trace-explanation"><summary>Pipeline completes or destroys</summary><p>Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Slow the destination and confirm memory stays bounded.</strong>
-        <small><b>Inspect:</b> Chunk sizes, writable return values, drain events, RSS, and close/error order.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Chunk sizes, writable return values, drain events, RSS, and close/error order.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Writable streams">
-        <span>01</span>
-        <h3>Writable streams</h3>
+      <details class="concept-card" data-subtopic="Writable streams">
+        <summary>Writable streams</summary>
         <p class="concept-definition">A Writable accepts chunks into an internal queue and reports completion after its sink handles them. Its write return value communicates pressure.</p>
-      </article><article class="concept-card" data-subtopic="highWaterMark">
-        <span>02</span>
-        <h3>highWaterMark</h3>
+      </details><details class="concept-card" data-subtopic="highWaterMark">
+        <summary>highWaterMark</summary>
         <p class="concept-definition">highWaterMark is an internal queue threshold that triggers backpressure signals. It is not a strict total-memory limit for the process.</p>
-      </article><article class="concept-card" data-subtopic="write return values">
-        <span>03</span>
-        <h3>write return values</h3>
+      </details><details class="concept-card" data-subtopic="write return values">
+        <summary>write return values</summary>
         <p class="concept-definition">A false return from writable.write signals backpressure: stop writing until drain rather than treating false as write failure.</p>
-      </article><article class="concept-card" data-subtopic="drain">
-        <span>04</span>
-        <h3>drain</h3>
+      </details><details class="concept-card" data-subtopic="drain">
+        <summary>drain</summary>
         <p class="concept-definition">After write returns false, drain signals that the buffered writes have drained and the producer may resume. It is not a durability acknowledgment or merely an arbitrary drop below highWaterMark.</p>
-      </article><article class="concept-card" data-subtopic="cork">
-        <span>05</span>
-        <h3>cork</h3>
+      </details><details class="concept-card" data-subtopic="cork">
+        <summary>cork</summary>
         <p class="concept-definition">Writable corking buffers writes until matching uncork calls or end. It does not automatically uncork on the next tick; callers often schedule uncork with process.nextTick to batch writes for _writev.</p>
-      </article><article class="concept-card" data-subtopic="backpressure">
-        <span>06</span>
-        <h3>backpressure</h3>
+      </details><details class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
         <p class="concept-definition">Backpressure makes an upstream producer slow down when downstream capacity is full, preventing queues and memory from growing with total input.</p>
-      </article>
+      </details>
     </div>
   </section>
 

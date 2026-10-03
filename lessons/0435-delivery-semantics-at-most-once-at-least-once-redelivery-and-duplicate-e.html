@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0435" data-bespoke-example="0435" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Commit local effect before acknowledging delivery</figcaption><p>The consumer claims event E and applies its local effect in one transaction.</p><div class="foundation-grid"><div>Transaction commits<br>Inbox E and effect together</div><div>Crash before acknowledgment<br>Broker can redeliver E</div><div>Redelivery<br>Committed claim already exists<br>Skip repeated local effect</div></div><details><summary>Would acknowledging before the transaction improve safety?</summary><p>No. A crash before commit could lose the effect without redelivery.</p></details><details><summary>Does this transaction protect an unrelated external API call automatically?</summary><p>No. External effects need their own identity and reconciliation contract.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Acknowledging before an effect risks losing work after a crash. Acknowledging afterward permits delivery again when the effect succeeded but acknowledgement failed. An inbox can make repeated delivery safe for a local effect when both commit in one transaction. That guarantee depends on identity, retained records and durable storage. It does not extend automatically to an external business action.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a distributed request or message</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="message-delivery" aria-label="Mechanism trace: Producer emits identified intent or fact then Durable channel stores and assigns then Consumer creates a local effect then Ack, commit, retry, quarantine, or replay. Experiment: Crash at every boundary before and after the side effect and acknowledgement.">
-        <li class="trace-stage"><span>01 · PUBLISH</span><strong>Producer emits identified intent or fact</strong><small>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and assigns</strong><small>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Consumer creates a local effect</strong><small>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Ack, commit, retry, quarantine, or replay</strong><small>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</small></li>
+        <li class="trace-stage"><span>01 · PUBLISH</span><details class="trace-explanation" open><summary>Producer emits identified intent or fact</summary><p>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><details class="trace-explanation"><summary>Durable channel stores and assigns</summary><p>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><details class="trace-explanation"><summary>Consumer creates a local effect</summary><p>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Ack, commit, retry, quarantine, or replay</summary><p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Crash at every boundary before and after the side effect and acknowledgement.</strong>
-        <small><b>Inspect:</b> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Delivery semantics">
-        <span>01</span>
-        <h3>Delivery semantics</h3>
+      <details class="concept-card" data-subtopic="Delivery semantics">
+        <summary>Delivery semantics</summary>
         <p class="concept-definition">Delivery semantics describe message-delivery guarantees under failures, not automatically the number of external business effects.</p>
-      </article><article class="concept-card" data-subtopic="at-most-once">
-        <span>02</span>
-        <h3>at-most-once</h3>
+      </details><details class="concept-card" data-subtopic="at-most-once">
+        <summary>at-most-once</summary>
         <p class="concept-definition">At-most-once processing avoids duplicates by acknowledging before or instead of retrying, which allows loss when failure occurs.</p>
-      </article><article class="concept-card" data-subtopic="at-least-once">
-        <span>03</span>
-        <h3>at-least-once</h3>
+      </details><details class="concept-card" data-subtopic="at-least-once">
+        <summary>at-least-once</summary>
         <p class="concept-definition">At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.</p>
-      </article><article class="concept-card" data-subtopic="redelivery">
-        <span>04</span>
-        <h3>redelivery</h3>
+      </details><details class="concept-card" data-subtopic="redelivery">
+        <summary>redelivery</summary>
         <p class="concept-definition">Redelivery retries message delivery after uncertain or failed processing and can repeat previously completed effects.</p>
-      </article><article class="concept-card" data-subtopic="duplicate effects">
-        <span>05</span>
-        <h3>duplicate effects</h3>
+      </details><details class="concept-card" data-subtopic="duplicate effects">
+        <summary>duplicate effects</summary>
         <p class="concept-definition">Duplicate effects occur when repeated attempts apply a business action more than intended; deduplicate at the authoritative effect boundary.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0148" data-bespoke-example="0148" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">One repository operation builds on another</figcaption>
+<p>A concrete repository implements find. The inherited require method uses its result.</p>
+<div class="foundation-grid"><div>find returns a record<br>require resolves with that record</div><div>find returns undefined<br>require rejects with not found</div></div>
+<details><summary>Must every subclass duplicate the not-found check?</summary><p>No. The base require method supplies that behavior. The subclass supplies the storage-specific find operation.</p></details>
+<details><summary>Does extending this class create a database connection?</summary><p>No. The abstraction states a contract and provides a method. A concrete implementation still needs its storage and error-handling policy.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A class creates runtime construction and behavior as well as a static contract. An interface describes a contract without creating a constructor. TypeScript private and protected restrict checked access; JavaScript private fields enforce a separate runtime boundary. Override markers make inheritance intent explicit, but matching signatures do not establish matching behavior. Compare a base class with a composed design before committing to an inheritance hierarchy.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-check" aria-label="Mechanism trace: JavaScript plus type syntax then Control flow builds a type model then Unsafe relationships are reported then Types disappear from JavaScript. Experiment: Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.">
-        <li class="trace-stage"><span>01 · SOURCE</span><strong>JavaScript plus type syntax</strong><small>Declarations describe values and relationships.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECKER</span><strong>Control flow builds a type model</strong><small>Inference, narrowing, generics, and assignability interact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DIAGNOSTIC</span><strong>Unsafe relationships are reported</strong><small>Compiler options decide which uncertainty is rejected.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EMIT</span><strong>Types disappear from JavaScript</strong><small>Runtime behavior still needs real boundary validation.</small></li>
+        <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>JavaScript plus type syntax</summary><p>Declarations describe values and relationships.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECKER</span><details class="trace-explanation"><summary>Control flow builds a type model</summary><p>Inference, narrowing, generics, and assignability interact.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DIAGNOSTIC</span><details class="trace-explanation"><summary>Unsafe relationships are reported</summary><p>Compiler options decide which uncertainty is rejected.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EMIT</span><details class="trace-explanation"><summary>Types disappear from JavaScript</summary><p>Runtime behavior still needs real boundary validation.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</strong>
-        <small><b>Inspect:</b> Type diagnostic, inferred type, declaration output, runtime value, and validation result.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Type diagnostic, inferred type, declaration output, runtime value, and validation result.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +80,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Classes">
-        <span>01</span>
-        <h3>Classes</h3>
+      <details class="concept-card" data-subtopic="Classes">
+        <summary>Classes</summary>
         <p class="concept-definition">A TypeScript class has a runtime JavaScript constructor and prototype plus compile-time instance and static types. Its compatibility is mostly structural.</p>
-      </article><article class="concept-card" data-subtopic="public">
-        <span>02</span>
-        <h3>public</h3>
+      </details><details class="concept-card" data-subtopic="public">
+        <summary>public</summary>
         <p class="concept-definition">A public class member is accessible through the class&#039;s public type. Public is the default visibility for ordinary class members.</p>
-      </article><article class="concept-card" data-subtopic="protected">
-        <span>03</span>
-        <h3>protected</h3>
+      </details><details class="concept-card" data-subtopic="protected">
+        <summary>protected</summary>
         <p class="concept-definition">A protected member is accessible within its class and subclasses according to TypeScript&#039;s checking rules. This is not a runtime security boundary.</p>
-      </article><article class="concept-card" data-subtopic="private">
-        <span>04</span>
-        <h3>private</h3>
+      </details><details class="concept-card" data-subtopic="private">
+        <summary>private</summary>
         <p class="concept-definition">TypeScript private restricts access during checking. JavaScript #private fields use runtime private-name semantics; these are different guarantees.</p>
-      </article><article class="concept-card" data-subtopic="abstract classes">
-        <span>05</span>
-        <h3>abstract classes</h3>
+      </details><details class="concept-card" data-subtopic="abstract classes">
+        <summary>abstract classes</summary>
         <p class="concept-definition">An abstract class can provide runtime implementation and require subclasses to implement abstract members, but cannot be directly constructed in checked code.</p>
-      </article><article class="concept-card" data-subtopic="parameter properties">
-        <span>06</span>
-        <h3>parameter properties</h3>
+      </details><details class="concept-card" data-subtopic="parameter properties">
+        <summary>parameter properties</summary>
         <p class="concept-definition">A constructor parameter marked public, protected, private, or readonly also declares and initializes an instance property.</p>
-      </article><article class="concept-card" data-subtopic="override safety">
-        <span>07</span>
-        <h3>override safety</h3>
+      </details><details class="concept-card" data-subtopic="override safety">
+        <summary>override safety</summary>
         <p class="concept-definition">override makes inheritance intent explicit, and noImplicitOverride requires it where applicable. Signature checks do not prove behavioral substitutability.</p>
-      </article>
+      </details>
     </div>
   </section>
 

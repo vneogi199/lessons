@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#nodejs">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0217" data-bespoke-example="0217" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A nextTick chain can keep yielding back to itself</figcaption>
+<p>unsafeLoop starts with ticks 0. Each call increments the count and schedules another nextTick while the count is below 100,000.</p>
+<div class="foundation-grid"><div>Initial call<br>ticks: 1<br>Schedule nextTick</div><div>Repeated callbacks<br>Keep adding nextTick work</div><div>Final call<br>ticks: 100,000<br>No further callback queued</div><div>Cost<br>I/O can be delayed while the chain drains</div></div>
+<details><summary>Does making each callback short remove starvation risk?</summary><p>No. An unbroken sequence of short callbacks can still delay other work.</p></details>
+<details><summary>What should replace this scheduling pattern for a large job?</summary><p>Process a bounded amount of work, then yield through an appropriate scheduler such as setImmediate. Do not assume every microtask or nextTick yield gives I/O a turn.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Next-tick callbacks, Promise microtasks and loop callbacks use different scheduling boundaries. ES-module evaluation already runs through microtasks, so a CommonJS top-level ordering rule may not apply. Repeatedly refilling one queue can delay I/O. The bounded chain demonstrates that starvation; yielding with setImmediate gives other work an opportunity, but does not make CPU work run in parallel.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an event-loop operation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="node-runtime" aria-label="Mechanism trace: JavaScript schedules work then Node delegates eligible work then Completion becomes ready then Main thread handles completion. Experiment: Add one blocking CPU loop and compare callback timing before and after.">
-        <li class="trace-stage"><span>01 · CALLBACK</span><strong>JavaScript schedules work</strong><small>The main thread initiates I/O, timers, or CPU work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUNTIME</span><strong>Node delegates eligible work</strong><small>OS readiness, libuv, workers, or another process executes it.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUEUE</span><strong>Completion becomes ready</strong><small>Loop phases and microtasks determine callback order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JS</span><strong>Main thread handles completion</strong><small>Latency and event-loop delay become observable.</small></li>
+        <li class="trace-stage"><span>01 · CALLBACK</span><details class="trace-explanation" open><summary>JavaScript schedules work</summary><p>The main thread initiates I/O, timers, or CPU work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUNTIME</span><details class="trace-explanation"><summary>Node delegates eligible work</summary><p>OS readiness, libuv, workers, or another process executes it.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUEUE</span><details class="trace-explanation"><summary>Completion becomes ready</summary><p>Loop phases and microtasks determine callback order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JS</span><details class="trace-explanation"><summary>Main thread handles completion</summary><p>Latency and event-loop delay become observable.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Add one blocking CPU loop and compare callback timing before and after.</strong>
-        <small><b>Inspect:</b> Event-loop delay, async trace, worker identity, callback order, and latency.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Event-loop delay, async trace, worker identity, callback order, and latency.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="process.nextTick">
-        <span>01</span>
-        <h3>process.nextTick</h3>
+      <details class="concept-card" data-subtopic="process.nextTick">
+        <summary>process.nextTick</summary>
         <p class="concept-definition">process.nextTick queues work for Node&#039;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p>
-      </article><article class="concept-card" data-subtopic="Promise microtasks">
-        <span>02</span>
-        <h3>Promise microtasks</h3>
+      </details><details class="concept-card" data-subtopic="Promise microtasks">
+        <summary>Promise microtasks</summary>
         <p class="concept-definition">Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p>
-      </article><article class="concept-card" data-subtopic="queueMicrotask">
-        <span>03</span>
-        <h3>queueMicrotask</h3>
+      </details><details class="concept-card" data-subtopic="queueMicrotask">
+        <summary>queueMicrotask</summary>
         <p class="concept-definition">queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p>
-      </article><article class="concept-card" data-subtopic="setImmediate">
-        <span>04</span>
-        <h3>setImmediate</h3>
+      </details><details class="concept-card" data-subtopic="setImmediate">
+        <summary>setImmediate</summary>
         <p class="concept-definition">setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
-      </article><article class="concept-card" data-subtopic="timers">
-        <span>05</span>
-        <h3>timers</h3>
+      </details><details class="concept-card" data-subtopic="timers">
+        <summary>timers</summary>
         <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
-      </article><article class="concept-card" data-subtopic="starvation">
-        <span>06</span>
-        <h3>starvation</h3>
+      </details><details class="concept-card" data-subtopic="starvation">
+        <summary>starvation</summary>
         <p class="concept-definition">Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
-      </article>
+      </details>
     </div>
   </section>
 

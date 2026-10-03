@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>One person can start a kettle and do another task while the water heats. Similarly, an async task can give up its turn while waiting for I/O, letting the event loop run another task.</p><p>An await must actually suspend for other work to get a turn. A long CPU loop or blocking call inside an async function can hold up the event-loop thread.</p><details><summary>Does writing async before a function make its CPU work run in parallel?</summary><p>No. Async scheduling alone does not provide CPU parallelism.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0287" data-bespoke-example="0287" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Suspend each task while its timer waits</figcaption>
+<p>The program creates five fetch tasks, each of which awaits asyncio.sleep.</p>
+<div class="foundation-grid"><div>Task starts<br>Record start time</div><div>Await sleep<br>Suspend this task<br>Loop can run other tasks</div><div>Gather result<br>item-0 through item-4<br>Input task order</div></div>
+<details><summary>Does this create five Python threads?</summary><p>No. These are cooperatively scheduled tasks on the event loop.</p></details>
+<details><summary>What changes if fetch uses time.sleep?</summary><p>It blocks the loop's thread during the sleep, preventing the intended overlap of other task progress.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Calling an async function creates a coroutine. Scheduling it as a task gives the event loop responsibility for driving it. When an await suspends, the loop can run other ready work while waiting for a timer or I/O readiness. It later resumes the task and stores its result or exception. A blocking call or long CPU calculation on the loop prevents that cooperation, even inside an async function.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a concurrent task</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-concurrency" aria-label="Mechanism trace: A callable or coroutine is created then Loop, thread, or process owns it then Work waits or consumes CPU then Result, error, or cancellation returns. Experiment: Run the workload once normally and once with blocking, cancellation, or worker failure.">
-        <li class="trace-stage"><span>01 · WORK</span><strong>A callable or coroutine is created</strong><small>Its wait pattern and CPU cost determine a boundary.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Loop, thread, or process owns it</strong><small>The scheduler decides when execution can progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><strong>Work waits or consumes CPU</strong><small>Cancellation and synchronization shape interleaving.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><strong>Result, error, or cancellation returns</strong><small>The owner waits for cleanup before continuing.</small></li>
+        <li class="trace-stage"><span>01 · WORK</span><details class="trace-explanation" open><summary>A callable or coroutine is created</summary><p>Its wait pattern and CPU cost determine a boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Loop, thread, or process owns it</summary><p>The scheduler decides when execution can progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><details class="trace-explanation"><summary>Work waits or consumes CPU</summary><p>Cancellation and synchronization shape interleaving.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><details class="trace-explanation"><summary>Result, error, or cancellation returns</summary><p>The owner waits for cleanup before continuing.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Run the workload once normally and once with blocking, cancellation, or worker failure.</strong>
-        <small><b>Inspect:</b> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</small></details>
       </div>
     </aside>
   </div>
@@ -69,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Asyncio event loop">
-        <span>01</span>
-        <h3>Asyncio event loop</h3>
+      <details class="concept-card" data-subtopic="Asyncio event loop">
+        <summary>Asyncio event loop</summary>
         <p class="concept-definition">An event loop waits for I/O readiness and timers, then resumes ready callbacks and tasks on its thread. Cooperative code must suspend promptly at await points.</p>
-      </article><article class="concept-card" data-subtopic="coroutines">
-        <span>02</span>
-        <h3>coroutines</h3>
+      </details><details class="concept-card" data-subtopic="coroutines">
+        <summary>coroutines</summary>
         <p class="concept-definition">Calling an async function produces a coroutine object. Its body runs only when an event loop or another coroutine drives it by awaiting or scheduling it.</p>
-      </article><article class="concept-card" data-subtopic="awaitables">
-        <span>03</span>
-        <h3>awaitables</h3>
+      </details><details class="concept-card" data-subtopic="awaitables">
+        <summary>awaitables</summary>
         <p class="concept-definition">Awaitables support awaiting eventual completion; creating a coroutine does not by itself schedule it to run.</p>
-      </article><article class="concept-card" data-subtopic="tasks">
-        <span>04</span>
-        <h3>tasks</h3>
+      </details><details class="concept-card" data-subtopic="tasks">
+        <summary>tasks</summary>
         <p class="concept-definition">A Task schedules one coroutine on an event loop and stores its eventual result, exception, or cancellation state.</p>
-      </article><article class="concept-card" data-subtopic="futures">
-        <span>05</span>
-        <h3>futures</h3>
+      </details><details class="concept-card" data-subtopic="futures">
+        <summary>futures</summary>
         <p class="concept-definition">A Future is a low-level placeholder for a result that will arrive later. Tasks are specialized futures that drive coroutine execution.</p>
-      </article><article class="concept-card" data-subtopic="cooperative scheduling">
-        <span>06</span>
-        <h3>cooperative scheduling</h3>
+      </details><details class="concept-card" data-subtopic="cooperative scheduling">
+        <summary>cooperative scheduling</summary>
         <p class="concept-definition">Cooperative scheduling switches tasks at suspension points, so blocking or CPU-heavy work can stall unrelated async tasks.</p>
-      </article>
+      </details>
     </div>
   </section>
 

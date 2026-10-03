@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0111" data-bespoke-example="0111" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Disposal unwinds in reverse registration order</figcaption>
+<p>The stack first registers an audit subscription, then a deferred callback. Work throws after publishing started.</p>
+<div class="foundation-grid"><div>Registration order<br>1. Audit subscription<br>2. Final callback</div><div>Disposal order<br>1. Final callback runs<br>2. Audit subscription closes<br>Original work failure is handled outside</div></div>
+<details><summary>Does cleanup wait for garbage collection?</summary><p>No. using disposes on scope exit. It gives cleanup a defined program boundary.</p></details>
+<details><summary>Can a runtime feature guard make unsupported using syntax parse?</summary><p>No. The runtime must understand the syntax before it can execute a guard. Use a supported environment for this example.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A disposable resource supplies a cleanup method. using ties synchronous cleanup to scope exit; await using waits for asynchronous disposal. Resources close in reverse registration order. If the work and its cleanup both fail, SuppressedError preserves their relationship. This lifetime is separate from garbage collection. The runtime must parse the syntax before any feature guard can run.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a JavaScript evaluation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-evaluation" aria-label="Mechanism trace: Source code requests an operation then Language rules select conversions then The operation changes control or state then A value or exception appears. Experiment: Change one operand type or binding and predict the exact value and type.">
-        <li class="trace-stage"><span>01 · EXPRESSION</span><strong>Source code requests an operation</strong><small>Values and references enter the evaluation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><strong>Language rules select conversions</strong><small>Type, equality, property, or call semantics apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>The operation changes control or state</strong><small>Scopes, prototypes, and closures affect behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>A value or exception appears</strong><small>A focused example reveals the specification path.</small></li>
+        <li class="trace-stage"><span>01 · EXPRESSION</span><details class="trace-explanation" open><summary>Source code requests an operation</summary><p>Values and references enter the evaluation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><details class="trace-explanation"><summary>Language rules select conversions</summary><p>Type, equality, property, or call semantics apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>The operation changes control or state</summary><p>Scopes, prototypes, and closures affect behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>A value or exception appears</summary><p>A focused example reveals the specification path.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one operand type or binding and predict the exact value and type.</strong>
-        <small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Explicit resource management">
-        <span>01</span>
-        <h3>Explicit resource management</h3>
+      <details class="concept-card" data-subtopic="Explicit resource management">
+        <summary>Explicit resource management</summary>
         <p class="concept-definition">Explicit resource management binds a disposable resource&#039;s cleanup to lexical control flow using using or await using and well-known disposal symbols.</p>
-      </article><article class="concept-card" data-subtopic="using">
-        <span>02</span>
-        <h3>using</h3>
+      </details><details class="concept-card" data-subtopic="using">
+        <summary>using</summary>
         <p class="concept-definition">using declares a resource whose synchronous disposal protocol runs on scope exit. It provides structured cleanup, not nondeterministic garbage-collection cleanup.</p>
-      </article><article class="concept-card" data-subtopic="await using">
-        <span>03</span>
-        <h3>await using</h3>
+      </details><details class="concept-card" data-subtopic="await using">
+        <summary>await using</summary>
         <p class="concept-definition">await using declares a resource for asynchronous disposal at scope exit. It awaits its disposal protocol; it does not automatically await an arbitrary resource initializer.</p>
-      </article><article class="concept-card" data-subtopic="Symbol.dispose">
-        <span>04</span>
-        <h3>Symbol.dispose</h3>
+      </details><details class="concept-card" data-subtopic="Symbol.dispose">
+        <summary>Symbol.dispose</summary>
         <p class="concept-definition">Symbol.dispose identifies the synchronous disposal method used by explicit resource management. A resource implements that method to release what it owns.</p>
-      </article><article class="concept-card" data-subtopic="DisposableStack">
-        <span>05</span>
-        <h3>DisposableStack</h3>
+      </details><details class="concept-card" data-subtopic="DisposableStack">
+        <summary>DisposableStack</summary>
         <p class="concept-definition">DisposableStack owns multiple resources and callbacks and disposes them in reverse order. It supports dynamic ownership while preserving deterministic cleanup.</p>
-      </article>
+      </details>
     </div>
   </section>
 

@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0395" data-bespoke-example="0395" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Check both key scope and command permission</figcaption><p>The probe user can access only the specified tenant42 cache keys with limited commands.</p><div class="foundation-grid"><div>GET tenant42 project key<br>Allowed</div><div>GET tenant99 project key<br>Wrong key scope<br>Denied</div><div>CONFIG GET<br>Administrative command<br>Denied</div></div><details><summary>Does ACL DRYRUN execute the read?</summary><p>No. It checks permission without executing the command.</p></details><details><summary>Does DRYRUN verify credentials and TLS?</summary><p>No. Test authenticated connections separately in the isolated fixture.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Separate application credentials from administrative access. ACLs restrict commands and key prefixes, while TLS protects transport under its verification policy. ACL DRYRUN evaluates permission without authenticating or executing the command. Verify credentials and transport separately, including denied cross-tenant access. ACL persistence and credential rotation also need configuration evidence; protected mode is not a replacement for those controls.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a Redis authorization decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="redis-acl-boundary" aria-label="Mechanism trace: Provision a separate lab user then Check command and key permissions then Test both allowed and denied requests. Experiment: Keep the command unchanged and switch only the tenant in the key; then try an administrative command.">
-        <li class="trace-stage"><span>01 · IDENTITY</span><strong>Provision a separate lab user</strong><small>Administrator credentials and application credentials have different responsibilities.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><strong>Check command and key permissions</strong><small>An allowed GET still fails for a key outside the permitted tenant prefix.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY</span><strong>Test both allowed and denied requests</strong><small>DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport.</small></li>
+        <li class="trace-stage"><span>01 · IDENTITY</span><details class="trace-explanation" open><summary>Provision a separate lab user</summary><p>Administrator credentials and application credentials have different responsibilities.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHORIZE</span><details class="trace-explanation"><summary>Check command and key permissions</summary><p>An allowed GET still fails for a key outside the permitted tenant prefix.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY</span><details class="trace-explanation"><summary>Test both allowed and denied requests</summary><p>DRYRUN checks permissions; an authenticated connection is needed to verify credentials and transport.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Keep the command unchanged and switch only the tenant in the key; then try an administrative command.</strong>
-        <small><b>Inspect:</b> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Allowed own-tenant read, denied cross-tenant read, denied CONFIG command, and separate authenticated transport evidence.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +76,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Redis security">
-        <span>01</span>
-        <h3>Redis security</h3>
+      <details class="concept-card" data-subtopic="Redis security">
+        <summary>Redis security</summary>
         <p class="concept-definition">Redis security requires network restriction, authentication, least-privilege commands, transport protection, and safe operational access.</p>
-      </article><article class="concept-card" data-subtopic="ACLs">
-        <span>02</span>
-        <h3>ACLs</h3>
+      </details><details class="concept-card" data-subtopic="ACLs">
+        <summary>ACLs</summary>
         <p class="concept-definition">Redis ACLs restrict authenticated users by supported command and key/channel permissions.</p>
-      </article><article class="concept-card" data-subtopic="TLS">
-        <span>03</span>
-        <h3>TLS</h3>
+      </details><details class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
         <p class="concept-definition">TLS protects a connection&#039;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</p>
-      </article><article class="concept-card" data-subtopic="protected mode">
-        <span>04</span>
-        <h3>protected mode</h3>
+      </details><details class="concept-card" data-subtopic="protected mode">
+        <summary>protected mode</summary>
         <p class="concept-definition">Protected mode restricts unsafe default exposure in supported configurations; it is not a replacement for network and identity controls.</p>
-      </article><article class="concept-card" data-subtopic="command controls">
-        <span>05</span>
-        <h3>command controls</h3>
+      </details><details class="concept-card" data-subtopic="command controls">
+        <summary>command controls</summary>
         <p class="concept-definition">Command controls restrict dangerous or unnecessary operations according to application and operator roles.</p>
-      </article><article class="concept-card" data-subtopic="observability">
-        <span>06</span>
-        <h3>observability</h3>
+      </details><details class="concept-card" data-subtopic="observability">
+        <summary>observability</summary>
         <p class="concept-definition">Observability is the ability to investigate system behavior using its outputs, such as metrics, logs, traces, and profiles. Collect signals that can distinguish competing explanations for a failure.</p>
-      </article><article class="concept-card" data-subtopic="latency">
-        <span>07</span>
-        <h3>latency</h3>
+      </details><details class="concept-card" data-subtopic="latency">
+        <summary>latency</summary>
         <p class="concept-definition">Latency is elapsed time between a defined start and completion boundary. Specify that boundary and report a distribution; an average can hide slow requests.</p>
-      </article><article class="concept-card" data-subtopic="memory diagnostics">
-        <span>08</span>
-        <h3>memory diagnostics</h3>
+      </details><details class="concept-card" data-subtopic="memory diagnostics">
+        <summary>memory diagnostics</summary>
         <p class="concept-definition">Memory diagnostics distinguish dataset size, encodings, fragmentation, buffers, and persistence overhead before changing eviction policy.</p>
-      </article>
+      </details>
     </div>
   </section>
 

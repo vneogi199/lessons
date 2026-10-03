@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0134" data-bespoke-example="0134" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Ignore the response from the older request</figcaption>
+<p>Request r1 starts first. Request r2 starts before r1 finishes. The reducer uses a latest-start-wins policy.</p>
+<div class="foundation-grid"><div>Start r1<br>loading, requestId r1</div><div>Start r2<br>loading, requestId r2</div><div>Resolve r1 with old<br>Keep loading r2</div><div>Resolve r2 with new<br>success, data new</div></div>
+<details><summary>Why does the old response leave the state unchanged?</summary><p>Its request ID does not match the active loading state. Checking only for loading would allow the older response to replace newer work.</p></details>
+<details><summary>Does ignoring r1 cancel its network request?</summary><p>No. The reducer controls local state. Cancellation needs a separate mechanism, and remote work may already have occurred.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-state-transitions" aria-label="Mechanism trace: Loading r1 then Loading r2 then Completion for r1 arrives then Success for r2. Experiment: Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.">
-        <li class="trace-stage"><span>01 · START</span><strong>Loading r1</strong><small>The loading shape requires an attempt identifier.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SUPERSEDE</span><strong>Loading r2</strong><small>A newer start becomes the only active attempt under this policy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IGNORE</span><strong>Completion for r1 arrives</strong><small>Its shape is valid, but its ID is stale. Keep loading r2.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETE</span><strong>Success for r2</strong><small>Matching completion supplies data. The exhaustive renderer handles the resulting variant.</small></li>
+        <li class="trace-stage"><span>01 · START</span><details class="trace-explanation" open><summary>Loading r1</summary><p>The loading shape requires an attempt identifier.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SUPERSEDE</span><details class="trace-explanation"><summary>Loading r2</summary><p>A newer start becomes the only active attempt under this policy.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IGNORE</span><details class="trace-explanation"><summary>Completion for r1 arrives</summary><p>Its shape is valid, but its ID is stale. Keep loading r2.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETE</span><details class="trace-explanation"><summary>Success for r2</summary><p>Matching completion supplies data. The exhaustive renderer handles the resulting variant.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.</strong>
-        <small><b>Inspect:</b> State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#039;s never check until its behavior is explicitly implemented.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#039;s never check until its behavior is explicitly implemented.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Discriminated unions">
-        <span>01</span>
-        <h3>Discriminated unions</h3>
+      <details class="concept-card" data-subtopic="Discriminated unions">
+        <summary>Discriminated unions</summary>
         <p class="concept-definition">A discriminated union gives every variant a shared literal property, allowing control flow to correlate the discriminant with the correct remaining fields.</p>
-      </article><article class="concept-card" data-subtopic="state machines">
-        <span>02</span>
-        <h3>state machines</h3>
+      </details><details class="concept-card" data-subtopic="state machines">
+        <summary>state machines</summary>
         <p class="concept-definition">A state machine defines allowed states and the rules for moving between them. A union models state shapes; a transition function must separately enforce temporal rules, such as accepting a completion only for the active request ID.</p>
-      </article><article class="concept-card" data-subtopic="exhaustiveness">
-        <span>03</span>
-        <h3>exhaustiveness</h3>
+      </details><details class="concept-card" data-subtopic="exhaustiveness">
+        <summary>exhaustiveness</summary>
         <p class="concept-definition">Exhaustiveness proves every currently possible variant is handled. Assigning the remainder to never turns a new variant into compile-time change feedback.</p>
-      </article><article class="concept-card" data-subtopic="never">
-        <span>04</span>
-        <h3>never</h3>
+      </details><details class="concept-card" data-subtopic="never">
+        <summary>never</summary>
         <p class="concept-definition">never represents values that cannot occur. It appears for non-returning functions, impossible intersections, and branches eliminated by exhaustive analysis.</p>
-      </article><article class="concept-card" data-subtopic="illegal states">
-        <span>05</span>
-        <h3>illegal states</h3>
+      </details><details class="concept-card" data-subtopic="illegal states">
+        <summary>illegal states</summary>
         <p class="concept-definition">A modeled contradiction, such as success without required data, can be rejected by the checker. A discriminated union removes such combinations from checked construction, but does not automatically prevent illegal transitions, stale events, assertions, or malformed external input.</p>
-      </article>
+      </details>
     </div>
   </section>
 

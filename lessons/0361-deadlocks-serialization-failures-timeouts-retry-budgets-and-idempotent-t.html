@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0361" data-bespoke-example="0361" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Retry only the recognized transaction failures</figcaption><p>Compare two first-attempt errors with retry budget remaining.</p><div class="foundation-grid"><div>SQLSTATE 40001<br>Serialization failure<br>Pause within jitter bound<br>Run fresh transaction</div><div>Other SQLSTATE<br>Rethrow immediately</div><div>Final allowed attempt fails<br>Rethrow without another attempt</div></div><details><summary>Does this helper itself roll back the failed transaction?</summary><p>No. run_transaction must roll back before raising and start fresh on each call.</p></details><details><summary>Can retrying an external payment blindly be made safe by this loop?</summary><p>No. Keep a durable operation identity and a separate policy for uncertain external effects.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A deadlock forms a cycle of waiting transactions; PostgreSQL aborts a participant so work can continue. A serialization failure protects a different guarantee. Retry recognized failures around a fresh whole transaction and retain the logical operation&#039;s identity. The helper bounds attempts and adds jitter, but still needs a caller deadline and cancellation policy. Fake errors verify retry flow without reproducing a database conflict.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a database transaction</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="database-transaction" aria-label="Mechanism trace: Choose the isolation boundary then Statements acquire versions or locks then Constraints and conflicts resolve then Publish one atomic outcome. Experiment: Run two conflicting transactions and predict the wait, error, or visible value.">
-        <li class="trace-stage"><span>01 · BEGIN</span><strong>Choose the isolation boundary</strong><small>Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · READ / WRITE</span><strong>Statements acquire versions or locks</strong><small>Concurrent transactions may conflict.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><strong>Constraints and conflicts resolve</strong><small>The engine can wait, abort, commit, or require retry.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>Publish one atomic outcome</strong><small>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</small></li>
+        <li class="trace-stage"><span>01 · BEGIN</span><details class="trace-explanation" open><summary>Choose the isolation boundary</summary><p>Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · READ / WRITE</span><details class="trace-explanation"><summary>Statements acquire versions or locks</summary><p>Concurrent transactions may conflict.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><details class="trace-explanation"><summary>Constraints and conflicts resolve</summary><p>The engine can wait, abort, commit, or require retry.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><details class="trace-explanation"><summary>Publish one atomic outcome</summary><p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Run two conflicting transactions and predict the wait, error, or visible value.</strong>
-        <small><b>Inspect:</b> Transaction IDs, locks, snapshots, error code, retry, and final rows.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Transaction IDs, locks, snapshots, error code, retry, and final rows.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Deadlocks">
-        <span>01</span>
-        <h3>Deadlocks</h3>
+      <details class="concept-card" data-subtopic="Deadlocks">
+        <summary>Deadlocks</summary>
         <p class="concept-definition">A deadlock is a cycle in which every transaction waits for another in the same cycle. PostgreSQL detects the cycle and aborts one participant so progress can resume.</p>
-      </article><article class="concept-card" data-subtopic="serialization failures">
-        <span>02</span>
-        <h3>serialization failures</h3>
+      </details><details class="concept-card" data-subtopic="serialization failures">
+        <summary>serialization failures</summary>
         <p class="concept-definition">Serialization failures require retrying the complete transaction with fresh reads, not only the final statement.</p>
-      </article><article class="concept-card" data-subtopic="timeouts">
-        <span>03</span>
-        <h3>timeouts</h3>
+      </details><details class="concept-card" data-subtopic="timeouts">
+        <summary>timeouts</summary>
         <p class="concept-definition">A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
-      </article><article class="concept-card" data-subtopic="retry budgets">
-        <span>04</span>
-        <h3>retry budgets</h3>
+      </details><details class="concept-card" data-subtopic="retry budgets">
+        <summary>retry budgets</summary>
         <p class="concept-definition">Retry budgets bound total repeated work and time so contention does not become a retry storm.</p>
-      </article><article class="concept-card" data-subtopic="idempotent transactions">
-        <span>05</span>
-        <h3>idempotent transactions</h3>
+      </details><details class="concept-card" data-subtopic="idempotent transactions">
+        <summary>idempotent transactions</summary>
         <p class="concept-definition">An idempotent transaction preserves one logical operation&#039;s intended effect across retries, typically using an atomic scoped identity and saved outcome. Atomicity of each attempt alone does not prevent two separately committed attempts from duplicating effects.</p>
-      </article>
+      </details>
     </div>
   </section>
 

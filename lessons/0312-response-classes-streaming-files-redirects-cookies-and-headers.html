@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0312" data-bespoke-example="0312" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Export a name containing a comma as one CSV field</figcaption>
+<p>Suppose project 7 has the name Rates, Europe. The export writes the ID and name with csv.writer.</p>
+<div class="foundation-grid"><div>Logical row<br>ID: 7<br>Name: Rates, Europe</div><div>CSV row<br>7,&quot;Rates, Europe&quot;</div><div>CSV reader<br>Two fields<br>Name keeps its comma</div></div>
+<details><summary>Does quoting also neutralize a spreadsheet formula?</summary><p>No. Formula injection requires a separate spreadsheet-safe export policy.</p></details>
+<details><summary>Does the generator assemble the whole export before yielding?</summary><p>No. It yields the header and then each encoded row. The repository iterator must honor its own resource and batching contract.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Choose a response class according to the wire contract. Returning one directly gives control over status, headers and bytes while bypassing automatic model filtering. A stream needs its resources for the whole response lifetime and cannot replace a status already sent. CSV quoting does not prevent spreadsheet formulas. File ranges, cookie policy and proxy flush timing need their own checks beyond the starter.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an HTTP request</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="fastapi-response" aria-label="Mechanism trace: Choose the response representation then Create the body or stream then Start the response, then send body events then Release resources on completion or failure. Experiment: Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.">
-        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Choose the response representation</strong><small>Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PRODUCE</span><strong>Create the body or stream</strong><small>JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SEND</span><strong>Start the response, then send body events</strong><small>Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><strong>Release resources on completion or failure</strong><small>Close owned files and generators and test client disconnects with the actual server stack.</small></li>
+        <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Choose the response representation</summary><p>Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PRODUCE</span><details class="trace-explanation"><summary>Create the body or stream</summary><p>JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SEND</span><details class="trace-explanation"><summary>Start the response, then send body events</summary><p>Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FINISH</span><details class="trace-explanation"><summary>Release resources on completion or failure</summary><p>Close owned files and generators and test client disconnects with the actual server stack.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</strong>
-        <small><b>Inspect:</b> Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Response classes">
-        <span>01</span>
-        <h3>Response classes</h3>
+      <details class="concept-card" data-subtopic="Response classes">
+        <summary>Response classes</summary>
         <p class="concept-definition">A response class converts application data into an HTTP status, headers, media type, and body bytes.</p>
-      </article><article class="concept-card" data-subtopic="streaming">
-        <span>02</span>
-        <h3>streaming</h3>
+      </details><details class="concept-card" data-subtopic="streaming">
+        <summary>streaming</summary>
         <p class="concept-definition">A streaming response sends body chunks incrementally. Its generator and resources must remain valid for the stream&#039;s lifetime, and disconnects or errors must release them.</p>
-      </article><article class="concept-card" data-subtopic="files">
-        <span>03</span>
-        <h3>files</h3>
+      </details><details class="concept-card" data-subtopic="files">
+        <summary>files</summary>
         <p class="concept-definition">FileResponse sends a server-side file as an HTTP response, with metadata and supported range handling. Authorize the selected path and keep the file available for the response lifetime; this is different from parsing an uploaded file.</p>
-      </article><article class="concept-card" data-subtopic="redirects">
-        <span>04</span>
-        <h3>redirects</h3>
+      </details><details class="concept-card" data-subtopic="redirects">
+        <summary>redirects</summary>
         <p class="concept-definition">A redirect response gives the client a status code and a Location header for another URL.</p>
-      </article><article class="concept-card" data-subtopic="cookies">
-        <span>05</span>
-        <h3>cookies</h3>
+      </details><details class="concept-card" data-subtopic="cookies">
+        <summary>cookies</summary>
         <p class="concept-definition">Cookies are name-value data a browser can attach automatically to matching requests. Their domain, path, Secure, HttpOnly, SameSite, and expiry rules shape both security and behavior.</p>
-      </article><article class="concept-card" data-subtopic="headers">
-        <span>06</span>
-        <h3>headers</h3>
+      </details><details class="concept-card" data-subtopic="headers">
+        <summary>headers</summary>
         <p class="concept-definition">Headers carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them.</p>
-      </article>
+      </details>
     </div>
   </section>
 

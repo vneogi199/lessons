@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0108" data-bespoke-example="0108" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Queue order explains this particular trace</figcaption>
+<p>In the supplied fixture, operation reaches await before the explicit microtask and promise reaction are queued.</p>
+<div class="foundation-grid"><div>Synchronous records<br>async:start<br>script:end</div><div>Queued continuations<br>async:resume<br>queued:microtask<br>promise:reaction</div><div>Later timer record<br>timer:task</div><div>Scope<br>This queue setup<br>Not every browser or Node scheduling situation</div></div>
+<details><summary>Can repeatedly queued microtasks delay later tasks?</summary><p>Yes. A checkpoint can continue draining newly queued microtasks. Use bounded experiments rather than an infinite starvation loop.</p></details>
+<details><summary>Does the timer record prove a browser paint occurred first?</summary><p>No. The fixture records callback order, not rendering evidence.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>JavaScript jobs and host scheduling rules together determine when deferred work runs. Promise reactions, microtasks and timers do not form one universal order across all hosts. Follow the point where each operation is queued in the example, then apply that host&#039;s rules. Repeatedly scheduling microtasks can delay other work. A timer delay is a threshold, not a promise of an exact execution time.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a JavaScript evaluation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-jobs" aria-label="Mechanism trace: Synchronous code runs then Async work registers continuation then Event loop chooses ready work then Continuation observes state. Experiment: Mix a timer, resolved promise, and synchronous log; predict exact output order.">
-        <li class="trace-stage"><span>01 · STACK</span><strong>Synchronous code runs</strong><small>Calls execute until the stack becomes empty.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Async work registers continuation</strong><small>Promise reactions and tasks enter different queues.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><strong>Event loop chooses ready work</strong><small>Microtasks drain before the next task and render opportunity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><strong>Continuation observes state</strong><small>Order, errors, and UI timing expose the scheduling model.</small></li>
+        <li class="trace-stage"><span>01 · STACK</span><details class="trace-explanation" open><summary>Synchronous code runs</summary><p>Calls execute until the stack becomes empty.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Async work registers continuation</summary><p>Promise reactions and tasks enter different queues.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><details class="trace-explanation"><summary>Event loop chooses ready work</summary><p>Microtasks drain before the next task and render opportunity.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><details class="trace-explanation"><summary>Continuation observes state</summary><p>Order, errors, and UI timing expose the scheduling model.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Mix a timer, resolved promise, and synchronous log; predict exact output order.</strong>
-        <small><b>Inspect:</b> Console order, task timestamps, unhandled rejection, and render timing.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Console order, task timestamps, unhandled rejection, and render timing.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +80,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Event loop">
-        <span>01</span>
-        <h3>Event loop</h3>
+      <details class="concept-card" data-subtopic="Event loop">
+        <summary>Event loop</summary>
         <p class="concept-definition">An event loop is host machinery that selects tasks and performs checkpoints where Promise Jobs can run. ECMAScript defines Jobs; browsers and Node define their loop details.</p>
-      </article><article class="concept-card" data-subtopic="tasks">
-        <span>02</span>
-        <h3>tasks</h3>
+      </details><details class="concept-card" data-subtopic="tasks">
+        <summary>tasks</summary>
         <p class="concept-definition">A host task runs scheduled work such as a timer callback or event handler. Host event-loop rules determine task selection and when microtask checkpoints occur.</p>
-      </article><article class="concept-card" data-subtopic="microtasks">
-        <span>03</span>
-        <h3>microtasks</h3>
+      </details><details class="concept-card" data-subtopic="microtasks">
+        <summary>microtasks</summary>
         <p class="concept-definition">Microtask is common host terminology for queued Promise reactions and queueMicrotask callbacks. A checkpoint normally drains them before selecting another task.</p>
-      </article><article class="concept-card" data-subtopic="rendering">
-        <span>04</span>
-        <h3>rendering</h3>
+      </details><details class="concept-card" data-subtopic="rendering">
+        <summary>rendering</summary>
         <p class="concept-definition">Browser rendering updates style, layout, and pixels at rendering opportunities. Long JavaScript tasks or continuously queued microtasks can delay those opportunities.</p>
-      </article><article class="concept-card" data-subtopic="browser hosts">
-        <span>05</span>
-        <h3>browser hosts</h3>
+      </details><details class="concept-card" data-subtopic="browser hosts">
+        <summary>browser hosts</summary>
         <p class="concept-definition">A browser supplies APIs such as the DOM, events, networking, and rendering around the JavaScript engine. Those behaviors are not all specified by ECMAScript.</p>
-      </article><article class="concept-card" data-subtopic="Node hosts">
-        <span>06</span>
-        <h3>Node hosts</h3>
+      </details><details class="concept-card" data-subtopic="Node hosts">
+        <summary>Node hosts</summary>
         <p class="concept-definition">Node supplies server-oriented APIs and its event-loop integration around the JavaScript engine. Browser scheduling diagrams do not describe every Node phase or nextTick behavior.</p>
-      </article>
+      </details>
     </div>
   </section>
 

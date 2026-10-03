@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,12 @@
     <p><a href="../reference/senior-interview-practice.html#systems-foundations">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0060" data-bespoke-example="0060" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A window limit is not all new capacity</figcaption>
+<p>The toy trace reaches congestion window 9. The receiver advertises 6, and 3 units are already in flight.</p>
+<div class="foundation-grid"><div>Outstanding-data limit<br>min(9, 6) = 6</div><div>New-data allowance<br>6 − 3 already in flight = 3</div></div>
+<details><summary>Can the sender add 6 new units immediately?</summary><p>No. That would raise outstanding data to 9 and exceed the limit of 6. Subtract in-flight data first.</p></details>
+<details><summary>Does limiting socket data keep an upstream job queue bounded?</summary><p>No. Jobs can accumulate before reaching the socket. Application admission and backpressure must also bound queued work.</p></details>
+<p>These are toy units and RTT rounds, not measurements from a live TCP implementation.</p></figure><div class="grid">
     <section class="card">
 
       <p>The receiver&#039;s window limits how much outstanding data it can accept. The congestion window limits sending according to estimated network capacity. The smaller window constrains outstanding data; subtract bytes already in flight to find the allowance for new data. Slow start and later growth respond to acknowledgements and congestion signals. Retransmission repairs missing stream data. Applications also need admission limits and backpressure, because bounded socket buffers cannot bound an upstream work queue.</p>
@@ -59,13 +66,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a request from application to wire</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="tcp-round-model" aria-label="Mechanism trace: Window starts at one then Double, then add then Reset and lower threshold then Receiver can be tighter. Experiment: Why would doubling on every ACK overstate slow-start growth?">
-        <li class="trace-stage"><span>01 · ROUND</span><strong>Window starts at one</strong><small>The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GROW</span><strong>Double, then add</strong><small>Below threshold the toy window doubles; above it, each round adds one.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TIMEOUT</span><strong>Reset and lower threshold</strong><small>Round five models timeout loss, not duplicate-ACK fast recovery.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LIMIT</span><strong>Receiver can be tighter</strong><small>The usable window is bounded by both congestion and receiver windows.</small></li>
+        <li class="trace-stage"><span>01 · ROUND</span><details class="trace-explanation" open><summary>Window starts at one</summary><p>The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GROW</span><details class="trace-explanation"><summary>Double, then add</summary><p>Below threshold the toy window doubles; above it, each round adds one.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TIMEOUT</span><details class="trace-explanation"><summary>Reset and lower threshold</summary><p>Round five models timeout loss, not duplicate-ACK fast recovery.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LIMIT</span><details class="trace-explanation"><summary>Receiver can be tighter</summary><p>The usable window is bounded by both congestion and receiver windows.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Why would doubling on every ACK overstate slow-start growth?</strong>
-        <small><b>Inspect:</b> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +81,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="TCP flow control">
-        <span>01</span>
-        <h3>TCP flow control</h3>
+      <details class="concept-card" data-subtopic="TCP flow control">
+        <summary>TCP flow control</summary>
         <p class="concept-definition">TCP flow control uses the receiver&#039;s advertised window to avoid sending more outstanding data than it can accept.</p>
-      </article><article class="concept-card" data-subtopic="congestion control">
-        <span>02</span>
-        <h3>congestion control</h3>
+      </details><details class="concept-card" data-subtopic="congestion control">
+        <summary>congestion control</summary>
         <p class="concept-definition">Congestion control adapts sending pressure to network conditions, distinct from a receiver&#039;s buffer capacity.</p>
-      </article><article class="concept-card" data-subtopic="slow start">
-        <span>03</span>
-        <h3>slow start</h3>
+      </details><details class="concept-card" data-subtopic="slow start">
+        <summary>slow start</summary>
         <p class="concept-definition">Slow start increases TCP&#039;s congestion window rapidly from a small starting point until a threshold or congestion signal changes behavior.</p>
-      </article><article class="concept-card" data-subtopic="AIMD">
-        <span>04</span>
-        <h3>AIMD</h3>
+      </details><details class="concept-card" data-subtopic="AIMD">
+        <summary>AIMD</summary>
         <p class="concept-definition">Additive increase and multiplicative decrease cautiously raises sending allowance and sharply reduces it after congestion evidence.</p>
-      </article><article class="concept-card" data-subtopic="retransmission">
-        <span>05</span>
-        <h3>retransmission</h3>
+      </details><details class="concept-card" data-subtopic="retransmission">
+        <summary>retransmission</summary>
         <p class="concept-definition">Retransmission sends unacknowledged data again after loss is inferred. The receiver must distinguish repeats from new bytes.</p>
-      </article><article class="concept-card" data-subtopic="backpressure">
-        <span>06</span>
-        <h3>backpressure</h3>
+      </details><details class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
         <p class="concept-definition">Backpressure makes a producer slow down when a consumer cannot keep up. It limits queued work rather than allowing memory and latency to grow without bound.</p>
-      </article><article class="concept-card" data-subtopic="overload">
-        <span>07</span>
-        <h3>overload</h3>
+      </details><details class="concept-card" data-subtopic="overload">
+        <summary>overload</summary>
         <p class="concept-definition">Overload occurs when offered work exceeds sustainable capacity, growing queues or causing rejection and failure.</p>
-      </article>
+      </details>
     </div>
   </section>
 

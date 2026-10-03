@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#typescript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0161" data-bespoke-example="0161" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Convert environment text before starting the service</figcaption>
+<p>loadConfig reads the environment and checks numeric limits.</p>
+<div class="foundation-grid"><div>PORT absent<br>Default text 3000<br>Number 3000<br>Accept</div><div>PORT: abc<br>Number conversion: NaN<br>Reject</div><div>PORT: 0<br>Integer outside allowed range<br>Reject</div></div>
+<details><summary>Does an empty PORT use the default?</summary><p>No. Nullish coalescing keeps the supplied empty string. Number converts it to zero, and the range check rejects it.</p></details>
+<details><summary>Does receiving SIGTERM force serve to stop correctly?</summary><p>The handler aborts the controller. serve must observe that signal and clean up its resources; the signal alone cannot prove graceful shutdown.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Node runs the emitted JavaScript under its module and process rules. Compiler configuration must match that environment, and incoming configuration needs parsing before a service starts. Types for streams or signals do not implement resource ownership. During shutdown, stop admission, drain work within a deadline and close owned resources. Aborting a controller only communicates a request to the operations that observe it.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a type-checking decision</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="typescript-integration" aria-label="Mechanism trace: Domain types describe intent then Framework or host values are translated then JavaScript performs the operation then Types and operation agree. Experiment: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.">
-        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Domain types describe intent</strong><small>Commands, states, results, and ports exclude known-invalid combinations.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ADAPTER</span><strong>Framework or host values are translated</strong><small>React, Node, async, storage, and model details stay at boundaries.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUNTIME</span><strong>JavaScript performs the operation</strong><small>Scheduling, I/O, cancellation, and errors remain real behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Types and operation agree</strong><small>Type tests, runtime tests, telemetry, and failure paths verify the design.</small></li>
+        <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Domain types describe intent</summary><p>Commands, states, results, and ports exclude known-invalid combinations.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ADAPTER</span><details class="trace-explanation"><summary>Framework or host values are translated</summary><p>React, Node, async, storage, and model details stay at boundaries.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUNTIME</span><details class="trace-explanation"><summary>JavaScript performs the operation</summary><p>Scheduling, I/O, cancellation, and errors remain real behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><details class="trace-explanation"><summary>Types and operation agree</summary><p>Type tests, runtime tests, telemetry, and failure paths verify the design.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</strong>
-        <small><b>Inspect:</b> Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</small></details>
       </div>
     </aside>
   </div>
@@ -73,35 +80,28 @@
   <section class="concept-section" data-subtopic-count="7">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Node.js with TypeScript">
-        <span>01</span>
-        <h3>Node.js with TypeScript</h3>
+      <details class="concept-card" data-subtopic="Node.js with TypeScript">
+        <summary>Node.js with TypeScript</summary>
         <p class="concept-definition">Node TypeScript code must align compile-time resolution and platform types with Node&#039;s actual ESM or CommonJS loader, process lifecycle, and runtime input.</p>
-      </article><article class="concept-card" data-subtopic="ESM">
-        <span>02</span>
-        <h3>ESM</h3>
+      </details><details class="concept-card" data-subtopic="ESM">
+        <summary>ESM</summary>
         <p class="concept-definition">ESM is the import/export module system. Package type, extensions, emitted syntax, and host resolution jointly determine runtime loading.</p>
-      </article><article class="concept-card" data-subtopic="configuration">
-        <span>03</span>
-        <h3>configuration</h3>
+      </details><details class="concept-card" data-subtopic="configuration">
+        <summary>configuration</summary>
         <p class="concept-definition">Configuration selects checks, platform assumptions, file discovery, and output behavior. Record effective options rather than trusting inherited defaults.</p>
-      </article><article class="concept-card" data-subtopic="processes">
-        <span>04</span>
-        <h3>processes</h3>
+      </details><details class="concept-card" data-subtopic="processes">
+        <summary>processes</summary>
         <p class="concept-definition">Processes own runtime resources, signals, and exit status. Type annotations do not stop admission or drain work during shutdown.</p>
-      </article><article class="concept-card" data-subtopic="streams">
-        <span>05</span>
-        <h3>streams</h3>
+      </details><details class="concept-card" data-subtopic="streams">
+        <summary>streams</summary>
         <p class="concept-definition">Streams deliver chunks under backpressure and lifecycle rules. Chunk types do not enforce bounded buffering, cancellation, or resource cleanup.</p>
-      </article><article class="concept-card" data-subtopic="errors">
-        <span>06</span>
-        <h3>errors</h3>
+      </details><details class="concept-card" data-subtopic="errors">
+        <summary>errors</summary>
         <p class="concept-definition">An error value needs classification, cause preservation, and a safe external representation. unknown catches require evidence before property access.</p>
-      </article><article class="concept-card" data-subtopic="service boundaries">
-        <span>07</span>
-        <h3>service boundaries</h3>
+      </details><details class="concept-card" data-subtopic="service boundaries">
+        <summary>service boundaries</summary>
         <p class="concept-definition">Service boundaries separate independently failing or evolving components. Validate inputs and define authorization, timeouts, and version compatibility explicitly.</p>
-      </article>
+      </details>
     </div>
   </section>
 

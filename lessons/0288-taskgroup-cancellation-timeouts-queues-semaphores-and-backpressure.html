@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Orders arrive faster than one worker can handle them. An unlimited waiting list keeps growing. A bounded queue forces a decision when it fills: wait, reject or reduce incoming work.</p><p>This is backpressure. A semaphore limits concurrent work, while a timeout limits how long a caller waits. Cancellation needs cleanup and does not necessarily undo work already completed elsewhere.</p><details><summary>Does a timeout prove an external operation did nothing?</summary><p>No. The operation may have completed even if its result was not received.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0288" data-bespoke-example="0288" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Account for stop messages as well as work items</figcaption>
+<p>Four workers share the bounded queue. After submitting work, the producer puts four None sentinels into it.</p>
+<div class="foundation-grid"><div>Normal item<br>Process under timeout<br>Call task_done</div><div>None sentinel<br>Return from worker<br>Finally calls task_done</div><div>queue.join<br>Wait for every enqueued item<br>Including all four sentinels</div></div>
+<details><summary>What if the sentinel path returns without task_done?</summary><p>The queue's unfinished count remains positive, so join can wait indefinitely.</p></details>
+<details><summary>Does task_done prove the effect was committed?</summary><p>No. It is queue accounting. This in-memory fixture provides no durable receipt or recovery after restart.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>TaskGroup keeps child tasks within an owned lifetime and waits for their cleanup. When a worker fails, it cancels siblings and collects failures. Cancellation is delivered at a suspension point, so cleanup must account for it. A bounded queue limits waiting items, a semaphore limits active permits, and a timeout limits waiting time. These controls address different limits; none makes an external effect reversible.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a concurrent task</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-concurrency" aria-label="Mechanism trace: A callable or coroutine is created then Loop, thread, or process owns it then Work waits or consumes CPU then Result, error, or cancellation returns. Experiment: Run the workload once normally and once with blocking, cancellation, or worker failure.">
-        <li class="trace-stage"><span>01 · WORK</span><strong>A callable or coroutine is created</strong><small>Its wait pattern and CPU cost determine a boundary.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Loop, thread, or process owns it</strong><small>The scheduler decides when execution can progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><strong>Work waits or consumes CPU</strong><small>Cancellation and synchronization shape interleaving.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><strong>Result, error, or cancellation returns</strong><small>The owner waits for cleanup before continuing.</small></li>
+        <li class="trace-stage"><span>01 · WORK</span><details class="trace-explanation" open><summary>A callable or coroutine is created</summary><p>Its wait pattern and CPU cost determine a boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Loop, thread, or process owns it</summary><p>The scheduler decides when execution can progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><details class="trace-explanation"><summary>Work waits or consumes CPU</summary><p>Cancellation and synchronization shape interleaving.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><details class="trace-explanation"><summary>Result, error, or cancellation returns</summary><p>The owner waits for cleanup before continuing.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Run the workload once normally and once with blocking, cancellation, or worker failure.</strong>
-        <small><b>Inspect:</b> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</small></details>
       </div>
     </aside>
   </div>
@@ -69,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="TaskGroup">
-        <span>01</span>
-        <h3>TaskGroup</h3>
+      <details class="concept-card" data-subtopic="TaskGroup">
+        <summary>TaskGroup</summary>
         <p class="concept-definition">TaskGroup owns a set of child tasks as one structured lifetime. It waits for cleanup and combines independent failures before the block exits.</p>
-      </article><article class="concept-card" data-subtopic="cancellation">
-        <span>02</span>
-        <h3>cancellation</h3>
+      </details><details class="concept-card" data-subtopic="cancellation">
+        <summary>cancellation</summary>
         <p class="concept-definition">Async cancellation injects CancelledError at a suspension point. Code should release resources in finally and usually propagate cancellation after cleanup.</p>
-      </article><article class="concept-card" data-subtopic="timeouts">
-        <span>03</span>
-        <h3>timeouts</h3>
+      </details><details class="concept-card" data-subtopic="timeouts">
+        <summary>timeouts</summary>
         <p class="concept-definition">A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</p>
-      </article><article class="concept-card" data-subtopic="queues">
-        <span>04</span>
-        <h3>queues</h3>
+      </details><details class="concept-card" data-subtopic="queues">
+        <summary>queues</summary>
         <p class="concept-definition">A queue holds work waiting to be processed. Define capacity, admission, ordering, acknowledgement, retry, and expiration; a queue cannot create processing capacity.</p>
-      </article><article class="concept-card" data-subtopic="semaphores">
-        <span>05</span>
-        <h3>semaphores</h3>
+      </details><details class="concept-card" data-subtopic="semaphores">
+        <summary>semaphores</summary>
         <p class="concept-definition">A semaphore controls access using a count of permits. It can bound concurrent operations, but the waiting queue and cancellation behavior also need limits.</p>
-      </article><article class="concept-card" data-subtopic="backpressure">
-        <span>06</span>
-        <h3>backpressure</h3>
+      </details><details class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
         <p class="concept-definition">Backpressure makes producers slow down when consumers or resources reach capacity. Bounded queues and semaphores turn overload into controlled waiting or rejection.</p>
-      </article>
+      </details>
     </div>
   </section>
 

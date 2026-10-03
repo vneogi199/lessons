@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -45,7 +47,11 @@
 
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>If several names point to one list, deleting one name leaves the others. The list can still be reached and used through them.</p><p>CPython uses reference counting and a cyclic collector, but removing one name does not prove an object is gone. A cache, callback or cycle can retain it. Use explicit cleanup for resources such as files rather than relying on collection timing.</p><details><summary>Does deleting one variable guarantee immediate resource cleanup?</summary><p>No. Other references can remain, and resource ownership should be explicit.</p></details></section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0292" data-bespoke-example="0292" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Collect a cycle with no strong application reference</figcaption>
+<p>left points to right and right points to left. observed is a weak reference to left.</p>
+<div class="foundation-grid"><div>Before deletion<br>Names reach both nodes<br>Nodes point to each other</div><div>Delete both names<br>Cycle remains internally<br>Weak reference does not keep it alive</div><div>Explicit collection<br>Cycle reclaimed<br>observed returns None</div></div>
+<details><summary>Must the total collected count equal exactly two?</summary><p>No. Collection may find other eligible objects. The assertion checks that this observed node is gone.</p></details>
+<details><summary>Should a file or socket wait for this collection pattern to close?</summary><p>No. External resources need explicit lifecycle management, such as a context manager.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>An object remains reachable while a live reference path leads to it. CPython tracks strong references and uses cyclic garbage collection to find unreachable cycles. A weak reference observes an object without keeping it alive. Finalizers and weak-reference callbacks can complicate cleanup, and resurrection can make an object reachable again. Collection details differ across implementations, so files and other external resources need explicit cleanup instead of assumptions about timing.</p>
@@ -55,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace an object&#039;s lifetime</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="python-object-lifetime" aria-label="Mechanism trace: Objects and references appear then Aliases preserve reachability then Strong references disappear then Object remains or is reclaimed. Experiment: Create an alias or cycle, delete roots, and predict which objects remain reachable.">
-        <li class="trace-stage"><span>01 · CREATE</span><strong>Objects and references appear</strong><small>Names and containers form an object graph.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SHARE</span><strong>Aliases preserve reachability</strong><small>Shallow copies may still point to the same children.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RELEASE</span><strong>Strong references disappear</strong><small>CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Object remains or is reclaimed</strong><small>Weak references and memory traces expose the outcome.</small></li>
+        <li class="trace-stage"><span>01 · CREATE</span><details class="trace-explanation" open><summary>Objects and references appear</summary><p>Names and containers form an object graph.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SHARE</span><details class="trace-explanation"><summary>Aliases preserve reachability</summary><p>Shallow copies may still point to the same children.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RELEASE</span><details class="trace-explanation"><summary>Strong references disappear</summary><p>CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>Object remains or is reclaimed</summary><p>Weak references and memory traces expose the outcome.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Create an alias or cycle, delete roots, and predict which objects remain reachable.</strong>
-        <small><b>Inspect:</b> Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</small></details>
       </div>
     </aside>
   </div>
@@ -69,27 +76,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Memory management">
-        <span>01</span>
-        <h3>Memory management</h3>
+      <details class="concept-card" data-subtopic="Memory management">
+        <summary>Memory management</summary>
         <p class="concept-definition">Memory management decides when storage for Python objects can be reclaimed. The language specifies reachability behavior broadly; concrete collectors differ by implementation.</p>
-      </article><article class="concept-card" data-subtopic="reference counting">
-        <span>02</span>
-        <h3>reference counting</h3>
+      </details><details class="concept-card" data-subtopic="reference counting">
+        <summary>reference counting</summary>
         <p class="concept-definition">CPython reference counting tracks strong references and often finalizes unreachable non-cyclic objects promptly. It cannot by itself reclaim cycles.</p>
-      </article><article class="concept-card" data-subtopic="cyclic GC">
-        <span>03</span>
-        <h3>cyclic GC</h3>
+      </details><details class="concept-card" data-subtopic="cyclic GC">
+        <summary>cyclic GC</summary>
         <p class="concept-definition">The cyclic garbage collector finds unreachable reference cycles that reference counts alone cannot release. It supplements, rather than replaces, CPython reference counting.</p>
-      </article><article class="concept-card" data-subtopic="weak references">
-        <span>04</span>
-        <h3>weak references</h3>
+      </details><details class="concept-card" data-subtopic="weak references">
+        <summary>weak references</summary>
         <p class="concept-definition">A weak reference observes an object without keeping it alive. It is useful for caches and registries whose entries should disappear with their real owners.</p>
-      </article><article class="concept-card" data-subtopic="finalization">
-        <span>05</span>
-        <h3>finalization</h3>
+      </details><details class="concept-card" data-subtopic="finalization">
+        <summary>finalization</summary>
         <p class="concept-definition">Finalization occurs when objects are cleaned up by runtime mechanisms; timing is not a substitute for deterministic resource release.</p>
-      </article>
+      </details>
     </div>
   </section>
 

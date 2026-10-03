@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -46,7 +48,7 @@
   <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A quantity field contains the text 10, the text oops, or nothing. One is valid, one is malformed and one is missing.</p><p>A non-strict cast can turn the last two into null. Keep the raw value or a rejection reason so you can tell them apart. Replacing both with zero loses that information.</p><details><summary>Can the converted null alone explain the failure?</summary><p>No. You need the original input or a recorded reason.</p></details></section>
 <p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0647" data-bespoke-example="0647" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A failed cast and missing input both produce null but have different causes</figcaption><p>Raw quantities are 10 as text, oops and a missing value. The cast is non-strict.</p><div class="foundation-grid"><div>10<br>Parsed integer 10</div><div>oops<br>Cast result null<br>Quarantine candidate</div><div>Missing input<br>Result null<br>Already missing</div></div><details><summary>How does the fixture identify the failed cast?</summary><p>The raw value is not null but the parsed value is null.</p></details><details><summary>Does fill_null replace NaN too?</summary><p>No. The fixture's NaN remains after null is filled with zero.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Preserve invalid input evidence while converting validated values into typed columns.</p>
@@ -56,13 +58,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a typed analytical transformation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="polars-0647" aria-label="Mechanism trace: Define the input and row grain then Apply the stated operation then Compare values and failure behavior. Experiment: Add an integer larger than Int64 can hold and an empty string. Predict the quarantine rows before running the cast.">
-        <li class="trace-stage"><span>01 · CONTRACT</span><strong>Define the input and row grain</strong><small>Null means a missing value. NaN is a floating-point value with different behavior. A cast changes a column&#039;s data type. A failed non-strict cast produces null, so retain the original value to distinguish malformed input from an originally missing value.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><strong>Apply the stated operation</strong><small>Preserve invalid input evidence while converting validated values into typed columns.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><strong>Compare values and failure behavior</strong><small>Only oops is a conversion failure. The missing raw input is a separate case. Filling null leaves NaN unchanged.</small></li>
+        <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Define the input and row grain</summary><p>Null means a missing value. NaN is a floating-point value with different behavior. A cast changes a column&#039;s data type. A failed non-strict cast produces null, so retain the original value to distinguish malformed input from an originally missing value.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><details class="trace-explanation"><summary>Apply the stated operation</summary><p>Preserve invalid input evidence while converting validated values into typed columns.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><details class="trace-explanation"><summary>Compare values and failure behavior</summary><p>Only oops is a conversion failure. The missing raw input is a separate case. Filling null leaves NaN unchanged.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Add an integer larger than Int64 can hold and an empty string. Predict the quarantine rows before running the cast.</strong>
-        <small><b>Inspect:</b> A permissive cast without a reject audit converts malformed source data into apparently ordinary missing values. Strict rejection gives a simple batch boundary. Row quarantine preserves valid work but needs reconciliation, privacy controls and a repair path.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> A permissive cast without a reject audit converts malformed source data into apparently ordinary missing values. Strict rejection gives a simple batch boundary. Row quarantine preserves valid work but needs reconciliation, privacy controls and a repair path.</small></details>
       </div>
     </aside>
   </div>
@@ -70,15 +73,13 @@
   <section class="concept-section" data-subtopic-count="2">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="null">
-        <span>01</span>
-        <h3>null</h3>
+      <details class="concept-card" data-subtopic="null">
+        <summary>null</summary>
         <p class="concept-definition">A missing value for a column of any supported type.</p>
-      </article><article class="concept-card" data-subtopic="quarantine">
-        <span>02</span>
-        <h3>quarantine</h3>
+      </details><details class="concept-card" data-subtopic="quarantine">
+        <summary>quarantine</summary>
         <p class="concept-definition">A separate output for rejected records with enough evidence to repair or explain them.</p>
-      </article>
+      </details>
     </div>
   </section>
 

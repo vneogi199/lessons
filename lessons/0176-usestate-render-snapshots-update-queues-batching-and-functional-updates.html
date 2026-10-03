@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#react">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0176" data-bespoke-example="0176" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Add three without passing the quantity limit</figcaption>
+<p>Start quantity at 98. Each queued updater adds one but caps the result at 99.</p>
+<div class="foundation-grid"><div>Starting state<br>98</div><div>First updater<br>min(99, 99)<br>99</div><div>Second updater<br>min(99, 100)<br>99</div><div>Third updater<br>min(99, 100)<br>99</div></div>
+<details><summary>What if quantity starts at 1 instead?</summary><p>The queue produces 2, then 3, then 4. Each updater receives the preceding result.</p></details>
+<details><summary>Does addTag mutate the existing tags array?</summary><p>No. It constructs a new tags array and a new draft object while retaining the other draft fields.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Each render reads its own state snapshot. Trace queued replacement values and updater functions before predicting the next state.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a state update</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="react-state-queue" aria-label="Mechanism trace: A handler reads its render&#039;s state then Setters queue values or calculations then React calculates the next UI then React applies required DOM changes. Experiment: Predict three replacements, three updaters and a mixed queue from state 1.">
-        <li class="trace-stage"><span>01 · EVENT</span><strong>A handler reads its render&#039;s state</strong><small>With quantity 1, quantity + 1 evaluates to 2.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><strong>Setters queue values or calculations</strong><small>Replacement 2 differs from an updater that adds one to pending state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RENDER</span><strong>React calculates the next UI</strong><small>Queued updaters compose in order; component code reads the resulting snapshot.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>React applies required DOM changes</strong><small>The browser paints afterward. Equal state can allow React to skip work.</small></li>
+        <li class="trace-stage"><span>01 · EVENT</span><details class="trace-explanation" open><summary>A handler reads its render&#039;s state</summary><p>With quantity 1, quantity + 1 evaluates to 2.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><details class="trace-explanation"><summary>Setters queue values or calculations</summary><p>Replacement 2 differs from an updater that adds one to pending state.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RENDER</span><details class="trace-explanation"><summary>React calculates the next UI</summary><p>Queued updaters compose in order; component code reads the resulting snapshot.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><details class="trace-explanation"><summary>React applies required DOM changes</summary><p>The browser paints afterward. Equal state can allow React to skip work.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Predict three replacements, three updaters and a mixed queue from state 1.</strong>
-        <small><b>Inspect:</b> Final state 2, 4 and 2 for the stated queues; mutation and reset behavior in a React environment.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Final state 2, 4 and 2 for the stated queues; mutation and reset behavior in a React environment.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="useState">
-        <span>01</span>
-        <h3>useState</h3>
+      <details class="concept-card" data-subtopic="useState">
+        <summary>useState</summary>
         <p class="concept-definition">useState gives one component instance a remembered value. Its setter queues an update without changing the current render&#039;s value. React can skip rendering work when Object.is compares the next and current state as equal.</p>
-      </article><article class="concept-card" data-subtopic="render snapshots">
-        <span>02</span>
-        <h3>render snapshots</h3>
+      </details><details class="concept-card" data-subtopic="render snapshots">
+        <summary>render snapshots</summary>
         <p class="concept-definition">A render snapshot is the fixed set of props, state, and closures seen during one component call. Later state updates schedule another snapshot instead of mutating the current one.</p>
-      </article><article class="concept-card" data-subtopic="update queues">
-        <span>03</span>
-        <h3>update queues</h3>
+      </details><details class="concept-card" data-subtopic="update queues">
+        <summary>update queues</summary>
         <p class="concept-definition">Update queues retain state updates for a future render; functional updates compose from pending state.</p>
-      </article><article class="concept-card" data-subtopic="batching">
-        <span>04</span>
-        <h3>batching</h3>
+      </details><details class="concept-card" data-subtopic="batching">
+        <summary>batching</summary>
         <p class="concept-definition">Batching groups several queued state updates before React renders. It reduces redundant work, while functional updates preserve the intended order when updates depend on earlier state.</p>
-      </article><article class="concept-card" data-subtopic="functional updates">
-        <span>05</span>
-        <h3>functional updates</h3>
+      </details><details class="concept-card" data-subtopic="functional updates">
+        <summary>functional updates</summary>
         <p class="concept-definition">A functional state update receives the pending state and returns the next state. Several queued updates can therefore build on one another instead of reusing one render&#039;s captured value.</p>
-      </article>
+      </details>
     </div>
   </section>
 

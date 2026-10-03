@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0451" data-bespoke-example="0451" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Recovery targets need a measured failover drill</figcaption><p>The plan names ap-south-1 as primary and eu-west-1 as recovery. Replication is asynchronous. Targets are 30 seconds of possible data loss and 15 minutes to restore service.</p><div class="foundation-grid"><div>Normal operation<br>Primary accepts writes<br>Recovery writes disabled</div><div>Approved failover<br>Fence old writer<br>Promote recovery</div><div>Drill evidence<br>Measure lost data and recovery time</div></div><details><summary>Does writing those targets in YAML prove they are met?</summary><p>No. Measure replication lag, dependencies, routing and recovery under a failure drill.</p></details><details><summary>Can both regions accept authoritative writes during promotion?</summary><p>Not under this plan. Fence the previous writer before enabling the new one.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Serving from several regions requires a decision about who can accept writes and how authority moves after failure. Asynchronous replication leaves a possible acknowledged-data loss window. DNS changes neither stop old writers nor move existing connections. The configuration gives recovery targets; a drill supplies measured recovery evidence. Include backups, logs and dependencies when checking where data can travel.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a distributed request or message</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="distributed-placement" aria-label="Mechanism trace: Key or request maps to an owner then Selected node executes local work then Membership, load, or region state shifts then Traffic and data settle safely. Experiment: Remove one owner during a hot-key spike and route traffic before every client refreshes membership.">
-        <li class="trace-stage"><span>01 · ROUTE</span><strong>Key or request maps to an owner</strong><small>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVE</span><strong>Selected node executes local work</strong><small>Capacity, connection state, authoritative data, projection, and replication position apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Membership, load, or region state shifts</strong><small>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Traffic and data settle safely</strong><small>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</small></li>
+        <li class="trace-stage"><span>01 · ROUTE</span><details class="trace-explanation" open><summary>Key or request maps to an owner</summary><p>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVE</span><details class="trace-explanation"><summary>Selected node executes local work</summary><p>Capacity, connection state, authoritative data, projection, and replication position apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><details class="trace-explanation"><summary>Membership, load, or region state shifts</summary><p>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><details class="trace-explanation"><summary>Traffic and data settle safely</summary><p>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</strong>
-        <small><b>Inspect:</b> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Multi-region architecture">
-        <span>01</span>
-        <h3>Multi-region architecture</h3>
+      <details class="concept-card" data-subtopic="Multi-region architecture">
+        <summary>Multi-region architecture</summary>
         <p class="concept-definition">Multi-region architecture places traffic, compute, and data across geographic failure and legal domains with explicit write, consistency, routing, and failover authority.</p>
-      </article><article class="concept-card" data-subtopic="active-passive">
-        <span>02</span>
-        <h3>active-passive</h3>
+      </details><details class="concept-card" data-subtopic="active-passive">
+        <summary>active-passive</summary>
         <p class="concept-definition">Active-passive deployment keeps standby capacity for failover, requiring promotion and data-currency policy.</p>
-      </article><article class="concept-card" data-subtopic="active-active">
-        <span>03</span>
-        <h3>active-active</h3>
+      </details><details class="concept-card" data-subtopic="active-active">
+        <summary>active-active</summary>
         <p class="concept-definition">Active-active deployment serves work in multiple locations and must coordinate or resolve cross-location state changes.</p>
-      </article><article class="concept-card" data-subtopic="geo-routing">
-        <span>04</span>
-        <h3>geo-routing</h3>
+      </details><details class="concept-card" data-subtopic="geo-routing">
+        <summary>geo-routing</summary>
         <p class="concept-definition">Geo-routing chooses locations based on geography, latency, availability, or policy rather than one global endpoint rule.</p>
-      </article><article class="concept-card" data-subtopic="sovereignty">
-        <span>05</span>
-        <h3>sovereignty</h3>
+      </details><details class="concept-card" data-subtopic="sovereignty">
+        <summary>sovereignty</summary>
         <p class="concept-definition">Data sovereignty requirements constrain where data is stored, processed, or accessed; verify applicable legal and organizational rules separately.</p>
-      </article><article class="concept-card" data-subtopic="failover">
-        <span>06</span>
-        <h3>failover</h3>
+      </details><details class="concept-card" data-subtopic="failover">
+        <summary>failover</summary>
         <p class="concept-definition">Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
-      </article>
+      </details>
     </div>
   </section>
 

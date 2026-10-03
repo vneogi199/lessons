@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#quality-security">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0474" data-bespoke-example="0474" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Recheck the target after preview</figcaption><p>An administrator previews disabling user B and confirms B's email. Before execution, the target or permissions can change.</p><div class="foundation-grid"><div>Preview<br>Show target and session count</div><div>Execution transaction<br>Lock and recheck scope<br>Recheck confirmation</div><div>Accepted operation<br>Disable, revoke and audit together</div></div><details><summary>Is typing the correct email sufficient authorization?</summary><p>No. It is a safety check. Current permissions and target scope still apply.</p></details><details><summary>Should the changing session count be part of replay identity?</summary><p>No. Use the stable action, target and reason. Otherwise the same intended operation could appear different after execution.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A privileged action needs current authorization at execution, even if a preview was allowed earlier. Bind approval and idempotency to the exact proposed change, then commit local changes and the receipt together. Keep the real operator visible during impersonation. External audit or session updates need durable delivery, and the response must accurately describe which effects have finished.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a privileged operation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="privileged-control" aria-label="Mechanism trace: Authenticated actor asks for change then Server evaluates safety policy then Bounded privileged operation commits then Append-only audit event supports review. Experiment: Preview a bulk action, deny an out-of-scope operator, repeat the approved request, impersonate with a reason, and verify the audit chain.">
-        <li class="trace-stage"><span>01 · REQUEST</span><strong>Authenticated actor asks for change</strong><small>Role, recent authentication, scope, target, reason, correlation, and idempotency state are explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GUARD</span><strong>Server evaluates safety policy</strong><small>Deny-by-default authorization, preview, confirmation, approval, rate limit, and conflict checks run.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><strong>Bounded privileged operation commits</strong><small>A transaction and reversible design contain partial work, retries, mistakes, or abuse.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Append-only audit event supports review</strong><small>Actor, action, target, outcome, changes, hash linkage, restricted access, and retention enable investigation.</small></li>
+        <li class="trace-stage"><span>01 · REQUEST</span><details class="trace-explanation" open><summary>Authenticated actor asks for change</summary><p>Role, recent authentication, scope, target, reason, correlation, and idempotency state are explicit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GUARD</span><details class="trace-explanation"><summary>Server evaluates safety policy</summary><p>Deny-by-default authorization, preview, confirmation, approval, rate limit, and conflict checks run.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><details class="trace-explanation"><summary>Bounded privileged operation commits</summary><p>A transaction and reversible design contain partial work, retries, mistakes, or abuse.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><details class="trace-explanation"><summary>Append-only audit event supports review</summary><p>Actor, action, target, outcome, changes, hash linkage, restricted access, and retention enable investigation.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Preview a bulk action, deny an out-of-scope operator, repeat the approved request, impersonate with a reason, and verify the audit chain.</strong>
-        <small><b>Inspect:</b> Actor/session, policy decision, approval and reason, target set, idempotency record, state diff, outcome, audit hash, alert, and rollback result.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Actor/session, policy decision, approval and reason, target set, idempotency record, state diff, outcome, audit hash, alert, and rollback result.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +76,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Admin systems">
-        <span>01</span>
-        <h3>Admin systems</h3>
+      <details class="concept-card" data-subtopic="Admin systems">
+        <summary>Admin systems</summary>
         <p class="concept-definition">An admin system is a privileged control plane for support and operations. It needs stronger authorization, confirmation, evidence, and failure containment than ordinary product UI.</p>
-      </article><article class="concept-card" data-subtopic="privileged workflows">
-        <span>02</span>
-        <h3>privileged workflows</h3>
+      </details><details class="concept-card" data-subtopic="privileged workflows">
+        <summary>privileged workflows</summary>
         <p class="concept-definition">A privileged workflow changes sensitive data or authority through explicit states such as draft, previewed, approved, applied, rejected, and rolled back.</p>
-      </article><article class="concept-card" data-subtopic="RBAC">
-        <span>03</span>
-        <h3>RBAC</h3>
+      </details><details class="concept-card" data-subtopic="RBAC">
+        <summary>RBAC</summary>
         <p class="concept-definition">Role-based access control assigns narrow permissions to job roles. The server still checks each action and resource scope and denies access by default.</p>
-      </article><article class="concept-card" data-subtopic="impersonation">
-        <span>04</span>
-        <h3>impersonation</h3>
+      </details><details class="concept-card" data-subtopic="impersonation">
+        <summary>impersonation</summary>
         <p class="concept-definition">Impersonation lets an authorized operator view or act in a user&#039;s context while preserving the operator identity, reason, visible banner, time limit, restrictions, and audit trail.</p>
-      </article><article class="concept-card" data-subtopic="approvals">
-        <span>05</span>
-        <h3>approvals</h3>
+      </details><details class="concept-card" data-subtopic="approvals">
+        <summary>approvals</summary>
         <p class="concept-definition">Approvals require a separate authorized person or policy decision before a high-impact operation can execute, with the exact proposed change bound to the decision.</p>
-      </article><article class="concept-card" data-subtopic="bulk operations">
-        <span>06</span>
-        <h3>bulk operations</h3>
+      </details><details class="concept-card" data-subtopic="bulk operations">
+        <summary>bulk operations</summary>
         <p class="concept-definition">A bulk operation applies one intent to many targets. Preview, bounded batches, per-item outcomes, rate limits, cancellation, and rollback contain large mistakes.</p>
-      </article><article class="concept-card" data-subtopic="safety rails">
-        <span>07</span>
-        <h3>safety rails</h3>
+      </details><details class="concept-card" data-subtopic="safety rails">
+        <summary>safety rails</summary>
         <p class="concept-definition">Safety rails are enforced limits such as protected targets, dry run, exact confirmation, step-up authentication, change caps, dual approval, and reversible execution.</p>
-      </article><article class="concept-card" data-subtopic="observability">
-        <span>08</span>
-        <h3>observability</h3>
+      </details><details class="concept-card" data-subtopic="observability">
+        <summary>observability</summary>
         <p class="concept-definition">Admin observability exposes privileged-action volume, denials, failures, latency, unusual targets, impersonation, bulk impact, alerts, and correlated audit evidence.</p>
-      </article>
+      </details>
     </div>
   </section>
 

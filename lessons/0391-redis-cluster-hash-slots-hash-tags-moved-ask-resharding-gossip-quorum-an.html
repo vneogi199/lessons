@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0391" data-bespoke-example="0391" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A failed lease SET does not guard an earlier cart write</figcaption><p>The lock key already belongs to another owner. Both keys share the user42 hash tag.</p><div class="foundation-grid"><div>HSET cart sku-1 2<br>Succeeds</div><div>SET lock NX<br>Existing key<br>Returns null</div><div>Cart afterward<br>sku-1 is still 2</div></div><details><summary>Does sharing a slot make the cart write conditional on acquiring the lock?</summary><p>No. It permits colocated operations but does not add that condition.</p></details><details><summary>What must replace this pattern if lease ownership guards the write?</summary><p>Use a validated conditional operation that checks the invariant before changing protected state.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Hash tags place related keys in one cluster slot so one owner can execute supported multi-key work. They do not turn separate commands into a conditional guard. In the example, HSET changes the cart even when SET NX fails. Keep transaction state on its owning connection. MOVED updates routing knowledge, while ASK is a temporary redirect with its own destination protocol step.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a cluster-local transaction</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="redis-cluster-conditional-write" aria-label="Mechanism trace: Find the primary owning the hash slot then Queue both commands then Inspect each result then Separate isolation from a condition. Experiment: Pre-create the lease, execute the transaction, and compare both replies with the cart value.">
-        <li class="trace-stage"><span>01 · ROUTE</span><strong>Find the primary owning the hash slot</strong><small>Matching hash tags place these keys together; one connection owns transaction state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><strong>Queue both commands</strong><small>HSET and SET NX are separate operations, even inside MULTI.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Inspect each result</strong><small>The existing lease makes SET NX return null, but HSET still updates the cart.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REASON</span><strong>Separate isolation from a condition</strong><small>Same-slot execution is not a guarded lease check; express the condition before the protected write.</small></li>
+        <li class="trace-stage"><span>01 · ROUTE</span><details class="trace-explanation" open><summary>Find the primary owning the hash slot</summary><p>Matching hash tags place these keys together; one connection owns transaction state.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><details class="trace-explanation"><summary>Queue both commands</summary><p>HSET and SET NX are separate operations, even inside MULTI.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Inspect each result</summary><p>The existing lease makes SET NX return null, but HSET still updates the cart.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REASON</span><details class="trace-explanation"><summary>Separate isolation from a condition</summary><p>Same-slot execution is not a guarded lease check; express the condition before the protected write.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Pre-create the lease, execute the transaction, and compare both replies with the cart value.</strong>
-        <small><b>Inspect:</b> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</small></details>
       </div>
     </aside>
   </div>
@@ -73,43 +76,34 @@
   <section class="concept-section" data-subtopic-count="9">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Redis Cluster">
-        <span>01</span>
-        <h3>Redis Cluster</h3>
+      <details class="concept-card" data-subtopic="Redis Cluster">
+        <summary>Redis Cluster</summary>
         <p class="concept-definition">Redis Cluster partitions keys across 16384 hash slots and redirects slot-aware clients. Replicas and quorum-based failover improve availability but do not eliminate asynchronous write-loss windows.</p>
-      </article><article class="concept-card" data-subtopic="hash slots">
-        <span>02</span>
-        <h3>hash slots</h3>
+      </details><details class="concept-card" data-subtopic="hash slots">
+        <summary>hash slots</summary>
         <p class="concept-definition">Redis Cluster assigns keys to hash slots distributed among nodes.</p>
-      </article><article class="concept-card" data-subtopic="hash tags">
-        <span>03</span>
-        <h3>hash tags</h3>
+      </details><details class="concept-card" data-subtopic="hash tags">
+        <summary>hash tags</summary>
         <p class="concept-definition">Hash tags choose a shared substring for slot calculation, allowing related keys to occupy the same slot.</p>
-      </article><article class="concept-card" data-subtopic="MOVED">
-        <span>04</span>
-        <h3>MOVED</h3>
+      </details><details class="concept-card" data-subtopic="MOVED">
+        <summary>MOVED</summary>
         <p class="concept-definition">MOVED redirects a client to the node currently responsible for a slot and generally prompts routing-table refresh.</p>
-      </article><article class="concept-card" data-subtopic="ASK">
-        <span>05</span>
-        <h3>ASK</h3>
+      </details><details class="concept-card" data-subtopic="ASK">
+        <summary>ASK</summary>
         <p class="concept-definition">ASK provides a temporary redirection during slot migration and requires the corresponding client protocol handling.</p>
-      </article><article class="concept-card" data-subtopic="resharding">
-        <span>06</span>
-        <h3>resharding</h3>
+      </details><details class="concept-card" data-subtopic="resharding">
+        <summary>resharding</summary>
         <p class="concept-definition">Resharding moves key ownership between nodes while clients and migration state coordinate access.</p>
-      </article><article class="concept-card" data-subtopic="gossip">
-        <span>07</span>
-        <h3>gossip</h3>
+      </details><details class="concept-card" data-subtopic="gossip">
+        <summary>gossip</summary>
         <p class="concept-definition">Gossip spreads membership and state information among peers incrementally rather than through one global instantaneous view.</p>
-      </article><article class="concept-card" data-subtopic="quorum">
-        <span>08</span>
-        <h3>quorum</h3>
+      </details><details class="concept-card" data-subtopic="quorum">
+        <summary>quorum</summary>
         <p class="concept-definition">A quorum is a required set or count of participants for a decision under a specified protocol; counting votes alone does not prove safety.</p>
-      </article><article class="concept-card" data-subtopic="failover">
-        <span>09</span>
-        <h3>failover</h3>
+      </details><details class="concept-card" data-subtopic="failover">
+        <summary>failover</summary>
         <p class="concept-definition">Failover transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</p>
-      </article>
+      </details>
     </div>
   </section>
 

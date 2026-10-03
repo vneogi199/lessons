@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#javascript">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0087" data-bespoke-example="0087" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">The function follows its defining scopes</figcaption>
+<p>outer receives input, creates a function-scoped binding, then returns inner from a block with its own binding.</p>
+<div class="foundation-grid"><div>inner's lookup path<br>Defining block: blockScoped<br>↓<br>Defining function: parameter, functionScoped</div><div>Call result<br>parameter: input<br>Both retained local bindings are readable</div></div>
+<details><summary>If the caller has another variable named parameter, does inner use it?</summary><p>No. Lexical lookup follows the defining environments, not the caller's local variables.</p></details>
+<details><summary>Does the top-level let in this ES module create a globalThis property?</summary><p>No. The fixture uses a module binding. Do not transfer that conclusion unchanged to other script or module environments.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>A lexical environment holds bindings for names and links to an outer environment. Reading a name searches those links for the nearest binding. The function&#039;s definition determines that chain; its caller does not supply a new lexical parent. Shadowing creates a nearer binding without changing the outer one. Top-level behavior also depends on whether the host runs the source as a module or a script.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a JavaScript evaluation</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="javascript-bindings" aria-label="Mechanism trace: Code establishes bindings then A reference searches environments then The running context uses it then Value, error, or retention appears. Experiment: Shadow or capture one binding and predict every lookup and lifetime.">
-        <li class="trace-stage"><span>01 · CREATE</span><strong>Code establishes bindings</strong><small>Declaration instantiation creates and sometimes initializes names.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>A reference searches environments</strong><small>Outer links select the nearest matching binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>The running context uses it</strong><small>Calls, closures, and blocks read or update the binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Value, error, or retention appears</strong><small>Output and heap evidence reveal the selected environment.</small></li>
+        <li class="trace-stage"><span>01 · CREATE</span><details class="trace-explanation" open><summary>Code establishes bindings</summary><p>Declaration instantiation creates and sometimes initializes names.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><details class="trace-explanation"><summary>A reference searches environments</summary><p>Outer links select the nearest matching binding.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><details class="trace-explanation"><summary>The running context uses it</summary><p>Calls, closures, and blocks read or update the binding.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>Value, error, or retention appears</summary><p>Output and heap evidence reveal the selected environment.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Shadow or capture one binding and predict every lookup and lifetime.</strong>
-        <small><b>Inspect:</b> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</small></details>
       </div>
     </aside>
   </div>
@@ -73,27 +80,22 @@
   <section class="concept-section" data-subtopic-count="5">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Declarations">
-        <span>01</span>
-        <h3>Declarations</h3>
+      <details class="concept-card" data-subtopic="Declarations">
+        <summary>Declarations</summary>
         <p class="concept-definition">Declarations introduce bindings or definitions, such as let, const, function, and class. Their creation and initialization timing differs, which explains hoisting and temporal-dead-zone behavior.</p>
-      </article><article class="concept-card" data-subtopic="lexical environments">
-        <span>02</span>
-        <h3>lexical environments</h3>
+      </details><details class="concept-card" data-subtopic="lexical environments">
+        <summary>lexical environments</summary>
         <p class="concept-definition">A Lexical Environment connects an Environment Record holding bindings to an outer environment. Identifier resolution follows these lexical links.</p>
-      </article><article class="concept-card" data-subtopic="environment records">
-        <span>03</span>
-        <h3>environment records</h3>
+      </details><details class="concept-card" data-subtopic="environment records">
+        <summary>environment records</summary>
         <p class="concept-definition">An Environment Record is a specification structure that creates, initializes, reads, and updates bindings for blocks, functions, modules, and global code.</p>
-      </article><article class="concept-card" data-subtopic="scope">
-        <span>04</span>
-        <h3>scope</h3>
+      </details><details class="concept-card" data-subtopic="scope">
+        <summary>scope</summary>
         <p class="concept-definition">Scope determines where an identifier can be resolved. JavaScript follows lexical nesting rather than the caller&#039;s local variables.</p>
-      </article><article class="concept-card" data-subtopic="name resolution">
-        <span>05</span>
-        <h3>name resolution</h3>
+      </details><details class="concept-card" data-subtopic="name resolution">
+        <summary>name resolution</summary>
         <p class="concept-definition">Name resolution searches lexical environment records for a binding. It does not search the local variables of whichever function happens to call the code.</p>
-      </article>
+      </details>
     </div>
   </section>
 

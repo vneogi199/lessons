@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,11 @@
     <p><a href="../reference/senior-interview-practice.html#software-design">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0017" data-bespoke-example="0017" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A lost commit reply leaves a question</figcaption>
+<p>The use case reads a draft order, saves it as placed, then asks the unit of work to commit.</p>
+<div class="foundation-grid"><div>Known success<br>Save placed<br>Commit succeeds<br>Reply reaches caller</div><div>Ambiguous result<br>Save placed<br>Commit may succeed<br>Reply is lost</div></div>
+<details><summary>Does calling rollback after a lost reply prove that the order was not placed?</summary><p>No. The commit may already have completed. Reconcile the stored result and use an idempotent retry design before repeating the action.</p></details>
+<details><summary>What does a fake unit-of-work test establish?</summary><p>It can check the caller's save, commit and rollback branches. It does not establish database durability, isolation or safe concurrent placement.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Architecture sets responsibility and dependency boundaries. Layers group technical roles; vertical slices group the work for one feature. Hexagonal and clean architecture keep policy independent of external adapters. A repository hides persistence details, while a unit of work owns a transaction. A modular monolith can enforce these boundaries within one deployment. Moving files or creating more deployments does not enforce them by itself.</p>
@@ -59,13 +65,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a requirement-driven code change</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="architecture-boundary" aria-label="Mechanism trace: A use case enters one application boundary then Domain and application rules decide then Infrastructure performs external work then One observable outcome completes. Experiment: Replace one database adapter and move one feature between folders without changing the domain or application contract.">
-        <li class="trace-stage"><span>01 · INTENT</span><strong>A use case enters one application boundary</strong><small>Validated input, identity, transaction need, and expected outcome are explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Domain and application rules decide</strong><small>Stable business logic depends on owned ports rather than frameworks or vendors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPTER</span><strong>Infrastructure performs external work</strong><small>HTTP, database, queue, clock, and model details translate at the edge.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>One observable outcome completes</strong><small>Transaction state, response, events, tests, and telemetry prove boundary behavior.</small></li>
+        <li class="trace-stage"><span>01 · INTENT</span><details class="trace-explanation" open><summary>A use case enters one application boundary</summary><p>Validated input, identity, transaction need, and expected outcome are explicit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><details class="trace-explanation"><summary>Domain and application rules decide</summary><p>Stable business logic depends on owned ports rather than frameworks or vendors.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPTER</span><details class="trace-explanation"><summary>Infrastructure performs external work</summary><p>HTTP, database, queue, clock, and model details translate at the edge.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><details class="trace-explanation"><summary>One observable outcome completes</summary><p>Transaction state, response, events, tests, and telemetry prove boundary behavior.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Replace one database adapter and move one feature between folders without changing the domain or application contract.</strong>
-        <small><b>Inspect:</b> Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</small></details>
       </div>
     </aside>
   </div>
@@ -73,39 +80,31 @@
   <section class="concept-section" data-subtopic-count="8">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Architecture patterns">
-        <span>01</span>
-        <h3>Architecture patterns</h3>
+      <details class="concept-card" data-subtopic="Architecture patterns">
+        <summary>Architecture patterns</summary>
         <p class="concept-definition">Architecture patterns organize major responsibilities and dependency relationships across an application; their names matter less than enforced boundaries.</p>
-      </article><article class="concept-card" data-subtopic="layered architecture">
-        <span>02</span>
-        <h3>layered architecture</h3>
+      </details><details class="concept-card" data-subtopic="layered architecture">
+        <summary>layered architecture</summary>
         <p class="concept-definition">Layered architecture groups technical responsibilities such as presentation, application, domain, and data access with defined dependency rules.</p>
-      </article><article class="concept-card" data-subtopic="hexagonal architecture">
-        <span>03</span>
-        <h3>hexagonal architecture</h3>
+      </details><details class="concept-card" data-subtopic="hexagonal architecture">
+        <summary>hexagonal architecture</summary>
         <p class="concept-definition">Hexagonal architecture places application policy inside and connects external actors and infrastructure through owned ports and adapters.</p>
-      </article><article class="concept-card" data-subtopic="clean architecture">
-        <span>04</span>
-        <h3>clean architecture</h3>
+      </details><details class="concept-card" data-subtopic="clean architecture">
+        <summary>clean architecture</summary>
         <p class="concept-definition">Clean architecture directs source dependencies inward toward enterprise and application policy while outer frameworks implement boundary interfaces.</p>
-      </article><article class="concept-card" data-subtopic="vertical slices">
-        <span>05</span>
-        <h3>vertical slices</h3>
+      </details><details class="concept-card" data-subtopic="vertical slices">
+        <summary>vertical slices</summary>
         <p class="concept-definition">A vertical slice groups the endpoint, use case, validation, and related adapters for one feature so a change stays near its user behavior.</p>
-      </article><article class="concept-card" data-subtopic="repository">
-        <span>06</span>
-        <h3>repository</h3>
+      </details><details class="concept-card" data-subtopic="repository">
+        <summary>repository</summary>
         <p class="concept-definition">A repository provides a collection-like domain interface for loading and saving aggregates while hiding persistence queries and mappings.</p>
-      </article><article class="concept-card" data-subtopic="unit of work">
-        <span>07</span>
-        <h3>unit of work</h3>
+      </details><details class="concept-card" data-subtopic="unit of work">
+        <summary>unit of work</summary>
         <p class="concept-definition">A unit of work owns one transaction boundary, tracks intended changes, and commits or rolls them back as one consistency decision.</p>
-      </article><article class="concept-card" data-subtopic="modular monoliths">
-        <span>08</span>
-        <h3>modular monoliths</h3>
+      </details><details class="concept-card" data-subtopic="modular monoliths">
+        <summary>modular monoliths</summary>
         <p class="concept-definition">A modular monolith deploys as one application but enforces internal module ownership and contracts so features do not share arbitrary state.</p>
-      </article>
+      </details>
     </div>
   </section>
 

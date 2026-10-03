@@ -12,6 +12,8 @@
     .blackboard{margin:0}.trace-flow{display:grid;gap:22px;margin:18px 0 0;padding:0;list-style:none}.trace-stage{position:relative;display:grid;gap:5px;padding:14px 15px;border:1px solid #42736d;border-radius:8px;background:#102925}.trace-stage>span{color:var(--lime);font-size:11px;font-weight:700;letter-spacing:.07em}.trace-stage>strong{color:#edfff8;font-size:14px;line-height:1.4}.trace-stage>small{color:#a9c9c2;font-size:12px;line-height:1.55}.trace-stage>i{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:var(--lime);font-style:normal;font-size:17px}.trace-proof{margin-top:18px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.trace-proof span{display:block;color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.06em}.trace-proof strong{display:block;margin-top:7px;color:#e9f7f3;font-size:13px;line-height:1.55}.trace-proof small{display:block;margin-top:8px;color:#9fbab5;font-size:11px;line-height:1.55}
     .beginner-foundation{margin-top:18px}.beginner-foundation h3,.mechanism-walkthrough h3,.code-guide h3,.common-mistakes h3{color:var(--bright);font-size:16px}.foundation-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.foundation-grid>div{padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.foundation-grid dt{color:var(--lime);font-weight:700}.foundation-grid dd{margin:5px 0 0;color:#c4d0df}.beginner-order{padding-left:24px}.beginner-order li{margin:8px 0}.language-note{padding:12px;border-left:3px solid var(--cyan);background:#0c1820}.mechanism-walkthrough,.code-guide,.common-mistakes{margin-top:18px}.walkthrough-grid,.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.walkthrough-grid article,.mistake-grid article{padding:18px;border:1px solid var(--line);border-radius:8px;background:var(--panel2)}.walkthrough-grid article>span{color:var(--lime);font-size:11px;font-weight:700}.diagnostic-note{margin-top:14px;padding:15px;border:1px dashed #587a73;border-radius:8px;background:#0a1514}.detailed-answer{display:grid;gap:8px;margin-top:18px}.detailed-answer p{margin:0;padding:12px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}@media(max-width:760px){.foundation-grid,.walkthrough-grid,.mistake-grid{grid-template-columns:1fr}}
     a{color:var(--cyan)}summary{cursor:pointer;color:var(--lime)}summary:focus-visible{outline:2px solid var(--cyan);outline-offset:4px}.senior-practice{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}details{margin-top:14px}details p{max-width:75ch}@media print{details::details-content{content-visibility:visible}}
+    .trace-explanation{margin:0}.trace-explanation>summary{color:#edfff8;font-size:15px;line-height:1.5;min-height:44px;padding:10px 0}.trace-explanation>p{color:#c4ded7;font-size:15px;line-height:1.7;margin:8px 0 0}.concept-card{padding:14px 18px;margin:0}.concept-card>summary{color:var(--bright);min-height:44px;padding:10px 0;font-size:16px}.trace-proof>details>summary{min-height:44px;padding:10px 0}.trace-proof small{font-size:14px;line-height:1.7}.concept-grid{margin-top:0}
+    .mechanism-map{margin:18px 0}.mechanism-map figcaption{color:var(--bright);font-weight:600}.mechanism-map ol{display:grid;grid-template-columns:repeat(var(--map-stages),minmax(0,1fr));gap:26px;margin:18px 0;padding:0;list-style:none}.mechanism-map li{position:relative;display:flex;align-items:center;min-width:0;padding:14px;border:1px solid #68b8aa;border-radius:8px;background:#102925;color:#edfff8;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.map-arrow{position:absolute;right:-23px;top:50%;transform:translateY(-50%);color:var(--lime);font-size:20px}.map-arrow::after{content:"→"}.mechanism-map>p{font-size:13px}.mechanism-map li>span:first-child{min-width:0}@media(max-width:700px){.mechanism-map ol{grid-template-columns:1fr}.map-arrow{right:auto;left:50%;top:auto;bottom:-29px;transform:translateX(-50%)}.map-arrow::after{content:"↓"}}@media print{.mechanism-map li{background:#fff;color:#111;border-color:#555}.map-arrow{color:#111}}
     @media screen and (max-width:700px){
       body{font-size:16px;line-height:1.7}
       main{padding:22px 12px 40px;overflow-wrap:anywhere}
@@ -49,7 +51,7 @@
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <div class="grid">
+  <figure class="card mechanism-map" data-lesson-map="0356" data-bespoke-example="0356" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep chronological totals separate from slowest-job ranking</figcaption><p>One tenant has chronological durations 10, 30 and 20 ms, with distinct ordering keys.</p><div class="foundation-grid"><div>First job: 10<br>Running total 10<br>Slowest rank 3</div><div>Second job: 30<br>Running total 40<br>Slowest rank 1</div><div>Third job: 20<br>Running total 60<br>Slowest rank 2</div></div><details><summary>Do both windows use the same ordering?</summary><p>No. One orders by duration; the other by creation time and ID.</p></details><details><summary>Does the window calculation collapse these into one tenant row?</summary><p>No. Each job row remains. Grouped percentile calculation happens separately before the join.</p></details></figure><div class="grid">
     <section class="card">
 
       <p>Aggregation reduces rows into groups. A window calculation preserves rows and computes over the partition and frame chosen for each one. The explicit ROWS frame accumulates in a deterministic order. The grouped percentile is attached to each tenant row, not recalculated as a running percentile. Define duration-null behavior and distinguish subtotal placeholders from real NULL values with the relevant grouping information.</p>
@@ -59,13 +61,14 @@
     <aside class="card blackboard">
 
       <h2>Trace a database query</h2>
+      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
       <ol class="trace-flow" data-flow="database-query" aria-label="Mechanism trace: Application submits a query then Optimizer chooses operations then Engine reads and transforms rows then Rows and metrics return. Experiment: Change one index or predicate and compare estimated versus actual work.">
-        <li class="trace-stage"><span>01 · SQL</span><strong>Application submits a query</strong><small>Parameters and transaction context define the request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>Optimizer chooses operations</strong><small>Statistics and indexes shape scans, joins, and order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Engine reads and transforms rows</strong><small>Buffers, locks, and I/O determine actual cost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>Rows and metrics return</strong><small>The plan and timing reveal whether the model was correct.</small></li>
+        <li class="trace-stage"><span>01 · SQL</span><details class="trace-explanation" open><summary>Application submits a query</summary><p>Parameters and transaction context define the request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><details class="trace-explanation"><summary>Optimizer chooses operations</summary><p>Statistics and indexes shape scans, joins, and order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Engine reads and transforms rows</summary><p>Buffers, locks, and I/O determine actual cost.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><details class="trace-explanation"><summary>Rows and metrics return</summary><p>The plan and timing reveal whether the model was correct.</p></details></li>
       </ol>
       <div class="trace-proof">
         <span>Check your prediction</span>
         <strong>Change one index or predicate and compare estimated versus actual work.</strong>
-        <small><b>Inspect:</b> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</small>
+        <details class="trace-evidence"><summary>What should I inspect?</summary><small><b>Inspect:</b> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</small></details>
       </div>
     </aside>
   </div>
@@ -73,31 +76,25 @@
   <section class="concept-section" data-subtopic-count="6">
 
     <div class="concept-grid">
-      <article class="concept-card" data-subtopic="Aggregates">
-        <span>01</span>
-        <h3>Aggregates</h3>
+      <details class="concept-card" data-subtopic="Aggregates">
+        <summary>Aggregates</summary>
         <p class="concept-definition">Aggregates summarize groups of rows, with function-specific null and ordering behavior.</p>
-      </article><article class="concept-card" data-subtopic="window functions">
-        <span>02</span>
-        <h3>window functions</h3>
+      </details><details class="concept-card" data-subtopic="window functions">
+        <summary>window functions</summary>
         <p class="concept-definition">A window function computes across related rows while preserving one result row per input row. Its partition, ordering, and frame define exactly which peers it sees.</p>
-      </article><article class="concept-card" data-subtopic="frames">
-        <span>03</span>
-        <h3>frames</h3>
+      </details><details class="concept-card" data-subtopic="frames">
+        <summary>frames</summary>
         <p class="concept-definition">Window frames select the rows contributing to a window calculation relative to the current row.</p>
-      </article><article class="concept-card" data-subtopic="grouping sets">
-        <span>04</span>
-        <h3>grouping sets</h3>
+      </details><details class="concept-card" data-subtopic="grouping sets">
+        <summary>grouping sets</summary>
         <p class="concept-definition">Grouping sets request multiple grouping combinations in one query.</p>
-      </article><article class="concept-card" data-subtopic="rollup">
-        <span>05</span>
-        <h3>rollup</h3>
+      </details><details class="concept-card" data-subtopic="rollup">
+        <summary>rollup</summary>
         <p class="concept-definition">ROLLUP produces hierarchical subtotal grouping sets plus a grand total.</p>
-      </article><article class="concept-card" data-subtopic="ordered-set analysis">
-        <span>06</span>
-        <h3>ordered-set analysis</h3>
+      </details><details class="concept-card" data-subtopic="ordered-set analysis">
+        <summary>ordered-set analysis</summary>
         <p class="concept-definition">Ordered-set aggregates compute results such as percentiles over explicitly ordered input.</p>
-      </article>
+      </details>
     </div>
   </section>
 
