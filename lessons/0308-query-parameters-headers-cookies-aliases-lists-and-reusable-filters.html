@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand repeated values, absence versus null, alias conversion, header normalization, cookie extraction, annotated constraints, and schema generation.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>Query fields can be absent, repeated or malformed. Declare those cases explicitly, including list length and item limits. Bounded page size does not make a large offset cheap. Headers and cookies come from different request locations but do not become trusted identity merely through extraction. Exercise real requests to check repeated values and defaults under the installed framework version.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · WIRE</span><strong>Untrusted HTTP values arrive</strong><small>Path, query, headers, cookies, or body carry text and bytes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Protocol representation is decoded</strong><small>Content type and parameter source determine parsing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VALIDATE</span><strong>Pydantic applies the schema</strong><small>Conversion, constraints, and validators produce data or errors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · ARGUMENT</span><strong>Endpoint receives a typed value</strong><small>Invalid input instead becomes a structured 422 response.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Send one valid payload and three malformed boundary cases.</strong>
         <small><b>Inspect:</b> Parsed types, validation error locations, status code, and generated schema.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Implement pagination and filter objects with bounded lists, aliases, headers, and cookies while testing duplicate and malformed input.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -145,7 +145,7 @@ async def list_projects(
     <ol class="interview-questions">
       <li>Model optional query parameters precisely and explain why unbounded pagination is an operational defect.</li>
       <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>How would you implement pagination and filter objects with bounded lists, aliases, headers, and cookies while testing duplicate and malformed input, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ async def list_projects(
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand repeated values, absence versus null, alias conversion, header normalization, cookie extraction, annotated constraints, and schema generation.</p>
-        <p class="worked-answer">Limit is bounded, and the revised tag field bounds both item count and string length. Offset still permits expensive deep scans. Query-model support is version-dependent; repeated values and missing defaults need actual requests. Header and cookie extraction establish no identity or trust.</p>
+
+        <p class="worked-answer">Limit is bounded, and the tag field bounds both item count and string length. Offset still permits expensive deep scans. Query-model support is version-dependent; repeated values and missing defaults need actual requests. Header and cookie extraction establish no identity or trust.</p>
         <p>Look for: Parsed types, validation error locations, status code, and generated schema.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ async def list_projects(
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] carry values after the question mark in a URL. They may be required, optional or repeated; declarations and defaults determine absence, parsing and validation behavior.</li><li>[concept] carry request or response metadata rather than the main representation. Names are case-insensitive on the wire, and trust depends on which client or proxy set them.</li><li>[concept] are name-value data a browser can attach automatically to matching requests. Their domain, path, Secure, HttpOnly, SameSite, and expiry rules shape both security and behavior.</li><li>An alias gives an external request or response field a different name from the related Python attribute.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Query parameters: 1; headers: 2; cookies: 3; aliases: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Query parameters: 1; headers: 2; cookies: 4; aliases: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Query parameters: 1; headers: 3; cookies: 4; aliases: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Query parameters: 1; headers: 4; cookies: 3; aliases: 2</label>
@@ -181,7 +181,7 @@ async def list_projects(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A list parameter accepts multiple ordered values and validates each item against one declared item type.</li><li>A reusable filter groups common query fields and validation rules into one type that multiple endpoints can use.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. lists: 1; reusable filters: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. lists: 2; reusable filters: 1</label>
@@ -193,7 +193,7 @@ async def list_projects(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Protocol representation is decoded: Content type and parameter source determine parsing.</li><li>Pydantic applies the schema: Conversion, constraints, and validators produce data or errors.</li><li>Endpoint receives a typed value: Invalid input instead becomes a structured 422 response.</li><li>Untrusted HTTP values arrive: Path, query, headers, cookies, or body carry text and bytes.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -205,13 +205,13 @@ async def list_projects(
         <p>Send one valid payload and three malformed boundary cases. Evidence to inspect: Parsed types, validation error locations, status code, and generated schema.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

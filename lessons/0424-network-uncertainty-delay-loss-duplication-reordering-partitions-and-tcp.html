@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>TCP delivers an ordered byte stream within a connection. It does not tell a caller whether a remote business operation committed before the connection failed. A retry can therefore repeat an effect even though TCP hid duplicate packets. Locate the injected failure precisely. Use a stable operation identity and authoritative state to resolve an uncertain result instead of treating every reset as proof that nothing happened.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>A client starts an operation</strong><small>Identity, deadline, and idempotency context are attached.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NETWORK</span><strong>Message crosses an uncertain boundary</strong><small>It may be delayed, duplicated, reordered, or lost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><strong>Receiver applies guarded state change</strong><small>Transactions, deduplication, and retries protect invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTCOME</span><strong>Caller sees success or uncertainty</strong><small>Logs and state must distinguish response loss from work loss.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Drop the response after committing, then retry the same logical command.</strong>
         <small><b>Inspect:</b> Correlation ID, attempt count, idempotency record, state change, and final response.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Use a fault proxy to add delay, loss, reset, duplication, and partition behavior and verify bounded retries and idempotent state.</p>
-    <p class="lab-scope">Core: predict the illustrated assumptions and counterexample before consulting the worked criteria. Missing tools, injectors and operations are explicit integration requirements. Extension: implement a bounded, isolated experiment and record safety, recovery and changed-constraint evidence. No packages or fault-injection tools are installed by this review.</p>
+    <p class="lab-scope">State the assumptions and predict the counterexample before consulting the answer. Missing tools, injectors and operations must be supplied for an experiment. Keep that experiment bounded and isolated, and record both forbidden outcomes and recovery behavior.</p>
 <p>Reuse the fault plan to separate delayed, lost, duplicated and reordered application messages. TCP&#039;s ordered byte stream does not give application-level exactly-once effects or a failure detector. Trace a successful write with a lost response and decide how retry learns the result.</p>
 
 
@@ -145,7 +145,7 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
     <ol class="interview-questions">
       <li>Explain why a client timeout cannot reveal whether the server committed and why TCP does not give exactly-once requests.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you use a fault proxy to add delay, loss, reset, duplication, and partition behavior and verify bounded retries and idempotent state, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate reliable ordered byte-stream behavior on one live TCP connection from end-to-end application delivery across reconnects, proxies, partitions, and unknown remote outcomes.</p>
+
         <p class="worked-answer">TCP hides packet duplication and reordering within a surviving connection; duplicate application operations arise through retries or another application-level delivery path. State which layer the fault proxy changes. A reset after commit and a reset before receipt can look identical, so reconcile stable operation identity at the authority. The missing injector is not a runnable network lab.</p>
         <p>Look for: Correlation ID, attempt count, idempotency record, state change, and final response.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] includes delay, loss, duplication, and reordering, making timeout-based conclusions incomplete.</li><li>[concept] postpones communication or work without necessarily losing it; deadlines limit waiting but do not undo completed effects.</li><li>[concept] removes a message or response from observation; the sender may not know whether an operation executed.</li><li>[concept] delivers repeated messages or attempts, requiring identity and effect-level handling.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Network uncertainty: 1; delay: 2; loss: 3; duplication: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Network uncertainty: 1; delay: 2; loss: 4; duplication: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Network uncertainty: 1; delay: 3; loss: 4; duplication: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Network uncertainty: 1; delay: 4; loss: 3; duplication: 2</label>
@@ -181,7 +181,7 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>TCP orders bytes within a connection; it does not prove application completion, cross-connection order, or exactly-once effects.</li><li>[concept] changes arrival order relative to send order across relevant paths or attempts.</li><li>In distributed systems, a partition interrupts communication between some nodes. Local progress may continue without agreement on global state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. reordering: 2; partitions: 3; TCP limits: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. reordering: 2; partitions: 1; TCP limits: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. reordering: 3; partitions: 1; TCP limits: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. reordering: 1; partitions: 3; TCP limits: 2</label>
@@ -193,7 +193,7 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Caller sees success or uncertainty: Logs and state must distinguish response loss from work loss.</li><li>A client starts an operation: Identity, deadline, and idempotency context are attached.</li><li>Message crosses an uncertain boundary: It may be delayed, duplicated, reordered, or lost.</li><li>Receiver applies guarded state change: Transactions, deduplication, and retries protect invariants.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -205,13 +205,13 @@ await assertBounded({ clientDeadlineMs: 2000, queueDepth: 100, attempts: 2 });
         <p>Drop the response after committing, then retry the same logical command. Evidence to inspect: Correlation ID, attempt count, idempotency record, state change, and final response.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Review the lesson source: Google Site Reliability Engineering</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Review the lesson source: Google Site Reliability Engineering</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

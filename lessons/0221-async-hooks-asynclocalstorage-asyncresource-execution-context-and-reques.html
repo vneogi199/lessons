@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace async resource creation, trigger relationships, callback execution, destruction, and context propagation through supported boundaries.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>AsyncLocalStorage associates data with an asynchronous chain. It avoids one mutable process-global request ID being overwritten by concurrent requests. Custom callback systems can need an explicit AsyncResource boundary. Test propagation at the integrations the application actually uses. Correlation metadata helps connect evidence; it does not authenticate a user, and unique request IDs make unsuitable unbounded metric labels.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one operation with async hooks and inject a timeout or shutdown.</strong>
         <small><b>Inspect:</b> Async IDs, handle count, event-loop delay, response, and exit sequence.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Attach a request ID with AsyncLocalStorage and verify propagation through timers, promises, fetch, and a custom AsyncResource.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
 
 
@@ -143,7 +143,7 @@ resource.emitDestroy();</code></pre>
     <ol class="interview-questions">
       <li>Explain why global variables cannot safely hold per-request context and where async context can break.</li>
       <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>How would you attach a request ID with AsyncLocalStorage and verify propagation through timers, promises, fetch, and a custom AsyncResource, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -151,13 +151,13 @@ resource.emitDestroy();</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace async resource creation, trigger relationships, callback execution, destruction, and context propagation through supported boundaries.</p>
+
         <p class="worked-answer">run scopes the store to its async chain; it is not a mutable process-global request ID. The custom resource fixture installs a store explicitly and does not prove propagation across every third-party callback. Never treat correlated request metadata as authentication or use per-request IDs as unbounded metric labels.</p>
         <p>Look for: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -165,9 +165,9 @@ resource.emitDestroy();</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] associates a store with an asynchronous execution chain so request context can be read without unsafe process-global mutation.</li><li>[concept] lets a custom async abstraction create a resource boundary and invoke callbacks within the correct async context.</li><li>[concept] is the environment needed to run work, including call state and associated request or task information.</li><li>[concept] exposes lifecycle events for asynchronous resources and their trigger relationships. Direct hooks are low-level and can add overhead or recursion risk.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. async_hooks: 4; AsyncLocalStorage: 2; AsyncResource: 1; execution context: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. async_hooks: 4; AsyncLocalStorage: 1; AsyncResource: 2; execution context: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. async_hooks: 4; AsyncLocalStorage: 3; AsyncResource: 1; execution context: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. async_hooks: 1; AsyncLocalStorage: 4; AsyncResource: 2; execution context: 3</label>
@@ -179,7 +179,7 @@ resource.emitDestroy();</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] carries a bounded identifier through logs, metrics, traces, and downstream calls so events from one operation can be connected.</li><li>[concept] is the environment needed to run work, including call state and associated request or task information.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. execution context: 1; request correlation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. execution context: 2; request correlation: 1</label>
@@ -191,7 +191,7 @@ resource.emitDestroy();</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Handler coordinates the operation: Promises and callbacks describe continuation.</li><li>Runtime performs external work: Sockets, files, workers, or child processes progress.</li><li>Result returns to JavaScript: Response, log, exit state, or error becomes visible.</li><li>Input reaches the Node process: A request, timer, signal, or message creates work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -203,13 +203,13 @@ resource.emitDestroy();</code></pre>
         <p>Trace one operation with async hooks and inject a timeout or shutdown. Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

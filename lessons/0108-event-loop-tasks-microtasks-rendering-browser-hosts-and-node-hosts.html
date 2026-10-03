@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate ECMAScript Jobs from host event loops and compare browser task checkpoints, rendering opportunities, and Node phase-specific scheduling.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>JavaScript jobs and host scheduling rules together determine when deferred work runs. Promise reactions, microtasks and timers do not form one universal order across all hosts. Follow the point where each operation is queued in the example, then apply that host&#039;s rules. Repeatedly scheduling microtasks can delay other work. A timer delay is a threshold, not a promise of an exact execution time.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · STACK</span><strong>Synchronous code runs</strong><small>Calls execute until the stack becomes empty.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><strong>Async work registers continuation</strong><small>Promise reactions and tasks enter different queues.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><strong>Event loop chooses ready work</strong><small>Microtasks drain before the next task and render opportunity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><strong>Continuation observes state</strong><small>Order, errors, and UI timing expose the scheduling model.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Mix a timer, resolved promise, and synchronous log; predict exact output order.</strong>
         <small><b>Inspect:</b> Console order, task timestamps, unhandled rejection, and render timing.</small>
       </div>
@@ -148,7 +148,7 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
     <ol class="interview-questions">
       <li>State which ordering rules are language-level and which are host-specific.</li>
       <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>How would you predict and record ordering among script code, queueMicrotask, promises, timers, MessageChannel, and Node scheduling APIs, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -156,13 +156,13 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate ECMAScript Jobs from host event loops and compare browser task checkpoints, rendering opportunities, and Node phase-specific scheduling.</p>
+
         <p class="worked-answer">For this fixture, async resumption was queued before the explicit microtask and Promise reaction, and those precede the timer. Do not extrapolate to every Node phase, nextTick context, task source or browser paint. A microtask checkpoint can drain repeatedly queued work and starve later tasks.</p>
         <p>Look for: Console order, task timestamps, unhandled rejection, and render timing.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -170,9 +170,9 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An [concept] is host machinery that selects tasks and performs checkpoints where Promise Jobs can run. ECMAScript defines Jobs; browsers and Node define their loop details.</li><li>A host task runs scheduled work such as a timer callback or event handler. Host event-loop rules determine task selection and when microtask checkpoints occur.</li><li>Microtask is common host terminology for queued Promise reactions and queueMicrotask callbacks. A checkpoint normally drains them before selecting another task.</li><li>Browser [concept] updates style, layout, and pixels at [concept] opportunities. Long JavaScript tasks or continuously queued microtasks can delay those opportunities.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Event loop: 1; tasks: 2; microtasks: 3; rendering: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Event loop: 1; tasks: 2; microtasks: 4; rendering: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Event loop: 1; tasks: 3; microtasks: 4; rendering: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Event loop: 1; tasks: 4; microtasks: 3; rendering: 2</label>
@@ -184,7 +184,7 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A browser supplies APIs such as the DOM, events, networking, and rendering around the JavaScript engine. Those behaviors are not all specified by ECMAScript.</li><li>Node supplies server-oriented APIs and its event-loop integration around the JavaScript engine. Browser scheduling diagrams do not describe every Node phase or nextTick behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. browser hosts: 1; Node hosts: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. browser hosts: 2; Node hosts: 1</label>
@@ -196,7 +196,7 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Event loop chooses ready work: Microtasks drain before the next task and render opportunity.</li><li>Continuation observes state: Order, errors, and UI timing expose the scheduling model.</li><li>Synchronous code runs: Calls execute until the stack becomes empty.</li><li>Async work registers continuation: Promise reactions and tasks enter different queues.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -208,13 +208,13 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
         <p>Mix a timer, resolved promise, and synchronous log; predict exact output order. Evidence to inspect: Console order, task timestamps, unhandled rejection, and render timing.</p>
       </details>
     </article>
-    <p><a href="https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript Promise specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript Promise specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

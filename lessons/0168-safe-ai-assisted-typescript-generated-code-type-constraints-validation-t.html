@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Use types as review constraints while recognizing generated code may type-check yet violate runtime, security, performance, or business needs.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>Treat generated code as a contribution you own. The checker can reject incompatible types while accepting code that exposes another tenant&#039;s data, leaks a secret or performs unbounded work. Read the diff and test those boundaries explicitly. Record dependency provenance and measure relevant costs. For each test, state the invariant and the input that would break it rather than treating a green build as the review verdict.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · UNKNOWN</span><strong>External value crosses into code</strong><small>HTTP, environment, database, file, queue, or model output is untrusted.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Runtime logic validates structure</strong><small>Types, limits, formats, versions, and policy produce errors or data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DOMAIN</span><strong>Trusted representation is created</strong><small>Checked code can now rely on explicit invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Use and serialization stay controlled</strong><small>Tests and runtime evidence prove the contract beyond type erasure.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Pass malformed but cast-compatible input and verify it fails before domain logic.</strong>
         <small><b>Inspect:</b> Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</small>
       </div>
@@ -141,13 +141,12 @@ const review = {
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>Generated code is an untrusted contribution whose contracts, dependencies, and runtime behavior need the same scrutiny as other code.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>A type-correct implementation may still authorize the wrong tenant, leak secrets, or perform unbounded work. Ask what invariant each test proves and whether a malicious input could bypass it.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -159,7 +158,7 @@ const review = {
     <ol class="interview-questions">
       <li>Explain how TypeScript helps AI-assisted work without outsourcing engineering judgment.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you repair an AI-generated feature using diagnostics, validation, adversarial tests, dependency review, and measurement, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -167,12 +166,12 @@ const review = {
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Use types as review constraints while recognizing generated code may type-check yet violate runtime, security, performance, or business needs.</p>
+
         <p>Look for: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -180,9 +179,9 @@ const review = {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>AI-generated TypeScript should be treated as an untrusted change: types constrain it, while validation, tests, security review, dependency provenance, and measurements establish evidence.</li><li>[concept] is implementation requiring review; passing types does not prove security, performance, or domain correctness.</li><li>A generic constraint states the minimum capability a type argument must have. It should not erase additional specific information the caller provides.</li><li>[concept] checks input against explicit rules before relying on it. Structure, length, range, allowed values, and business constraints may require different checks.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Safe AI-assisted TypeScript: 1; generated code: 2; type constraints: 3; validation: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Safe AI-assisted TypeScript: 1; generated code: 2; type constraints: 4; validation: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Safe AI-assisted TypeScript: 1; generated code: 3; type constraints: 4; validation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Safe AI-assisted TypeScript: 1; generated code: 4; type constraints: 3; validation: 2</label>
@@ -194,7 +193,7 @@ const review = {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] checks contracts, behavior, boundary safety, complexity, and evidence. A green compiler is one input, not the [concept] verdict.</li><li>[concept] records where an artifact came from and how it was built. Verify the identity and evidence; a signed artifact can still contain vulnerable or incorrect code.</li><li>Use static and runtime [concept] for different claims. Tie each test to an invariant and challenge its failure case.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. tests: 3; review: 1; provenance: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. tests: 3; review: 2; provenance: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. tests: 1; review: 2; provenance: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. tests: 2; review: 1; provenance: 3</label>
@@ -206,7 +205,7 @@ const review = {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Trusted representation is created: Checked code can now rely on explicit invariants.</li><li>Use and serialization stay controlled: Tests and runtime evidence prove the contract beyond type erasure.</li><li>External value crosses into code: HTTP, environment, database, file, queue, or model output is untrusted.</li><li>Runtime logic validates structure: Types, limits, formats, versions, and policy produce errors or data.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -218,13 +217,13 @@ const review = {
         <p>Pass malformed but cast-compatible input and verify it fails before domain logic. Evidence to inspect: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow fixed-width bit patterns through masking, shifting, toggling, cancellation, and subset enumeration while respecting language numeric limits.</p>
-      <p class="analogy">An algorithm is a route plan: correctness gets you to the destination, while the cost model tells you how the route behaves when the city grows.</p>
+      <p>Clearing the lowest set bit removes one bit per iteration. The supplied counter operates on a 32-bit representation, including the signed bit-31 pattern. XOR cancellation works only under the stated occurrence counts; it is not a general duplicate finder. A mask can encode a subset compactly, but enumerating all subsets still produces 2^n results. Use BigInt for wider masks and keep its operands separate from Number bit operations.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INPUT</span><strong>Problem instance and constraints</strong><small>Size, ordering, duplicates, and limits shape the choice.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STRUCTURE</span><strong>Representation enables operations</strong><small>Invariants determine which transitions are legal.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ALGORITHM</span><strong>Steps transform state</strong><small>Time and space accumulate across the execution.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTPUT</span><strong>Result and cost are checked</strong><small>Examples and growth measurements test correctness and complexity.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Double input size and predict both the result and resource growth.</strong>
         <small><b>Inspect:</b> Invariant checks, operation count, output, runtime samples, and peak memory.</small>
       </div>
@@ -103,7 +103,7 @@
   <section class="card dsa-question-bank">
 
     <h2>Questions for this topic</h2>
-    <p>Use these canonical problems after the lesson. The badges show the source sheet alignment; sheet contents can change, so treat this as a curated cross-sheet practice set rather than a completion claim.</p>
+    <p>Practise these problems after the lesson. The badges identify their source sheets. Those sheets can change, so this selection does not establish that you have completed any whole sheet.</p>
     <ul class="dsa-question-list">
       <li><a href="https://leetcode.com/problems/sum-of-two-integers/" target="_blank" rel="noreferrer">Sum of Two Integers ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/number-of-1-bits/" target="_blank" rel="noreferrer">Number of 1 Bits ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/counting-bits/" target="_blank" rel="noreferrer">Counting Bits ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/missing-number/" target="_blank" rel="noreferrer">Missing Number ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/reverse-bits/" target="_blank" rel="noreferrer">Reverse Bits ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/single-number/" target="_blank" rel="noreferrer">Single Number ↗</a><span>NeetCode 150 · Striver A2Z</span></li>
     </ul>
@@ -113,12 +113,11 @@
 
 
   <section class="card mechanism-walkthrough" data-dsa-approach="true">
-    <span class="section-label">05B · Approach ladder</span>
-    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
+    <p>The problems and traces below illustrate related approaches; they may use different inputs from the starter. Complexity bounds depend on each algorithm's preconditions. Count output, trace snapshots and key construction when analyzing the supplied code.</p>
     <div class="walkthrough-grid">
-      <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Unpaired ID → population count → subsets</p></article>
-      <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Set or boolean-array bookkeeping: O(n) space</p></article>
-      <article><span>OPTIMIZED</span><h3>Name the invariant that removes work</h3><p>XOR and masks: O(n) time, O(1) state</p></article>
+      <article><h3>Practice sequence</h3><p>Unpaired ID → population count → subsets</p></article>
+      <article><h3>Baseline</h3><p>Set or boolean-array bookkeeping: O(n) space</p></article>
+      <article><h3>Reduced work</h3><p>XOR and masks: O(n) time, O(1) state</p></article>
       <article><span>STATE TRACE</span><h3>Move one step at a time</h3><p><code>mask: 0000 → 0100 → 0101 → 0001</code></p></article>
     </div>
   </section>
@@ -167,7 +166,7 @@ console.assert(countBits32(0b101101) === 4);
     <ol class="interview-questions">
       <li>Explain the invariant and integer-width model rather than presenting an unexplained trick.</li>
       <li>Explain how an algorithm execution works, starting with the input and following it through to the result.</li>
-      <li>How would you progress through one unpaired identifier, population count, and subset-mask generation; show each binary transition and compare bit work with collection-based alternatives, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -175,13 +174,13 @@ console.assert(countBits32(0b101101) === 4);
     <textarea id="teachback" placeholder="Define the boundary. Trace an algorithm execution. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="computer-science">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow fixed-width bit patterns through masking, shifting, toggling, cancellation, and subset enumeration while respecting language numeric limits.</p>
+
         <p class="worked-answer">x &amp; (x-1) removes one set bit per iteration, including the coerced bit-31 pattern. countBits32 counts a 32-bit representation, not an arbitrary integer&#039;s mathematical bits. XOR cancellation requires the stated multiplicities; it does not find every duplicate. Subset enumeration still has 2^n outputs even with compact masks.</p>
         <p>Look for: Invariant checks, operation count, output, runtime samples, and peak memory.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#computer-science">Worked track case: Top K under changing input constraints ↗</a></p>
       </details>
     </div>
@@ -189,9 +188,9 @@ console.assert(countBits32(0b101101) === 4);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A mask uses selected one bits to test, set, clear, or toggle corresponding positions in another value.</li><li>A bit shift moves a bit pattern left or right, with signedness and width determining the filled bits and overflow behavior.</li><li>[concept] produces one where two input bits differ and can toggle bits or cancel identical paired values.</li><li>[concept] reads or changes individual binary positions with masks and bitwise operators.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Bit manipulation: 4; masks: 2; shifts: 1; XOR: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Bit manipulation: 4; masks: 1; shifts: 2; XOR: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Bit manipulation: 4; masks: 3; shifts: 1; XOR: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Bit manipulation: 1; masks: 4; shifts: 2; XOR: 3</label>
@@ -203,7 +202,7 @@ console.assert(countBits32(0b101101) === 4);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] uses one bit per element to represent membership; the number of possible subsets grows exponentially.</li><li>[concept] visits only one-bits, often clearing the lowest set bit with x &amp; (x - 1) for nonnegative integers.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. set-bit iteration: 1; subset encoding: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. set-bit iteration: 2; subset encoding: 1</label>
@@ -215,7 +214,7 @@ console.assert(countBits32(0b101101) === 4);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Result and cost are checked: Examples and growth measurements test correctness and complexity.</li><li>Problem instance and constraints: Size, ordering, duplicates, and limits shape the choice.</li><li>Representation enables operations: Invariants determine which transitions are legal.</li><li>Steps transform state: Time and space accumulate across the execution.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -227,13 +226,13 @@ console.assert(countBits32(0b101101) === 4);
         <p>Double input size and predict both the result and resource growth. Evidence to inspect: Invariant checks, operation count, output, runtime samples, and peak memory.</p>
       </details>
     </article>
-    <p><a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/" target="_blank" rel="noreferrer">Review the lesson source: MIT 6.006 Introduction to Algorithms</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/" target="_blank" rel="noreferrer">Review the lesson source: MIT 6.006 Introduction to Algorithms</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

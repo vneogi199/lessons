@@ -52,18 +52,18 @@
   <div class="grid">
     <section class="card">
 
-      <p>Select by assignability, introduce inferred variables, distribute naked parameters over unions, suppress distribution with tuples, and control recursion.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>A conditional type selects a result using assignability. Infer can extract a type from a matched position, such as a function&#039;s return. When the checked side is a naked type parameter, the operation distributes over union members. Wrapping both sides in tuples tests the union together. Compare those cases explicitly, including never, before adding recursive transformations that can become expensive for the checker.</p>
+
     </section>
 
     <aside class="card blackboard">
 
-      <h2>Trace an evaluation case</h2>
+      <h2>Trace a type-checking decision</h2>
       <ol class="trace-flow" data-flow="typescript-instantiation" aria-label="Mechanism trace: API declares type parameters then Call sites contribute candidates then Type expressions substitute arguments then Concrete relationship is tested. Experiment: Change one inference site or union input and predict the instantiated result and cost.">
         <li class="trace-stage"><span>01 · RELATION</span><strong>API declares type parameters</strong><small>Positions and constraints state information to preserve.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INFER</span><strong>Call sites contribute candidates</strong><small>Arguments, context, constraints, and variance shape inference.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · INSTANTIATE</span><strong>Type expressions substitute arguments</strong><small>Mapped, conditional, indexed, and template operations compute a result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CHECK</span><strong>Concrete relationship is tested</strong><small>Inferred output, errors, and checker cost make the design observable.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one inference site or union input and predict the instantiated result and cost.</strong>
         <small><b>Inspect:</b> Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</small>
       </div>
@@ -130,13 +130,12 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>A conditional type chooses a branch using assignability. A naked type parameter on the checked side distributes the operation over a union.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>Wrapping both sides in tuples asks about the union as a whole. never and any need dedicated examples; recursive types need a stopping condition and a checker-cost budget.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/2/conditional-types.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/2/conditional-types.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -147,21 +146,21 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain substitution and union distribution, including complexity limits.</li>
-      <li>Explain how an evaluation case works, starting with the input and following it through to the result.</li>
-      <li>How would you implement result extraction and compare distributive with non-distributive behavior using type tests, and which evidence would prove the result?</li>
+      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an evaluation case. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Select by assignability, introduce inferred variables, distribute naked parameters over unions, suppress distribution with tuples, and control recursion.</p>
+
         <p>Look for: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -169,9 +168,9 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A conditional type chooses one type or another according to an assignability test after type arguments become known.</li><li>A generic constraint states the minimum capability a type argument must have. It should not erase additional specific information the caller provides.</li><li>[concept] introduces a type variable from a matched position inside the true branch of a conditional type, such as extracting a function return or array element.</li><li>A conditional type with a naked type parameter distributes over union members. Wrapping both sides in tuples suppresses that behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Conditional types: 1; constraints: 2; infer: 3; distributivity: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Conditional types: 1; constraints: 2; infer: 4; distributivity: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Conditional types: 1; constraints: 3; infer: 4; distributivity: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Conditional types: 1; constraints: 4; infer: 3; distributivity: 2</label>
@@ -183,7 +182,7 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A recursive type refers back to itself to describe or transform nested structure. Terminate deliberately; deep instantiations can overwhelm the checker.</li><li>A conditional type involving unresolved type parameters may remain unevaluated until more specific arguments are substituted.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. recursion: 1; deferred evaluation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. recursion: 2; deferred evaluation: 1</label>
@@ -195,7 +194,7 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Type expressions substitute arguments: Mapped, conditional, indexed, and template operations compute a result.</li><li>Concrete relationship is tested: Inferred output, errors, and checker cost make the design observable.</li><li>API declares type parameters: Positions and constraints state information to preserve.</li><li>Call sites contribute candidates: Arguments, context, constraints, and variance shape inference.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -207,13 +206,13 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
         <p>Change one inference site or union input and predict the instantiated result and cost. Evidence to inspect: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

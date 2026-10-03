@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
-      <p class="analogy">Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
+      <p>A webhook receiver verifies the provider&#039;s original signed bytes, validates the event and durably accepts it before acknowledging delivery. A fresh signed timestamp can still be replayed inside its acceptance window. Store scoped identity and protect the worker&#039;s effect separately. Follow the provider&#039;s signature and rotation contract; the earlier local HMAC example is not a drop-in replacement for an SDK verifier.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · COMMIT</span><strong>Provider records event and delivery</strong><small>A stable event ID and version connect the business transaction to an outbox or delivery record.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SIGN + SEND</span><strong>Raw body crosses HTTP</strong><small>Timestamped HMAC, timeout, attempt number, and secret version travel with the request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY + STORE</span><strong>Consumer authenticates and persists</strong><small>Raw-byte verification, freshness, schema checks, unique event ID, and transaction precede acknowledgment.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROCESS</span><strong>Worker guards repeated effects</strong><small>Atomic receipts or a provider&#039;s idempotency contract must protect the effect; delivery deduplication alone is insufficient.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one.</strong>
         <small><b>Inspect:</b> Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</small>
       </div>
@@ -121,7 +121,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build both sides of a signed webhook, persist the event before acknowledging it, reject stale or altered requests, retry failures, deduplicate repeated delivery, and rotate secrets safely.</p>
-    <p class="lab-scope">Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
+    <p class="lab-scope">Predict replay, stale-ownership and altered-input outcomes at the shown boundary. SDK, framework, storage and database adapters must be supplied where named. Use synthetic data and an authorized isolated environment to check those integrations.</p>
 
 
 
@@ -168,7 +168,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
     <ol class="interview-questions">
       <li>Design a webhook provider and consumer, then explain authenticity, replay protection, acknowledgment timing, retry policy, ordering limits, and event evolution.</li>
       <li>Explain how a webhook event delivery works, starting with the input and following it through to the result.</li>
-      <li>How would you build both sides of a signed webhook, persist the event before acknowledging it, reject stale or altered requests, retry failures, deduplicate repeated delivery, and rotate secrets safely, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -176,13 +176,13 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a webhook event delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="quality-security">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow an event from the provider transaction through signing, transport, verification, durable receipt, duplicate delivery, asynchronous processing, and secret rotation without assuming exactly-once delivery.</p>
+
         <p class="worked-answer">The SDK verifies provider-specific original bytes; the local HMAC lesson is not a compatible replacement. Multiple signatures are not the same as configuring every active secret. Keep the clock/tolerance and account/live-mode checks explicit, return success only after durable acceptance, and define oversize-read failure handling. Timestamp freshness alone permits in-window replay; ordering and worker effects remain separate contracts.</p>
         <p>Look for: Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
     </div>
@@ -190,9 +190,9 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Webhook verification checks the provider&#39;s signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key [concept]. Use the provider&#39;s verifier and preserve the original bytes.</li><li>A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.</li><li>A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.</li><li>An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Production webhooks: 3; event contracts: 4; signatures: 2; timestamps: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Production webhooks: 3; event contracts: 1; signatures: 2; timestamps: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Production webhooks: 3; event contracts: 4; signatures: 1; timestamps: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Production webhooks: 3; event contracts: 2; signatures: 1; timestamps: 4</label>
@@ -204,7 +204,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] repeat a failed delivery under a bounded schedule. Safe [concept] need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</li><li>[concept] describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</li><li>A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.</li><li>[concept] makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. replay defense: 3; idempotency: 4; retries: 2; ordering: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. replay defense: 3; idempotency: 1; retries: 2; ordering: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. replay defense: 3; idempotency: 4; retries: 1; ordering: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. replay defense: 3; idempotency: 2; retries: 1; ordering: 4</label>
@@ -216,7 +216,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</li><li>[concept] replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. ordering: 1; secret rotation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. ordering: 2; secret rotation: 1</label>
@@ -228,7 +228,7 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Raw body crosses HTTP: Timestamped HMAC, timeout, attempt number, and secret version travel with the request.</li><li>Consumer authenticates and persists: Raw-byte verification, freshness, schema checks, unique event ID, and transaction precede acknowledgment.</li><li>Worker guards repeated effects: Atomic receipts or a provider&#39;s idempotency contract must protect the effect; delivery deduplication alone is insufficient.</li><li>Provider records event and delivery: A stable event ID and version connect the business transaction to an outbox or delivery record.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 1 → 2 → 3</label>
@@ -240,13 +240,13 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
         <p>Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one. Evidence to inspect: Event and delivery IDs, raw digest, timestamp, signature decision, attempts, stored receipt, job state, business effect count, and dead letter.</p>
       </details>
     </article>
-    <p><a href="https://docs.stripe.com/webhooks" target="_blank" rel="noreferrer">Review the lesson source: Stripe webhook production guidance</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.stripe.com/webhooks" target="_blank" rel="noreferrer">Review the lesson source: Stripe webhook production guidance</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate language-level dynamic loading and import metadata from host resolution, bundler graph analysis, chunk generation, and dead-code elimination.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>Dynamic import returns a promise for a module namespace. The host determines how the module is resolved and loaded. Calling it only when a feature is enabled can defer that loading, but bundling, code splitting and tree shaking depend on the build setup. A missing enabled module still fails. Treat runtime loading and build output as separate things to verify.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · RESOLVE</span><strong>Host identifies each module</strong><small>Specifiers become module records under host rules.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><strong>The dependency graph connects</strong><small>Environments and live import bindings are initialized.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><strong>Modules execute in graph order</strong><small>Cycles and top-level await can delay or expose early reads.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Importer observes live exports</strong><small>Loaded chunks, values, or failures prove the boundary.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Create a two-module cycle and move one early read across initialization.</strong>
         <small><b>Inspect:</b> Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</small>
       </div>
@@ -144,7 +144,7 @@ export async function loadAnalytics(enabled) {
     <ol class="interview-questions">
       <li>Explain which module behaviors come from ECMAScript and which come from browsers, Node, or build tools.</li>
       <li>Explain how a module import works, starting with the input and following it through to the result.</li>
-      <li>How would you lazy-load a feature with failure handling and inspect the resulting network and bundle graph, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -152,13 +152,13 @@ export async function loadAnalytics(enabled) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate language-level dynamic loading and import metadata from host resolution, bundler graph analysis, chunk generation, and dead-code elimination.</p>
+
         <p class="worked-answer">The disabled branch does not import analytics. The enabled branch needs the separately supplied analytics module and a failure policy. Dynamic import does not itself prove bundler chunk splitting or tree shaking; inspect the build graph and network in that extension. Module organization is not a security sandbox.</p>
         <p>Look for: Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -166,9 +166,9 @@ export async function loadAnalytics(enabled) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] attach metadata to a module request, such as a required module type. Supported attributes and loading behavior depend on the host.</li><li>A module boundary controls which bindings are exported and how code depends on other modules. It is a code-organization boundary, not automatic process or permission isolation.</li><li>[concept] divides shipped code into separately loadable pieces. Measure reduced initial work against later fetch latency, failure handling, and cache behavior.</li><li>[concept] asks the host to load a module and returns a promise for its namespace. It provides a runtime loading boundary and failure path.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Dynamic import: 4; import attributes: 2; module boundaries: 1; code splitting: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Dynamic import: 4; import attributes: 1; module boundaries: 2; code splitting: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Dynamic import: 4; import attributes: 3; module boundaries: 1; code splitting: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Dynamic import: 1; import attributes: 4; module boundaries: 2; code splitting: 3</label>
@@ -180,7 +180,7 @@ export async function loadAnalytics(enabled) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] removes code a build tool determines is unused. Static module structure and side-effect declarations affect what can safely be eliminated.</li><li>[concept] divides shipped code into separately loadable pieces. Measure reduced initial work against later fetch latency, failure handling, and cache behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. code splitting: 1; tree shaking: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. code splitting: 2; tree shaking: 1</label>
@@ -192,7 +192,7 @@ export async function loadAnalytics(enabled) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Modules execute in graph order: Cycles and top-level await can delay or expose early reads.</li><li>Importer observes live exports: Loaded chunks, values, or failures prove the boundary.</li><li>Host identifies each module: Specifiers become module records under host rules.</li><li>The dependency graph connects: Environments and live import bindings are initialized.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -204,13 +204,13 @@ export async function loadAnalytics(enabled) {
         <p>Create a two-module cycle and move one early read across initialization. Evidence to inspect: Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p>
       </details>
     </article>
-    <p><a href="https://tc39.es/ecma262/multipage/ecmascript-language-scripts-and-modules.html" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript scripts and modules specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://tc39.es/ecma262/multipage/ecmascript-language-scripts-and-modules.html" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript scripts and modules specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

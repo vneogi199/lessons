@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Resolve changing service instances, refresh cached membership, select endpoints, reuse connections, incorporate readiness and locality, and retry without pinning traffic to failure.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>Discovery supplies candidate endpoints, and balancing chooses among them. Both views can become stale while connections remain open. The local selector changes its choice when a target becomes unready, but it does not refresh DNS or reserve capacity. Account for in-flight work when endpoints disappear. Equal request counts can still produce unequal load when requests have different costs.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ROUTE</span><strong>Key or request maps to an owner</strong><small>Partition key, ring, region, discovery view, locality, and consistency need guide placement.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVE</span><strong>Selected node executes local work</strong><small>Capacity, connection state, authoritative data, projection, and replication position apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Membership, load, or region state shifts</strong><small>Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Traffic and data settle safely</strong><small>Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Remove one owner during a hot-key spike and route traffic before every client refreshes membership.</strong>
         <small><b>Inspect:</b> Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Compare proxy and client-side balancing under endpoint churn, uneven latency, long-lived connections, and zone failure.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -158,7 +158,7 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
     <ol class="interview-questions">
       <li>Trace discovery and load balancing for one request and explain why round robin over addresses may not balance real work.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you compare proxy and client-side balancing under endpoint churn, uneven latency, long-lived connections, and zone failure, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -166,13 +166,13 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Resolve changing service instances, refresh cached membership, select endpoints, reuse connections, incorporate readiness and locality, and retry without pinning traffic to failure.</p>
+
         <p class="worked-answer">The local snapshot selects B, then A after B becomes unready. It neither reserves a slot nor performs DNS/watch refresh. Tie bias, heterogeneous work cost, draining connections and stale endpoint incarnations can defeat apparently balanced counts. Reserve before yielding and retain in-flight accounting when discovery removes an endpoint.</p>
         <p>Look for: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -180,9 +180,9 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] resolves names to records such as addresses using a distributed hierarchy and caches. Record lifetimes, resolver behavior, and negative caching affect changes and failures.</li><li>[concept] load balancing lets callers choose endpoints using discovery and health information.</li><li>[concept] routes requests through an intermediary that selects backend endpoints.</li><li>[concept] maintains the changing set of endpoints for a logical service and feeds it into connection and load-balancing policy.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Service discovery: 4; DNS: 2; client-side: 1; server-side load balancing: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Service discovery: 4; DNS: 1; client-side: 2; server-side load balancing: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Service discovery: 4; DNS: 3; client-side: 1; server-side load balancing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Service discovery: 1; DNS: 4; client-side: 2; server-side load balancing: 3</label>
@@ -194,7 +194,7 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] favors nearby data or compute to reduce latency and transfer cost, while considering failure-domain concentration.</li><li>[concept] checks report a specific capability. Separate process liveness, readiness for traffic, and deeper dependency or business checks.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. health: 1; locality: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. health: 2; locality: 1</label>
@@ -206,7 +206,7 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Selected node executes local work: Capacity, connection state, authoritative data, projection, and replication position apply.</li><li>Membership, load, or region state shifts: Rebalance, failover, endpoint churn, projection rebuild, or conflict moves responsibility.</li><li>Traffic and data settle safely: Skew, moved keys, stale routes, lag, capacity, conflicts, RPO, RTO, and query result prove the design.</li><li>Key or request maps to an owner: Partition key, ring, region, discovery view, locality, and consistency need guide placement.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -218,13 +218,13 @@ for (const invalid of [[], [{...endpoints[0], outstanding: -1}], [endpoints[2]],
         <p>Remove one owner during a hot-key spike and route traffic before every client refreshes membership. Evidence to inspect: Routing decision, owner map, outstanding work, key movement, hotspot, replica or projection position, failover, RPO, RTO, and result.</p>
       </details>
     </article>
-    <p><a href="https://grpc.io/docs/what-is-grpc/core-concepts/" target="_blank" rel="noreferrer">Review the lesson source: gRPC core concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://grpc.io/docs/what-is-grpc/core-concepts/" target="_blank" rel="noreferrer">Review the lesson source: gRPC core concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

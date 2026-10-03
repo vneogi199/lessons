@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace data and identity through model invocation, retrieval, tool use, safety policy, telemetry, regional availability, and cost.</p>
-      <p class="analogy">AWS is a programmable city: accounts set legal boundaries, IAM issues authority, VPCs define roads, managed services operate utilities, and telemetry shows whether citizens are safe.</p>
+      <p>A managed model call still crosses identity, data and output boundaries. The adapter accepts only a completed, nonempty text response and rejects tool use or truncation. That narrow contract makes failure handling explicit without establishing answer quality. Evaluate the selected model and context separately. Bound retries, latency and cost, and authorize generated tool proposals before they can produce effects.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CALLER</span><strong>A workload requests AWS capability</strong><small>Account, role, Region, endpoint, and parameters identify intent.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROL PLANE</span><strong>AWS validates and configures</strong><small>Authorization, quotas, desired state, and service scope apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DATA PLANE</span><strong>Managed resources perform work</strong><small>Compute, storage, network, and scaling boundaries execute.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Outcome enters operations</strong><small>Response, telemetry, audit, cost, and failure behavior prove reality.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one identity, Region, quota, or dependency and predict the API and workload outcome.</strong>
         <small><b>Inspect:</b> AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</small>
       </div>
@@ -121,7 +121,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Design a private evaluated RAG or agent workload with least privilege, encrypted data, prompt-injection controls, and release gates.</p>
-    <p class="lab-scope">Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
+    <p class="lab-scope">Predict the local fixture or complete the design calculation, then compare the answer. Cloud experiments need the missing infrastructure and adapters in an authorized isolated account. Set cost and cleanup limits and record actual failure, recovery and evaluation results.</p>
 
 
 
@@ -172,7 +172,7 @@ answer = text_answer(response)
     <ol class="interview-questions">
       <li>Compare Bedrock and SageMaker and explain production AI boundaries beyond calling a model.</li>
       <li>Explain how untrusted input crossing a boundary works, starting with the input and following it through to the result.</li>
-      <li>How would you design a private evaluated RAG or agent workload with least privilege, encrypted data, prompt-injection controls, and release gates, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -180,13 +180,13 @@ answer = text_answer(response)
     <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace data and identity through model invocation, retrieval, tool use, safety policy, telemetry, regional availability, and cost.</p>
+
         <p class="worked-answer">The adapter accepts only end_turn with nonempty text-only blocks; it rejects tool use, truncation and mixed content. This narrow contract is deliberate but does not establish answer quality. MODEL_ID, prompts, credentials and boto3 are missing integration inputs. Temperature zero is not a universal reproducibility guarantee; pin model/evaluation context and bound SDK retries within total latency/cost limits.</p>
         <p>Look for: AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
       </details>
     </div>
@@ -194,9 +194,9 @@ answer = text_answer(response)
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] provides managed capabilities for building, training and serving machine-learning workloads. Select the specific offering and own data, model quality, access and operating cost.</li><li>[concept] requires eligible account/Region availability, permission and any model-specific terms or prerequisites. A valid SDK call shape does not establish access to every model.</li><li>[concept] executes a trained model on input to produce output. Model version, input context, decoding and service limits shape quality, latency and cost.</li><li>[concept] provides managed access to foundation models and related AI capabilities. Application identity, data boundaries, evaluation, safety, latency, and cost still belong to the workload.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Amazon Bedrock: 4; SageMaker: 2; model access: 1; inference: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Amazon Bedrock: 4; SageMaker: 1; model access: 2; inference: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Amazon Bedrock: 4; SageMaker: 3; model access: 1; inference: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Amazon Bedrock: 1; SageMaker: 4; model access: 2; inference: 3</label>
@@ -208,7 +208,7 @@ answer = text_answer(response)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Managed [concept] connect ingestion and retrieval to generation through configured sources and indexes. Freshness, permission filtering and answer grounding still require application evaluation.</li><li>AI [concept] apply configured checks or restrictions to supported inputs and outputs. They can miss threats and do not replace tool authorization, data isolation or release evaluation.</li><li>AI [concept] measures defined tasks against datasets, rubrics and baselines. Report slices, failures and uncertainty along with latency and cost before accepting a release.</li><li>Model-driven [concept] select actions through a control loop with tools and state. Restrict authority and bound steps, time and cost while verifying effects outside the model.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. agents: 4; knowledge bases: 2; guardrails: 1; evaluation: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. agents: 4; knowledge bases: 1; guardrails: 2; evaluation: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. agents: 4; knowledge bases: 3; guardrails: 1; evaluation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. agents: 1; knowledge bases: 4; guardrails: 2; evaluation: 3</label>
@@ -220,7 +220,7 @@ answer = text_answer(response)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] controls untrusted context, data exposure and tool authority across model workflows. Treat generated actions as untrusted proposals until validated and authorized.</li><li>AI [concept] measures defined tasks against datasets, rubrics and baselines. Report slices, failures and uncertainty along with latency and cost before accepting a release.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. evaluation: 1; AI security: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. evaluation: 2; AI security: 1</label>
@@ -232,7 +232,7 @@ answer = text_answer(response)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Outcome enters operations: Response, telemetry, audit, cost, and failure behavior prove reality.</li><li>A workload requests AWS capability: Account, role, Region, endpoint, and parameters identify intent.</li><li>AWS validates and configures: Authorization, quotas, desired state, and service scope apply.</li><li>Managed resources perform work: Compute, storage, network, and scaling boundaries execute.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -244,13 +244,13 @@ answer = text_answer(response)
         <p>Change one identity, Region, quota, or dependency and predict the API and workload outcome. Evidence to inspect: AWS API response, resource state, CloudTrail, CloudWatch, quota, cost, and client behavior.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

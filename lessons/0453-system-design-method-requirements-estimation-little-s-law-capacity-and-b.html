@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Turn functional and quality requirements into workload estimates, invariants, APIs, data ownership, traffic paths, resource budgets, failure behavior, and an evidence-driven evolution plan.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>Start a design with observable requirements and the state that must stay correct. Estimate traffic, data volume and concurrency from explicit assumptions. Little&#039;s Law uses average arrival rate and average time in a stable system; a p99 target cannot replace that average. Use the estimates to identify likely limits, then change an uncertain input and see whether the architecture still fits.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · REQUIRE</span><strong>Product need becomes explicit constraints</strong><small>Users, scale, latency, consistency, security, geography, cost, and success are quantified.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DESIGN</span><strong>Ownership and critical paths emerge</strong><small>APIs, data, messages, placement, capacity, and invariants form one traceable system.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · STRESS</span><strong>Load and failure challenge assumptions</strong><small>Hotspots, tail latency, retries, partitions, recovery, and human operation reveal bottlenecks.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVOLVE</span><strong>Evidence drives the next architecture</strong><small>SLOs, traces, load tests, costs, incidents, migration, and rollback support each change.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one dominant constraint after the first design and evolve it without discarding guarantees.</strong>
         <small><b>Inspect:</b> Estimates, diagram, invariant table, critical trace, load curve, failure result, SLO, cost, migration steps, and rollback.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Lead a timed design using requests per second, object size, retention, concurrency, latency, availability, and cost estimates and identify the first likely bottleneck.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -148,7 +148,7 @@ console.table(estimate);
     <ol class="interview-questions">
       <li>Structure a collaborative system-design conversation and use rough calculations to challenge rather than decorate architecture choices.</li>
       <li>Explain how an architecture decision under changing constraints works, starting with the input and following it through to the result.</li>
-      <li>How would you lead a timed design using requests per second, object size, retention, concurrency, latency, availability, and cost estimates and identify the first likely bottleneck, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -156,13 +156,13 @@ console.table(estimate);
     <textarea id="teachback" placeholder="Define the boundary. Trace an architecture decision under changing constraints. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Turn functional and quality requirements into workload estimates, invariants, APIs, data ownership, traffic paths, resource budgets, failure behavior, and an evidence-driven evolution plan.</p>
+
         <p class="worked-answer">The mean-load estimate gives 1,760 concurrent requests and the constant-latency peak scenario 7,040; neither comes from the 300 ms p99 target. Annual raw storage is 258,342,912,000,000 bytes only if each write creates a retained object. State decimal versus binary units, replicas and index overhead before selecting capacity, then vary the dominant uncertain assumption.</p>
         <p>Look for: Estimates, diagram, invariant table, critical trace, load curve, failure result, SLO, cost, migration steps, and rollback.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -170,9 +170,9 @@ console.table(estimate);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] state observable needs and constraints. Separate required behavior from an implementation someone happens to prefer.</li><li>[concept] approximates quantities from explicit assumptions. Show the calculation, plausible range, and sensitivity to uncertain inputs.</li><li>[concept] relates average work in a stable system to arrival rate multiplied by average time in the system, connecting latency, throughput, and concurrency.</li><li>System design turns requirements into explicit invariants, interfaces, data ownership, critical paths, capacity, failure behavior, observability, security, and evolution choices.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. System design method: 4; requirements: 2; estimation: 1; Little&#39;s Law: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. System design method: 4; requirements: 1; estimation: 2; Little&#39;s Law: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. System design method: 4; requirements: 3; estimation: 1; Little&#39;s Law: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. System design method: 1; requirements: 4; estimation: 2; Little&#39;s Law: 3</label>
@@ -184,7 +184,7 @@ console.table(estimate);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] are the resources or coordination points limiting throughput or latency under the current workload.</li><li>[concept] is the workload a system can sustain while meeting constraints. Measure the bottleneck under realistic concurrency and failure conditions.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. capacity: 1; bottlenecks: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. capacity: 2; bottlenecks: 1</label>
@@ -196,7 +196,7 @@ console.table(estimate);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Load and failure challenge assumptions: Hotspots, tail latency, retries, partitions, recovery, and human operation reveal bottlenecks.</li><li>Evidence drives the next architecture: SLOs, traces, load tests, costs, incidents, migration, and rollback support each change.</li><li>Product need becomes explicit constraints: Users, scale, latency, consistency, security, geography, cost, and success are quantified.</li><li>Ownership and critical paths emerge: APIs, data, messages, placement, capacity, and invariants form one traceable system.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -208,13 +208,13 @@ console.table(estimate);
         <p>Change one dominant constraint after the first design and evolve it without discarding guarantees. Evidence to inspect: Estimates, diagram, invariant table, critical trace, load curve, failure result, SLO, cost, migration steps, and rollback.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Review the lesson source: Google Site Reliability Engineering</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Review the lesson source: Google Site Reliability Engineering</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

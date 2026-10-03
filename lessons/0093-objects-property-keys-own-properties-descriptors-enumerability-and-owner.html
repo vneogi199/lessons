@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace ToPropertyKey, data versus accessor descriptors, writable/configurable flags, own-property tables, and enumeration ordering.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>An object property can hold a value or use getter and setter functions. Its descriptor controls behavior such as writability and enumeration. Different inspection operations return different sets of keys: some include symbols or inherited properties, and others do not. Reading a getter can execute code. A naming convention such as an underscore does not prevent callers from writing the property directly and bypassing a setter&#039;s validation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · KEY</span><strong>An operation produces a property key</strong><small>Names become strings or symbols before lookup.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · OWN</span><strong>Own descriptors are inspected</strong><small>Data, accessor, and configuration flags constrain behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DELEGATE</span><strong>The prototype or trap participates</strong><small>Lookup continues, invokes an accessor, or crosses a Proxy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>Value or invariant failure returns</strong><small>Ownership, receiver, and mutation become observable.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Shadow one inherited property and then repeat through a forwarding Proxy.</strong>
         <small><b>Inspect:</b> Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</small>
       </div>
@@ -155,7 +155,7 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
     <ol class="interview-questions">
       <li>Explain why assignment, lookup, enumeration, and ownership are separate operations.</li>
       <li>Explain how an attribute or protocol operation works, starting with the input and following it through to the result.</li>
-      <li>How would you define a validated accessor, inspect descriptors, and compare Object.keys, for-in, ownKeys, and hasOwn, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -163,13 +163,13 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
     <textarea id="teachback" placeholder="Define the boundary. Trace an attribute or protocol operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace ToPropertyKey, data versus accessor descriptors, writable/configurable flags, own-property tables, and enumeration ordering.</p>
+
         <p class="worked-answer">name is an own accessor; kind is inherited; assigning name creates the own _name data property. Object.keys excludes inherited and symbol keys, for-in includes inherited enumerable string keys, and Reflect.ownKeys includes non-enumerable and symbol own keys. The underscore is not private: direct _name writes bypass validation. Use private state if enforcement is required.</p>
         <p>Look for: Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -177,9 +177,9 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Object [concept] are strings or symbols. Other supplied keys are converted, so an ordinary object used as a key can collide with another object&#39;s string representation.</li><li>An own property belongs directly to an object rather than to its prototype. Object.hasOwn distinguishes an own property from an inherited one.</li><li>A property descriptor specifies a data value or accessor functions and flags such as enumerable and configurable. Data [concept] also control writability.</li><li>An object has identity and properties. Two variables can hold the same object value, so a property mutation through one is visible through the other. Two separately created [concept] have different identities even when their properties match.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Objects: 4; property keys: 2; own properties: 1; descriptors: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Objects: 4; property keys: 1; own properties: 2; descriptors: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Objects: 4; property keys: 3; own properties: 1; descriptors: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Objects: 1; property keys: 4; own properties: 2; descriptors: 3</label>
@@ -191,7 +191,7 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>For object properties here, [concept] means a property is directly on an object rather than inherited. Object.hasOwn tests that distinction; it does not establish resource [concept] or access control.</li><li>[concept] controls whether common traversal operations include a property. It does not decide whether lookup can read the property.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. enumerability: 1; ownership: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. enumerability: 2; ownership: 1</label>
@@ -203,7 +203,7 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>The prototype or trap participates: Lookup continues, invokes an accessor, or crosses a Proxy.</li><li>Value or invariant failure returns: Ownership, receiver, and mutation become observable.</li><li>An operation produces a property key: Names become strings or symbols before lookup.</li><li>Own descriptors are inspected: Data, accessor, and configuration flags constrain behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -215,13 +215,13 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
         <p>Shadow one inherited property and then repeat through a forwarding Proxy. Evidence to inspect: Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p>
       </details>
     </article>
-    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noreferrer">Review the lesson source: MDN JavaScript Guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noreferrer">Review the lesson source: MDN JavaScript Guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

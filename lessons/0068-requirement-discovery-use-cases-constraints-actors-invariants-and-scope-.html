@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Convert an ambiguous prompt into observable behaviors, identify authoritative state and forbidden transitions, and choose a smallest useful scope before naming classes.</p>
-      <p class="analogy">A machine-coding interview is a small workshop build: clarify what must work, keep each part&#039;s ownership visible, assemble a working slice early, and use tests as the measuring tools.</p>
+      <p>Start with behavior that a caller can observe. Identify who uses the system, which state is authoritative and which transitions must never be accepted. A capacity counter, for example, must stay between zero and its total. Decide whether identity and repeated commands belong in scope before turning it into a booking service. Those answers determine the smallest useful implementation more directly than a class diagram does.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CLARIFY</span><strong>Prompt becomes executable requirements</strong><small>Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MODEL</span><strong>Responsibilities and ownership become code</strong><small>Entities, values, relationships, interfaces, and state transitions represent the domain.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SLICE</span><strong>One end-to-end behavior runs</strong><small>The smallest implementation crosses policy and adapters while keeping state valid.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE + EVOLVE</span><strong>Tests and a changed requirement challenge it</strong><small>Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Add one realistic requirement after the first working slice and predict the smallest safe change.</strong>
         <small><b>Inspect:</b> Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</small>
       </div>
@@ -146,7 +146,7 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
     <ol class="interview-questions">
       <li>Ask high-value clarifying questions, state assumptions, and define the first demonstrable slice before drawing a class diagram.</li>
       <li>Explain how a machine-coding use case works, starting with the input and following it through to the result.</li>
-      <li>How would you build a requirement ledger for a parking system, reject speculative features, and encode its capacity and identity invariants as executable assertions, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace a machine-coding use case. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="lld-machine-coding">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Convert an ambiguous prompt into observable behaviors, identify authoritative state and forbidden transitions, and choose a smallest useful scope before naming classes.</p>
+
         <p class="worked-answer">State 0 &lt;= used &lt;= total before choosing classes. Integer validation matters: total=1.5 would never equal an integer used count and could admit indefinitely. Test full, release and empty release; clarify whether reserve/release needs identity or idempotency before adding it. This counter has public mutable fields and assumes serialized cooperating callers, not multi-user reservation safety. A single counter is simpler than a booking service when identity is outside scope.</p>
         <p>Look for: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#lld-machine-coding">Worked track case: Two customers reserve the last space ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] turns ambiguous requests into examples, invariants, constraints, and acceptance criteria before design commitments.</li><li>[concept] describe an actor&#39;s goal, normal interaction, and alternative or failure outcomes.</li><li>[concept] are limits a solution must respect, such as latency, memory, permissions, compatibility, or delivery time.</li><li>[concept] are people or external systems that interact with the system, each with goals, permissions, and failure possibilities.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Requirement discovery: 1; use cases: 2; constraints: 3; actors: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Requirement discovery: 1; use cases: 2; constraints: 4; actors: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Requirement discovery: 1; use cases: 3; constraints: 4; actors: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Requirement discovery: 1; use cases: 4; constraints: 3; actors: 2</label>
@@ -182,7 +182,7 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>An invariant is a condition that must stay true across the relevant state transitions. For example, available inventory must never become negative after accepting a reservation.</li><li>Scope identifies what is included and excluded. State exclusions explicitly so a small solution is not mistaken for a complete system.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. invariants: 1; scope control: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. invariants: 2; scope control: 1</label>
@@ -194,7 +194,7 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Responsibilities and ownership become code: Entities, values, relationships, interfaces, and state transitions represent the domain.</li><li>One end-to-end behavior runs: The smallest implementation crosses policy and adapters while keeping state valid.</li><li>Tests and a changed requirement challenge it: Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</li><li>Prompt becomes executable requirements: Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -206,13 +206,13 @@ else: raise AssertionError(&quot;capacity invariant failed&quot;)</code></pre>
         <p>Add one realistic requirement after the first working slice and predict the smallest safe change. Evidence to inspect: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p>
       </details>
     </article>
-    <p><a href="https://docs.python.org/3/reference/datamodel.html" target="_blank" rel="noreferrer">Review the lesson source: Python data model documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.python.org/3/reference/datamodel.html" target="_blank" rel="noreferrer">Review the lesson source: Python data model documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

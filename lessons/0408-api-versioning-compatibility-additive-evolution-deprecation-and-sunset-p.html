@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Classify changes by observed client contract, evolve readers and writers independently, measure real use, announce timelines, and remove behavior only after migration evidence.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>Compatibility is what released consumers can continue to do, not just whether a schema change adds fields. A new enum value or changed behavior can break a strict client. The fixture predicates cover only their stated checks; one accepts a wrong non-null priority type. Deprecation dates communicate a schedule. Observe actual migration and preserve rollback before removing the old contract.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>Client forms a contract request</strong><small>Method or operation, identity, representation, validators, deadline, and version enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BOUNDARY</span><strong>Intermediary and service apply policy</strong><small>Routing, authentication, limits, parsing, validation, and authorization constrain work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORITY</span><strong>Owned state evaluates the transition</strong><small>Preconditions, invariants, idempotency, transaction, and dependencies decide outcome.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONTRACT</span><strong>Stable response returns</strong><small>Status, representation, error type, cache metadata, telemetry, and compatibility become evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Repeat or condition the same request through one intermediary and predict every observable difference.</strong>
         <small><b>Inspect:</b> Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Evolve a request and response across two client versions with consumer contract tests, deprecation headers, telemetry, and a rollback path.</p>
-    <p class="lab-scope">Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
+    <p class="lab-scope">Predict the contract or local example&#039;s outcome, including a failure, then compare the answer. Examples with missing servers, schemas or adapters describe integrations you must supply. Verify protocol, persistence, security and compatibility behavior in an authorized controlled environment.</p>
 
 
 
@@ -148,7 +148,7 @@ console.assert(rejected);
     <ol class="interview-questions">
       <li>Decide whether a proposed change needs a version and explain why additive syntax can still be semantically breaking.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you evolve a request and response across two client versions with consumer contract tests, deprecation headers, telemetry, and a rollback path, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -156,13 +156,13 @@ console.assert(rejected);
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Classify changes by observed client contract, evolve readers and writers independently, measure real use, announce timelines, and remove behavior only after migration evidence.</p>
+
         <p class="worked-answer">Two fixture predicates catch one missing field but do not prove consumer compatibility. A non-null priority of the wrong type would pass the v2 predicate. Deprecation&#039;s structured date and Sunset&#039;s HTTP date describe a schedule; observe real client migration and preserve rollback before removal.</p>
         <p>Look for: Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -170,9 +170,9 @@ console.assert(rejected);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] creates an explicit compatibility boundary when old and new meanings cannot safely coexist under one contract.</li><li>[concept] preserves supported client behavior and data interpretation across changes. Test old and new participants during mixed-version rollout.</li><li>[concept] introduces fields or operations without removing existing ones, but strict clients and new enum values can still break.</li><li>[concept] announces that supported behavior will be removed, supplies a replacement and deadline, and measures remaining consumers before shutdown.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. API versioning: 1; compatibility: 2; additive evolution: 3; deprecation: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. API versioning: 1; compatibility: 2; additive evolution: 4; deprecation: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. API versioning: 1; compatibility: 3; additive evolution: 4; deprecation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. API versioning: 1; compatibility: 4; additive evolution: 3; deprecation: 2</label>
@@ -184,7 +184,7 @@ console.assert(rejected);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] announces that supported behavior will be removed, supplies a replacement and deadline, and measures remaining consumers before shutdown.</li><li>A [concept] communicates deprecation timing, migration support, and eventual removal of supported behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. deprecation: 1; sunset policy: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. deprecation: 2; sunset policy: 1</label>
@@ -196,7 +196,7 @@ console.assert(rejected);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Owned state evaluates the transition: Preconditions, invariants, idempotency, transaction, and dependencies decide outcome.</li><li>Stable response returns: Status, representation, error type, cache metadata, telemetry, and compatibility become evidence.</li><li>Client forms a contract request: Method or operation, identity, representation, validators, deadline, and version enter.</li><li>Intermediary and service apply policy: Routing, authentication, limits, parsing, validation, and authorization constrain work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -208,13 +208,13 @@ console.assert(rejected);
         <p>Repeat or condition the same request through one intermediary and predict every observable difference. Evidence to inspect: Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
       </details>
     </article>
-    <p><a href="https://www.rfc-editor.org/rfc/rfc9110.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 9110 HTTP Semantics</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.rfc-editor.org/rfc/rfc9110.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 9110 HTTP Semantics</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

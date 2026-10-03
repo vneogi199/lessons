@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand how document structure and chunk boundaries determine retrievable evidence.</p>
-      <p class="analogy">RAG is an open-book exam: retrieval chooses the pages, context assembly arranges them, generation writes the response, and evaluation checks both selection and answer support.</p>
+      <p>Ingestion turns source versions into traceable retrieval units. Preserve identity, permissions and source offsets through parsing and cleaning. Deterministic chunk IDs make repeated writes predictable, but obsolete chunks still need deletion. Define when a complete version becomes searchable and how interrupted updates recover. Reconcile lexical indexes, vector indexes and caches when the source changes or disappears.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOURCE</span><strong>Identify an authorized source version</strong><small>Record stable identity, permissions and provenance before parsing untrusted content.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHUNK</span><strong>Produce traceable retrieval units</strong><small>Chunk boundaries and source offsets preserve enough context to interpret and cite a result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · INDEX</span><strong>Write a bounded, repeatable batch</strong><small>Deterministic IDs, embedding version and failure checkpoints make retries inspectable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECONCILE</span><strong>Handle publication, replacement and deletion</strong><small>Define when a version becomes queryable and how obsolete chunks disappear; recheck access when serving results.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results.</strong>
         <small><b>Inspect:</b> Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</small>
       </div>
@@ -109,7 +109,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an incremental, idempotent ingestion pipeline with lineage and deletion.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
 
 
@@ -139,7 +139,7 @@
     <ol class="interview-questions">
       <li>Diagnose a RAG failure caused before the model call.</li>
       <li>Explain how source ingestion and publication works, starting with the input and following it through to the result.</li>
-      <li>How would you build an incremental, idempotent ingestion pipeline with lineage and deletion, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -147,13 +147,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace source ingestion and publication. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="retrieval-rag">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand how document structure and chunk boundaries determine retrievable evidence.</p>
+
         <p class="worked-answer">Source identity plus content and processing versions determine repeatable chunk identity; deterministic IDs alone do not delete stale chunks. Publish a complete version or explicitly expose partial freshness, and reconcile interrupted updates. Preserve provenance through cleaning and chunk overlap. Deletion must reach lexical/vector indexes and caches, with authorization checked again before exposure.</p>
         <p>Look for: Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#retrieval-rag">Worked track case: Relevant retrieval leaks another tenant&#039;s data ↗</a></p>
       </details>
     </div>
@@ -161,9 +161,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] is structured information about content, such as its source, owner, date, language, or access policy.</li><li>[concept] receives source data and moves it through parsing, cleaning, metadata, chunking, and indexing steps.</li><li>[concept] converts a source format into structured text, fields, and document elements.</li><li>[concept] removes or repairs content that would reduce retrieval quality while preserving important meaning.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Ingestion: 2; parsing: 4; cleaning: 3; metadata: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Ingestion: 2; parsing: 1; cleaning: 3; metadata: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Ingestion: 3; parsing: 2; cleaning: 4; metadata: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Ingestion: 2; parsing: 3; cleaning: 4; metadata: 1</label>
@@ -175,7 +175,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] builds data structures that let a search system find candidate content efficiently.</li><li>[concept] divides content into retrieval units that have useful meaning and manageable size.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. chunking: 1; indexing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. chunking: 2; indexing: 1</label>
@@ -187,7 +187,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Handle publication, replacement and deletion: Define when a version becomes queryable and how obsolete chunks disappear; recheck access when serving results.</li><li>Identify an authorized source version: Record stable identity, permissions and provenance before parsing untrusted content.</li><li>Produce traceable retrieval units: Chunk boundaries and source offsets preserve enough context to interpret and cite a result.</li><li>Write a bounded, repeatable batch: Deterministic IDs, embedding version and failure checkpoints make retries inspectable.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -199,13 +199,13 @@
         <p>Interrupt an update halfway through, retry it, then delete the source and inspect stale or duplicate results. Evidence to inspect: Source/version IDs, chunk IDs and offsets, permission metadata, batch status, indexed counts and post-update/deletion queries.</p>
       </details>
     </article>
-    <p><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noreferrer">Review the lesson source: Retrieval-Augmented Generation paper</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://arxiv.org/abs/2005.11401" target="_blank" rel="noreferrer">Review the lesson source: Retrieval-Augmented Generation paper</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

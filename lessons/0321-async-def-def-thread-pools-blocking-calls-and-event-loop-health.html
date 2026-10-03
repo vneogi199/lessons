@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand coroutine execution, AnyIO thread-pool offloading for synchronous dependencies or endpoints, capacity limits, the GIL, and event-loop starvation.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>An async endpoint can still block its event-loop thread by calling synchronous work directly. FastAPI offloads the ordinary def endpoints and dependencies it invokes, not every helper called from async code. Await suitable I/O and explicitly choose an offload boundary for blocking calls. Thread capacity remains finite, and JSON decoding still uses CPU after an awaited response. Measure loop delay and pool contention separately.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · DISPATCH</span><strong>Identify who calls the function</strong><small>FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CALL</span><strong>Trace the actual work inside</strong><small>A def helper called directly from async code still runs on the loop thread. Its spelling does not trigger offloading.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · WAIT</span><strong>Choose the execution boundary</strong><small>Await asynchronous I/O; explicitly offload blocking I/O. Thread capacity is finite, and CPU work needs a separately justified execution strategy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><strong>Check interference under load</strong><small>Record loop delay, pool queueing and request latency; a fast isolated request does not prove healthy concurrency.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress.</strong>
         <small><b>Inspect:</b> Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Compare async I/O, blocking I/O inside async code, synchronous endpoints, and CPU work while measuring event-loop delay and throughput.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -140,7 +140,7 @@ async def broken():
     <ol class="interview-questions">
       <li>Diagnose why an async endpoint can still block the whole worker and select an appropriate execution boundary.</li>
       <li>Explain how a concurrent task works, starting with the input and following it through to the result.</li>
-      <li>How would you compare async I/O, blocking I/O inside async code, synchronous endpoints, and CPU work while measuring event-loop delay and throughput, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -148,13 +148,13 @@ async def broken():
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand coroutine execution, AnyIO thread-pool offloading for synchronous dependencies or endpoints, capacity limits, the GIL, and event-loop starvation.</p>
+
         <p class="worked-answer">Only framework-dispatched def endpoints or dependencies are automatically offloaded, not a synchronous helper called from async code. The commented broken endpoint currently does not block. JSON decoding remains synchronous CPU work after an awaited HTTP response; bound response sizes and measure pool contention.</p>
         <p>Look for: Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -162,9 +162,9 @@ async def broken():
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A regular [concept] defines a synchronous function; adding yield defines a generator whose body advances during iteration. Neither permits await directly. FastAPI runs synchronous endpoints in a thread pool, not every helper function you call yourself.</li><li>A thread pool lets synchronous functions wait without blocking the event-loop thread. It has finite capacity and does not make CPU-bound Python work scale freely.</li><li>A blocking call keeps its current thread busy while it waits and can stop event-loop progress if used on that thread.</li><li>Calling an [concept] coroutine function creates a coroutine; its body progresses when awaited or scheduled. With yield it instead defines an async generator. await can suspend, but synchronous work in the body still blocks its thread.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. async def: 4; def: 2; thread pools: 1; blocking calls: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. async def: 4; def: 1; thread pools: 2; blocking calls: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. async def: 4; def: 3; thread pools: 1; blocking calls: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. async def: 1; def: 4; thread pools: 2; blocking calls: 3</label>
@@ -176,7 +176,7 @@ async def broken():
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>The event loop runs many coroutines cooperatively on one thread. Each coroutine must reach await points quickly or one blocking call can delay every request in that worker.</li><li>A blocking call keeps its current thread busy while it waits and can stop event-loop progress if used on that thread.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. blocking calls: 1; event-loop health: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. blocking calls: 2; event-loop health: 1</label>
@@ -188,7 +188,7 @@ async def broken():
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Choose the execution boundary: Await asynchronous I/O; explicitly offload blocking I/O. Thread capacity is finite, and CPU work needs a separately justified execution strategy.</li><li>Check interference under load: Record loop delay, pool queueing and request latency; a fast isolated request does not prove healthy concurrency.</li><li>Identify who calls the function: FastAPI offloads ordinary def endpoints and dependencies; it runs async endpoints on the event loop.</li><li>Trace the actual work inside: A def helper called directly from async code still runs on the loop thread. Its spelling does not trigger offloading.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -200,13 +200,13 @@ async def broken():
         <p>Compare an async wait, a blocking helper called directly and an explicitly offloaded helper while another request makes progress. Evidence to inspect: Thread identities and a concurrent heartbeat distinguish scheduling paths; measure CPU demand before increasing workers or pool capacity.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

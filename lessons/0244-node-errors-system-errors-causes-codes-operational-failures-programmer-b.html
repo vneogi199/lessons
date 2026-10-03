@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Preserve error identity, code and cause across async boundaries, distinguish expected operational conditions from broken invariants, and avoid string matching.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>Classify an error from its documented code and operation context. Preserve its cause when adding higher-level information instead of relying on message substrings. A timeout, missing file and broken invariant may need different recovery. The fixture preserves a synthetic cause and exits unsuccessfully; its error class does not supply retry safety, HTTP translation or supervision. Define those policies at the boundary that owns the operation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one operation with async hooks and inject a timeout or shutdown.</strong>
         <small><b>Inspect:</b> Async IDs, handle count, event-loop delay, response, and exit sequence.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Create a small error taxonomy and translate filesystem and HTTP failures without losing diagnostic evidence.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 <p>Run the controlled dependency failure in an isolated child process. Inspect the stable error code and original cause, then decide which failures can be retried under a deadline and idempotency contract. Never classify every Error as transient.</p>
 
 
@@ -153,7 +153,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
     <ol class="interview-questions">
       <li>Decide when to retry, reject a request, restart a process, or alert an operator.</li>
       <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>How would you create a small error taxonomy and translate filesystem and HTTP failures without losing diagnostic evidence, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -161,13 +161,13 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Preserve error identity, code and cause across async boundaries, distinguish expected operational conditions from broken invariants, and avoid string matching.</p>
+
         <p class="worked-answer">The isolated process intentionally exits nonzero and preserves its synthetic cause. Classify recovery from stable code and operation context, not message substrings. The error class alone provides no retry safety, supervisor or HTTP mapping.</p>
         <p>Look for: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -175,9 +175,9 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] may include stable name, code, syscall, path, address, and cause fields. Branch on documented structured fields rather than message text.</li><li>[concept] report OS-level failures through codes and context; decide recovery from the operation and error code.</li><li>Error [concept] preserve the underlying failure when adding higher-level context.</li><li>Error [concept] provide machine-readable classification that is more stable than parsing human-readable messages.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Node errors: 1; system errors: 2; causes: 3; codes: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Node errors: 1; system errors: 2; causes: 4; codes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Node errors: 1; system errors: 3; causes: 4; codes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Node errors: 1; system errors: 4; causes: 3; codes: 2</label>
@@ -189,7 +189,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] restores a usable state after failure. Specify which data and effects survive, how work resumes, and how restoration is verified.</li><li>An operational failure is an expected external condition such as timeout or unavailable dependency that can be translated, retried under policy, or reported.</li><li>A programmer bug violates an internal invariant or uses an API incorrectly. Continuing the same process may preserve corrupted application state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. operational failures: 2; programmer bugs: 3; recovery: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. operational failures: 2; programmer bugs: 1; recovery: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. operational failures: 3; programmer bugs: 1; recovery: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. operational failures: 1; programmer bugs: 3; recovery: 2</label>
@@ -201,7 +201,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Result returns to JavaScript: Response, log, exit state, or error becomes visible.</li><li>Input reaches the Node process: A request, timer, signal, or message creates work.</li><li>Handler coordinates the operation: Promises and callbacks describe continuation.</li><li>Runtime performs external work: Sockets, files, workers, or child processes progress.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -213,13 +213,13 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Trace one operation with async hooks and inject a timeout or shutdown. Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Cross from JavaScript into native execution with conversion, lifetime, thread-safety, ABI, blocking, and crash implications.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>Native code changes the service&#039;s memory, deployment and failure boundaries. Node-API supplies binary compatibility across supported runtime versions, but not universal OS portability or memory safety. Synchronous native or WebAssembly work still blocks its calling thread. Define data conversion, ownership and resource limits at the boundary. The separate C and JavaScript sketches are incomplete examples, not a compiled addon.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SUBMIT</span><strong>Main thread packages CPU work</strong><small>Input size, clone, transfer, or shared memory defines handoff cost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EXECUTE</span><strong>Choose where computation runs</strong><small>A worker can move CPU work off the main loop; synchronous native or WebAssembly calls still block their calling thread.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RETURN</span><strong>Message, value, or failure crosses back</strong><small>Serialization, ownership, ABI, and cancellation shape the result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REUSE</span><strong>Bounded capacity handles the next item</strong><small>Worker lifetime, queue depth, crashes, and responsiveness remain observable.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Compare inline CPU work with one reused worker while measuring transfer and loop delay separately.</strong>
         <small><b>Inspect:</b> queue depth, clone or transfer time, worker identity, CPU time, event-loop delay, result, error, and termination.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Compare a WebAssembly function and a Node-API boundary and document memory and error ownership.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
 
 
@@ -146,7 +146,7 @@ console.assert(result === 42);
     <ol class="interview-questions">
       <li>State when native code is justified and how it changes reliability and deployment risk.</li>
       <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>How would you compare a WebAssembly function and a Node-API boundary and document memory and error ownership, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@ console.assert(result === 42);
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Cross from JavaScript into native execution with conversion, lifetime, thread-safety, ABI, blocking, and crash implications.</p>
+
         <p class="worked-answer">The C and JavaScript blocks are separate incomplete sketches. Node-API stability does not guarantee OS/architecture/library portability or memory safety. Synchronous native/Wasm work still blocks its calling thread; imports and shared process fate define the actual authority and crash boundary.</p>
         <p>Look for: queue depth, clone or transfer time, worker identity, CPU time, event-loop delay, result, error, and termination.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@ console.assert(result === 42);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] is an ABI-stable C interface for addons that avoids direct dependency on changing V8 APIs across supported Node versions.</li><li>[concept] concerns binary compatibility across runtime versions, distinct from source-level API compatibility.</li><li>[concept] executes validated portable bytecode in a managed instance with explicit imports and linear memory, but host calls and resource limits still require design.</li><li>A native addon loads compiled code into the Node process, gaining performance or system access while adding memory-safety, ABI, blocking, and crash risk.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Native addons: 4; Node-API: 2; ABI stability: 1; WebAssembly: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Native addons: 4; Node-API: 1; ABI stability: 2; WebAssembly: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Native addons: 4; Node-API: 3; ABI stability: 1; WebAssembly: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Native addons: 1; Node-API: 4; ABI stability: 2; WebAssembly: 3</label>
@@ -182,7 +182,7 @@ console.assert(result === 42);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A foreign-function interface calls native code with explicit data layout, lifetime, and failure-boundary obligations.</li><li>[concept] assigns responsibility for creating, changing, and releasing state or resources. Clear [concept] explains who closes a connection or resolves a conflicting update.</li><li>[concept] determine whether a fault affects one operation, worker, process, or the entire service.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. FFI: 2; ownership: 1; failure boundaries: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. FFI: 1; ownership: 2; failure boundaries: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. FFI: 3; ownership: 1; failure boundaries: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. FFI: 1; ownership: 3; failure boundaries: 2</label>
@@ -194,7 +194,7 @@ console.assert(result === 42);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Choose where computation runs: A worker can move CPU work off the main loop; synchronous native or WebAssembly calls still block their calling thread.</li><li>Message, value, or failure crosses back: Serialization, ownership, ABI, and cancellation shape the result.</li><li>Bounded capacity handles the next item: Worker lifetime, queue depth, crashes, and responsiveness remain observable.</li><li>Main thread packages CPU work: Input size, clone, transfer, or shared memory defines handoff cost.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -206,13 +206,13 @@ console.assert(result === 42);
         <p>Compare inline CPU work with one reused worker while measuring transfer and loop delay separately. Evidence to inspect: queue depth, clone or transfer time, worker identity, CPU time, event-loop delay, result, error, and termination.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/n-api.html" target="_blank" rel="noreferrer">Review the lesson source: Node-API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/n-api.html" target="_blank" rel="noreferrer">Review the lesson source: Node-API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

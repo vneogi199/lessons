@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Compare binary JSON operators, GIN search, text parsing and ranking, extension types, exact vector distance, approximate index search, filtering, and recall tradeoffs.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>Relational filters, JSONB operators, full-text search and vector distance answer different retrieval questions. Match each index to its supported operators. Approximate vector search trades recall for cost, and filtering can leave too few candidates. Compare with exact search under real queries. Merely displaying a lexical score beside vector-ordered results is not hybrid retrieval; define how candidates are fused or reranked.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SQL</span><strong>Application submits a query</strong><small>Parameters and transaction context define the request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>Optimizer chooses operations</strong><small>Statistics and indexes shape scans, joins, and order.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Engine reads and transforms rows</strong><small>Buffers, locks, and I/O determine actual cost.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><strong>Rows and metrics return</strong><small>The plan and timing reveal whether the model was correct.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one index or predicate and compare estimated versus actual work.</strong>
         <small><b>Inspect:</b> EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an interview-search dataset with relational filters, full-text ranking, vector similarity, and measured hybrid retrieval quality.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -145,7 +145,7 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
     <ol class="interview-questions">
       <li>Decide between relational columns, JSONB, full text, and vectors and explain approximate-search accuracy versus latency.</li>
       <li>Explain how a database query works, starting with the input and following it through to the result.</li>
-      <li>How would you build an interview-search dataset with relational filters, full-text ranking, vector similarity, and measured hybrid retrieval quality, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Compare binary JSON operators, GIN search, text parsing and ranking, extension types, exact vector distance, approximate index search, filtering, and recall tradeoffs.</p>
+
         <p class="worked-answer">The query orders only by vector distance, so showing a lexical score does not make it hybrid retrieval. jsonb_path_ops supports a specific operator set, not every JSON query. Filtered approximate search may return too few candidates; compare recall and latency to exact search and define explicit fusion or reranking.</p>
         <p>Look for: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] adds vector values, distance operators, and exact or approximate indexes to PostgreSQL. Approximate search trades recall for lower latency and must be evaluated on real queries.</li><li>JSONB stores parsed binary JSON and supports containment and path operators plus GIN indexing. It offers flexible attributes but does not remove the need for relational invariants.</li><li>[concept] indexes normalized document terms for linguistic matching and ranking rather than raw substring search alone.</li><li>[concept] add database capabilities with their own versions, privileges, upgrade, and operational requirements.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. JSONB indexing: 2; full-text search: 4; extensions: 3; pgvector: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. JSONB indexing: 2; full-text search: 1; extensions: 3; pgvector: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. JSONB indexing: 3; full-text search: 2; extensions: 4; pgvector: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. JSONB indexing: 2; full-text search: 3; extensions: 4; pgvector: 1</label>
@@ -181,7 +181,7 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] combines lexical and semantic candidates with a defined fusion and evaluation policy.</li><li>[concept] accelerate similarity search with access-method-specific recall, filtering, memory, and update trade-offs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. vector indexes: 1; hybrid retrieval: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. vector indexes: 2; hybrid retrieval: 1</label>
@@ -193,7 +193,7 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Rows and metrics return: The plan and timing reveal whether the model was correct.</li><li>Application submits a query: Parameters and transaction context define the request.</li><li>Optimizer chooses operations: Statistics and indexes shape scans, joins, and order.</li><li>Engine reads and transforms rows: Buffers, locks, and I/O determine actual cost.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -205,13 +205,13 @@ FROM candidates WHERE tenant_id = $3 ORDER BY embedding &lt;=&gt; $2::vector LIM
         <p>Change one index or predicate and compare estimated versus actual work. Evidence to inspect: EXPLAIN plan, row estimates, buffers, locks, duration, and result correctness.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/datatype-json.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL JSON documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/datatype-json.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL JSON documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

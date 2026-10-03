@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace catalog changes, table rewrites, lock acquisition, old and new application compatibility, resumable data movement, and rollback limits.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>A migration changes a contract shared by stored data and deployed code. Add a compatible shape first, move data in restartable batches and verify old writers before enforcing or removing fields. Batches need separate commits and bounded work, not merely small key ranges. Validation can reduce later scanning without removing every lock. Measure the lock budget and business impact before describing a change as zero downtime.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · FACT</span><strong>Business rule becomes a data model</strong><small>Entities, keys, types, cardinality, and lifecycle state the meaning.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ENCODE</span><strong>Schema records the invariant</strong><small>Columns, constraints, relations, indexes, and compatible migrations make it executable.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTEND</span><strong>Concurrent writes challenge the rule</strong><small>Database enforcement decides which outcomes may commit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVOLVE</span><strong>Old and new code share the data</strong><small>Lock time, validation, backfill progress, rejected cases, and final shape prove safety.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Submit two individually valid writes that violate the invariant only when combined.</strong>
         <small><b>Inspect:</b> Constraint result, lock wait, committed rows, migration lock time, backfill checkpoint, and compatibility test.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Execute an expand-contract migration with batched backfill, dual compatibility, validation, and a measured lock budget.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -143,7 +143,7 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
     <ol class="interview-questions">
       <li>Design a safe migration for a large hot table and explain which operations can block or rewrite it.</li>
       <li>Explain how a database transaction works, starting with the input and following it through to the result.</li>
-      <li>How would you execute an expand-contract migration with batched backfill, dual compatibility, validation, and a measured lock budget, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -151,13 +151,13 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace catalog changes, table rewrites, lock acquisition, old and new application compatibility, resumable data movement, and rollback limits.</p>
+
         <p class="worked-answer">Batches need separate commits and resumable bounds; a small key range is not necessarily small work. NOT VALID still checks new writes. A validated non-null check can avoid a later table scan, not eliminate the required lock. Confirm old writers populate the new field before enforcement and measure truncation&#039;s business impact.</p>
         <p>Look for: Constraint result, lock wait, committed rows, migration lock time, backfill checkpoint, and compatibility test.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -165,9 +165,9 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A schema migration is a controlled transition between compatible data contracts. Safe production changes account for locks, rewrites, application versions, backfills, validation, and rollback.</li><li>A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</li><li>Many PostgreSQL schema changes participate in transactions, but command-specific exceptions and locking behavior still matter.</li><li>[concept] first adds a compatible new shape, lets old and new code coexist, migrates data and traffic, and removes the old shape only after evidence says it is unused.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Schema migrations: 1; DDL locks: 2; transactional DDL: 3; expand-contract: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Schema migrations: 1; DDL locks: 2; transactional DDL: 4; expand-contract: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Schema migrations: 1; DDL locks: 3; transactional DDL: 4; expand-contract: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Schema migrations: 1; DDL locks: 4; transactional DDL: 3; expand-contract: 2</label>
@@ -179,7 +179,7 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</li><li>Zero-downtime schema change uses compatible staged changes and bounded locks rather than assuming DDL is operationally free.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. backfills: 1; zero-downtime change: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. backfills: 2; zero-downtime change: 1</label>
@@ -191,7 +191,7 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Old and new code share the data: Lock time, validation, backfill progress, rejected cases, and final shape prove safety.</li><li>Business rule becomes a data model: Entities, keys, types, cardinality, and lifecycle state the meaning.</li><li>Schema records the invariant: Columns, constraints, relations, indexes, and compatible migrations make it executable.</li><li>Concurrent writes challenge the rule: Database enforcement decides which outcomes may commit.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -203,13 +203,13 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
         <p>Submit two individually valid writes that violate the invariant only when combined. Evidence to inspect: Constraint result, lock wait, committed rows, migration lock time, backfill checkpoint, and compatibility test.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CHECK</span><strong>Compare required members</strong><small>A stored object with a string name satisfies PublicProfile even if it also has admin.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DISTINGUISH</span><strong>Fresh literals get an extra check</strong><small>Passing the literal directly catches its unexpected admin key; storing it first does not remove the key.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROJECT</span><strong>Select public response fields</strong><small>Annotations and satisfies leave the original object unchanged. Build a new object to omit private fields.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VALIDATE</span><strong>Enforce the incoming contract</strong><small>The parser rejects unknown keys and wrong shapes at runtime; authorization remains a separate responsibility.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Should a write endpoint reject unknown fields while a reader tolerates additions? Explain typo detection, compatibility, and rollout consequences before choosing a policy.</strong>
         <small><b>Inspect:</b> Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.</small>
       </div>
@@ -173,13 +173,12 @@ console.log(&quot;Assignability checks passed&quot;);
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>Structural compatibility asks whether the source supplies the target&#039;s required members with compatible types, not whether both objects have identical keys. Fresh object literals receive additional excess-property checks. Assigning a stored object or using satisfies does not strip fields or validate runtime input. Explicit projection controls response fields; a runtime parser enforces an incoming unknown-field policy.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>Why does storing a literal change excess-property checking without changing its runtime fields? Design separate policies for public response projection and incoming write validation; explain when rejecting unknown keys conflicts with forward compatibility.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -191,7 +190,7 @@ console.log(&quot;Assignability checks passed&quot;);
     <ol class="interview-questions">
       <li>Why does storing a literal change excess-property checking without changing its runtime fields? Design separate policies for public response projection and incoming write validation; explain when rejecting unknown keys conflicts with forward compatibility.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you predict the two expected compiler errors, then compile and run the lab. Compare serialization before and after explicit projection; reject invalid shapes and unknown keys at the input boundary. Expect Assignability checks passed. Remove the unknown-key guard and confirm the rejection check fails, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -199,12 +198,12 @@ console.log(&quot;Assignability checks passed&quot;);
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Structural compatibility asks whether the source supplies the target&#039;s required members with compatible types, not whether both objects have identical keys. Fresh object literals receive additional excess-property checks. Assigning a stored object or using satisfies does not strip fields or validate runtime input. Explicit projection controls response fields; a runtime parser enforces an incoming unknown-field policy.</p>
         <p>Look for: Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -212,9 +211,9 @@ console.log(&quot;Assignability checks passed&quot;);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An excess property check rejects unexpected keys on a fresh object literal. It does not turn TypeScript object types into exact closed schemas.</li><li>[concept] asks whether a source type can safely be used where a target type is expected under TypeScript&#39;s compatibility rules.</li><li>Compatibility depends on members, not a shared declared name. An object with a string name can satisfy {name: string} while carrying extra fields. This does not remove those fields, and class private or protected members introduce additional compatibility rules.</li><li>[concept] is the temporary exactness-like check applied to newly written object literals, which catches likely misspelled or unintended excess properties.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Assignability: 2; structural compatibility: 4; freshness: 3; excess property checks: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Assignability: 2; structural compatibility: 1; freshness: 3; excess property checks: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Assignability: 3; structural compatibility: 2; freshness: 4; excess property checks: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Assignability: 2; structural compatibility: 3; freshness: 4; excess property checks: 1</label>
@@ -226,7 +225,7 @@ console.log(&quot;Assignability checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>An object type usually describes required structure, not an exact list of runtime keys. Extra fields can survive assignment and serialization. Fresh-literal excess-property checks catch likely mistakes; use explicit projection or runtime validation when the boundary needs an exact field policy.</li><li>An excess property check rejects unexpected keys on a fresh object literal. It does not turn TypeScript object types into exact closed schemas.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. excess property checks: 1; open object types: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. excess property checks: 2; open object types: 1</label>
@@ -238,7 +237,7 @@ console.log(&quot;Assignability checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Fresh literals get an extra check: Passing the literal directly catches its unexpected admin key; storing it first does not remove the key.</li><li>Select public response fields: Annotations and satisfies leave the original object unchanged. Build a new object to omit private fields.</li><li>Enforce the incoming contract: The parser rejects unknown keys and wrong shapes at runtime; authorization remains a separate responsibility.</li><li>Compare required members: A stored object with a string name satisfies PublicProfile even if it also has admin.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -250,13 +249,13 @@ console.log(&quot;Assignability checks passed&quot;);
         <p>Should a write endpoint reject unknown fields while a reader tolerates additions? Explain typo detection, compatibility, and rollout consequences before choosing a policy. Evidence to inspect: Expect Assignability checks passed. Serializing publicView still includes admin; serializing the projected object does not. The parser rejects the same extra field that structural assignment permits.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#excess-property-checks" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: object types and excess-property checks</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/2/objects.html#excess-property-checks" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: object types and excess-property checks</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

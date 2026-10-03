@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow validated Pydantic input state through a node, reducer, conditional edge, checkpoint, interrupt, and later resume under the same thread identity, including where graph updates are not recursively revalidated.</p>
-      <p class="analogy">An agent is a bounded control loop: observe state, choose an allowed action, execute through a guarded tool, inspect the result, and stop by policy.</p>
+      <p>A LangGraph node reads state and returns an update, which reducers combine according to the field contract. Checkpoints support pause and resume, with durability determined by their store. The in-memory example resumes within one process. Resuming an interrupt restarts its node, so earlier effects can repeat. Validate critical updates and bind approval to scoped intent before execution.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · STATE</span><strong>Invocation loads typed graph state</strong><small>Thread identity selects the checkpoint history.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NODE</span><strong>One node returns a state update</strong><small>Reducers combine updates according to the declared state contract.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ROUTE</span><strong>An edge selects the next node</strong><small>A condition, Command, or interrupt controls progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CHECKPOINT</span><strong>Runtime saves or resumes execution</strong><small>Restart recovery requires a persistent checkpointer; an in-memory saver only demonstrates same-process pause and resume.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Interrupt before a sensitive action, restart the worker, then resume with the same thread ID twice.</strong>
         <small><b>Inspect:</b> Checkpoint versions, pending interrupt, state before and after resume, routed node, idempotency key, side-effect count, and final status.</small>
       </div>
@@ -117,7 +117,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a Pydantic-backed approval workflow that rejects invalid input, pauses, persists state, resumes after process interruption, and prevents duplicate side effects.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
 
 
@@ -185,7 +185,7 @@ print(resumed[&quot;status&quot;])
     <ol class="interview-questions">
       <li>Explain Pydantic versus TypedDict state, validation limits, routing, checkpoint ownership, interrupt replay rules, and the production difference between in-memory and durable persistence.</li>
       <li>Explain how an agent step works, starting with the input and following it through to the result.</li>
-      <li>How would you build a Pydantic-backed approval workflow that rejects invalid input, pauses, persists state, resumes after process interruption, and prevents duplicate side effects, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -193,13 +193,13 @@ print(resumed[&quot;status&quot;])
     <textarea id="teachback" placeholder="Define the boundary. Trace an agent step. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="agents">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow validated Pydantic input state through a node, reducer, conditional edge, checkpoint, interrupt, and later resume under the same thread identity, including where graph updates are not recursively revalidated.</p>
+
         <p class="worked-answer">The graph pauses and resumes in one process; InMemorySaver cannot survive worker loss. execute only returns approved and performs no refund. Resuming restarts the interrupted node, so pre-interrupt effects can repeat. Bind a trusted boolean decision to exact scoped intent and expiry; input validation does not recursively validate every later update or final output.</p>
         <p>Look for: Checkpoint versions, pending interrupt, state before and after resume, routed node, idempotency key, side-effect count, and final status.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#agents">Worked track case: A checkpoint replays a successful tool call ↗</a></p>
       </details>
     </div>
@@ -207,9 +207,9 @@ print(resumed[&quot;status&quot;])
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] are functions or subgraphs that perform one bounded operation and return an update instead of mutating hidden shared state.</li><li>[concept] connect nodes and determine which operation can run next. Conditional [concept] and Command values can choose a route from current state.</li><li>[concept] is a builder for a directed workflow whose nodes read shared typed state and return state updates.</li><li>LangGraph StateGraph can use a Pydantic model for runtime state-input validation. Do not assume every node update or final output is validated; validate important output boundaries explicitly. LangChain create_agent does not support [concept].</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. LangGraph StateGraph: 3; Pydantic state schemas: 4; nodes: 2; edges: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. LangGraph StateGraph: 3; Pydantic state schemas: 1; nodes: 2; edges: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. LangGraph StateGraph: 3; Pydantic state schemas: 4; nodes: 1; edges: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. LangGraph StateGraph: 3; Pydantic state schemas: 2; nodes: 1; edges: 4</label>
@@ -221,7 +221,7 @@ print(resumed[&quot;status&quot;])
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A LangGraph interrupt pauses for external input using a checkpointer and thread identity. Resuming restarts its node from the beginning, so code before the interrupt can run again. Protect side effects and authorize who may resume.</li><li>[concept] stores progress outside the worker process so a workflow can resume after waiting, failure, restart, or redeployment.</li><li>[concept] define how multiple updates to one state field combine, such as replacing a value or appending messages.</li><li>A checkpoint records workflow progress for resumption. Durability depends on its backing store; an in-memory saver does not survive process loss. Restoring state does not undo or deduplicate external effects by itself.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. reducers: 3; checkpoints: 4; interrupts: 2; durable execution: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. reducers: 3; checkpoints: 1; interrupts: 2; durable execution: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. reducers: 3; checkpoints: 4; interrupts: 1; durable execution: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. reducers: 3; checkpoints: 2; interrupts: 1; durable execution: 4</label>
@@ -233,7 +233,7 @@ print(resumed[&quot;status&quot;])
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>An edge selects the next node: A condition, Command, or interrupt controls progress.</li><li>Runtime saves or resumes execution: Restart recovery requires a persistent checkpointer; an in-memory saver only demonstrates same-process pause and resume.</li><li>Invocation loads typed graph state: Thread identity selects the checkpoint history.</li><li>One node returns a state update: Reducers combine updates according to the declared state contract.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -245,13 +245,13 @@ print(resumed[&quot;status&quot;])
         <p>Interrupt before a sensitive action, restart the worker, then resume with the same thread ID twice. Evidence to inspect: Checkpoint versions, pending interrupt, state before and after resume, routed node, idempotency key, side-effect count, and final status.</p>
       </details>
     </article>
-    <p><a href="https://docs.langchain.com/oss/python/langgraph/graph-api" target="_blank" rel="noreferrer">Review the lesson source: LangGraph graph API and state schema documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.langchain.com/oss/python/langgraph/graph-api" target="_blank" rel="noreferrer">Review the lesson source: LangGraph graph API and state schema documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

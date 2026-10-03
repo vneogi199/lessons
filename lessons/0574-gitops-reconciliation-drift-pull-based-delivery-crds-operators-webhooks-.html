@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow Git intent into cluster reconciliation and custom APIs into controllers, conversion, admission, status, and upgrade obligations.</p>
-      <p class="analogy">Kubernetes is a control room: you declare desired state through an API, controllers compare it with reality, and node agents keep reconciling until status matches or evidence explains why not.</p>
+      <p>GitOps controllers repeatedly compare declared Git state with cluster state. An emergency patch may be reverted unless the declared intent and ownership are reconciled. A CRD adds a resource schema, while a controller supplies behavior and cleanup. Extensions also need version migration, conversion and webhook failure policies. Define a recoverable emergency procedure alongside normal reconciliation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · APPLY</span><strong>Client submits desired API state</strong><small>Identity, object version, spec, and field ownership enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · API SERVER</span><strong>Request is authorized and stored</strong><small>Admission, validation, conversion, etcd, and watch events apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Controller or node agent acts</strong><small>Observed state is moved toward the declared spec.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Reality is reported through the API</strong><small>Conditions, events, resources, and data-plane behavior show progress.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one spec field and watch API, controller, scheduler, and node evidence.</strong>
         <small><b>Inspect:</b> Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Deploy through GitOps, repair drift, and build a minimal CRD/controller contract with safe deletion.</p>
-    <p class="lab-scope">Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
+    <p class="lab-scope">Predict what the manifest or scenario requests, then explain the acceptance criteria. Runtime and recovery exercises need an existing isolated cluster, available tools and images, and bounded disposable fixtures. Resolve those prerequisites before applying configuration.</p>
 
 
 
@@ -146,7 +146,7 @@
     <ol class="interview-questions">
       <li>Explain GitOps security and operator lifecycle costs beyond installing a controller.</li>
       <li>Explain how Kubernetes desired state and observed behavior works, starting with the input and following it through to the result.</li>
-      <li>How would you deploy through GitOps, repair drift, and build a minimal CRD/controller contract with safe deletion, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow Git intent into cluster reconciliation and custom APIs into controllers, conversion, admission, status, and upgrade obligations.</p>
+
         <p class="worked-answer">An emergency patch may be reverted by GitOps unless ownership and declared intent are reconciled. A CRD stores typed data; its controller supplies behavior and deletion cleanup. Admission webhook failure depends on timeout and failurePolicy. Design conversion, version migration, idempotent reconciliation and a recoverable break-glass path without bypassing policy silently.</p>
         <p>Look for: Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Configuration [concept] is a difference between the intended configuration and the observed system. Detect the difference and decide whether to reconcile or deliberately change the declared intent.</li><li>[concept] lets an in-cluster or nearby controller fetch desired configuration and reconcile it under scoped credentials.</li><li>[concept] uses a pull-based controller to reconcile versioned desired state into clusters and report drift and health.</li><li>[concept] repeatedly attempts to align observed resources with declared intent; failures must remain diagnosable.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. GitOps: 3; reconciliation: 4; drift: 2; pull-based delivery: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. GitOps: 3; reconciliation: 1; drift: 2; pull-based delivery: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. GitOps: 3; reconciliation: 4; drift: 1; pull-based delivery: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. GitOps: 3; reconciliation: 2; drift: 1; pull-based delivery: 4</label>
@@ -182,7 +182,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] extend supported API processing through external callbacks, adding availability, latency, and trust dependencies.</li><li>[concept] adds resource schemas or behavior and must define versioning, validation, ownership, and lifecycle.</li><li>A CustomResourceDefinition adds a new API type. A controller or other consumer must give that stored declarative data behavior.</li><li>[concept] encode domain-specific operational reconciliation around custom or built-in resources.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. CRDs: 3; operators: 4; webhooks: 2; API extension: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. CRDs: 3; operators: 1; webhooks: 2; API extension: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. CRDs: 3; operators: 4; webhooks: 1; API extension: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. CRDs: 3; operators: 2; webhooks: 1; API extension: 4</label>
@@ -194,7 +194,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Reality is reported through the API: Conditions, events, resources, and data-plane behavior show progress.</li><li>Client submits desired API state: Identity, object version, spec, and field ownership enter.</li><li>Request is authorized and stored: Admission, validation, conversion, etcd, and watch events apply.</li><li>Controller or node agent acts: Observed state is moved toward the declared spec.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 4 → 1</label>
@@ -206,13 +206,13 @@
         <p>Change one spec field and watch API, controller, scheduler, and node evidence. Evidence to inspect: Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p>
       </details>
     </article>
-    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

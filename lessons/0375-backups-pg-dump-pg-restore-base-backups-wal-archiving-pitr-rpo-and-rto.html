@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Distinguish logical exports from consistent physical base backups and combine archived WAL with recovery targets, timelines, verification, and retention.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>A logical dump and a physical base backup solve different restore problems. Later point-in-time recovery also needs an unbroken suitable WAL history. A successful backup command does not establish recovery time or acceptable data loss. Restore into the disposable target and verify application data, roles and required storage setup. Measure the complete recovery path before reporting RPO or RTO.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CHANGE</span><strong>Backend creates a database change</strong><small>Transaction identity and modified buffers define the candidate outcome.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · WAL</span><strong>Log record reaches required durability</strong><small>LSNs, flush policy, checkpoints, archive, and sender positions advance.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REPLAY</span><strong>Recovery or replica reapplies history</strong><small>Redo, timelines, slots, targets, and schema compatibility govern progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><strong>Restored state serves invariants</strong><small>Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Stop the relevant process at one precise point and predict the last recoverable commit.</strong>
         <small><b>Inspect:</b> Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Restore a logical backup and perform a point-in-time recovery drill with measured recovery point and recovery time.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -146,7 +146,7 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
     <ol class="interview-questions">
       <li>Design a PostgreSQL backup strategy and explain why replicas do not replace tested backups.</li>
       <li>Explain how a data operation works, starting with the input and following it through to the result.</li>
-      <li>How would you restore a logical backup and perform a point-in-time recovery drill with measured recovery point and recovery time, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
     <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Distinguish logical exports from consistent physical base backups and combine archived WAL with recovery targets, timelines, verification, and retention.</p>
+
         <p class="worked-answer">The logical restore targets only the disposable restore_probe database; clean can drop its objects. Base backup plus streamed start WAL is not an ongoing archive policy for later PITR. Verify credentials, roles, tablespaces, archive continuity and application recovery before reporting RPO/RTO. No backup, restore or server termination runs here.</p>
         <p>Look for: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A physical base backup copies a consistent PostgreSQL cluster starting point together with required recovery information. Further point-in-time recovery needs an unbroken suitable WAL history and compatible server setup; this is not a selective logical pg_dump archive.</li><li>A backup is an independently retained copy that can restore data after loss or corruption. Its value is proven by recovery drills against stated RPO and RTO targets.</li><li>[concept] creates a logical database backup; a successful dump is not proof that the restore meets recovery objectives.</li><li>[concept] loads supported archive-format dumps with options for selecting and ordering restored objects.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Backups: 2; pg_dump: 4; pg_restore: 3; base backups: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Backups: 2; pg_dump: 1; pg_restore: 3; base backups: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Backups: 3; pg_dump: 2; pg_restore: 4; base backups: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Backups: 2; pg_dump: 3; pg_restore: 4; base backups: 1</label>
@@ -182,7 +182,7 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Recovery time objective is the target time to restore acceptable service after an incident. Test the complete restore and verification path.</li><li>[concept] retains completed log segments for recovery beyond a base backup.</li><li>Point-in-time recovery restores a base backup and replays archived WAL to a selected recovery target.</li><li>Recovery point objective is the maximum acceptable loss of recent data, expressed as time. Backup success alone does not prove the target is met.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. WAL archiving: 2; PITR: 4; RPO: 3; RTO: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. WAL archiving: 2; PITR: 1; RPO: 3; RTO: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. WAL archiving: 3; PITR: 2; RPO: 4; RTO: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. WAL archiving: 2; PITR: 3; RPO: 4; RTO: 1</label>
@@ -194,7 +194,7 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Recovery or replica reapplies history: Redo, timelines, slots, targets, and schema compatibility govern progress.</li><li>Restored state serves invariants: Committed rows, missing uncommitted rows, lag, RPO, and RTO make recovery testable.</li><li>Backend creates a database change: Transaction identity and modified buffers define the candidate outcome.</li><li>Log record reaches required durability: LSNs, flush policy, checkpoints, archive, and sender positions advance.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -206,13 +206,13 @@ pg_basebackup --dbname=postgres --format=plain --wal-method=stream   --checkpoin
         <p>Stop the relevant process at one precise point and predict the last recoverable commit. Evidence to inspect: Commit LSN, flushed and replayed LSNs, archived segment, recovery log, restored rows, RPO, and RTO.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/maintenance.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL maintenance documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/maintenance.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL maintenance documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

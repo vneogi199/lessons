@@ -58,12 +58,12 @@
 
     <aside class="card blackboard">
 
-      <h2>Trace a database query</h2>
+      <h2>Trace a type-checking decision</h2>
       <ol class="trace-flow" data-flow="typescript-patch-presence" aria-label="Mechanism trace: Decode an update instruction then Reject invalid supplied values then Branch on presence, not truthiness then Protect uncertain reads separately. Experiment: Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden?">
         <li class="trace-stage"><span>01 · RECEIVE</span><strong>Decode an update instruction</strong><small>Omitted name means keep; a string means replace; null means clear. JSON cannot carry undefined.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · VALIDATE</span><strong>Reject invalid supplied values</strong><small>Check own-property presence, allowed keys, and the value type before constructing NamePatch.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><strong>Branch on presence, not truthiness</strong><small>The normalized patch preserves both an empty string and null. Neither means leave unchanged.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CHECK</span><strong>Protect uncertain reads separately</strong><small>Enable both flags explicitly. An unknown dictionary key may return undefined; nullish fallback preserves a valid zero.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden?</strong>
         <small><b>Inspect:</b> Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</small>
       </div>
@@ -180,13 +180,12 @@ console.log(&quot;Optional-property checks passed&quot;);
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>An omitted property and a present property containing undefined are different object shapes. exactOptionalPropertyTypes preserves that distinction when assigning optional fields. noUncheckedIndexedAccess makes uncertain dictionary reads include undefined. These flags add static checks; they do not validate incoming JSON.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>A PATCH endpoint treats an omitted field as leave unchanged. How would you represent set, clear, and leave unchanged across JSON, runtime validation, and TypeScript without relying on truthiness?</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -197,21 +196,21 @@ console.log(&quot;Optional-property checks passed&quot;);
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>A PATCH endpoint treats an omitted field as leave unchanged. How would you represent set, clear, and leave unchanged across JSON, runtime validation, and TypeScript without relying on truthiness?</li>
-      <li>Explain how a database query works, starting with the input and following it through to the result.</li>
-      <li>How would you enable strict, exactOptionalPropertyTypes, and noUncheckedIndexedAccess explicitly. Run the lab to check omitted, nonempty, empty-string, and null patches; reject present undefined and invalid input. Expect Optional-property checks passed. Handle an absent dictionary key without discarding a valid zero. Then replace the presence check with truthiness and explain the failing cases, and which evidence would prove the result?</li>
+      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>An omitted property and a present property containing undefined are different object shapes. exactOptionalPropertyTypes preserves that distinction when assigning optional fields. noUncheckedIndexedAccess makes uncertain dictionary reads include undefined. These flags add static checks; they do not validate incoming JSON.</p>
         <p>Look for: Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -219,9 +218,9 @@ console.log(&quot;Optional-property checks passed&quot;);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An optional property may be absent. With exactOptionalPropertyTypes, explicitly assigning undefined is different unless undefined is part of the value type.</li><li>[concept] distinguishes an absent optional property from a present property containing undefined, unless undefined is explicitly part of that property&#39;s value type.</li><li>An indexed read such as counts[key] can encounter a missing key. With noUncheckedIndexedAccess, an uncertain dictionary read includes undefined; check it before treating the result as a number.</li><li>[concept] adds undefined to uncertain array and index-signature reads, exposing that a syntactically valid key may be missing at runtime.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Optional properties: 1; exactOptionalPropertyTypes: 2; indexed access: 3; noUncheckedIndexedAccess: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Optional properties: 1; exactOptionalPropertyTypes: 2; indexed access: 4; noUncheckedIndexedAccess: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Optional properties: 1; exactOptionalPropertyTypes: 3; indexed access: 4; noUncheckedIndexedAccess: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Optional properties: 1; exactOptionalPropertyTypes: 4; indexed access: 3; noUncheckedIndexedAccess: 2</label>
@@ -233,7 +232,7 @@ console.log(&quot;Optional-property checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] adds undefined to uncertain array and index-signature reads, exposing that a syntactically valid key may be missing at runtime.</li><li>Give absence an explicit meaning. In a patch, an omitted name can mean leave unchanged, while a present name requests replacement. Do not use truthiness to detect presence: an empty string and zero can be legitimate supplied values.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. noUncheckedIndexedAccess: 1; safe absence: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. noUncheckedIndexedAccess: 2; safe absence: 1</label>
@@ -245,7 +244,7 @@ console.log(&quot;Optional-property checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Branch on presence, not truthiness: The normalized patch preserves both an empty string and null. Neither means leave unchanged.</li><li>Protect uncertain reads separately: Enable both flags explicitly. An unknown dictionary key may return undefined; nullish fallback preserves a valid zero.</li><li>Decode an update instruction: Omitted name means keep; a string means replace; null means clear. JSON cannot carry undefined.</li><li>Reject invalid supplied values: Check own-property presence, allowed keys, and the value type before constructing NamePatch.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -257,13 +256,13 @@ console.log(&quot;Optional-property checks passed&quot;);
         <p>Replace the presence check with if (patch.name), then with a nullish fallback. Explain which clear or empty-string instructions each loses. How would a client express clearing if null were forbidden? Evidence to inspect: Expect Optional-property checks passed. Omission keeps Ada, a supplied string replaces it, and null clears it without mutating the original. Static checks reject present undefined and unchecked dictionary reads.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: exactOptionalPropertyTypes</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: exactOptionalPropertyTypes</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

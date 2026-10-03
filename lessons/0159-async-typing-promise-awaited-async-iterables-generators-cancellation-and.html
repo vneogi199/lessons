@@ -52,18 +52,18 @@
   <div class="grid">
     <section class="card">
 
-      <p>Model eventual values, recursive unwrapping, streamed iteration, generator slots, AbortSignal, and explicit result errors.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>Promise&lt;T&gt; describes the fulfilled value, not the rejection type or the operation&#039;s deadline. Async iterable and generator types describe streamed protocol values without limiting total work. Cancellation still requires cooperation and cleanup. In the pagination exercise, check HTTP errors and malformed pages as well as early consumer exit. Cursor loops, page limits and URL policy need explicit controls before the generator becomes a service component.</p>
+
     </section>
 
     <aside class="card blackboard">
 
-      <h2>Trace an iteration step</h2>
+      <h2>Trace a type-checking decision</h2>
       <ol class="trace-flow" data-flow="typescript-integration" aria-label="Mechanism trace: Domain types describe intent then Framework or host values are translated then JavaScript performs the operation then Types and operation agree. Experiment: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.">
         <li class="trace-stage"><span>01 · CONTRACT</span><strong>Domain types describe intent</strong><small>Commands, states, results, and ports exclude known-invalid combinations.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ADAPTER</span><strong>Framework or host values are translated</strong><small>React, Node, async, storage, and model details stay at boundaries.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUNTIME</span><strong>JavaScript performs the operation</strong><small>Scheduling, I/O, cancellation, and errors remain real behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><strong>Types and operation agree</strong><small>Type tests, runtime tests, telemetry, and failure paths verify the design.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</strong>
         <small><b>Inspect:</b> Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</small>
       </div>
@@ -147,13 +147,12 @@ async function* pages&lt;T&gt;(
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>Async types describe eventual values and iterator protocol slots, not timeouts, concurrency limits, or cancellation guarantees.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>The generator checks HTTP status and cancellation, but still needs a trusted URL policy, redirect controls, repeated-cursor detection, page/item limits, and a deadline. Same-origin cursor checks alone are not an SSRF defense.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -164,21 +163,21 @@ async function* pages&lt;T&gt;(
     <h2>Interview practice</h2>
     <ol class="interview-questions">
       <li>Explain what async types express and which scheduling, cancellation, and rejection behavior remains runtime-only.</li>
-      <li>Explain how an iteration step works, starting with the input and following it through to the result.</li>
-      <li>How would you type a cancellable paginated async generator and consume it with bounded work and complete cleanup, and which evidence would prove the result?</li>
+      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
-    <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>
+    <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Model eventual values, recursive unwrapping, streamed iteration, generator slots, AbortSignal, and explicit result errors.</p>
+
         <p>Look for: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -186,9 +185,9 @@ async function* pages&lt;T&gt;(
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An async iterable supplies values through asynchronously resolved iterator results. Consumers must still handle errors, cleanup, and bounded work.</li><li>[concept] models eventual and streamed values through Promise, AsyncIterable, and AsyncGenerator contracts. It does not model event-loop scheduling or guarantee cancellation.</li><li>[concept]&lt;T&gt; describes eventual fulfillment with T. It does not encode a rejection type, deadline, cancellation, or concurrency limit.</li><li>[concept] recursively models how await unwraps promises and thenables and distributes through null or undefined according to the built-in utility definition.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Async typing: 2; Promise: 4; Awaited: 3; async iterables: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Async typing: 2; Promise: 1; Awaited: 3; async iterables: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Async typing: 3; Promise: 2; Awaited: 4; async iterables: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Async typing: 2; Promise: 3; Awaited: 4; async iterables: 1</label>
@@ -200,7 +199,7 @@ async function* pages&lt;T&gt;(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</li><li>Errors can be thrown, rejected, or returned as explicit result variants. Choose a consistent boundary contract and preserve useful causes.</li><li>Generator types describe yielded, returned, and received values. Async [concept] wrap protocol results in asynchronous delivery.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. generators: 1; cancellation: 3; error channels: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. generators: 2; cancellation: 3; error channels: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. generators: 3; cancellation: 2; error channels: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. generators: 3; cancellation: 1; error channels: 2</label>
@@ -212,7 +211,7 @@ async function* pages&lt;T&gt;(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>JavaScript performs the operation: Scheduling, I/O, cancellation, and errors remain real behavior.</li><li>Types and operation agree: Type tests, runtime tests, telemetry, and failure paths verify the design.</li><li>Domain types describe intent: Commands, states, results, and ports exclude known-invalid combinations.</li><li>Framework or host values are translated: React, Node, async, storage, and model details stay at boundaries.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -224,13 +223,13 @@ async function* pages&lt;T&gt;(
         <p>Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence. Evidence to inspect: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

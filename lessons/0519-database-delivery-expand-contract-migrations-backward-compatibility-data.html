@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Coordinate application versions with schema state while controlling locks, replication, long transactions, and irreversible data changes.</p>
-      <p class="analogy">DevOps is a learning conveyor belt: small changes move through automated checks into production, telemetry returns feedback, and teams improve the whole flow.</p>
+      <p>Expand-contract migrations let old and new application versions coexist while data moves. Add the new shape, deploy compatible writers, backfill in bounded transactions and verify readers have moved before removal. A SKIP LOCKED batch returning no rows does not prove all work is complete. Dropping the old field ends a rollback option, so validate completion independently before that step.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOURCE</span><strong>Reviewed change identifies intent</strong><small>Code, configuration, and dependencies are versioned.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD</span><strong>CI creates an immutable artifact</strong><small>Tests and scans attach evidence to one identity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DEPLOY</span><strong>Platform rolls out that artifact</strong><small>Health, capacity, secrets, and strategy control exposure.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry confirms behavior</strong><small>Rollback or progression follows production evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Fail readiness during a staged rollout and verify traffic and rollback behavior.</strong>
         <small><b>Inspect:</b> Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Ship a zero-downtime field replacement across old and new services with a resumable backfill.</p>
-    <p class="lab-scope">Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
+    <p class="lab-scope">Work through the scenario or recipe and predict a failure before reading the answer. Shell, pipeline and deployment fragments need their named adapters and environment. A completed lab should include observed release, database, infrastructure or incident behavior under controlled conditions.</p>
 
 
 
@@ -150,7 +150,7 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
     <ol class="interview-questions">
       <li>Explain why application rollback does not automatically roll back data safely.</li>
       <li>Explain how a delivery change and its evidence works, starting with the input and following it through to the result.</li>
-      <li>How would you ship a zero-downtime field replacement across old and new services with a resumable backfill, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,13 +158,13 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
     <textarea id="teachback" placeholder="Define the boundary. Trace a delivery change and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Coordinate application versions with schema state while controlling locks, replication, long transactions, and irreversible data changes.</p>
+
         <p class="worked-answer">Deploy writers that maintain both columns before relying on backfill completion, and preserve old-reader compatibility during transition. The CTE is one bounded batch; repeat in separate transactions and verify completion independently of SKIP LOCKED&#039;s zero-row result. Resolve null source values and DDL lock limits before enforcing NOT NULL. Dropping the old field ends a rollback option.</p>
         <p>Look for: Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>
       </details>
     </div>
@@ -172,9 +172,9 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</li><li>[concept] coordinates schema and data changes with application versions, lock limits, and recovery constraints.</li><li>Expand-contract changes a schema in compatible phases: add the new shape, support both versions, migrate data and traffic, then remove the old shape later.</li><li>[concept] lets existing consumers keep working after a change. Include data, behavior, errors, and deployment order in that promise.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Database delivery: 2; expand-contract migrations: 4; backward compatibility: 3; data backfills: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Database delivery: 2; expand-contract migrations: 1; backward compatibility: 3; data backfills: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Database delivery: 3; expand-contract migrations: 2; backward compatibility: 4; data backfills: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Database delivery: 2; expand-contract migrations: 3; backward compatibility: 4; data backfills: 1</label>
@@ -186,7 +186,7 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] abandons uncommitted database changes or returns a deployed component to an earlier version, depending on the boundary. Code [concept] does not automatically undo committed data, emitted events, or external effects.</li><li>A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. locks: 1; rollback: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. locks: 2; rollback: 1</label>
@@ -198,7 +198,7 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Platform rolls out that artifact: Health, capacity, secrets, and strategy control exposure.</li><li>Telemetry confirms behavior: Rollback or progression follows production evidence.</li><li>Reviewed change identifies intent: Code, configuration, and dependencies are versioned.</li><li>CI creates an immutable artifact: Tests and scans attach evidence to one identity.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -210,13 +210,13 @@ ALTER TABLE projects ALTER COLUMN display_name SET NOT NULL;
         <p>Fail readiness during a staged rollout and verify traffic and rollback behavior. Evidence to inspect: Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

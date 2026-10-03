@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Hash event keys to ordered topic partitions, append batches to leader logs, roll segment files and sparse indexes, serve sequential fetches, expire records by policy, and compact older keys while preserving partition offsets.</p>
-      <p class="analogy">A business platform is a city: bounded contexts are districts with local language and rules, services are independently operated buildings, and event logs are durable transport routes rather than telepathy.</p>
+      <p>Kafka stores records in ordered partition logs. Keys commonly choose a partition, so stable placement matters for per-key order. Segment files let retention and compaction work incrementally. Compaction can remove older values without renumbering surviving offsets. The supplied commands create a delete-retained topic in an existing lab; observing compaction and tombstone behavior requires a separately configured exercise.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · PRODUCE</span><strong>Producer forms a keyed batch</strong><small>Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><strong>Partition leader writes its log</strong><small>Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FETCH</span><strong>Consumer group owns partitions</strong><small>Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Effect and position become recoverable</strong><small>Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed.</strong>
         <small><b>Inspect:</b> Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</small>
       </div>
@@ -124,7 +124,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Create topics with multiple partitions, publish keyed events, inspect partition placement and offsets, change retention, compact updates and tombstones, and measure how a hot key limits parallelism.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -163,7 +163,7 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
     <ol class="interview-questions">
       <li>Trace an event from producer metadata through partition storage to consumer fetch and explain ordering, scale, retention, and compaction boundaries.</li>
       <li>Explain how a domain command and event works, starting with the input and following it through to the result.</li>
-      <li>How would you create topics with multiple partitions, publish keyed events, inspect partition placement and offsets, change retention, compact updates and tombstones, and measure how a hot key limits parallelism, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -171,13 +171,13 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
     <textarea id="teachback" placeholder="Define the boundary. Trace a domain command and event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="service-architecture-events">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Hash event keys to ordered topic partitions, append batches to leader logs, roll segment files and sparse indexes, serve sequential fetches, expire records by policy, and compact older keys while preserving partition offsets.</p>
+
         <p class="worked-answer">The commands require an existing three-broker disposable lab and create a delete-retained topic, not a compacted topic. Seven-day retention is not an exact per-record deletion deadline. Stable key placement scopes order; broker retention and compaction can leave offset gaps without renumbering survivors. No shell command or broker mutation is executed by this review.</p>
         <p>Look for: Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Worked track case: An event is published twice after a crash ↗</a></p>
       </details>
     </div>
@@ -185,9 +185,9 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A broker stores or routes messages between producers and consumers and applies retention and delivery rules.</li><li>A Kafka topic is a named record stream divided into partitions.</li><li>A partition is an ordered append-only sequence that is the unit of Kafka storage, replication, and consumer-group assignment.</li><li>Kafka is a distributed event log whose brokers store topic partitions and whose clients produce records or consume ordered partition positions.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Kafka architecture: 4; brokers: 2; topics: 1; partitions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Kafka architecture: 4; brokers: 1; topics: 2; partitions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Kafka architecture: 4; brokers: 3; topics: 1; partitions: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Kafka architecture: 1; brokers: 4; topics: 2; partitions: 3</label>
@@ -199,7 +199,7 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>An append-only log writes new records at increasing positions and does not update earlier records in place.</li><li>Kafka stores a partition as bounded segment files so retention, lookup, and compaction can operate incrementally.</li><li>Kafka [concept] map approximate offsets or timestamps to positions in segment files, then scans locally to the requested record.</li><li>A Kafka record key commonly selects a partition. Same-key ordering depends on stable partition selection; changing partition counts or partitioner behavior can move later records to another partition.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. keys: 4; append-only logs: 2; segments: 1; indexes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. keys: 4; append-only logs: 1; segments: 2; indexes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. keys: 4; append-only logs: 3; segments: 1; indexes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. keys: 1; append-only logs: 4; segments: 2; indexes: 3</label>
@@ -211,7 +211,7 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] eventually removes superseded key versions; multiple versions can coexist before cleaning. Surviving records retain their offsets and order. Tombstone retention bounds how long a lagging consumer can observe deletes.</li><li>[concept] removes old log segments by time or size according to topic policy.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. retention: 1; compaction: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. retention: 2; compaction: 1</label>
@@ -223,7 +223,7 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Partition leader writes its log: Offset, segment, sparse index, follower replication, ISR, and commit position govern durability.</li><li>Consumer group owns partitions: Assignment, fetch position, batching, rebalancing, and backpressure control parallel processing.</li><li>Effect and position become recoverable: Idempotency, transaction scope, offset commit, retry, quarantine, lag, trace, and replay reveal correctness.</li><li>Producer forms a keyed batch: Serializer, partition metadata, compression, acknowledgement, idempotence, and deadline configure the write.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -235,13 +235,13 @@ kafka-console-producer.sh --bootstrap-server localhost:9092 \
         <p>Crash leader, producer, and consumer at different boundaries for one keyed event and inspect whether it is lost, repeated, reordered, or delayed. Evidence to inspect: Key and partition, producer ID and sequence, leader/ISR, offset, segment, group assignment, committed position, duplicate effect, lag, and business outcome.</p>
       </details>
     </article>
-    <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

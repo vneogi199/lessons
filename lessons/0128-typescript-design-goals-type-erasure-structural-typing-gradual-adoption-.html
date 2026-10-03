@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Study the erasable structural type system, JavaScript compatibility, deliberate unsoundness, and productivity-oriented design choices.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>TypeScript checks JavaScript using structural types and erases most type-only information before execution. Compatible members often matter more than a shared declared name. The system deliberately accepts some unsafe patterns to remain useful with JavaScript. An assertion on parsed JSON does not convert its fields or validate them. Use runtime checks at external boundaries even when the surrounding program compiles.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · UNKNOWN</span><strong>External value crosses into code</strong><small>HTTP, environment, database, file, queue, or model output is untrusted.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Runtime logic validates structure</strong><small>Types, limits, formats, versions, and policy produce errors or data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DOMAIN</span><strong>Trusted representation is created</strong><small>Checked code can now rely on explicit invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Use and serialization stay controlled</strong><small>Tests and runtime evidence prove the contract beyond type erasure.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Pass malformed but cast-compatible input and verify it fails before domain logic.</strong>
         <small><b>Inspect:</b> Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</small>
       </div>
@@ -131,13 +131,12 @@ console.log(narrower);
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>TypeScript deliberately accepts some programs whose runtime behavior can violate their annotations.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>An assertion on parsed JSON does not convert a number into a string. Explain what runtime validation would prove and what it would still not authorize.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -149,7 +148,7 @@ console.log(narrower);
     <ol class="interview-questions">
       <li>Explain why TypeScript is useful without claiming it is sound or supplies runtime validation.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you produce examples that type-check but fail at runtime, then identify the boundary evidence needed to make them safe, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -157,12 +156,12 @@ console.log(narrower);
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Study the erasable structural type system, JavaScript compatibility, deliberate unsoundness, and productivity-oriented design choices.</p>
+
         <p>Look for: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -170,9 +169,9 @@ console.log(narrower);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>TypeScript aims to model JavaScript with a consistent erasable structural system and useful tooling, while explicitly not promising complete soundness or runtime type metadata.</li><li>[concept] means most TypeScript-only syntax and relationships disappear from emitted JavaScript. Runtime values therefore cannot rely on interfaces or assertions for validation.</li><li>[concept] compares required members and their types rather than requiring values to declare one nominal lineage. Compatible shapes can substitute for one another.</li><li>Add checks to selected JavaScript or TypeScript modules incrementally, keeping runtime behavior and deployment working at each step.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. TypeScript design goals: 1; type erasure: 2; structural typing: 3; gradual adoption: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. TypeScript design goals: 1; type erasure: 2; structural typing: 4; gradual adoption: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. TypeScript design goals: 1; type erasure: 3; structural typing: 4; gradual adoption: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. TypeScript design goals: 1; type erasure: 4; structural typing: 3; gradual adoption: 2</label>
@@ -184,7 +183,7 @@ console.log(narrower);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Add checks to selected JavaScript or TypeScript modules incrementally, keeping runtime behavior and deployment working at each step.</li><li>TypeScript accepts selected unsafe patterns to remain compatible and productive with JavaScript. Checked code reduces risk but does not mathematically prove runtime correctness.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. gradual adoption: 1; soundness tradeoffs: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. gradual adoption: 2; soundness tradeoffs: 1</label>
@@ -196,7 +195,7 @@ console.log(narrower);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Runtime logic validates structure: Types, limits, formats, versions, and policy produce errors or data.</li><li>Trusted representation is created: Checked code can now rely on explicit invariants.</li><li>Use and serialization stay controlled: Tests and runtime evidence prove the contract beyond type erasure.</li><li>External value crosses into code: HTTP, environment, database, file, queue, or model output is untrusted.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -208,13 +207,13 @@ console.log(narrower);
         <p>Pass malformed but cast-compatible input and verify it fails before domain logic. Evidence to inspect: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
       </details>
     </article>
-    <p><a href="https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals" target="_blank" rel="noreferrer">Review the lesson source: TypeScript design goals</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals" target="_blank" rel="noreferrer">Review the lesson source: TypeScript design goals</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Replace repeated pair checks with indices whose movement discards a proven-impossible region while preserving ordering or partition invariants.</p>
-      <p class="analogy">An algorithm is a route plan: correctness gets you to the destination, while the cost model tells you how the route behaves when the city grows.</p>
+      <p>Two-pointer scans save work when moving an index proves that some candidates can be ignored. For a sorted target-pair problem, a sum that is too small justifies moving the left pointer; a sum that is too large justifies moving the right. Without sorted input, those skipped pairs may contain an answer. Other scans maintain read/write regions or partitions, so state the rule for the particular problem rather than copying pointer movements.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INPUT</span><strong>Problem instance and constraints</strong><small>Size, ordering, duplicates, and limits shape the choice.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STRUCTURE</span><strong>Representation enables operations</strong><small>Invariants determine which transitions are legal.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ALGORITHM</span><strong>Steps transform state</strong><small>Time and space accumulate across the execution.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OUTPUT</span><strong>Result and cost are checked</strong><small>Examples and growth measurements test correctness and complexity.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Double input size and predict both the result and resource growth.</strong>
         <small><b>Inspect:</b> Invariant checks, operation count, output, runtime samples, and peak memory.</small>
       </div>
@@ -99,7 +99,7 @@
   <section class="card dsa-question-bank">
 
     <h2>Questions for this topic</h2>
-    <p>Use these canonical problems after the lesson. The badges show the source sheet alignment; sheet contents can change, so treat this as a curated cross-sheet practice set rather than a completion claim.</p>
+    <p>Practise these problems after the lesson. The badges identify their source sheets. Those sheets can change, so this selection does not establish that you have completed any whole sheet.</p>
     <ul class="dsa-question-list">
       <li><a href="https://leetcode.com/problems/valid-palindrome/" target="_blank" rel="noreferrer">Valid Palindrome ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/" target="_blank" rel="noreferrer">Two Sum II - Input Array Is Sorted ↗</a><span>NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/3sum/" target="_blank" rel="noreferrer">3Sum ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/container-with-most-water/" target="_blank" rel="noreferrer">Container With Most Water ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li><li><a href="https://leetcode.com/problems/trapping-rain-water/" target="_blank" rel="noreferrer">Trapping Rain Water ↗</a><span>Blind 75 · NeetCode 150 · Striver A2Z</span></li>
     </ul>
@@ -109,12 +109,11 @@
 
 
   <section class="card mechanism-walkthrough" data-dsa-approach="true">
-    <span class="section-label">05B · Approach ladder</span>
-    <p>These are related practice problems and illustrative traces, not necessarily the starter's input. Bounds describe the named algorithm under its preconditions; include output, trace snapshots and key construction when analyzing the actual code.</p>
+    <p>The problems and traces below illustrate related approaches; they may use different inputs from the starter. Complexity bounds depend on each algorithm's preconditions. Count output, trace snapshots and key construction when analyzing the supplied code.</p>
     <div class="walkthrough-grid">
-      <article><span>PROBLEM LADDER</span><h3>Easy → intermediate → stretch</h3><p>Normalized palindrome → sorted target pair → zero-sum triples</p></article>
-      <article><span>BASELINE</span><h3>Start with the obvious solution</h3><p>Enumerate pairs: O(n²) time</p></article>
-      <article><span>OPTIMIZED</span><h3>Name the invariant that removes work</h3><p>Proven pointer movement: O(n) per scan</p></article>
+      <article><h3>Practice sequence</h3><p>Normalized palindrome → sorted target pair → zero-sum triples</p></article>
+      <article><h3>Baseline</h3><p>Enumerate pairs: O(n²) time</p></article>
+      <article><h3>Reduced work</h3><p>Proven pointer movement: O(n) per scan</p></article>
       <article><span>STATE TRACE</span><h3>Move one step at a time</h3><p><code>left/right/sum: 0/5/21 → 0/4/16 → 1/4/19</code></p></article>
     </div>
   </section>
@@ -158,7 +157,7 @@ console.assert(answer.trace.length === 5);
     <ol class="interview-questions">
       <li>Explain exactly why pointer movement is safe and when unsorted data invalidates the proof.</li>
       <li>Explain how an algorithm execution works, starting with the input and following it through to the result.</li>
-      <li>How would you progress through normalized palindrome checking, a sorted target pair, and unique zero-sum triples; record left, right, decision, and discarded candidates at each step, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -166,13 +165,13 @@ console.assert(answer.trace.length === 5);
     <textarea id="teachback" placeholder="Define the boundary. Trace an algorithm execution. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="computer-science">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Replace repeated pair checks with indices whose movement discards a proven-impossible region while preserving ordering or partition invariants.</p>
+
         <p class="worked-answer">Sorted order justifies moving left for a small sum and right for a large sum; without it, skipped pairs may be valid. The sample returns positions in the supplied sorted sequence, not original indices after a new sort. Its five recorded steps cost O(n) storage; drop tracing for constant auxiliary scan state.</p>
         <p>Look for: Invariant checks, operation count, output, runtime samples, and peak memory.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#computer-science">Worked track case: Top K under changing input constraints ↗</a></p>
       </details>
     </div>
@@ -180,9 +179,9 @@ console.assert(answer.trace.length === 5);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Two pointers move inward from opposite ends while an invariant justifies discarding candidates.</li><li>Two pointers advance in the same direction, often maintaining a window or separating read and write positions.</li><li>[concept] rearranges or separates values according to a predicate, preserving a stated relationship between the regions.</li><li>[concept] move two indexes under an invariant to inspect pairs, partitions, or ranges efficiently.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Two pointers: 4; converging scans: 2; same-direction scans: 1; partitioning: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Two pointers: 4; converging scans: 1; same-direction scans: 2; partitioning: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Two pointers: 4; converging scans: 3; same-direction scans: 1; partitioning: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Two pointers: 1; converging scans: 4; same-direction scans: 2; partitioning: 3</label>
@@ -194,7 +193,7 @@ console.assert(answer.trace.length === 5);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A sorted invariant states which region is ordered and how that order permits pruning or efficient lookup.</li><li>[concept] rearranges or separates values according to a predicate, preserving a stated relationship between the regions.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. partitioning: 1; sorted invariants: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. partitioning: 2; sorted invariants: 1</label>
@@ -206,7 +205,7 @@ console.assert(answer.trace.length === 5);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Steps transform state: Time and space accumulate across the execution.</li><li>Result and cost are checked: Examples and growth measurements test correctness and complexity.</li><li>Problem instance and constraints: Size, ordering, duplicates, and limits shape the choice.</li><li>Representation enables operations: Invariants determine which transitions are legal.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -218,13 +217,13 @@ console.assert(answer.trace.length === 5);
         <p>Double input size and predict both the result and resource growth. Evidence to inspect: Invariant checks, operation count, output, runtime samples, and peak memory.</p>
       </details>
     </article>
-    <p><a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/" target="_blank" rel="noreferrer">Review the lesson source: MIT 6.006 Introduction to Algorithms</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/" target="_blank" rel="noreferrer">Review the lesson source: MIT 6.006 Introduction to Algorithms</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

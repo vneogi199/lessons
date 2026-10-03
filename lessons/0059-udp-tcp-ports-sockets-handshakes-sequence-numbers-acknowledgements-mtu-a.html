@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Compare datagram and byte-stream contracts, demultiplex by endpoint tuples, establish TCP state, order bytes, retransmit loss, close directions independently, and fit segments to path limits.</p>
-      <p class="analogy">Production software is a parcel crossing nested transport systems: the application labels intent, protocols add delivery information, and the kernel moves bytes while preserving isolation and resource limits.</p>
+      <p>UDP sends separate datagrams, while TCP provides an ordered byte stream. Ports and sockets identify communication endpoints without authenticating the caller. TCP uses sequence numbers and acknowledgements to track received bytes and retransmit missing data. Applications must still delimit messages and decide whether an uncertain operation is safe to retry. MTU constrains packet size, while MSS limits TCP payload excluding its headers. A FIN closes one sending direction rather than both directions at once.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · APP</span><strong>Application creates a message</strong><small>A URL, payload, and protocol semantics define the intended exchange.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE + CONNECT</span><strong>Names and peers become addresses</strong><small>DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRANSPORT + ROUTE</span><strong>Bytes cross layered networks</strong><small>TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PEER</span><strong>The destination observes the request</strong><small>Acknowledgments, responses, packet captures, and errors expose the outcome.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one address, route, MTU, or loss condition and predict where the exchange changes.</strong>
         <small><b>Inspect:</b> Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</small>
       </div>
@@ -169,7 +169,7 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
     <ol class="interview-questions">
       <li>Choose UDP or TCP from application requirements and distinguish packets, segments, byte streams, connections, and messages.</li>
       <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>How would you encode and decode a bounded UDP datagram, simulate a TCP handshake and acknowledgement trace, and test framing across arbitrary receive chunks, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -177,13 +177,13 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="systems-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Compare datagram and byte-stream contracts, demultiplex by endpoint tuples, establish TCP state, order bytes, retransmit loss, close directions independently, and fit segments to path limits.</p>
+
         <p class="worked-answer">UDP length includes its eight-byte header; this codec checks shape but omits pseudo-header checksum validation. The field maximum is not a path payload budget, especially with IP headers. The TCP list is one possible active-close sequence, not an implemented state machine; FIN closes one sending direction, and TIME-WAIT has a distinct purpose. TCP reliability does not make retrying an unknown business outcome safe. Choose framing and idempotency at the application boundary.</p>
         <p>Look for: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
       </details>
     </div>
@@ -191,9 +191,9 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] are operating-system endpoints for communication. Their lifecycle, buffering, and errors are distinct from application message boundaries.</li><li>[concept] sends independent datagrams without providing TCP-style delivery, ordering, or retransmission guarantees. An application needing those properties must provide them elsewhere.</li><li>[concept] provides a reliable ordered byte stream between endpoints. It does not preserve application message boundaries or prove that a remote business operation committed.</li><li>Transport [concept] identify communication endpoints within a host. Binding or publishing a port does not authenticate callers.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. UDP: 2; TCP: 4; ports: 3; sockets: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. UDP: 2; TCP: 1; ports: 3; sockets: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. UDP: 3; TCP: 2; ports: 4; sockets: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. UDP: 2; TCP: 3; ports: 4; sockets: 1</label>
@@ -205,7 +205,7 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] is the maximum network-layer packet size a link can carry without link-specific fragmentation behavior.</li><li>A handshake exchanges control messages to establish shared connection or protocol state before ordinary communication.</li><li>TCP [concept] identify positions in a byte stream, supporting ordering, acknowledgements, and retransmission.</li><li>TCP [concept] report received stream progress, not application processing or durable storage of a request.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. handshakes: 2; sequence numbers: 4; acknowledgements: 3; MTU: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. handshakes: 2; sequence numbers: 1; acknowledgements: 3; MTU: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. handshakes: 3; sequence numbers: 2; acknowledgements: 4; MTU: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. handshakes: 2; sequence numbers: 3; acknowledgements: 4; MTU: 1</label>
@@ -217,7 +217,7 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>TCP [concept] limits segment payload size, excluding TCP and IP headers, and is related to the usable path packet size.</li><li>[concept] is the maximum network-layer packet size a link can carry without link-specific fragmentation behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. MTU: 1; MSS: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. MTU: 2; MSS: 1</label>
@@ -229,7 +229,7 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Names and peers become addresses: DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</li><li>Bytes cross layered networks: TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</li><li>The destination observes the request: Acknowledgments, responses, packet captures, and errors expose the outcome.</li><li>Application creates a message: A URL, payload, and protocol semantics define the intended exchange.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -241,13 +241,13 @@ assert tcp_states[2] == &quot;ESTABLISHED&quot;
         <p>Change one address, route, MTU, or loss condition and predict where the exchange changes. Evidence to inspect: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p>
       </details>
     </article>
-    <p><a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 9293 Transmission Control Protocol</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.rfc-editor.org/rfc/rfc9293.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 9293 Transmission Control Protocol</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

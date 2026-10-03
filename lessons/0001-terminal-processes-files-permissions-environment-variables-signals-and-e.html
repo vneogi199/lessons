@@ -52,7 +52,6 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
       <p>The shell parses quoting and expansions, selects a builtin or resolves an executable (often through PATH), connects standard input/output/error, and starts the command. A child inherits exported environment values; changing them in the child does not update its parent. Check executable identity, working directory, permissions and stderr before changing application code. On Unix, directory execute permission means search/traversal, not running the directory. Signals are a separate control channel: SIGTERM permits handling and cleanup; SIGKILL cannot be caught. A shell exit status summarizes termination, not whether the intended business work happened.</p>
       <p class="analogy">A pipeline is a relay of bytes, not a relay of success: the receiver can finish normally even when the sender failed.</p>
     </section>
@@ -64,7 +63,7 @@
         <li class="trace-stage"><span>01 · PRODUCE</span><strong>Exit with status 7</strong><small>The producer fails even though it sends no bytes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONSUME</span><strong>tee succeeds</strong><small>The final process can return zero while the producer failed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COLLECT</span><strong>Apply pipeline policy</strong><small>Default Bash reports the last status; pipefail reports the rightmost nonzero status.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Capture immediately</strong><small>Save $? before any other command overwrites it, then check the required outcome.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>What happens if both processes fail?</strong>
         <small><b>Inspect:</b> The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</small>
       </div>
@@ -150,7 +149,7 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
     <ol class="interview-questions">
       <li>Explain what happens between entering a command and seeing its output.</li>
       <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
-      <li>How would you build diagnostic shell workflows and troubleshoot a broken local service, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,13 +157,13 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="engineering-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand shells, process trees, standard streams, PATH lookup, and OS boundaries.</p>
+
         <p class="worked-answer">If both commands fail with statuses 7 then 3, pipefail reports 3, not 7. Without pipefail the last command also reports 3. Explain why checking only the final status loses information; compare capturing Bash PIPESTATUS immediately with explicitly checking each stage. A service that exits zero but writes a truncated artifact still failed its contract. For a shutdown incident, distinguish a requested signal, observed process termination and completed cleanup before calling it safe.</p>
         <p>Look for: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>
       </details>
     </div>
@@ -172,9 +171,9 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A process is a running instance of a program. The operating system gives each process memory, resources, and an identifier.</li><li>A file is a named sequence of bytes stored by a file system. Programs use paths and file descriptors to access [concept].</li><li>[concept] are rules that state which users and processes can read, change, or execute a file or resource.</li><li>A [concept] is a text interface that sends commands to a shell and shows the output from programs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Terminal: 4; processes: 2; files: 1; permissions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Terminal: 4; processes: 1; files: 2; permissions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Terminal: 4; processes: 3; files: 1; permissions: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Terminal: 1; processes: 4; files: 2; permissions: 3</label>
@@ -186,7 +185,7 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>An exit code is an integer that a process returns when it ends. Zero usually means success, and other values identify failures.</li><li>[concept] are named text values that a parent process gives to a child process at startup.</li><li>A signal is an operating-system notification that asks a process to handle an event such as termination or interruption.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. environment variables: 3; signals: 2; exit codes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. environment variables: 2; signals: 3; exit codes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. environment variables: 1; signals: 2; exit codes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. environment variables: 2; signals: 1; exit codes: 3</label>
@@ -198,7 +197,7 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Capture immediately: Save $? before any other command overwrites it, then check the required outcome.</li><li>Exit with status 7: The producer fails even though it sends no bytes.</li><li>tee succeeds: The final process can return zero while the producer failed.</li><li>Apply pipeline policy: Default Bash reports the last status; pipefail reports the rightmost nonzero status.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -210,13 +209,13 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
         <p>What happens if both processes fail? Evidence to inspect: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p>
       </details>
     </article>
-    <p><a href="https://www.gnu.org/software/bash/manual/bash.html#Pipelines" target="_blank" rel="noreferrer">Review the lesson source: Bash manual: pipelines and exit status</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.gnu.org/software/bash/manual/bash.html#Pipelines" target="_blank" rel="noreferrer">Review the lesson source: Bash manual: pipelines and exit status</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

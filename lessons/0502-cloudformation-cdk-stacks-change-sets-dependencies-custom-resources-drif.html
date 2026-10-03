@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow desired infrastructure through synthesis, dependency ordering, provider API calls, rollback, state recording, and drift detection.</p>
-      <p class="analogy">AWS is a programmable city: accounts set legal boundaries, IAM issues authority, VPCs define roads, managed services operate utilities, and telemetry shows whether citizens are safe.</p>
+      <p>Infrastructure code becomes a dependency graph of API changes. A change set previews supported changes, including possible replacements, before execution. Wait for its completion before reading the result. Rollback and drift detection have defined limits, especially around external data and custom resources. Review stable resource identity and recovery behavior along with the generated template.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · REQUIREMENT</span><strong>Workload constraint becomes design</strong><small>Security, reliability, performance, cost, and operations are stated.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><strong>IaC forms a dependency graph</strong><small>Accounts, Regions, services, quotas, and replacement risk become explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><strong>AWS APIs change real resources</strong><small>Partial failure and rollback behavior must be observed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry and cost test the design</strong><small>Review, game days, drift, and incidents drive the next change.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Review a destructive or failing change and verify recovery without console drift.</strong>
         <small><b>Inspect:</b> Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Define a multi-stack application, inspect the change set, test policies, simulate failure, and recover without console edits.</p>
-    <p class="lab-scope">Core: predict the local fixture or complete the worked design calculation and compare its criteria. Extension: supply missing infrastructure and adapters in an authorized isolated account, then collect failure, recovery, evaluation and cost evidence. This review runs no AWS commands, credentials, paid requests or installations.</p>
+    <p class="lab-scope">Predict the local fixture or complete the design calculation, then compare the answer. Cloud experiments need the missing infrastructure and adapters in an authorized isolated account. Set cost and cleanup limits and record actual failure, recovery and evaluation results.</p>
 
 
 
@@ -140,7 +140,7 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
     <ol class="interview-questions">
       <li>Explain declarative IaC, stack boundaries, replacement risk, custom resources, and drift.</li>
       <li>Explain how an AWS architecture decision works, starting with the input and following it through to the result.</li>
-      <li>How would you define a multi-stack application, inspect the change set, test policies, simulate failure, and recover without console edits, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -148,13 +148,13 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace an AWS architecture decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow desired infrastructure through synthesis, dependency ordering, provider API calls, rollback, state recording, and drift detection.</p>
+
         <p class="worked-answer">create-change-set creates a control-plane artifact but does not execute the stack update. Wait for change-set completion before interpreting its details. Drift detection is also asynchronous and covers supported recorded properties, not every external state. The production-like name and missing template are placeholders; assess replacements, data retention and custom-resource recovery before any authorized deployment.</p>
         <p>Look for: Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
       </details>
     </div>
@@ -162,9 +162,9 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A CloudFormation stack groups resources managed through one template and lifecycle. Cross-stack references and shared data can constrain independent updates or deletion.</li><li>CloudFormation [concept] preview supported resource changes before execution. They can expose replacements but do not guarantee successful deployment or safe application data migration.</li><li>[concept] turns a template into ordered AWS API changes and records stack state. A failed update may roll back, while replacements can destroy and recreate resources.</li><li>AWS [concept] expresses infrastructure in supported programming languages and synthesizes CloudFormation templates. Generated resources still need review for permissions, replacement and deployment behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. CloudFormation: 3; CDK: 4; stacks: 2; change sets: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. CloudFormation: 3; CDK: 1; stacks: 2; change sets: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. CloudFormation: 3; CDK: 4; stacks: 1; change sets: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. CloudFormation: 3; CDK: 2; stacks: 1; change sets: 4</label>
@@ -176,7 +176,7 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Configuration [concept] is a difference between the intended configuration and the observed system. Detect the difference and decide whether to reconcile or deliberately change the declared intent.</li><li>[concept] checks template shape, policy intent, planned changes and actual deployed behavior at appropriate boundaries. Static validation alone cannot verify live routing or restore capability.</li><li>[concept] are components required for behavior or builds. Their versions, failure modes, and trust become part of the system&#39;s obligations.</li><li>CloudFormation [concept] delegate lifecycle actions to a supplied provider. That provider must report completion and handle retries, updates, deletion and stable physical identity correctly.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. dependencies: 3; custom resources: 4; drift: 2; infrastructure testing: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. dependencies: 3; custom resources: 1; drift: 2; infrastructure testing: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. dependencies: 3; custom resources: 4; drift: 1; infrastructure testing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. dependencies: 3; custom resources: 2; drift: 1; infrastructure testing: 4</label>
@@ -188,7 +188,7 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Telemetry and cost test the design: Review, game days, drift, and incidents drive the next change.</li><li>Workload constraint becomes design: Security, reliability, performance, cost, and operations are stated.</li><li>IaC forms a dependency graph: Accounts, Regions, services, quotas, and replacement risk become explicit.</li><li>AWS APIs change real resources: Partial failure and rollback behavior must be observed.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 4 → 1</label>
@@ -200,13 +200,13 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
         <p>Review a destructive or failing change and verify recovery without console drift. Evidence to inspect: Change set, API events, stack state, alarms, cost allocation, recovery time, and drift.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

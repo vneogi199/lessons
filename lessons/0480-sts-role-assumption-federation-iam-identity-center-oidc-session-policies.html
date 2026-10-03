@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace an external identity through trust policy evaluation into bounded temporary role credentials.</p>
-      <p class="analogy">AWS is a programmable city: accounts set legal boundaries, IAM issues authority, VPCs define roads, managed services operate utilities, and telemetry shows whether citizens are safe.</p>
+      <p>Role assumption exchanges a permitted identity for a temporary session. The trust policy controls who can obtain that session, and permission policies control its actions. Workload federation must bind the intended issuer, audience and subject. Temporary credentials need refresh at expiry. Their expiry stops later use but does not undo effects that the session already completed.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · PRINCIPAL</span><strong>A signed AWS request arrives</strong><small>Identity, session, action, resource, and context are known.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Authorization policies combine</strong><small>Identity, resource, boundary, session, and SCP rules apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECISION</span><strong>Explicit deny or effective allow</strong><small>The service accepts or rejects the requested action.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · AUDIT</span><strong>Verify the configured audit evidence</strong><small>Check that the relevant management or data events are enabled and retained; not every operation is automatically logged.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Run one allowed and one explicitly denied request with the same role.</strong>
         <small><b>Inspect:</b> Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Configure CI federation without stored AWS keys and restrict role assumption using claims and session conditions.</p>
-    <p class="lab-scope">Core: solve the fictional policy/responsibility scenario and state the expected allow, deny or failure boundary. Extension: use an explicitly authorized isolated account to collect redacted API and audit evidence with cost and cleanup limits. This review invokes no cloud credentials or services and installs nothing.</p>
+    <p class="lab-scope">Solve the fictional policy or responsibility scenario and explain where the request should succeed or fail. An account-based exercise needs an authorized isolated environment, redacted API and audit evidence, and cost and cleanup limits.</p>
 
 
 
@@ -142,7 +142,7 @@
     <ol class="interview-questions">
       <li>Compare users, roles, federation, and service roles and explain confused-deputy controls.</li>
       <li>Explain how an AWS service request works, starting with the input and following it through to the result.</li>
-      <li>How would you configure CI federation without stored AWS keys and restrict role assumption using claims and session conditions, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -150,13 +150,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace an AWS service request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace an external identity through trust policy evaluation into bounded temporary role credentials.</p>
+
         <p class="worked-answer">Trust authorizes obtaining a session; session permissions authorize its actions. Bind OIDC issuer, audience and the provider&#039;s exact subject shape to the protected deployment environment, not a broad repository wildcard. Expiry requires credential refresh and does not retrospectively undo effects. Federation and confused-deputy controls differ by caller type.</p>
         <p>Look for: Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
       </details>
     </div>
@@ -164,9 +164,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>AWS [concept] issues short-lived credentials for an assumed role or federated identity. The resulting session is limited by the role, trust policy, session policy, and organization controls.</li><li>[concept] exchanges an authorized identity for a temporary role session. The role trust policy controls who can assume it; permission policies constrain what the session can do.</li><li>[concept] lets an external identity system authenticate users or workloads that obtain scoped AWS sessions. Trust configuration must bind the intended issuer, audience and identity claims.</li><li>[concept] centrally manages workforce access to AWS accounts and supported applications using assignments and permission sets. It is not a substitute for workload role design.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. STS: 1; role assumption: 2; federation: 3; IAM Identity Center: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. STS: 1; role assumption: 2; federation: 4; IAM Identity Center: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. STS: 1; role assumption: 3; federation: 4; IAM Identity Center: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. STS: 1; role assumption: 4; federation: 3; IAM Identity Center: 2</label>
@@ -178,7 +178,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] restrict permissions for an individual temporary session; they cannot add permissions beyond the role&#39;s permitted identity-based access. Evaluate resource-policy exceptions using the exact principal and policy types.</li><li>Temporary AWS credentials comprise an access key ID, secret access key and session token with an expiry. Applications must refresh through the supported provider rather than log or persist the session as a permanent key.</li><li>OpenID Connect supplies signed identity claims from an issuer. AWS workload federation validates configured issuer, audience and subject conditions before granting a role session; an arbitrary repository token is not sufficient authority.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. OIDC: 3; session policies: 1; temporary credentials: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. OIDC: 3; session policies: 2; temporary credentials: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. OIDC: 1; session policies: 2; temporary credentials: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. OIDC: 2; session policies: 1; temporary credentials: 3</label>
@@ -190,7 +190,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Explicit deny or effective allow: The service accepts or rejects the requested action.</li><li>Verify the configured audit evidence: Check that the relevant management or data events are enabled and retained; not every operation is automatically logged.</li><li>A signed AWS request arrives: Identity, session, action, resource, and context are known.</li><li>Authorization policies combine: Identity, resource, boundary, session, and SCP rules apply.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -202,13 +202,13 @@
         <p>Run one allowed and one explicitly denied request with the same role. Evidence to inspect: Caller identity, policy simulator, encoded denial, service response, and CloudTrail.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html" target="_blank" rel="noreferrer">Review the lesson source: AWS IAM User Guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html" target="_blank" rel="noreferrer">Review the lesson source: AWS IAM User Guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

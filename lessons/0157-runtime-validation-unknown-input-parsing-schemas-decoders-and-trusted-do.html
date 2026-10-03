@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Recognize erasure, turn unknown values into validated representations, accumulate useful errors, and align parser output with domain contracts.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>A parser receives an uncertain value and returns checked data or an explicit error. It can also construct the representation the domain needs, such as trimming a name and dropping extra fields. Those choices belong to the boundary contract. A string owner ID establishes its shape, not permission to act for that owner. Define limits and business rules alongside the structural checks.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · UNKNOWN</span><strong>External value crosses into code</strong><small>HTTP, environment, database, file, queue, or model output is untrusted.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><strong>Runtime logic validates structure</strong><small>Types, limits, formats, versions, and policy produce errors or data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DOMAIN</span><strong>Trusted representation is created</strong><small>Checked code can now rely on explicit invariants.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Use and serialization stay controlled</strong><small>Tests and runtime evidence prove the contract beyond type erasure.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Pass malformed but cast-compatible input and verify it fails before domain logic.</strong>
         <small><b>Inspect:</b> Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</small>
       </div>
@@ -146,13 +146,12 @@ console.log(&quot;Validation checks passed&quot;);
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>A parser converts uncertain input into a deliberately validated representation or a useful failure result.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>The example strips extras and trims names, but a string ownerId is only shape-valid. Schema inference helps keep types aligned; it does not choose business rules, error privacy, or authorization.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -164,7 +163,7 @@ console.log(&quot;Validation checks passed&quot;);
     <ol class="interview-questions">
       <li>Explain why parsing is safer than casting and why as Type does not establish runtime truth.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you implement and test a dependency-free parser, then compare schema inference and code generation, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -172,12 +171,12 @@ console.log(&quot;Validation checks passed&quot;);
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Recognize erasure, turn unknown values into validated representations, accumulate useful errors, and align parser output with domain contracts.</p>
+
         <p>Look for: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -185,9 +184,9 @@ console.log(&quot;Validation checks passed&quot;);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>unknown can contain any runtime value but permits no unsafe operation until control flow or parsing supplies evidence of a narrower type.</li><li>[concept] should accept unknown input and return a domain representation only after checking shape, values, limits, versions, and invariants.</li><li>A runtime schema is executable validation metadata that can sometimes also infer a static type. The two surfaces must be kept from drifting.</li><li>[concept] examines actual external values after types have erased and produces trusted data or structured errors.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Runtime validation: 4; unknown input: 2; parsing: 1; schemas: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Runtime validation: 4; unknown input: 1; parsing: 2; schemas: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Runtime validation: 4; unknown input: 3; parsing: 1; schemas: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Runtime validation: 1; unknown input: 4; parsing: 2; schemas: 3</label>
@@ -199,7 +198,7 @@ console.log(&quot;Validation checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Domain types represent values accepted under stated checks. Trust is scoped to those checks, not automatic permission or permanent immutability.</li><li>A decoder checks an external representation and returns a validated value or explicit errors, rather than trusting a cast.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. decoders: 1; trusted domain types: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. decoders: 2; trusted domain types: 1</label>
@@ -211,7 +210,7 @@ console.log(&quot;Validation checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Use and serialization stay controlled: Tests and runtime evidence prove the contract beyond type erasure.</li><li>External value crosses into code: HTTP, environment, database, file, queue, or model output is untrusted.</li><li>Runtime logic validates structure: Types, limits, formats, versions, and policy produce errors or data.</li><li>Trusted representation is created: Checked code can now rely on explicit invariants.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -223,13 +222,13 @@ console.log(&quot;Validation checks passed&quot;);
         <p>Pass malformed but cast-compatible input and verify it fails before domain logic. Evidence to inspect: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

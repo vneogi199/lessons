@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Describe runtime values without implementation, control script versus module scope, merge declarations, and select DOM, Node, or Worker libraries.</p>
-      <p class="analogy">A type system is a building inspector, not a security guard: it checks the plans before construction, but runtime validation still checks who actually enters.</p>
+      <p>A declaration file describes code that must exist elsewhere. It does not implement that code. An inaccurate declaration can therefore make an unsafe call look valid to the checker. Module augmentation extends a known contract, while script declarations can affect shared global scope. Library declarations also state assumptions: including DOM types does not create browser APIs in Node. Test declarations against their actual implementation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CONFIG</span><strong>Host and project rules are selected</strong><small>Target, libraries, modules, resolution, and inputs define the program.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>Imports connect source and declarations</strong><small>Specifiers, package conditions, and references form a graph.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BUILD</span><strong>Projects check and emit in order</strong><small>Caches, declarations, JavaScript, and maps cross boundaries.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><strong>Real host loads the artifact</strong><small>A clean consumer proves runtime and type surfaces agree.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Pack or build one module and consume it from a clean project using the real host rules.</strong>
         <small><b>Inspect:</b> traceResolution, explainFiles, build log, package contents, emitted specifier, declaration, and runtime import.</small>
       </div>
@@ -135,13 +135,12 @@ export declare function parseProject(input: unknown): Project;
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>A declaration file promises which values already exist at runtime; it supplies no implementation.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>An accidental script-global declaration can affect unrelated files. Module augmentation changes a known module&#039;s contract; it does not install a runtime feature. Choosing DOM libs cannot make browser APIs exist in Node.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/modules/reference.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/modules/reference.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -153,7 +152,7 @@ export declare function parseProject(input: unknown): Project;
     <ol class="interview-questions">
       <li>Explain what a d.ts promises and how inaccurate declarations create false confidence.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you type an untyped library and augment an existing module without leaking accidental globals, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -161,12 +160,12 @@ export declare function parseProject(input: unknown): Project;
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Describe runtime values without implementation, control script versus module scope, merge declarations, and select DOM, Node, or Worker libraries.</p>
+
         <p>Look for: traceResolution, explainFiles, build log, package contents, emitted specifier, declaration, and runtime import.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -174,9 +173,9 @@ export declare function parseProject(input: unknown): Project;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Declarations in script files can contribute to shared [concept]. Module files isolate declarations unless they explicitly augment globals.</li><li>[concept] merges additional declarations into an existing module&#39;s types. Runtime implementation must still supply the augmented behavior.</li><li>A declaration file describes the static surface of existing runtime code without implementing it. An inaccurate declaration makes unsafe code appear checked.</li><li>An ambient declaration tells TypeScript a value, module, or global exists elsewhere. It emits no code to create that runtime value.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Declaration files: 3; ambient declarations: 4; global scope: 2; module augmentation: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Declaration files: 3; ambient declarations: 1; global scope: 2; module augmentation: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Declaration files: 3; ambient declarations: 4; global scope: 1; module augmentation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Declaration files: 3; ambient declarations: 2; global scope: 1; module augmentation: 4</label>
@@ -188,7 +187,7 @@ export declare function parseProject(input: unknown): Project;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] merges additional declarations into an existing module&#39;s types. Runtime implementation must still supply the augmented behavior.</li><li>The lib option chooses standard declaration sets assumed available, such as ECMAScript, DOM, or WebWorker APIs. It does not install those APIs at runtime.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. module augmentation: 1; lib selection: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. module augmentation: 2; lib selection: 1</label>
@@ -200,7 +199,7 @@ export declare function parseProject(input: unknown): Project;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Real host loads the artifact: A clean consumer proves runtime and type surfaces agree.</li><li>Host and project rules are selected: Target, libraries, modules, resolution, and inputs define the program.</li><li>Imports connect source and declarations: Specifiers, package conditions, and references form a graph.</li><li>Projects check and emit in order: Caches, declarations, JavaScript, and maps cross boundaries.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 4 → 1</label>
@@ -212,13 +211,13 @@ export declare function parseProject(input: unknown): Project;
         <p>Pack or build one module and consume it from a clean project using the real host rules. Evidence to inspect: traceResolution, explainFiles, build log, package contents, emitted specifier, declaration, and runtime import.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript declaration files guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript declaration files guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

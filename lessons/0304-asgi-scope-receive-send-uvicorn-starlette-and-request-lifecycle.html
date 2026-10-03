@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>ASGI connects an application to protocol events through scope, receive and send. An HTTP scope belongs to one request, even when its connection serves more requests. Send response-start before body events. The raw example reads one event and ignores the body; it does not implement lifespan or WebSockets. A successful send establishes progress at that boundary, not that the remote client consumed the response.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOCKET</span><strong>HTTP bytes reach Uvicorn</strong><small>The server parses protocol data and creates an ASGI scope.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><strong>Events enter the application</strong><small>Middleware wraps receive, routing, and endpoint handling.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><strong>Dependencies and business logic run</strong><small>Typed inputs become a return value or exception.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>ASGI send emits wire events</strong><small>Status, headers, and body become observable to the client.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one valid request and one failure while recording every ASGI event.</strong>
         <small><b>Inspect:</b> Scope fields, middleware order, dependency calls, send events, and client response.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Write a tiny raw ASGI application and middleware, then compare its event trace with the same request handled by FastAPI.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -145,7 +145,7 @@ async def app(scope, receive, send):
     <ol class="interview-questions">
       <li>Explain the ASGI callable contract and how it enables HTTP concurrency and WebSockets.</li>
       <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>How would you write a tiny raw ASGI application and middleware, then compare its event trace with the same request handled by FastAPI, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ async def app(scope, receive, send):
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow one HTTP connection through ASGI scope creation, request events, middleware, routing, dependency solving, endpoint execution, response events, and disconnect.</p>
+
         <p class="worked-answer">One HTTP scope belongs to one request even when a socket carries many requests. This raw app reads only one event and ignores the body; it supplies neither lifespan nor WebSockets. Response start precedes body, and a successful send is not proof that the remote client consumed it.</p>
         <p>Look for: Scope fields, middleware order, dependency calls, send events, and client response.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ async def app(scope, receive, send):
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An [concept] is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</li><li>[concept] is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection.</li><li>[concept] is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract.</li><li>[concept] is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. ASGI scope: 1; receive: 2; send: 3; Uvicorn: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. ASGI scope: 1; receive: 2; send: 4; Uvicorn: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. ASGI scope: 1; receive: 3; send: 4; Uvicorn: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. ASGI scope: 1; receive: 4; send: 3; Uvicorn: 2</label>
@@ -181,7 +181,7 @@ async def app(scope, receive, send):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] supplies the ASGI web layer beneath FastAPI: routing, requests, responses, middleware, WebSockets, static files, and test infrastructure.</li><li>The [concept] is the ordered path from accepted network data through routing, validation, dependencies, endpoint work, response sending, and cleanup.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Starlette: 1; request lifecycle: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Starlette: 2; request lifecycle: 1</label>
@@ -193,7 +193,7 @@ async def app(scope, receive, send):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>ASGI send emits wire events: Status, headers, and body become observable to the client.</li><li>HTTP bytes reach Uvicorn: The server parses protocol data and creates an ASGI scope.</li><li>Events enter the application: Middleware wraps receive, routing, and endpoint handling.</li><li>Dependencies and business logic run: Typed inputs become a return value or exception.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -205,13 +205,13 @@ async def app(scope, receive, send):
         <p>Trace one valid request and one failure while recording every ASGI event. Evidence to inspect: Scope fields, middleware order, dependency calls, send events, and client response.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Compare forwarding by IP address and transport port with terminating and routing HTTP requests by host, path, header, method, or content while tracing connection ownership, pooling, source identity, encryption, retries, and target health.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>A transport balancer selects a target for a connection. An HTTP balancer can inspect requests and route by host or path after the required TLS termination. Connection lifetime, retries and health checks affect both designs. The example classifies routes and prefers healthy local targets. Its path match is not host authorization, and its selector does not implement a running proxy.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · FLOW</span><strong>Client opens a transport connection</strong><small>Source and destination addresses, ports, protocol, TLS intent, and connection lifetime enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CLASSIFY</span><strong>Balancer chooses Layer 4 or Layer 7 data</strong><small>A transport balancer maps flows; an HTTP balancer terminates and parses requests for content routing.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SELECT</span><strong>Policy chooses a healthy target</strong><small>Round robin, least work, hashing, locality, affinity, capacity, and draining constrain selection.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FORWARD</span><strong>Target response returns through the path</strong><small>Connection reuse, headers, retries, source identity, logs, metrics, and failures expose behavior.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Hold one connection open, drain its target, fail a health check, and compare packet and HTTP evidence through L4 and L7 balancers.</strong>
         <small><b>Inspect:</b> Five-tuple, connection table, TLS endpoint, HTTP route, target choice, health state, outstanding work, latency, retry, headers, and logs.</small>
       </div>
@@ -124,7 +124,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Route TCP and HTTP workloads through separate balancers, test round-robin and least-outstanding selection, drain a target, break health checks, hold long-lived connections, and inspect packets, headers, logs, and latency distribution.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -170,7 +170,7 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
     <ol class="interview-questions">
       <li>Choose Layer 4 or Layer 7 from protocol, routing, performance, TLS, observability, connection, and failure requirements and trace one request in both designs.</li>
       <li>Explain how a load-balanced connection and request works, starting with the input and following it through to the result.</li>
-      <li>How would you route TCP and HTTP workloads through separate balancers, test round-robin and least-outstanding selection, drain a target, break health checks, hold long-lived connections, and inspect packets, headers, logs, and latency distribution, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -178,13 +178,13 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
     <textarea id="teachback" placeholder="Define the boundary. Trace a load-balanced connection and request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Compare forwarding by IP address and transport port with terminating and routing HTTP requests by host, path, header, method, or content while tracing connection ownership, pooling, source identity, encryption, retries, and target health.</p>
+
         <p class="worked-answer">The typed selector trusts its inputs and prefers any healthy local target even if a remote target has less work. Types do not validate runtime health counters. The route sends /api/ paths to API on any host, while /api without the slash remains static unless the hostname matches. This is classification, not a host authorization boundary or a running L4/L7 proxy.</p>
         <p>Look for: Five-tuple, connection table, TLS endpoint, HTTP route, target choice, health state, outstanding work, latency, retry, headers, and logs.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -192,9 +192,9 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A transport flow is a connection identified by network and transport addresses whose packets must reach a consistent backend while that connection is active.</li><li>[concept] selects a backend from application data such as host, path, method, header, or cookie after TLS is terminated where inspection is required.</li><li>Layer-4 balancing operates primarily on transport connections rather than application request semantics.</li><li>Layer-7 balancing uses application information such as HTTP routes, with protocol parsing and policy costs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Layer 4: 3; Layer 7 load balancing: 4; transport flows: 2; HTTP routing: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Layer 4: 3; Layer 7 load balancing: 1; transport flows: 2; HTTP routing: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Layer 4: 3; Layer 7 load balancing: 4; transport flows: 1; HTTP routing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Layer 4: 3; Layer 7 load balancing: 2; transport flows: 1; HTTP routing: 4</label>
@@ -206,7 +206,7 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] attempts to keep related connections or requests on the same target, which can help local session state but creates uneven load and failover limits.</li><li>[concept] placement decides where traffic is decrypted, which identity is authenticated, which routing data becomes visible, and whether encryption continues to the backend.</li><li>A load-balancing algorithm selects an eligible target using rules such as round robin, least outstanding work, hashing, or weighted capacity.</li><li>A health check tests whether a target should receive new traffic. It must represent readiness without causing synchronized overload or hiding dependency failure.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. algorithms: 3; health checks: 4; affinity: 2; TLS: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. algorithms: 3; health checks: 1; affinity: 2; TLS: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. algorithms: 3; health checks: 4; affinity: 1; TLS: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. algorithms: 3; health checks: 2; affinity: 1; TLS: 4</label>
@@ -218,7 +218,7 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>A proxy handles traffic on behalf of another endpoint. Its routing, timeout, buffering, trust, and header behavior can change the end-to-end result.</li><li>Load-balancer [concept] include unhealthy targets, stale health, overload, connection resets, retry amplification, uneven hashing, proxy timeout mismatch, and loss of a balancing tier.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. proxies: 1; failure modes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. proxies: 2; failure modes: 1</label>
@@ -230,7 +230,7 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Policy chooses a healthy target: Round robin, least work, hashing, locality, affinity, capacity, and draining constrain selection.</li><li>Target response returns through the path: Connection reuse, headers, retries, source identity, logs, metrics, and failures expose behavior.</li><li>Client opens a transport connection: Source and destination addresses, ports, protocol, TLS intent, and connection lifetime enter.</li><li>Balancer chooses Layer 4 or Layer 7 data: A transport balancer maps flows; an HTTP balancer terminates and parses requests for content routing.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -242,13 +242,13 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
         <p>Hold one connection open, drain its target, fail a health check, and compare packet and HTTP evidence through L4 and L7 balancers. Evidence to inspect: Five-tuple, connection table, TLS endpoint, HTTP route, target choice, health state, outstanding work, latency, retry, headers, and logs.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Elastic Load Balancing documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Elastic Load Balancing documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

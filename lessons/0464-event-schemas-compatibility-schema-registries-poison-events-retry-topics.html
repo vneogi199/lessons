@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Give event contracts stable ownership and versions, enforce compatible evolution, quarantine permanent failures, bound transient retries, replay deliberately, and correlate producer, broker, consumer, lag, business outcome, and cost signals.</p>
-      <p class="analogy">A business platform is a city: bounded contexts are districts with local language and rules, services are independently operated buildings, and event logs are durable transport routes rather than telepathy.</p>
+      <p>An event contract includes meaning as well as field types. A registry can check selected schema compatibility rules, but released handlers and replay behavior need their own evidence. The sample v2 type rejects v1; an optional field does not by itself prove compatibility. Bound invalid input and persist quarantine disposition before acknowledging the source. Track lag together with attempts and business outcomes.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · FACT</span><strong>Producer commits a business event</strong><small>Stable identity, type, version, subject, time, and payload express a completed fact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and fans out</strong><small>Partition, ordering, retention, delivery position, and flow control define transport behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REACT</span><strong>Independent consumer applies local policy</strong><small>Validation, authorization, idempotency, retry, and transaction ownership protect its effect.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Outcome and failure remain visible</strong><small>Correlation, lag, quarantine, replay, schema governance, and business metrics support recovery.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Publish one valid event twice, one incompatible event, and one out-of-order event while a consumer is unavailable.</strong>
         <small><b>Inspect:</b> Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.</small>
       </div>
@@ -121,7 +121,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Evolve a schema across old and new consumers, reject an incompatible change, quarantine malformed events, replay a repaired range, and load-test lag, rebalance, and recovery dashboards.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -172,7 +172,7 @@ async function process(event, operations, validate) {
     <ol class="interview-questions">
       <li>Design production governance for an event platform and diagnose rising lag without assuming the consumer is simply slow.</li>
       <li>Explain how a domain command and event works, starting with the input and following it through to the result.</li>
-      <li>How would you evolve a schema across old and new consumers, reject an incompatible change, quarantine malformed events, replay a repaired range, and load-test lag, rebalance, and recovery dashboards, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -180,13 +180,13 @@ async function process(event, operations, validate) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a domain command and event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="service-architecture-events">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Give event contracts stable ownership and versions, enforce compatible evolution, quarantine permanent failures, bound transient retries, replay deliberately, and correlate producer, broker, consumer, lag, business outcome, and cost signals.</p>
+
         <p class="worked-answer">The v2 type constant rejects v1; optional channel and its default do not prove old/new compatibility or insert a value. String IDs remain unbounded in this minimal schema, so byte, length and business validation belong at the boundary. The validator is synchronous by contract, and quarantine failure must propagate. Registry checks cannot prove semantic handler compatibility or safe replay.</p>
         <p>Look for: Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Worked track case: An event is published twice after a crash ↗</a></p>
       </details>
     </div>
@@ -194,9 +194,9 @@ async function process(event, operations, validate) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An event schema defines field names, types, meaning, optionality, and evolution rules for a published contract.</li><li>Schema [concept] states whether old and new producers and consumers can safely exchange evolved records.</li><li>A schema registry stores versioned schemas and can enforce compatibility before a producer publishes a new version.</li><li>A poison event repeatedly fails normal processing because its data, schema, or business state is invalid for the consumer.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Event schemas: 1; compatibility: 2; schema registries: 3; poison events: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Event schemas: 1; compatibility: 2; schema registries: 4; poison events: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Event schemas: 1; compatibility: 3; schema registries: 4; poison events: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Event schemas: 1; compatibility: 4; schema registries: 3; poison events: 2</label>
@@ -208,7 +208,7 @@ async function process(event, operations, validate) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] move failed events onto a separate retry path. Applications implement delay and attempt limits; later main-topic events can overtake retried events, so per-key ordering needs an explicit policy.</li><li>[concept] starts reading retained events from an earlier offset to rebuild state, recover work, or test changed logic.</li><li>Event [concept] connects producer, broker record, consumer attempt, offset, lag, result, and retry without exposing sensitive payloads.</li><li>Event-system [concept] verifies schemas, handlers, duplicates, ordering assumptions, retries, replay, failure recovery, and representative broker integration.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. retry topics: 1; replay: 2; observability: 3; testing: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. retry topics: 1; replay: 2; observability: 4; testing: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. retry topics: 1; replay: 3; observability: 4; testing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. retry topics: 1; replay: 4; observability: 3; testing: 2</label>
@@ -220,7 +220,7 @@ async function process(event, operations, validate) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>Event-system [concept] verifies schemas, handlers, duplicates, ordering assumptions, retries, replay, failure recovery, and representative broker integration.</li><li>Event [concept] manage capacity, partitions, retention, lag, upgrades, failures, security, and safe replay in production.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. testing: 1; operations: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. testing: 2; operations: 1</label>
@@ -232,7 +232,7 @@ async function process(event, operations, validate) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Durable channel stores and fans out: Partition, ordering, retention, delivery position, and flow control define transport behavior.</li><li>Independent consumer applies local policy: Validation, authorization, idempotency, retry, and transaction ownership protect its effect.</li><li>Outcome and failure remain visible: Correlation, lag, quarantine, replay, schema governance, and business metrics support recovery.</li><li>Producer commits a business event: Stable identity, type, version, subject, time, and payload express a completed fact.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -244,13 +244,13 @@ async function process(event, operations, validate) {
         <p>Publish one valid event twice, one incompatible event, and one out-of-order event while a consumer is unavailable. Evidence to inspect: Event ID/version, broker position, delivery attempts, consumer state, business effect count, lag, quarantine, trace, replay result, and final outcome.</p>
       </details>
     </article>
-    <p><a href="https://json-schema.org/understanding-json-schema/reference/annotations" target="_blank" rel="noreferrer">Review the lesson source: JSON Schema annotations and defaults</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://json-schema.org/understanding-json-schema/reference/annotations" target="_blank" rel="noreferrer">Review the lesson source: JSON Schema annotations and defaults</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Integrate authoritative relational state, transactional invariants, cache behavior, event publication, Redis failure tolerance, replication, backups, capacity limits, security, and end-to-end telemetry.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>The capstone uses PostgreSQL for authoritative state and Redis for optional acceleration. A duplicate claim must branch to replay or conflict without creating another job. Those paths need atomic durable records and real concurrent tests. Restoring from backup can lose accepted work within the stated RPO, while downstream effects may remain. Reconcile them before resuming consumers and keep cache availability separate from durable acceptance.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CLAIM</span><strong>Claim the tenant-scoped request key</strong><small>The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BRANCH</span><strong>Replay or perform the operation</strong><small>Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Save effect, result and event together</strong><small>One transaction commits all records or rolls them all back. Return success only after commit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RETRY</span><strong>Recover a lost response or duplicate delivery</strong><small>Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Lose the response after commit, retry the same key, then reuse it with changed input.</strong>
         <small><b>Inspect:</b> One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</small>
       </div>
@@ -113,7 +113,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Ship a multi-tenant job platform with PostgreSQL as source of truth, outbox-driven events, Redis acceleration, load and failure tests, restore evidence, dashboards, and an incident runbook.</p>
-    <p class="lab-scope">Core: walk through every listed crash/replay schedule and name the authoritative records and expected counts. Extension: implement the missing PostgreSQL/Redis adapters and collect actual concurrency, restore and operational evidence. No installation, database mutation or recovery drill is performed by this content review.</p>
+    <p class="lab-scope">Walk through each crash and replay schedule and name the authoritative records and expected counts. Implement the missing PostgreSQL and Redis adapters before checking concurrency, restoration and operational behavior in a disposable environment.</p>
 
 
 
@@ -161,7 +161,7 @@
     <ol class="interview-questions">
       <li>Present the architecture, trace a request and recovery end to end, defend every consistency boundary, and support tradeoffs with measured evidence.</li>
       <li>Explain how a database query works, starting with the input and following it through to the result.</li>
-      <li>How would you ship a multi-tenant job platform with PostgreSQL as source of truth, outbox-driven events, Redis acceleration, load and failure tests, restore evidence, dashboards, and an incident runbook, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -169,13 +169,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Integrate authoritative relational state, transactional invariants, cache behavior, event publication, Redis failure tolerance, replication, backups, capacity limits, security, and end-to-end telemetry.</p>
+
         <p class="worked-answer">The capstone specifies a system to build, not runnable SQL or existing make targets. A failed claim must branch to replay or conflict without inserting a second job. Durable job acceptance and optional Redis acceleration have separate availability and backlog limits. Restoring the database may lose accepted work within the stated RPO; reconcile downstream effects before resuming consumers.</p>
         <p>Look for: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -183,9 +183,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>The capstone combines PostgreSQL as authoritative state with Redis as optional acceleration, then proves consistency, recovery, security, and capacity through failure experiments.</li><li>[concept] is a relational database with transactional constraints and extensibility; model its actual isolation and durability contract.</li><li>[concept] provides in-memory data structures with configurable persistence and replication; treat cache, coordination, and durable-state uses differently.</li><li>Change data capture exposes committed data changes for downstream processing, with explicit position and schema-evolution handling.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Data systems production architecture capstone: 1; PostgreSQL: 2; Redis: 3; CDC: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Data systems production architecture capstone: 1; PostgreSQL: 2; Redis: 4; CDC: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Data systems production architecture capstone: 1; PostgreSQL: 3; Redis: 4; CDC: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Data systems production architecture capstone: 1; PostgreSQL: 4; Redis: 3; CDC: 2</label>
@@ -197,7 +197,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] describes latency, throughput, and resource cost under a defined workload. Report measurements and bottlenecks, not just asymptotic claims.</li><li>[concept] covers running, observing, changing, and recovering a service, with named owners and tested procedures.</li><li>[concept] restores a usable state after failure. Specify which data and effects survive, how work resumes, and how restoration is verified.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. recovery: 3; performance: 1; operations: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. recovery: 3; performance: 2; operations: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. recovery: 1; performance: 2; operations: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. recovery: 2; performance: 1; operations: 3</label>
@@ -209,7 +209,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Save effect, result and event together: One transaction commits all records or rolls them all back. Return success only after commit.</li><li>Recover a lost response or duplicate delivery: Client retry replays the receipt. Relay retries may duplicate events; a consumer inbox protects its local effect.</li><li>Claim the tenant-scoped request key: The unique constraint chooses one writer; a conflicting insert does not authorize later writes.</li><li>Replay or perform the operation: Existing key: compare intent and return the saved result. New key: require the expected business write to succeed.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -221,13 +221,13 @@
         <p>Lose the response after commit, retry the same key, then reuse it with changed input. Evidence to inspect: One business effect, one outbox record, the original replayed result, and rejection of mismatched intent. Test real database concurrency separately.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

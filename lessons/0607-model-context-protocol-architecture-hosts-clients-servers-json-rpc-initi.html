@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow one host-created client connection through protocol version and capability negotiation, JSON-RPC requests, responses and notifications, server discovery primitives, tool execution, resource reading, prompt retrieval, cancellation, and orderly shutdown.</p>
-      <p class="analogy">An agent is a bounded control loop: observe state, choose an allowed action, execute through a guarded tool, inspect the result, and stop by policy.</p>
+      <p>An MCP host creates a client for each server connection, negotiates capabilities and exchanges protocol requests. Tools, resources and prompts expose different kinds of capability to the host. The glossary dispatcher demonstrates selected messages but omits lifecycle enforcement and several protocol features. A request ID correlates a response; a business operation needs its own identity when repetition could create effects.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CONNECT</span><strong>Host creates one MCP client</strong><small>A local stdio process or remote HTTP endpoint supplies the transport and trust boundary.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NEGOTIATE</span><strong>Client and server initialize</strong><small>Protocol version, identities, and capabilities determine legal later requests.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · OPERATE</span><strong>JSON-RPC carries MCP primitives</strong><small>Tools, resources, prompts, notifications, cancellation, authorization, and consent govern work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Result or failure returns to host</strong><small>Request IDs, session state, traces, audit events, and shutdown expose the complete lifecycle.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Capture every frame for initialize, discovery, one successful call, one unsupported request, cancellation, and shutdown.</strong>
         <small><b>Inspect:</b> Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</small>
       </div>
@@ -128,7 +128,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a local MCP server and host client over standard input and output, expose one tool, resource, and prompt, inspect every JSON-RPC frame, and verify unsupported capability and error behavior.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
 
 
@@ -232,7 +232,7 @@ while True:
     <ol class="interview-questions">
       <li>Explain the responsibilities and trust boundaries of MCP hosts, clients, and servers, and distinguish protocol interoperability from model tool-selection behavior.</li>
       <li>Explain how an MCP session works, starting with the input and following it through to the result.</li>
-      <li>How would you build a local MCP server and host client over standard input and output, expose one tool, resource, and prompt, inspect every JSON-RPC frame, and verify unsupported capability and error behavior, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -240,13 +240,13 @@ while True:
     <textarea id="teachback" placeholder="Define the boundary. Trace an MCP session. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="agents">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow one host-created client connection through protocol version and capability negotiation, JSON-RPC requests, responses and notifications, server discovery primitives, tool execution, resource reading, prompt retrieval, cancellation, and orderly shutdown.</p>
+
         <p class="worked-answer">The dispatcher has a two-term glossary and selected JSON-RPC errors, not a conforming MCP lifecycle. It accepts discovery without enforcing initialization, fixes one protocol version and ignores notifications. The missing client, negotiation, cancellation and output limits are explicit extension work. Never put diagnostic prose on stdout or treat a protocol request ID as business idempotency.</p>
         <p>Look for: Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#agents">Worked track case: A checkpoint replays a successful tool call ↗</a></p>
       </details>
     </div>
@@ -254,9 +254,9 @@ while True:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An MCP server exposes bounded context capabilities such as tools, resources, and prompts through local or remote transports. It must validate and authorize every operation.</li><li>[concept] connects an AI application host to capability servers through one isolated client connection per server and a shared JSON-RPC-based protocol.</li><li>An MCP host is the user-facing AI application. It creates clients, controls model access and consent, coordinates context, and enforces the product&#39;s security policy.</li><li>An MCP client is the host-side endpoint for one server connection. It negotiates capabilities, sends requests, receives notifications, and maintains that session.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Model Context Protocol architecture: 2; hosts: 4; clients: 3; servers: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Model Context Protocol architecture: 2; hosts: 1; clients: 3; servers: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Model Context Protocol architecture: 3; hosts: 2; clients: 4; servers: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Model Context Protocol architecture: 2; hosts: 3; clients: 4; servers: 1</label>
@@ -268,7 +268,7 @@ while True:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] are narrow callable operations with a name, description, input schema, controlled execution, typed errors, and limited output. A model proposal never replaces application authorization.</li><li>[concept] is the envelope format MCP uses for requests, responses, errors, and notifications. Request IDs correlate responses; notifications have no response.</li><li>MCP [concept] is the first request-response exchange where both sides agree on a protocol version, identify themselves, and advertise supported capabilities.</li><li>MCP [concept] declare optional protocol features that a client or server supports. A peer must not assume a feature that was not negotiated.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. JSON-RPC: 2; initialization: 4; capabilities: 3; tools: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. JSON-RPC: 2; initialization: 1; capabilities: 3; tools: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. JSON-RPC: 3; initialization: 2; capabilities: 4; tools: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. JSON-RPC: 2; initialization: 3; capabilities: 4; tools: 1</label>
@@ -280,7 +280,7 @@ while True:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>MCP [concept] are server-addressed context values identified by URIs. Clients discover or read them, while the host decides whether their content enters model context.</li><li>MCP [concept] are server-provided reusable message templates with declared arguments. They are user-selectable context, not hidden instructions with automatic authority.</li><li>The MCP [concept] covers connection, initialization, normal requests and notifications, cancellation or progress, and orderly transport shutdown.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. resources: 2; prompts: 1; lifecycle: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. resources: 3; prompts: 1; lifecycle: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. resources: 1; prompts: 3; lifecycle: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. resources: 1; prompts: 2; lifecycle: 3</label>
@@ -292,7 +292,7 @@ while True:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Result or failure returns to host: Request IDs, session state, traces, audit events, and shutdown expose the complete lifecycle.</li><li>Host creates one MCP client: A local stdio process or remote HTTP endpoint supplies the transport and trust boundary.</li><li>Client and server initialize: Protocol version, identities, and capabilities determine legal later requests.</li><li>JSON-RPC carries MCP primitives: Tools, resources, prompts, notifications, cancellation, authorization, and consent govern work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -304,13 +304,13 @@ while True:
         <p>Capture every frame for initialize, discovery, one successful call, one unsupported request, cancellation, and shutdown. Evidence to inspect: Transport bytes, JSON-RPC IDs, negotiated capabilities, auth decision, tool arguments, result or error, cancellation, and correlated trace.</p>
       </details>
     </article>
-    <p><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle" target="_blank" rel="noreferrer">Review the lesson source: Model Context Protocol architecture and lifecycle specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle" target="_blank" rel="noreferrer">Review the lesson source: Model Context Protocol architecture and lifecycle specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

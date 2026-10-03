@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Distinguish callback expressions from named webhooks, documentation from execution, subscriber registration, signing, retry, ordering, and duplicate delivery.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>A callback or webhook declaration documents delivery without performing it. A sender needs durable retry state, destination controls and a defined signature contract. Signing the exact serialized bytes protects that representation but does not supply freshness by itself. The receiver must coordinate duplicate detection with its effect. A timeout can follow successful processing, so uncertain acknowledgement belongs in the replay design.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>Accept an authorized operation</strong><small>Validate the command and stable identity before creating work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMMIT</span><strong>Persist work with its business state</strong><small>An outbox closes the database/publication gap; a callback declaration does not execute delivery.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DELIVER</span><strong>A worker attempts the external call</strong><small>Use bounded attempts, trusted destinations and an agreed signature contract.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REPLAY</span><strong>Recover from ambiguous acknowledgement</strong><small>The receiver deduplicates atomically with its effect; a timeout may follow successful processing.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Lose the response after receiver commit, then retry the same event and verify the effect count.</strong>
         <small><b>Inspect:</b> Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</small>
       </div>
@@ -100,7 +100,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Document a webhook, implement signed delivery with an outbox and retry policy, and build an idempotent receiver test harness.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -143,7 +143,7 @@ async def deliver(subscription: Subscription, event: Event):
     <ol class="interview-questions">
       <li>Design a webhook contract that remains correct under retries, delays, duplicates, and secret rotation.</li>
       <li>Explain how a job or event delivery works, starting with the input and following it through to the result.</li>
-      <li>How would you document a webhook, implement signed delivery with an outbox and retry policy, and build an idempotent receiver test harness, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -151,13 +151,13 @@ async def deliver(subscription: Subscription, event: Event):
     <textarea id="teachback" placeholder="Define the boundary. Trace a job or event delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Distinguish callback expressions from named webhooks, documentation from execution, subscriber registration, signing, retry, ordering, and duplicate delivery.</p>
+
         <p class="worked-answer">A webhook declaration documents outbound delivery, not an automatically served receiver or sender. The HMAC covers exact serialized body bytes but supplies no freshness window. Durable retry, SSRF-safe destinations, response limits and atomic receiver deduplication must be implemented by the missing adapters.</p>
         <p>Look for: Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -165,9 +165,9 @@ async def deliver(subscription: Subscription, event: Event):
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A webhook is an outbound event delivered to a subscriber&#39;s URL. Delivery must handle signing, retries, duplicate events, ordering limits, and secret rotation.</li><li>[concept] are notifications that cross the service boundary through callbacks, webhooks, queues, or streams.</li><li>A delivery contract defines event identity, schema, authentication, retry, duplicate, ordering, and acknowledgement behavior.</li><li>An OpenAPI callback describes an outbound request associated with an operation, with its destination expressed through a runtime expression. It documents a contract; it does not send requests. Named webhooks describe incoming events from the recipient&#39;s perspective without that initiating-operation relationship.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. OpenAPI callbacks: 4; webhooks: 2; external events: 1; delivery contracts: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. OpenAPI callbacks: 4; webhooks: 1; external events: 2; delivery contracts: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. OpenAPI callbacks: 4; webhooks: 3; external events: 1; delivery contracts: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. OpenAPI callbacks: 1; webhooks: 4; external events: 2; delivery contracts: 3</label>
@@ -179,7 +179,7 @@ async def deliver(subscription: Subscription, event: Event):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>A worker attempts the external call: Use bounded attempts, trusted destinations and an agreed signature contract.</li><li>Recover from ambiguous acknowledgement: The receiver deduplicates atomically with its effect; a timeout may follow successful processing.</li><li>Accept an authorized operation: Validate the command and stable identity before creating work.</li><li>Persist work with its business state: An outbox closes the database/publication gap; a callback declaration does not execute delivery.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -191,13 +191,13 @@ async def deliver(subscription: Subscription, event: Event):
         <p>Lose the response after receiver commit, then retry the same event and verify the effect count. Evidence to inspect: Durable intent, attempt record, receiver receipt and effect; these adapters are not supplied by the HTTP sketch.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/advanced/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Advanced User Guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/advanced/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Advanced User Guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

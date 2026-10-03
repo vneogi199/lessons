@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Connect SLIs, SLOs, error budgets, logs, metrics, traces, alerts, and human response.</p>
-      <p class="analogy">Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
+      <p>Define reliability using an outcome users experience and the events eligible for measurement. At a 99.9 percent target, ten failures in 10,000 events use the entire allowance. Combine counts before calculating an aggregate rate when traffic differs. This fixed-window calculation needs a separate alert policy. During an incident, use the same outcome to verify recovery and assign concrete follow-up work.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · DEFINE</span><strong>Measure a user-visible outcome</strong><small>Specify eligible events, what counts as good, a time window and a target; process uptime alone may miss failed journeys.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMPARE</span><strong>Account for the allowed failure budget</strong><small>For an event-based SLO, compare bad eligible events with the allowance implied by the target; keep missing telemetry explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RESPOND</span><strong>Use actionable evidence to limit impact</strong><small>Alert on meaningful budget consumption, assign incident ownership and choose a bounded mitigation with rollback criteria.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LEARN</span><strong>Verify recovery and prevent recurrence</strong><small>Confirm the same user outcome recovered; record contributing conditions and assign follow-up actions with validation evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation.</strong>
         <small><b>Inspect:</b> Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</small>
       </div>
@@ -100,7 +100,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Instrument a service, create actionable alerts, run an incident drill, and write a blameless review.</p>
-    <p class="lab-scope">Core: predict the supplied fixture or write the smallest falsifying test plan, then compare the criteria. Extension: supply the described service and authorized test environment for integration, browser, security and load evidence. No installations, harmful payload execution or live fault injection are performed here.</p>
+    <p class="lab-scope">Predict the fixture or write a small test that would expose the stated failure. Then compare the criteria. Integration, browser, security and load exercises require the described service and an authorized test environment; use harmless bounded inputs.</p>
 
 
 
@@ -160,7 +160,7 @@ console.log({ fleet, unweighted });
     <ol class="interview-questions">
       <li>Debug an outage and explain reliability tradeoffs.</li>
       <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>How would you instrument a service, create actionable alerts, run an incident drill, and write a blameless review, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -168,13 +168,13 @@ console.log({ fleet, unweighted });
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="quality-security">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Connect SLIs, SLOs, error budgets, logs, metrics, traces, alerts, and human response.</p>
+
         <p class="worked-answer">At 99.9 percent, ten bad events out of 10,000 exactly exhaust the allowance and eleven exceed it. Combining disjoint counts gives 99.9 percent for the unequal-traffic example, not the 95 percent unweighted average. This fixed-window budget is neither burn rate nor an alert policy. Define missing data, user-impact slices, mitigation ownership and a recovery signal before declaring an incident resolved.</p>
         <p>Look for: Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
     </div>
@@ -182,9 +182,9 @@ console.log({ fleet, unweighted });
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Reliability [concept] uses metrics, logs, traces and other system outputs to distinguish causes of user-visible failure. Relate signals to service-level indicators and recovery evidence; privileged admin activity is only one possible domain, not the definition.</li><li>An incident is an unplanned service event that harms users or creates a serious risk.</li><li>A postmortem records an incident&#39;s impact, timeline, causes, response, and corrective actions without personal blame.</li><li>[concept] define the acceptable success rate, latency, freshness, or durability for a user-visible service.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Reliability targets: 4; observability: 2; incidents: 1; postmortems: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Reliability targets: 4; observability: 1; incidents: 2; postmortems: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Reliability targets: 4; observability: 3; incidents: 1; postmortems: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Reliability targets: 1; observability: 4; incidents: 2; postmortems: 3</label>
@@ -196,7 +196,7 @@ console.log({ fleet, unweighted });
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Verify recovery and prevent recurrence: Confirm the same user outcome recovered; record contributing conditions and assign follow-up actions with validation evidence.</li><li>Measure a user-visible outcome: Specify eligible events, what counts as good, a time window and a target; process uptime alone may miss failed journeys.</li><li>Account for the allowed failure budget: For an event-based SLO, compare bad eligible events with the allowance implied by the target; keep missing telemetry explicit.</li><li>Use actionable evidence to limit impact: Alert on meaningful budget consumption, assign incident ownership and choose a bounded mitigation with rollback criteria.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -208,13 +208,13 @@ console.log({ fleet, unweighted });
         <p>Keep health checks green while search requests time out; explain which SLI changes and what evidence justifies mitigation. Evidence to inspect: Good and total eligible events, window, target, missing data, incident timeline, recovery signal and an owned prevention check.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/workbook/implementing-slos/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE: Implementing SLOs</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/workbook/implementing-slos/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE: Implementing SLOs</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

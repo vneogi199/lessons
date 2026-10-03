@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace path resolution, descriptor ownership, kernel page cache, partial operations, rename-based replacement, metadata, and unreliable watch semantics.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>Filesystem work has both path and handle ownership. Open with the required flags instead of checking existence and assuming it will remain unchanged. A temporary file followed by rename can avoid partially visible replacement, but durability needs its own evidence. The sample&#039;s PID-based temporary name can still collide within one process. Track write, close and cleanup failures separately from a successful replacement.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one operation with async hooks and inject a timeout or shutdown.</strong>
         <small><b>Inspect:</b> Async IDs, handle count, event-loop delay, response, and exit sequence.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Implement an atomic configuration write and descriptor-safe read with explicit permissions and cleanup.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
 
 
@@ -158,7 +158,7 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
     <ol class="interview-questions">
       <li>Explain TOCTOU races and why checking existence before opening is unsafe.</li>
       <li>Explain how a filesystem replacement works, starting with the input and following it through to the result.</li>
-      <li>How would you implement an atomic configuration write and descriptor-safe read with explicit permissions and cleanup, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -166,13 +166,13 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
     <textarea id="teachback" placeholder="Define the boundary. Trace a filesystem replacement. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace path resolution, descriptor ownership, kernel page cache, partial operations, rename-based replacement, metadata, and unreliable watch semantics.</p>
+
         <p class="worked-answer">wx avoids taking another writer&#039;s existing temporary file; the PID name still collides for simultaneous same-process calls. File sync plus rename is not directory-sync durability. Run only in a disposable directory, and distinguish write/close/cleanup errors from successful replacement.</p>
         <p>Look for: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -180,9 +180,9 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Promise-based Node APIs expose completion through returned Promises while retaining the underlying resource and error obligations.</li><li>An atomic replacement writes and flushes a temporary file before renaming it over the target on the same filesystem, avoiding partially visible content.</li><li>Node filesystem APIs delegate file operations to OS facilities, often through asynchronous worker-pool work.</li><li>A file descriptor is a process handle for an open kernel file description. It must be closed deterministically on success and failure.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. File system: 3; file descriptors: 4; promises API: 2; atomic writes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. File system: 3; file descriptors: 1; promises API: 2; atomic writes: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. File system: 3; file descriptors: 4; promises API: 1; atomic writes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. File system: 3; file descriptors: 2; promises API: 1; atomic writes: 4</label>
@@ -194,7 +194,7 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] describes another object, such as identity, version, or ownership. It can affect behavior and may contain sensitive information.</li><li>Filesystem watch reports platform-dependent change notifications that may be coalesced, duplicated, missing, or refer to renamed paths. It is a hint, not a durable log.</li><li>A filesystem race occurs when path state changes between separate checks and operations. Open directly with required flags and validate the resulting handle.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. metadata: 1; watching: 3; race conditions: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. metadata: 2; watching: 3; race conditions: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. metadata: 1; watching: 2; race conditions: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. metadata: 3; watching: 2; race conditions: 1</label>
@@ -206,7 +206,7 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Handler coordinates the operation: Promises and callbacks describe continuation.</li><li>Runtime performs external work: Sockets, files, workers, or child processes progress.</li><li>Result returns to JavaScript: Response, log, exit state, or error becomes visible.</li><li>Input reaches the Node process: A request, timer, signal, or message creates work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 1 → 2 → 3</label>
@@ -218,13 +218,13 @@ await atomicWrite(&quot;./state.json&quot;, JSON.stringify({ version: 1 }));
         <p>Trace one operation with async hooks and inject a timeout or shutdown. Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

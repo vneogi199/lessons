@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Connect arrival rate, service time, concurrency, bottlenecks, queue growth, resource limits, and scaling delay.</p>
-      <p class="analogy">DevOps is a learning conveyor belt: small changes move through automated checks into production, telemetry returns feedback, and teams improve the whole flow.</p>
+      <p>A queue grows by the difference between arrivals and completions. At a net 20 jobs per second, 1,200 jobs accumulate in a minute. Draining them at a net 10 per second takes two minutes under steady assumptions. Service-time variation, bytes and scaling delay can change that result. Preserve failure headroom and reject work before waiting makes deadlines impossible.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SCOPE</span><strong>Name the affected request or workload</strong><small>Capture the symptom, time window, recent changes and expected behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Identify the failing layer</strong><small>Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TEST</span><strong>Check one hypothesis safely</strong><small>Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Confirm recovery without a hidden regression</strong><small>Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.</strong>
         <small><b>Inspect:</b> Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Load-test a service to saturation, identify the limiting resource, and design safe overload behavior.</p>
-    <p class="lab-scope">Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
+    <p class="lab-scope">Work through the scenario or recipe and predict a failure before reading the answer. Shell, pipeline and deployment fragments need their named adapters and environment. A completed lab should include observed release, database, infrastructure or incident behavior under controlled conditions.</p>
 
 
 
@@ -142,7 +142,7 @@
     <ol class="interview-questions">
       <li>Explain why autoscaling cannot rescue every overload and how to establish capacity headroom.</li>
       <li>Explain how an operational diagnosis and response works, starting with the input and following it through to the result.</li>
-      <li>How would you load-test a service to saturation, identify the limiting resource, and design safe overload behavior, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -150,13 +150,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace an operational diagnosis and response. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Connect arrival rate, service time, concurrency, bottlenecks, queue growth, resource limits, and scaling delay.</p>
+
         <p class="worked-answer">The queue gains 1,200 jobs in 60 seconds at net 20/s, then takes 120 seconds to drain at net 10/s. That arithmetic assumes constant capacity and arrivals; bytes, service-time tails and autoscaler lag can invalidate a count-only limit. Reserve failure headroom and shed before downstream queues exceed deadlines.</p>
         <p>Look for: Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>
       </details>
     </div>
@@ -164,9 +164,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A queue holds work waiting to be processed. Define capacity, admission, ordering, acknowledgement, retry, and expiration; a queue cannot create processing capacity.</li><li>[concept] measures pressure at a resource&#39;s capacity limit, such as queued disk operations or exhausted connections. It can increase latency before CPU reaches 100%.</li><li>[concept] forecasts resource needs from workload, growth, failure headroom, and measured bottlenecks.</li><li>[concept] applies a defined workload and checks latency, errors, saturation, and recovery rather than only maximum throughput.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Capacity planning: 3; load testing: 4; queues: 2; saturation: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Capacity planning: 3; load testing: 1; queues: 2; saturation: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Capacity planning: 3; load testing: 4; queues: 1; saturation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Capacity planning: 3; load testing: 2; queues: 1; saturation: 4</label>
@@ -178,7 +178,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] set acceptable limits such as latency or resource cost and enforce them with representative measurements.</li><li>[concept] rejects or drops work when capacity is insufficient. Define which work may be rejected and return a useful failure signal before queues collapse.</li><li>[concept] adjusts capacity from signals and policy, with delay, limits, and downstream capacity constraints.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. autoscaling: 3; performance budgets: 2; load shedding: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. autoscaling: 1; performance budgets: 2; load shedding: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. autoscaling: 3; performance budgets: 1; load shedding: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. autoscaling: 2; performance budgets: 1; load shedding: 3</label>
@@ -190,7 +190,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Check one hypothesis safely: Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</li><li>Confirm recovery without a hidden regression: Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</li><li>Name the affected request or workload: Capture the symptom, time window, recent changes and expected behavior.</li><li>Identify the failing layer: Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -202,13 +202,13 @@
         <p>The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it. Evidence to inspect: Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

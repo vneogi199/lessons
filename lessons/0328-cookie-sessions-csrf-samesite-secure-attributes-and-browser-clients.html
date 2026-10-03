@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow cookies through browser attachment rules, origin and site distinctions, session lookup or signing, CSRF attack paths, rotation, expiry, and logout.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>Browsers attach matching cookies automatically, which makes state-changing session requests vulnerable to CSRF. Bind the token check to the server session and attach it to every operation that needs protection. Defining the dependency alone protects no route. SameSite helps at the site boundary without replacing origin or authorization rules. Login, rotation, expiry and logout also need their own secure flows.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CREDENTIAL</span><strong>Request presents identity evidence</strong><small>Token, cookie, certificate, or trusted proxy data arrives.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><strong>Server verifies the principal</strong><small>Check integrity, expiry, issuer, audience, and session state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><strong>Policy evaluates this resource</strong><small>Tenant, ownership, role, and scope rules decide access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECISION</span><strong>Allow or reject safely</strong><small>Return minimal data and a stable denial response.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Replay the request as another tenant and with an expired credential.</strong>
         <small><b>Inspect:</b> Principal fields, policy decision, audit event, response status, and leaked fields.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a secure cookie session flow with CSRF defense, SameSite behavior, HTTPS-only attributes, rotation, and browser-level tests.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -147,7 +147,7 @@ async def require_csrf(
     <ol class="interview-questions">
       <li>Compare bearer tokens and cookie sessions and explain when CSRF becomes relevant.</li>
       <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>How would you build a secure cookie session flow with CSRF defense, SameSite behavior, HTTPS-only attributes, rotation, and browser-level tests, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -155,13 +155,13 @@ async def require_csrf(
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow cookies through browser attachment rules, origin and site distinctions, session lookup or signing, CSRF attack paths, rotation, expiry, and logout.</p>
+
         <p class="worked-answer">The token is bound to the server session, not merely two equal attacker inputs. Attach require_csrf to every relevant state-changing route; defining it alone protects none. Login CSRF, rotation, expiry and logout need their own flow. SameSite is site-based defense in depth, not an origin authorization rule.</p>
         <p>Look for: Principal fields, policy decision, audit event, response status, and leaked fields.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -169,9 +169,9 @@ async def require_csrf(
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A cookie session uses a browser cookie to carry or identify authenticated session state.</li><li>[concept] is an attack where a browser is tricked into sending an authenticated state-changing request. It matters when credentials such as cookies are attached automatically.</li><li>The [concept] cookie attribute controls when a browser sends a cookie with cross-site requests.</li><li>Secure cookie attributes limit transport, script access, cross-site sending, path, domain, and lifetime.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Cookie sessions: 1; CSRF: 2; SameSite: 3; secure attributes: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Cookie sessions: 1; CSRF: 2; SameSite: 4; secure attributes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Cookie sessions: 1; CSRF: 3; SameSite: 4; secure attributes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Cookie sessions: 1; CSRF: 4; SameSite: 3; secure attributes: 2</label>
@@ -183,7 +183,7 @@ async def require_csrf(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Secure cookie attributes limit transport, script access, cross-site sending, path, domain, and lifetime.</li><li>[concept] enforce origin and cookie rules that do not apply to general HTTP clients.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. secure attributes: 1; browser clients: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. secure attributes: 2; browser clients: 1</label>
@@ -195,7 +195,7 @@ async def require_csrf(
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Allow or reject safely: Return minimal data and a stable denial response.</li><li>Request presents identity evidence: Token, cookie, certificate, or trusted proxy data arrives.</li><li>Server verifies the principal: Check integrity, expiry, issuer, audience, and session state.</li><li>Policy evaluates this resource: Tenant, ownership, role, and scope rules decide access.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -207,13 +207,13 @@ async def require_csrf(
         <p>Replay the request as another tenant and with an expired credential. Evidence to inspect: Principal fields, policy decision, audit event, response status, and leaked fields.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/security/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Security guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/security/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Security guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

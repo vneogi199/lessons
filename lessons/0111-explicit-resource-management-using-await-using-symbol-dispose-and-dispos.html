@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace disposable-resource stacks, lexical lifetime, reverse-order cleanup, async disposal, and SuppressedError when work and cleanup both fail.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>A disposable resource supplies a cleanup method. using ties synchronous cleanup to scope exit; await using waits for asynchronous disposal. Resources close in reverse registration order. If the work and its cleanup both fail, SuppressedError preserves their relationship. This lifetime is separate from garbage collection. The runtime must parse the syntax before any feature guard can run.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EXPRESSION</span><strong>Source code requests an operation</strong><small>Values and references enter the evaluation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><strong>Language rules select conversions</strong><small>Type, equality, property, or call semantics apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>The operation changes control or state</strong><small>Scopes, prototypes, and closures affect behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>A value or exception appears</strong><small>A focused example reveals the specification path.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one operand type or binding and predict the exact value and type.</strong>
         <small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Implement disposable file-like and subscription resources and verify cleanup across normal return and exceptions.</p>
-    <p class="lab-scope">Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review.</p>
+    <p class="lab-scope">Explain the bounded fixture in its stated runtime. Worker, browser, profiler and repository exercises need the additional setup named in the lesson. You can predict the local result before setting up those integrations.</p>
 
 
 
@@ -145,7 +145,7 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
     <ol class="interview-questions">
       <li>Compare deterministic disposal with garbage collection and finally blocks.</li>
       <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>How would you implement disposable file-like and subscription resources and verify cleanup across normal return and exceptions, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace disposable-resource stacks, lexical lifetime, reverse-order cleanup, async disposal, and SuppressedError when work and cleanup both fail.</p>
+
         <p class="worked-answer">The deferred callback runs before the subscription closes because disposal reverses registration order. using disposes on scope exit, not collection. await using awaits disposal, not an arbitrary initializer. Multiple failures use SuppressedError ordering; add a throwing disposer to verify it. Parse support is required: a runtime guard cannot rescue unsupported using syntax.</p>
         <p>Look for: Console value, typeof, identity checks, property descriptors, and exception.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] identifies the synchronous disposal method used by explicit resource management. A resource implements that method to release what it owns.</li><li>[concept] binds a disposable resource&#39;s cleanup to lexical control flow using using or await using and well-known disposal symbols.</li><li>[concept] declares a resource whose synchronous disposal protocol runs on scope exit. It provides structured cleanup, not nondeterministic garbage-collection cleanup.</li><li>[concept] declares a resource for asynchronous disposal at scope exit. It awaits its disposal protocol; it does not automatically await an arbitrary resource initializer.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Explicit resource management: 2; using: 4; await using: 3; Symbol.dispose: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Explicit resource management: 2; using: 1; await using: 3; Symbol.dispose: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Explicit resource management: 3; using: 2; await using: 4; Symbol.dispose: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Explicit resource management: 2; using: 3; await using: 4; Symbol.dispose: 1</label>
@@ -181,7 +181,7 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] owns multiple resources and callbacks and disposes them in reverse order. It supports dynamic ownership while preserving deterministic cleanup.</li><li>[concept] identifies the synchronous disposal method used by explicit resource management. A resource implements that method to release what it owns.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Symbol.dispose: 1; DisposableStack: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Symbol.dispose: 2; DisposableStack: 1</label>
@@ -193,7 +193,7 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>The operation changes control or state: Scopes, prototypes, and closures affect behavior.</li><li>A value or exception appears: A focused example reveals the specification path.</li><li>Source code requests an operation: Values and references enter the evaluation.</li><li>Language rules select conversions: Type, equality, property, or call semantics apply.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -205,13 +205,13 @@ try { execute(); } catch (error) { console.log(error.name, error.message); }</co
         <p>Change one operand type or binding and predict the exact value and type. Evidence to inspect: Console value, typeof, identity checks, property descriptors, and exception.</p>
       </details>
     </article>
-    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Resource_management" target="_blank" rel="noreferrer">Review the lesson source: MDN resource management guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Resource_management" target="_blank" rel="noreferrer">Review the lesson source: MDN resource management guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

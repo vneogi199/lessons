@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace a typed message through binary field tags, HTTP/2 streams, generated stubs, metadata, deadline propagation, cancellation, status details, and backward-compatible schema changes.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>Protocol Buffer field tags identify wire fields, so removed numbers and names must remain reserved. Optional fields can distinguish absence from a default value. Compatible encoding does not preserve a field whose meaning changed. The service definition declares unary and streaming calls without implementing their server. Deadlines, cancellation and stream bounds need behavior and tests beyond generated stubs.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>Client forms a contract request</strong><small>Method or operation, identity, representation, validators, deadline, and version enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BOUNDARY</span><strong>Intermediary and service apply policy</strong><small>Routing, authentication, limits, parsing, validation, and authorization constrain work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORITY</span><strong>Owned state evaluates the transition</strong><small>Preconditions, invariants, idempotency, transaction, and dependencies decide outcome.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONTRACT</span><strong>Stable response returns</strong><small>Status, representation, error type, cache metadata, telemetry, and compatibility become evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Repeat or condition the same request through one intermediary and predict every observable difference.</strong>
         <small><b>Inspect:</b> Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Define unary and streaming RPCs, propagate a deadline, enforce bounds, evolve fields safely, and test an old client against a new server.</p>
-    <p class="lab-scope">Core: predict the supplied contract or local fixture outcome, including a failure, then compare the worked answer criteria. Examples with missing servers, schemas or adapters are integration specifications, not complete services. Extension: run actual protocol, persistence, security and compatibility tests against an authorized controlled environment. This review installs nothing and distinguishes local assertions from deployed behavior.</p>
+    <p class="lab-scope">Predict the contract or local example&#039;s outcome, including a failure, then compare the answer. Examples with missing servers, schemas or adapters describe integrations you must supply. Verify protocol, persistence, security and compatibility behavior in an authorized controlled environment.</p>
 
 
 
@@ -147,7 +147,7 @@ message Job {
     <ol class="interview-questions">
       <li>Compare REST and gRPC for public and internal boundaries and explain protobuf compatibility rules.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you define unary and streaming RPCs, propagate a deadline, enforce bounds, evolve fields safely, and test an old client against a new server, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -155,13 +155,13 @@ message Job {
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace a typed message through binary field tags, HTTP/2 streams, generated stubs, metadata, deadline propagation, cancellation, status details, and backward-compatible schema changes.</p>
+
         <p class="worked-answer">Removed field number and name stay reserved; optional result_uri distinguishes absence from the default string. Preserving wire compatibility does not preserve changed field meaning. The proto declares one unary and one server stream, not an implemented server, deadline propagation or cancellation behavior.</p>
         <p>Look for: Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -169,9 +169,9 @@ message Job {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] encodes typed fields by numeric tags. Compatibility depends on preserving tag identity and adding or removing fields according to evolution rules.</li><li>[concept] maps typed service methods onto HTTP/2-based calls with generated stubs, metadata, streaming, deadlines, cancellation, and structured status.</li><li>[concept] exchange multiple messages within one call and need flow control, cancellation, and partial-result semantics.</li><li>A deadline is the absolute point when the caller no longer values completion. Downstream work should receive only the remaining budget.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Protocol Buffers: 1; gRPC: 2; streaming RPCs: 3; deadlines: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Protocol Buffers: 1; gRPC: 2; streaming RPCs: 4; deadlines: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Protocol Buffers: 1; gRPC: 3; streaming RPCs: 4; deadlines: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Protocol Buffers: 1; gRPC: 4; streaming RPCs: 3; deadlines: 2</label>
@@ -183,7 +183,7 @@ message Job {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>RPC [concept] communicates completion or failure under the protocol&#39;s error model, separate from successful message delivery.</li><li>[concept] changes a data contract while accounting for existing readers, writers, and stored data. Test mixed versions and replay, not just the newest producer and consumer.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. status: 1; schema evolution: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. status: 2; schema evolution: 1</label>
@@ -195,7 +195,7 @@ message Job {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Stable response returns: Status, representation, error type, cache metadata, telemetry, and compatibility become evidence.</li><li>Client forms a contract request: Method or operation, identity, representation, validators, deadline, and version enter.</li><li>Intermediary and service apply policy: Routing, authentication, limits, parsing, validation, and authorization constrain work.</li><li>Owned state evaluates the transition: Preconditions, invariants, idempotency, transaction, and dependencies decide outcome.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 4 → 1</label>
@@ -207,13 +207,13 @@ message Job {
         <p>Repeat or condition the same request through one intermediary and predict every observable difference. Evidence to inspect: Raw request and response, route, principal, validator, transaction result, cache status, span, stable error, and client test.</p>
       </details>
     </article>
-    <p><a href="https://grpc.io/docs/what-is-grpc/core-concepts/" target="_blank" rel="noreferrer">Review the lesson source: gRPC core concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://grpc.io/docs/what-is-grpc/core-concepts/" target="_blank" rel="noreferrer">Review the lesson source: gRPC core concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

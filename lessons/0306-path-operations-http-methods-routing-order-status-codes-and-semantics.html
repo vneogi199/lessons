@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace decorator registration into Starlette routes, ordered matching, method dispatch, automatic HEAD or OPTIONS behavior, and response status selection.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>A path operation joins a method and path to a handler. Registration order matters: a broad dynamic path can capture a request intended for a later fixed route. Status codes also describe actual outcomes. The example distinguishes a created result from an existing one, so both 201 and 200 need documentation and a supporting service contract. Verify HEAD and OPTIONS behavior on the actual routes.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOCKET</span><strong>HTTP bytes reach Uvicorn</strong><small>The server parses protocol data and creates an ASGI scope.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><strong>Events enter the application</strong><small>Middleware wraps receive, routing, and endpoint handling.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><strong>Dependencies and business logic run</strong><small>Typed inputs become a return value or exception.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>ASGI send emits wire events</strong><small>Status, headers, and body become observable to the client.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one valid request and one failure while recording every ASGI event.</strong>
         <small><b>Inspect:</b> Scope fields, middleware order, dependency calls, send events, and client response.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build resource-oriented create, read, replace, patch, and delete operations and verify routing conflicts and HTTP semantics.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -140,7 +140,7 @@ async def read_project(project_id: UUID): ...</code></pre>
     <ol class="interview-questions">
       <li>Defend method and status-code choices and diagnose why a dynamic route shadows a fixed path.</li>
       <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>How would you build resource-oriented create, read, replace, patch, and delete operations and verify routing conflicts and HTTP semantics, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -148,13 +148,13 @@ async def read_project(project_id: UUID): ...</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace decorator registration into Starlette routes, ordered matching, method dispatch, automatic HEAD or OPTIONS behavior, and response status selection.</p>
+
         <p class="worked-answer">The status override distinguishes actual creation from an existing result; the service contract must justify that distinction. Document both 200 and 201, not only the decorator default. Fixed paths precede unconstrained dynamic paths. Verify HEAD and OPTIONS on actual FastAPI routes rather than assuming every Starlette behavior is inherited.</p>
         <p>Look for: Scope fields, middleware order, dependency calls, send events, and client response.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -162,9 +162,9 @@ async def read_project(project_id: UUID): ...</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Routes are checked in registration order. A broad dynamic path can capture traffic intended for a later fixed path, so specific routes must be designed and ordered deliberately.</li><li>An HTTP status code is a three-digit result category that tells the client whether a request succeeded or failed.</li><li>A path operation connects an HTTP method and path pattern to an endpoint function. FastAPI inspects the function signature to build validation, dependencies, responses, and documentation.</li><li>[concept] identify the requested operation type. Common methods include GET, POST, PUT, PATCH, and DELETE.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Path operations: 3; HTTP methods: 4; routing order: 2; status codes: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Path operations: 3; HTTP methods: 1; routing order: 2; status codes: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Path operations: 3; HTTP methods: 4; routing order: 1; status codes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Path operations: 3; HTTP methods: 2; routing order: 1; status codes: 4</label>
@@ -176,7 +176,7 @@ async def read_project(project_id: UUID): ...</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>An HTTP status code is a three-digit result category that tells the client whether a request succeeded or failed.</li><li>HTTP [concept] are the standard meanings and expected properties of methods, status codes, headers, and message content.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. status codes: 1; semantics: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. status codes: 2; semantics: 1</label>
@@ -188,7 +188,7 @@ async def read_project(project_id: UUID): ...</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Dependencies and business logic run: Typed inputs become a return value or exception.</li><li>ASGI send emits wire events: Status, headers, and body become observable to the client.</li><li>HTTP bytes reach Uvicorn: The server parses protocol data and creates an ASGI scope.</li><li>Events enter the application: Middleware wraps receive, routing, and endpoint handling.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -200,13 +200,13 @@ async def read_project(project_id: UUID): ...</code></pre>
         <p>Trace one valid request and one failure while recording every ASGI event. Evidence to inspect: Scope fields, middleware order, dependency calls, send events, and client response.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

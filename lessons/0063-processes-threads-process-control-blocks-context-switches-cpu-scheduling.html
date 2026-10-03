@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Preserve execution context in kernel task state, schedule runnable threads on finite CPUs, switch register and memory context, and exchange data through explicit interprocess channels.</p>
-      <p class="analogy">Production software is a parcel crossing nested transport systems: the application labels intent, protocols add delivery information, and the kernel moves bytes while preserving isolation and resource limits.</p>
+      <p>A process owns an execution and resource context; its threads commonly share memory. The scheduler chooses runnable work for finite CPUs, saving and restoring state as it switches execution. Those switches have direct and cache-related costs. Separate processes exchange data through IPC, with ownership and synchronization rules of their own. Concurrency permits overlapping progress, but parallel execution also needs available CPUs. Distinguish runnable work from blocked work when explaining elapsed time.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · VALIDATE</span><strong>Require positive work and quantum</strong><small>Zero quantum cannot reduce remaining work; reject it before the loop.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SELECT</span><strong>Pop the next ready task</strong><small>The ready queue gives each runnable task a turn.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><strong>Consume at most one quantum</strong><small>Remaining work decreases by min(quantum, remaining).</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REQUEUE</span><strong>Keep unfinished tasks only</strong><small>Positive remaining work goes to the back; completed work leaves the queue.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>What loop invariant proves termination for positive finite bursts?</strong>
         <small><b>Inspect:</b> The total remaining burst decreases on every iteration; empty input yields an empty trace.</small>
       </div>
@@ -154,7 +154,7 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
     <ol class="interview-questions">
       <li>Explain why concurrency is not parallelism and account for scheduling, context-switch, isolation, and communication costs.</li>
       <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>How would you simulate round-robin scheduling, measure process and thread behavior, and compare pipes, shared memory, sockets, and message queues by ownership and failure, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -162,13 +162,13 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="systems-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Preserve execution context in kernel task state, schedule runnable threads on finite CPUs, switch register and memory context, and exchange data through explicit interprocess channels.</p>
+
         <p class="worked-answer">Positive quantum and bursts make total remaining work strictly decrease, proving this finite simulation terminates. Smaller quantum can improve simulated turn-taking but adds context-switch overhead in reality. The fixture assumes every task is ready initially and has no I/O, priorities or multiple CPUs; it does not model a current Linux scheduler. Compare CPU saturation with blocked work using runnable queues and CPU time, not elapsed time alone.</p>
         <p>Look for: The total remaining burst decreases on every iteration; empty input yields an empty trace.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
       </details>
     </div>
@@ -176,9 +176,9 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A context switch saves one execution context and restores another, with direct work and possible cache-related costs.</li><li>[concept] are operating-system execution units with their own resource and address-space context; they may contain multiple threads.</li><li>[concept] execute within a process and commonly share its memory, making concurrent access and lifetime coordination important.</li><li>A process control block stores kernel bookkeeping for an execution context, including scheduling and resource state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Processes: 2; threads: 4; process control blocks: 3; context switches: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Processes: 2; threads: 1; process control blocks: 3; context switches: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Processes: 3; threads: 2; process control blocks: 4; context switches: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Processes: 2; threads: 3; process control blocks: 4; context switches: 1</label>
@@ -190,7 +190,7 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Inter-process communication transfers data or coordination between processes, using mechanisms such as pipes, sockets, or shared memory. Each mechanism has ownership and synchronization costs.</li><li>[concept] selects runnable work according to policy, balancing responsiveness, throughput, and fairness.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. CPU scheduling: 1; IPC: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. CPU scheduling: 2; IPC: 1</label>
@@ -202,7 +202,7 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Consume at most one quantum: Remaining work decreases by min(quantum, remaining).</li><li>Keep unfinished tasks only: Positive remaining work goes to the back; completed work leaves the queue.</li><li>Require positive work and quantum: Zero quantum cannot reduce remaining work; reject it before the loop.</li><li>Pop the next ready task: The ready queue gives each runnable task a turn.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -214,13 +214,13 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
         <p>What loop invariant proves termination for positive finite bursts? Evidence to inspect: The total remaining burst decreases on every iteration; empty input yields an empty trace.</p>
       </details>
     </article>
-    <p><a href="https://docs.kernel.org/scheduler/" target="_blank" rel="noreferrer">Review the lesson source: Linux scheduler documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.kernel.org/scheduler/" target="_blank" rel="noreferrer">Review the lesson source: Linux scheduler documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

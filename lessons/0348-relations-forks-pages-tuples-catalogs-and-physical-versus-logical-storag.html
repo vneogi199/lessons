@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Connect SQL relations and system catalogs to heap files, forks, fixed-size pages, line pointers, tuple headers, and block-oriented I/O.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>A logical table becomes physical pages containing row versions and metadata. Catalogs describe those objects, while relation forks hold data and auxiliary information for different purposes. Size functions include different combinations of heap, indexes and auxiliary storage. Catalog row and page counts can be estimates rather than immediate counts. Use paths and metadata for diagnosis without editing server storage files directly.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · MODEL</span><strong>Application expresses an invariant</strong><small>Schema and access patterns turn meaning into constraints.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STORAGE</span><strong>Database organizes durable state</strong><small>Indexes, pages, logs, and caches support access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COORDINATE</span><strong>Concurrency rules protect changes</strong><small>Transactions and locks define legal interleavings.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>State survives failure</strong><small>Backups, logs, replicas, and checks prove durability.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Break one assumption with concurrent or failed work and verify the invariant survives.</strong>
         <small><b>Inspect:</b> Constraints, query plan, lock state, log position, replica state, and restored data.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Create a table, inspect relation size and page-level metadata, then relate logical rows to physical storage growth.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -144,7 +144,7 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
     <ol class="interview-questions">
       <li>Explain how a logical table becomes physical pages and why storage details matter during tuning and recovery.</li>
       <li>Explain how a data operation works, starting with the input and following it through to the result.</li>
-      <li>How would you create a table, inspect relation size and page-level metadata, then relate logical rows to physical storage growth, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -152,13 +152,13 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
     <textarea id="teachback" placeholder="Define the boundary. Trace a data operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Connect SQL relations and system catalogs to heap files, forks, fixed-size pages, line pointers, tuple headers, and block-oriented I/O.</p>
+
         <p class="worked-answer">Relation size functions cover different combinations of heap, auxiliary storage and indexes. relpages and reltuples are estimates maintained by maintenance, not immediate exact counts. The file path is diagnostic, not an invitation to edit server files; no page-inspection extension is supplied.</p>
         <p>Look for: Constraints, query plan, lock state, log position, replica state, and restored data.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -166,9 +166,9 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>PostgreSQL [concept] include tables, indexes, and other relation-like objects represented in system catalogs.</li><li>Relation [concept] separate storage purposes, such as main data, free-space information, and visibility information.</li><li>A page is PostgreSQL&#39;s fixed-size unit of table and index storage and I/O. It contains headers, item pointers, tuples or index entries, and free space.</li><li>A tuple is PostgreSQL&#39;s physical representation of one row version. Its header carries visibility and storage metadata in addition to user columns.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Relations: 1; forks: 2; pages: 3; tuples: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Relations: 1; forks: 2; pages: 4; tuples: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Relations: 1; forks: 3; pages: 4; tuples: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Relations: 1; forks: 4; pages: 3; tuples: 2</label>
@@ -180,7 +180,7 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] storage describes files, pages, and records used to represent database state on disk.</li><li>[concept] describes tables, rows, and schemas independently of their physical placement.</li><li>System [concept] are ordinary-looking PostgreSQL tables that describe databases, types, relations, columns, privileges, indexes, and other database objects.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. catalogs: 3; physical: 1; logical storage: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. catalogs: 3; physical: 2; logical storage: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. catalogs: 1; physical: 2; logical storage: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. catalogs: 2; physical: 1; logical storage: 3</label>
@@ -192,7 +192,7 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Concurrency rules protect changes: Transactions and locks define legal interleavings.</li><li>State survives failure: Backups, logs, replicas, and checks prove durability.</li><li>Application expresses an invariant: Schema and access patterns turn meaning into constraints.</li><li>Database organizes durable state: Indexes, pages, logs, and caches support access.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -204,13 +204,13 @@ SELECT relpages, reltuples FROM pg_class WHERE oid = &#039;storage_probe&#039;::
         <p>Break one assumption with concurrent or failed work and verify the invariant survives. Evidence to inspect: Constraints, query plan, lock state, log position, replica state, and restored data.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

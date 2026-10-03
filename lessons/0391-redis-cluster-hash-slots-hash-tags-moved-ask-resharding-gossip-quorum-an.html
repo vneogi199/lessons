@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>Hash tags place related keys in one cluster slot so one owner can execute supported multi-key work. They do not turn separate commands into a conditional guard. In the example, HSET changes the cart even when SET NX fails. Keep transaction state on its owning connection. MOVED updates routing knowledge, while ASK is a temporary redirect with its own destination protocol step.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ROUTE</span><strong>Find the primary owning the hash slot</strong><small>Matching hash tags place these keys together; one connection owns transaction state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · QUEUE</span><strong>Queue both commands</strong><small>HSET and SET NX are separate operations, even inside MULTI.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>Inspect each result</strong><small>The existing lease makes SET NX return null, but HSET still updates the cart.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REASON</span><strong>Separate isolation from a condition</strong><small>Same-slot execution is not a guarded lease check; express the condition before the protected write.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Pre-create the lease, execute the transaction, and compare both replies with the cart value.</strong>
         <small><b>Inspect:</b> Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</small>
       </div>
@@ -120,7 +120,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Run a small cluster, inspect slot ownership, use hash tags for an atomic multi-key operation, reshard, and observe redirect handling.</p>
-    <p class="lab-scope">Core: predict the explicitly stated Redis fixture outcomes and compare the worked answer criteria. The RESP encoder and cache adapters support offline checks; command transcripts require an already available isolated Redis instance with the named keys safe to mutate. Extension: measure server behavior, memory pressure, persistence and failover in the specified topology. This review installs nothing and runs no Redis administration or external integration.</p>
+    <p class="lab-scope">Predict the Redis example&#039;s outcome before reading the answer. The RESP encoder and cache adapters support local checks. Command transcripts need an existing isolated Redis instance with disposable keys. Server behavior, memory pressure, persistence and failover require measurements in the stated topology.</p>
 
 
 
@@ -163,7 +163,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
     <ol class="interview-questions">
       <li>Explain Redis Cluster scaling and availability, including asynchronous replication and cross-slot constraints.</li>
       <li>Explain how a cluster-local transaction works, starting with the input and following it through to the result.</li>
-      <li>How would you run a small cluster, inspect slot ownership, use hash tags for an atomic multi-key operation, reshard, and observe redirect handling, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -171,13 +171,13 @@ redis-cli --cluster reshard 127.0.0.1:7000
     <textarea id="teachback" placeholder="Define the boundary. Trace a cluster-local transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Map keys to 16384 slots, route clients through redirects, migrate slots, propagate topology, detect failures, elect replicas, and enforce multi-key locality.</p>
+
         <p class="worked-answer">Matching hash tags co-locate keys but do not make SET NX guard an earlier HSET. MULTI belongs to one owning-node connection; redirects do not authorize replaying individual queued writes. ASK is temporary and needs ASKING on the destination connection, whereas MOVED updates routing knowledge.</p>
         <p>Look for: Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -185,9 +185,9 @@ redis-cli --cluster reshard 127.0.0.1:7000
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] redirects a client to the node currently responsible for a slot and generally prompts routing-table refresh.</li><li>[concept] partitions keys across 16384 hash slots and redirects slot-aware clients. Replicas and quorum-based failover improve availability but do not eliminate asynchronous write-loss windows.</li><li>Redis Cluster assigns keys to [concept] distributed among nodes.</li><li>[concept] choose a shared substring for slot calculation, allowing related keys to occupy the same slot.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Redis Cluster: 2; hash slots: 4; hash tags: 3; MOVED: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Redis Cluster: 2; hash slots: 1; hash tags: 3; MOVED: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Redis Cluster: 3; hash slots: 2; hash tags: 4; MOVED: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Redis Cluster: 2; hash slots: 3; hash tags: 4; MOVED: 1</label>
@@ -199,7 +199,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A [concept] is a required set or count of participants for a decision under a specified protocol; counting votes alone does not prove safety.</li><li>[concept] provides a temporary redirection during slot migration and requires the corresponding client protocol handling.</li><li>[concept] moves key ownership between nodes while clients and migration state coordinate access.</li><li>[concept] spreads membership and state information among peers incrementally rather than through one global instantaneous view.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. ASK: 2; resharding: 4; gossip: 3; quorum: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. ASK: 2; resharding: 1; gossip: 3; quorum: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. ASK: 3; resharding: 2; gossip: 4; quorum: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. ASK: 2; resharding: 3; gossip: 4; quorum: 1</label>
@@ -211,7 +211,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</li><li>A [concept] is a required set or count of participants for a decision under a specified protocol; counting votes alone does not prove safety.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. quorum: 1; failover: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. quorum: 2; failover: 1</label>
@@ -223,7 +223,7 @@ redis-cli --cluster reshard 127.0.0.1:7000
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Separate isolation from a condition: Same-slot execution is not a guarded lease check; express the condition before the protected write.</li><li>Find the primary owning the hash slot: Matching hash tags place these keys together; one connection owns transaction state.</li><li>Queue both commands: HSET and SET NX are separate operations, even inside MULTI.</li><li>Inspect each result: The existing lease makes SET NX return null, but HSET still updates the cart.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -235,13 +235,13 @@ redis-cli --cluster reshard 127.0.0.1:7000
         <p>Pre-create the lease, execute the transaction, and compare both replies with the cart value. Evidence to inspect: Same slot numbers, one owning-node connection, failed NX result and changed cart. Resharding/failover require separate live tests.</p>
       </details>
     </article>
-    <p><a href="https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/" target="_blank" rel="noreferrer">Review the lesson source: Redis Cluster specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/" target="_blank" rel="noreferrer">Review the lesson source: Redis Cluster specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,9 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace name resolution, connections, encryption, requests, caching, and content delivery.</p>
       <p>Separate identifying a resource from transporting a request. DNS supplies records; cached results and existing connections can skip new lookup/handshake work. HTTP/1.1 and HTTP/2 commonly use TCP, while HTTP/3 uses QUIC over UDP. TLS protects a connection to its authenticated peer; a terminating proxy can be that peer rather than the origin. CDN cache keys, freshness and authorization determine whether a shared response is safe. A URL fragment is handled by the client rather than sent as the HTTP request target.</p>
-      <p class="analogy">A page load resembles a theatre production: networking delivers the script, parsing casts the actors, layout blocks the stage, and paint turns the plan into pixels.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -64,7 +63,7 @@
         <li class="trace-stage"><span>01 · TRACE</span><strong>Resolve and connect</strong><small>DNS, transport and TLS may be reused or partially hidden in timing data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><strong>Receive headers</strong><small>fetch resolves to a response before complete body consumption.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><strong>Consume the body</strong><small>Await body reading and compare request phases using observable timing evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change the stated fixture condition and compare the observable result.</strong>
         <small><b>Inspect:</b> Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</small>
       </div>
@@ -146,7 +145,7 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
     <ol class="interview-questions">
       <li>Explain what happens after entering a URL in a browser.</li>
       <li>Explain how a browser request or event works, starting with the input and following it through to the result.</li>
-      <li>How would you inspect network waterfalls, headers, certificates, cache behavior, and connection reuse, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +153,13 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
     <textarea id="teachback" placeholder="Define the boundary. Trace a browser request or event. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="web-platform">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace name resolution, connections, encryption, requests, caching, and content delivery.</p>
+
         <p class="worked-answer">The two measured intervals are headers-available and body-consumption, not a direct decomposition into DNS/TCP/TLS times. Inspect Resource Timing and negotiated protocol, but zeros may reflect reuse or access restrictions. no-store does not make the transport cold or eliminate every intermediary. Compare warm and cold conditions without conflating them; a fast cached private response is a security failure if its cache key or policy crosses user boundaries. The same-origin fixture and bounded body must exist before running.</p>
         <p>Look for: Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#web-platform">Worked track case: The network is fast but the page feels slow ↗</a></p>
       </details>
     </div>
@@ -168,9 +167,9 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] authenticates a server and encrypts data sent between network peers.</li><li>A URL identifies a resource and includes parts such as the scheme, host, port, path, query, and fragment.</li><li>[concept] converts a host name into network records such as IP addresses and caches answers for a limited time.</li><li>[concept] provides an ordered and reliable byte stream between two network endpoints.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. URLs: 2; DNS: 4; TCP: 3; TLS: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. URLs: 2; DNS: 1; TCP: 3; TLS: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. URLs: 3; DNS: 2; TCP: 4; TLS: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. URLs: 2; DNS: 3; TCP: 4; TLS: 1</label>
@@ -182,7 +181,7 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A proxy receives a network request and forwards it to another server while applying routing or policy.</li><li>A content delivery network serves cached content from locations near users and protects or accelerates origin servers.</li><li>[concept] is a request-response protocol that defines methods, headers, status codes, and message bodies.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. HTTP: 1; proxies: 3; CDNs: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. HTTP: 2; proxies: 3; CDNs: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. HTTP: 3; proxies: 2; CDNs: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. HTTP: 3; proxies: 1; CDNs: 2</label>
@@ -194,7 +193,7 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Receive headers: fetch resolves to a response before complete body consumption.</li><li>Consume the body: Await body reading and compare request phases using observable timing evidence.</li><li>Resolve and connect: DNS, transport and TLS may be reused or partially hidden in timing data.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 3</label>
@@ -206,13 +205,13 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
         <p>Change the stated fixture condition and compare the observable result. Evidence to inspect: Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p>
       </details>
     </article>
-    <p><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">Review the lesson source: Fetch Standard: fetching and responses</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">Review the lesson source: Fetch Standard: fetching and responses</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

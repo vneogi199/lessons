@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand last-resort process events, undefined application state after uncaught failures, synchronous emergency logging, exit status, and external restart ownership.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>An uncaught failure can leave application state unreliable. Last-resort observation should not silently convert that failure into continued service. The example uses explicit strict rejection policy and a monitor that does not suppress default termination. A warning need not be fatal. An external supervisor owns restarts and their bounds; merely setting an exit code can leave existing listeners accepting work.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ADMIT</span><strong>A ready process accepts work</strong><small>Listeners, connections, jobs, and queues create owned in-flight state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EXECUTE</span><strong>Runtime coordinates work</strong><small>Errors, retries, signals, and health state can change the path.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DRAIN</span><strong>Admission stops before cleanup</strong><small>Readiness drops, connections or jobs finish, and deadlines bound waiting.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXIT</span><strong>Supervisor observes termination</strong><small>Exit code, report, remaining handles, and restart policy expose the result.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Send SIGTERM or inject an uncaught failure during a slow operation and observe bounded termination.</strong>
         <small><b>Inspect:</b> readiness, in-flight count, handles, signal log, cleanup, exit code, diagnostic report, and supervisor restart.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Reproduce uncaught and unhandled failures in child processes and verify exit, report, and supervisor behavior.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 <p>Use --unhandled-rejections=strict for the isolated fatal-error fixture and verify nonzero exit. Explain why merely setting exitCode can leave open servers accepting requests; fatal-error monitoring must not silently turn into unsafe recovery.</p>
 
 
@@ -149,7 +149,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
     <ol class="interview-questions">
       <li>Explain why continuing after uncaughtException is unsafe.</li>
       <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>How would you reproduce uncaught and unhandled failures in child processes and verify exit, report, and supervisor behavior, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -157,13 +157,13 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand last-resort process events, undefined application state after uncaught failures, synchronous emergency logging, exit status, and external restart ownership.</p>
+
         <p class="worked-answer">uncaughtExceptionMonitor observes without suppressing default termination. A warning is not necessarily fatal; explicit strict unhandled-rejection mode makes this fixture&#039;s policy reproducible. Do not resume normal service after an unknown broken invariant; an external supervisor owns bounded restarts.</p>
         <p>Look for: readiness, in-flight count, handles, signal log, cleanup, exit code, diagnostic report, and supervisor restart.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -171,9 +171,9 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] reports a Promise rejected without a handler in time. Treat it as a lost ownership path and make crash policy explicit.</li><li>[concept] surface deprecated or suspicious behavior without necessarily terminating execution; production policy determines response.</li><li>An exit code reports process termination status. Zero conventionally means success; a shell pipeline may report only its last command unless the shell is configured otherwise.</li><li>[concept] is a last-resort process event after an exception reaches the event loop. Perform synchronous emergency cleanup and exit rather than resuming normal service.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. uncaughtException: 4; unhandledRejection: 2; warnings: 1; exit codes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. uncaughtException: 4; unhandledRejection: 1; warnings: 2; exit codes: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. uncaughtException: 4; unhandledRejection: 3; warnings: 1; exit codes: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. uncaughtException: 1; unhandledRejection: 4; warnings: 2; exit codes: 3</label>
@@ -185,7 +185,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] manage process lifecycle, restarts, backoff, and exit observation outside the application process.</li><li>[concept] defines when a process should terminate rather than continue in an unsafe state and how recovery is supervised.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. crash policy: 1; supervisors: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. crash policy: 2; supervisors: 1</label>
@@ -197,7 +197,7 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Runtime coordinates work: Errors, retries, signals, and health state can change the path.</li><li>Admission stops before cleanup: Readiness drops, connections or jobs finish, and deadlines bound waiting.</li><li>Supervisor observes termination: Exit code, report, remaining handles, and restart policy expose the result.</li><li>A ready process accepts work: Listeners, connections, jobs, and queues create owned in-flight state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -209,13 +209,13 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
         <p>Send SIGTERM or inject an uncaught failure during a slow operation and observe bounded termination. Evidence to inspect: readiness, in-flight count, handles, signal log, cleanup, exit code, diagnostic report, and supervisor restart.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

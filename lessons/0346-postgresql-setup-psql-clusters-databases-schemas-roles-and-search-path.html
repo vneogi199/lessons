@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace a client connection into one PostgreSQL cluster and distinguish server instances, databases, namespaces, owners, sessions, and name resolution.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>A PostgreSQL cluster contains databases managed by one server instance. A connection works within one database, where schemas group named objects. Roles supply identity and privileges. Search_path determines how unqualified names are found, so a writable schema can affect which object code reaches. Check the current connection and qualified names before running a fixture; schema USAGE alone does not grant table access.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · MODEL</span><strong>Application expresses an invariant</strong><small>Schema and access patterns turn meaning into constraints.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STORAGE</span><strong>Database organizes durable state</strong><small>Indexes, pages, logs, and caches support access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COORDINATE</span><strong>Concurrency rules protect changes</strong><small>Transactions and locks define legal interleavings.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RECOVER</span><strong>State survives failure</strong><small>Backups, logs, replicas, and checks prove durability.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Break one assumption with concurrent or failed work and verify the invariant survives.</strong>
         <small><b>Inspect:</b> Constraints, query plan, lock state, log position, replica state, and restored data.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Start an isolated database, create least-privilege roles and schemas, inspect connection identity, and prove which object an unqualified name resolves to.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -146,7 +146,7 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
     <ol class="interview-questions">
       <li>Explain the difference between a PostgreSQL cluster, database, schema, role, and session and identify search_path security risks.</li>
       <li>Explain how a database query works, starting with the input and following it through to the result.</li>
-      <li>How would you start an isolated database, create least-privilege roles and schemas, inspect connection identity, and prove which object an unqualified name resolves to, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
     <textarea id="teachback" placeholder="Define the boundary. Trace a database query. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace a client connection into one PostgreSQL cluster and distinguish server instances, databases, namespaces, owners, sessions, and name resolution.</p>
+
         <p class="worked-answer">The role default applies to a new app_runtime session, not the administrative session after connect. No projects table is created, so to_regclass can return NULL. USAGE is not table permission. Trust every schema creator on search_path, including intentional app-before-pg_catalog shadowing; do not assume this fixture fully hardens a server.</p>
         <p>Look for: Constraints, query plan, lock state, log position, replica state, and restored data.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A PostgreSQL database cluster is a collection of databases managed by one server instance with shared cluster-level objects and a data directory. It does not mean a distributed deployment, and its stored data still exists when the server is stopped.</li><li>A database is an isolated catalog and object namespace inside a PostgreSQL cluster. Normal SQL connections operate inside exactly one database.</li><li>[concept] establishes one reproducible server environment, a known client identity, and a safe namespace before experiments begin.</li><li>[concept] is PostgreSQL&#39;s command-line client. It sends SQL and meta-commands, exposes connection state, and can stop scripts on the first error.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. PostgreSQL setup: 3; psql: 4; clusters: 2; databases: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. PostgreSQL setup: 3; psql: 1; clusters: 2; databases: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. PostgreSQL setup: 3; psql: 4; clusters: 1; databases: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. PostgreSQL setup: 3; psql: 2; clusters: 1; databases: 4</label>
@@ -182,7 +182,7 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] is the ordered list of schemas used to resolve unqualified object names. Writable schemas early in the path can turn name lookup into a security boundary.</li><li>A schema is a namespace inside a database. It groups objects and participates in name lookup, but it is not a separate storage or compute server.</li><li>A role is PostgreSQL&#39;s unified identity and privilege object. A role may log in, own objects, inherit memberships, or act as a permission group.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. schemas: 2; roles: 1; search_path: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. schemas: 3; roles: 1; search_path: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. schemas: 2; roles: 3; search_path: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. schemas: 1; roles: 3; search_path: 2</label>
@@ -194,7 +194,7 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>State survives failure: Backups, logs, replicas, and checks prove durability.</li><li>Application expresses an invariant: Schema and access patterns turn meaning into constraints.</li><li>Database organizes durable state: Indexes, pages, logs, and caches support access.</li><li>Concurrency rules protect changes: Transactions and locks define legal interleavings.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 4 → 1</label>
@@ -206,13 +206,13 @@ SELECT to_regclass(&#039;projects&#039;), to_regclass(&#039;app.projects&#039;);
         <p>Break one assumption with concurrent or failed work and verify the invariant survives. Evidence to inspect: Constraints, query plan, lock state, log position, replica state, and restored data.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

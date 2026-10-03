@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace format selection, namespace wrapping, conditional entry points, package encapsulation, and duplicated state when consumers load separate implementations.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>Package conditions can send import and require consumers to different implementations. If those implementations each own state, one logical package can have two independent instances. Test identity and public behavior from the actual packaged artifact. Runtime versions also affect which ESM graphs require can load, especially around top-level await. Diagnose the selected files and rules rather than assuming one universal interop error.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SPECIFIER</span><strong>Code requests one module</strong><small>Syntax, package type, URL, and conditions choose the loader model.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>Node selects an exact resource</strong><small>Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · LOAD</span><strong>Format is parsed and evaluated</strong><small>Cache insertion, linking, interop, cycles, and type stripping affect initialization.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXPORT</span><strong>Consumer observes the public surface</strong><small>Namespace shape, shared state, errors, and packed artifacts prove behavior.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</strong>
         <small><b>Inspect:</b> import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Publish one package surface and test ESM and CommonJS consumers against aligned state and types.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 <p>Pack the package and test both import and require consumers from clean directories. Verify intended state sharing and exported entry points. Conditional export branches can load distinct implementations; a successful ESM import alone is insufficient.</p>
 
 
@@ -153,7 +153,7 @@ console.log(import.meta.url, import.meta.dirname, config);
     <ol class="interview-questions">
       <li>Diagnose ERR_REQUIRE_ESM and the dual-package hazard from the real loader rules.</li>
       <li>Explain how a module import works, starting with the input and following it through to the result.</li>
-      <li>How would you publish one package surface and test ESM and CommonJS consumers against aligned state and types, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -161,13 +161,13 @@ console.log(import.meta.url, import.meta.dirname, config);
     <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace format selection, namespace wrapping, conditional entry points, package encapsulation, and duplicated state when consumers load separate implementations.</p>
+
         <p class="worked-answer">Conditional import/require targets can create two independent stateful implementations. Test consumer-visible identity from the actual artifact. Modern Node can require some synchronous ESM graphs; top-level await and version rules matter, so ERR_REQUIRE_ESM is not a universal outcome.</p>
         <p>Look for: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -175,9 +175,9 @@ console.log(import.meta.url, import.meta.dirname, config);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] uses import/export linking and live bindings, with loading rules distinct from CommonJS.</li><li>CommonJS wraps each file in a function and loads modules synchronously through require, inserting them into a cache before evaluation completes.</li><li>The [concept] field influences how Node interprets relevant JavaScript files; explicit extensions can override that default.</li><li>Package [concept] define permitted package entry points and conditional mappings; CommonJS [concept] instead exposes runtime module values.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. ESM: 1; CommonJS interoperability: 2; package type: 3; exports: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. ESM: 1; CommonJS interoperability: 2; package type: 4; exports: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. ESM: 1; CommonJS interoperability: 3; package type: 4; exports: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. ESM: 1; CommonJS interoperability: 4; package type: 3; exports: 2</label>
@@ -189,7 +189,7 @@ console.log(import.meta.url, import.meta.dirname, config);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Export or import [concept] select mappings for environments such as import, require, or custom supported [concept].</li><li>A dual-package hazard occurs when ESM and CommonJS consumers load separate implementations of one logical package and observe different singleton state or identity.</li><li>Package [concept] provide internal specifier mappings; they differ from the import syntax used to reference modules.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. imports: 3; conditions: 1; dual-package hazards: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. imports: 3; conditions: 2; dual-package hazards: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. imports: 1; conditions: 2; dual-package hazards: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. imports: 2; conditions: 1; dual-package hazards: 3</label>
@@ -201,7 +201,7 @@ console.log(import.meta.url, import.meta.dirname, config);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Format is parsed and evaluated: Cache insertion, linking, interop, cycles, and type stripping affect initialization.</li><li>Consumer observes the public surface: Namespace shape, shared state, errors, and packed artifacts prove behavior.</li><li>Code requests one module: Syntax, package type, URL, and conditions choose the loader model.</li><li>Node selects an exact resource: Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -213,13 +213,13 @@ console.log(import.meta.url, import.meta.dirname, config);
         <p>Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity. Evidence to inspect: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/packages.html" target="_blank" rel="noreferrer">Review the lesson source: Node.js packages and modules documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/packages.html" target="_blank" rel="noreferrer">Review the lesson source: Node.js packages and modules documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
