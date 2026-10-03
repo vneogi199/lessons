@@ -94,7 +94,7 @@ for (const [index, lesson] of manifest.lessons.entries()) {
     if (diagramStageCount < 3 || diagramStageCount > 4) {
       failures.push(`${lesson.id}: expected 3 or 4 readable blackboard stages, found ${diagramStageCount}`);
     }
-    if (!html.includes("↺ TEST THE MODEL") || !html.includes("<b>Inspect:</b>")) {
+    if (!html.includes("<span>Check your prediction</span>") || !html.includes("<b>Inspect:</b>")) {
       failures.push(`${lesson.id}: blackboard is missing its experiment or evidence guidance`);
     }
     if (html.includes("<svg")) failures.push(`${lesson.id}: still contains the old cramped SVG blackboard`);

@@ -59,7 +59,7 @@
         <li class="trace-stage"><span>01 · ITERABLE</span><strong>A source can produce traversal</strong><small>Calling iter asks for an iterator.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ITERATOR</span><strong>State tracks the current position</strong><small>The iterator is normally single-use.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NEXT / YIELD</span><strong>One value crosses at a time</strong><small>A generator frame suspends after yielding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STOP</span><strong>Traversal ends explicitly</strong><small>StopIteration, close, or an exception completes the flow.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Consume only three values from a very large source, then close it early.</strong>
         <small><b>Inspect:</b> next calls, yielded values, generator state, cleanup log, and peak memory.</small>
       </div>
@@ -159,13 +159,13 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
     <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="python">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
 
         <p class="worked-answer">Countdown accepts a nonnegative exact integer. Each iter call gets its own traversal state, and an exhausted iterator remains exhausted. The example creates the sentinel input iterator without consuming it. You would need a separate check to observe its interactive-input behavior.</p>
         <p>Look for: next calls, yielded values, generator state, cleanup log, and peak memory.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#python">Worked track case: An async service becomes serial ↗</a></p>
       </details>
     </div>
@@ -173,9 +173,9 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An iterator returns itself from __iter__ and produces successive values from __next__ until StopIteration. It is stateful and usually single-use.</li><li>[concept] requests one iterator item and either returns it, uses a provided default, or propagates exhaustion.</li><li>[concept] signals iterator exhaustion. Generators should normally return rather than explicitly raise it.</li><li>An iterable can produce an iterator when iter is called. A reusable iterable normally creates a fresh iterator for each traversal.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Iterables: 4; iterators: 2; next: 1; StopIteration: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Iterables: 4; iterators: 1; next: 2; StopIteration: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Iterables: 4; iterators: 3; next: 1; StopIteration: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Iterables: 1; iterators: 4; next: 2; StopIteration: 3</label>
@@ -187,7 +187,7 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] computes items only when requested, reducing eager storage but deferring work and possible errors.</li><li>iter(callable, sentinel) repeatedly calls a function until its result equals the sentinel.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. sentinel iteration: 1; lazy traversal: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. sentinel iteration: 2; lazy traversal: 1</label>
@@ -199,7 +199,7 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Traversal ends explicitly: StopIteration, close, or an exception completes the flow.</li><li>A source can produce traversal: Calling iter asks for an iterator.</li><li>State tracks the current position: The iterator is normally single-use.</li><li>One value crosses at a time: A generator frame suspends after yielding.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -211,13 +211,13 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
         <p>Consume only three values from a very large source, then close it early. Evidence to inspect: next calls, yielded values, generator state, cleanup log, and peak memory.</p>
       </details>
     </article>
-    <p><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: Python Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: Python Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

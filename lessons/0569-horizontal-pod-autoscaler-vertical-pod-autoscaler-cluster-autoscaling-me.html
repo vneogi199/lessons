@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow metrics through control loops, desired replica calculation, cooldown, Pod requests, pending capacity, and node provisioning.</p>
-      <p class="analogy">Kubernetes is a control room: you declare desired state through an API, controllers compare it with reality, and node agents keep reconciling until status matches or evidence explains why not.</p>
+      <p>HPA turns supported workload metrics into a replica recommendation, then applies stabilization and policy. Four replicas at 130 percent utilization against a 65 percent target suggest eight in the simplified calculation. Missing metrics, readiness and tolerance can change the actual result. New replicas still need node capacity and downstream headroom; a replica maximum is separate from container resource limits.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SPEC</span><strong>Desired workload enters the API</strong><small>Template, replicas, resources, placement, and strategy are stored.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROLLERS</span><strong>Reconcilers create child objects</strong><small>ReplicaSets, Jobs, autoscalers, and ownership update desired work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SCHEDULE + RUN</span><strong>Pods bind to nodes and start</strong><small>Scheduler, kubelet, runtime, CNI, and CSI cooperate.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Health drives the next reconcile</strong><small>Conditions, events, metrics, and failures change controller action.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Break readiness or capacity during a rollout and follow every controller decision.</strong>
         <small><b>Inspect:</b> Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Load-test HPA and node scaling, then diagnose oscillation, missing metrics, and unschedulable replicas.</p>
-    <p class="lab-scope">Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
+    <p class="lab-scope">Predict what the manifest or scenario requests, then explain the acceptance criteria. Runtime and recovery exercises need an existing isolated cluster, available tools and images, and bounded disposable fixtures. Resolve those prerequisites before applying configuration.</p>
 
 
 
@@ -146,7 +146,7 @@ spec:
     <ol class="interview-questions">
       <li>Explain why HPA depends on correct requests and how scaling loops interact.</li>
       <li>Explain how Kubernetes desired state and observed behavior works, starting with the input and following it through to the result.</li>
-      <li>How would you load-test HPA and node scaling, then diagnose oscillation, missing metrics, and unschedulable replicas, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@ spec:
     <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow metrics through control loops, desired replica calculation, cooldown, Pod requests, pending capacity, and node provisioning.</p>
+
         <p class="worked-answer">Ignoring tolerance and missing/unready metrics, four replicas at 130 percent request-relative utilization against a 65 percent target suggest ceil(4 × 130/65) = eight. The controller&#039;s real policy can alter that recommendation. Max thirty bounds replicas, not CPU cgroups; node capacity, metrics and downstream rate limits can still block recovery.</p>
         <p>Look for: Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@ spec:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>VPA components recommend or adjust resource requests under their configured mode and workload-disruption constraints.</li><li>[concept] changes node capacity based on supported demand and removal policies, with provisioning delay.</li><li>[concept] are numerical measurements recorded over time, such as request counts, latency distributions, and queue depth. Their labels and aggregation determine which questions they can answer.</li><li>HPA changes replica counts from metrics and policy, subject to signal delay, readiness, and downstream capacity.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Horizontal Pod Autoscaler: 4; Vertical Pod Autoscaler: 2; cluster autoscaling: 1; metrics: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Horizontal Pod Autoscaler: 4; Vertical Pod Autoscaler: 1; cluster autoscaling: 2; metrics: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Horizontal Pod Autoscaler: 4; Vertical Pod Autoscaler: 3; cluster autoscaling: 1; metrics: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Horizontal Pod Autoscaler: 1; Vertical Pod Autoscaler: 4; cluster autoscaling: 2; metrics: 3</label>
@@ -182,7 +182,7 @@ spec:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] bound replica or node growth through configured minimums, maximums, rate policies, quotas and available capacity. They differ from per-container CPU and memory cgroup limits.</li><li>Autoscaling [concept] dampens rapid reversals by considering recent recommendations and policy windows.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. stabilization: 1; scaling limits: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. stabilization: 2; scaling limits: 1</label>
@@ -194,7 +194,7 @@ spec:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Reconcilers create child objects: ReplicaSets, Jobs, autoscalers, and ownership update desired work.</li><li>Pods bind to nodes and start: Scheduler, kubelet, runtime, CNI, and CSI cooperate.</li><li>Health drives the next reconcile: Conditions, events, metrics, and failures change controller action.</li><li>Desired workload enters the API: Template, replicas, resources, placement, and strategy are stored.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -206,13 +206,13 @@ spec:
         <p>Break readiness or capacity during a rollout and follow every controller decision. Evidence to inspect: Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</p>
       </details>
     </article>
-    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

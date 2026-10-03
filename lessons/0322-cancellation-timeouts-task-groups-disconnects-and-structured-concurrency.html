@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>A task group gives child tasks one owned lifetime. Failures or cancellation lead the group to coordinate cleanup before exit. The example starts three tasks and uses all-or-fail results; it does not implement partial success or a disconnect watcher. Cancellation is cooperative, cleanup can exceed the nominal deadline, and remote effects can already exist. Keep database sessions out of concurrent sharing.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · OWN</span><strong>Keep child work inside a bounded scope</strong><small>Define a deadline and whether partial results are acceptable before starting upstream calls.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SIGNAL</span><strong>Connect timeout and abandonment policy</strong><small>A client disconnect is not a universal automatic cancellation guarantee; verify the server path and explicitly own any disconnect watcher.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · UNWIND</span><strong>Let cancellation reach cooperative waits</strong><small>Use finally for cleanup and normally propagate cancellation. Cancelling an await does not forcibly stop a running thread or undo a remote write.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><strong>Wait for children and account for outcomes</strong><small>Task groups own child completion and failures. Cleanup can exceed the nominal timeout, and remote effects may require reconciliation.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope.</strong>
         <small><b>Inspect:</b> Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Run bounded parallel upstream calls with AnyIO task groups, deadlines, partial failure policy, and client-disconnect cancellation.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -140,7 +140,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
     <ol class="interview-questions">
       <li>Explain why creating untracked background asyncio tasks inside a request is unsafe.</li>
       <li>Explain how a concurrent task works, starting with the input and following it through to the result.</li>
-      <li>How would you run bounded parallel upstream calls with AnyIO task groups, deadlines, partial failure policy, and client-disconnect cancellation, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -148,13 +148,13 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace cancellation from server or client through awaits, timeout scopes, child tasks, cleanup, exception groups, and response abandonment.</p>
+
         <p class="worked-answer">Three named tasks bound this fan-out. AnyIO cancellation is cooperative and cleanup may outlast the nominal deadline; remote effects may already exist. The starter implements all-or-fail aggregation, not partial results or an explicit disconnect watcher. Never share one mutable database session among the children.</p>
         <p>Look for: Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -162,9 +162,9 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A task group gives parallel child tasks one lifetime. If one fails or the parent is cancelled, the group coordinates cancellation and waits for cleanup before leaving.</li><li>A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</li><li>[concept] asks in-flight async work to stop at an await point. Correct code lets it propagate, releases resources in finally blocks, and avoids publishing partial results.</li><li>A timeout limits how long an operation may wait before the application cancels or abandons that operation.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Cancellation: 3; timeouts: 4; task groups: 2; disconnects: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Cancellation: 3; timeouts: 1; task groups: 2; disconnects: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Cancellation: 3; timeouts: 4; task groups: 1; disconnects: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Cancellation: 3; timeouts: 2; task groups: 1; disconnects: 4</label>
@@ -176,7 +176,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A disconnect occurs when the client closes the connection before the application finishes sending or receiving data.</li><li>[concept] keeps child tasks inside a parent scope that owns their completion, failure, cancellation, and cleanup.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. disconnects: 1; structured concurrency: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. disconnects: 2; structured concurrency: 1</label>
@@ -188,7 +188,7 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Wait for children and account for outcomes: Task groups own child completion and failures. Cleanup can exceed the nominal timeout, and remote effects may require reconciliation.</li><li>Keep child work inside a bounded scope: Define a deadline and whether partial results are acceptable before starting upstream calls.</li><li>Connect timeout and abandonment policy: A client disconnect is not a universal automatic cancellation guarantee; verify the server path and explicitly own any disconnect watcher.</li><li>Let cancellation reach cooperative waits: Use finally for cleanup and normally propagate cancellation. Cancelling an await does not forcibly stop a running thread or undo a remote write.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 4 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 1 → 3 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 3 → 4 → 1</label>
@@ -200,13 +200,13 @@ async def load_dashboard(project_id: UUID) -&gt; Dashboard:
         <p>Fail one child while another waits, then cancel the parent; verify cleanup and that no request-owned task survives the scope. Evidence to inspect: Task completion, grouped errors, cleanup events and remote operation state; exercise disconnects separately with the deployed server and proxy stack.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand callable instance signatures, parameterized dependency factories, decorator-only dependencies, global and router graphs, cache keys, and test overrides.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>A configured callable can carry dependency policy, such as a required scope, without storing mutable request identity. Decorator dependencies run checks even when the endpoint does not receive their return value. Test overrides use the original callable as a key. Creating an equivalent-looking callable may create a different key, and overrides must be restored afterward. Choose placement so shared behavior remains visible to maintainers.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SIGNATURE</span><strong>Endpoint declares requirements</strong><small>Annotated parameters identify dependency callables.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GRAPH</span><strong>FastAPI solves prerequisites</strong><small>Sub-dependencies are ordered before their consumers.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REQUEST SCOPE</span><strong>Values are acquired and cached</strong><small>Each node normally runs once for this request.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · UNWIND</span><strong>Yield resources close in reverse</strong><small>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.</strong>
         <small><b>Inspect:</b> Dependency call log, cache reuse, exception path, and resource-close events.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build reusable authorization and feature-flag dependencies at application, router, and operation scopes with isolated overrides.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -143,7 +143,7 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
     <ol class="interview-questions">
       <li>Choose dependency placement without creating invisible behavior or import-time singletons.</li>
       <li>Explain how a dependency lifetime works, starting with the input and following it through to the result.</li>
-      <li>How would you build reusable authorization and feature-flag dependencies at application, router, and operation scopes with isolated overrides, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -151,13 +151,13 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
     <textarea id="teachback" placeholder="Define the boundary. Trace a dependency lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand callable instance signatures, parameterized dependency factories, decorator-only dependencies, global and router graphs, cache keys, and test overrides.</p>
+
         <p class="worked-answer">The configured callable holds a required scope, not per-request mutable identity. Decorator dependencies enforce checks but discard return values. Overrides use the original callable as a key and must be restored; a new equivalent-looking factory result may be a different dependency key.</p>
         <p>Look for: Dependency call log, cache reuse, exception path, and resource-close events.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -165,9 +165,9 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A dependency class stores configuration or state and uses its constructor or call method as part of dependency resolution.</li><li>A dependency factory creates and returns a configured dependency callable.</li><li>[concept] apply shared dependency checks or side effects to every operation included in a router.</li><li>A callable dependency is a function or object that FastAPI calls to produce a value for another dependency or endpoint.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Callable dependencies: 4; classes: 2; factories: 1; router dependencies: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Callable dependencies: 4; classes: 1; factories: 2; router dependencies: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Callable dependencies: 4; classes: 3; factories: 1; router dependencies: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Callable dependencies: 1; classes: 4; factories: 2; router dependencies: 3</label>
@@ -179,7 +179,7 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A dependency override replaces a registered dependency with another callable, usually for tests or controlled application composition.</li><li>[concept] apply shared dependency checks or side effects to every operation included in a router.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. router dependencies: 1; overrides: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. router dependencies: 2; overrides: 1</label>
@@ -191,7 +191,7 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>FastAPI solves prerequisites: Sub-dependencies are ordered before their consumers.</li><li>Values are acquired and cached: Each node normally runs once for this request.</li><li>Yield resources close in reverse: Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</li><li>Endpoint declares requirements: Annotated parameters identify dependency callables.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -203,13 +203,13 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
         <p>Nest two yield dependencies, raise inside the endpoint, and predict cleanup order. Evidence to inspect: Dependency call log, cache reuse, exception path, and resource-close events.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/dependencies/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Dependencies guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/dependencies/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Dependencies guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

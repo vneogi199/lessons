@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>A leader orders writes and followers replay its log. The acknowledgement policy determines which failures can lose an acknowledged write. Follower reads also need an explicit freshness contract. A session position can support read-your-writes, but current authority is an additional concern for linearizable reads. The write sketch omits election and commitment rules, so majority responses alone do not make it a consensus implementation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CLIENT</span><strong>Operation targets replicated state</strong><small>Required consistency, session token, version, and deadline define acceptable outcomes.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICAS</span><strong>Leaders or quorums coordinate versions</strong><small>Log position, acknowledgements, causal metadata, and topology govern visibility.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · FAILURE</span><strong>Lag, conflict, or partition intervenes</strong><small>Some nodes respond, reject, diverge, or remain uncertain according to policy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONVERGE</span><strong>Read, repair, failover, or merge completes</strong><small>History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Partition one replica group immediately after a write acknowledgement, then read from every side.</strong>
         <small><b>Inspect:</b> Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Simulate leader writes, delayed followers, acknowledged positions, failover, and read-your-writes routing with measured data-loss and staleness windows.</p>
-    <p class="lab-scope">Core: work through the supplied counterexample or protocol fragment and state its assumptions before comparing the criteria. Extension: implement durable adapters and bounded partition/recovery histories using a tested protocol. No database, cluster, consensus service or deployment runs in this content review.</p>
+    <p class="lab-scope">Work through the counterexample or protocol fragment and state its assumptions before reading the answer. A working distributed exercise needs durable adapters and a tested protocol. Record bounded partition and recovery histories to check the chosen guarantees.</p>
 
 
 
@@ -149,7 +149,7 @@ async function write(command) {
     <ol class="interview-questions">
       <li>Explain synchronous versus asynchronous replication and why replicas improve some read capacity but not arbitrary write throughput.</li>
       <li>Explain how a database transaction works, starting with the input and following it through to the result.</li>
-      <li>How would you simulate leader writes, delayed followers, acknowledged positions, failover, and read-your-writes routing with measured data-loss and staleness windows, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -157,13 +157,13 @@ async function write(command) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Order writes through one leader, ship a replicated log, define acknowledgement quorum, replay on followers, route reads by freshness need, and promote without accepting stale leadership.</p>
+
         <p class="worked-answer">The serialized write sketch omits durable append, election and current-term commit rules; majority responses alone do not implement consensus. A session freshness token needs cluster/stream identity and an applied position, while linearizable reads also need current authority. Test acknowledged-write preservation through failover rather than treating any newly reachable node as a safe leader.</p>
         <p>Look for: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -171,9 +171,9 @@ async function write(command) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Write-ahead logging records recovery information before corresponding durable state changes are considered complete.</li><li>A replicated-log [concept] marks the prefix considered committed under the protocol&#39;s rules.</li><li>[concept] means a replica has not received or applied the leader&#39;s latest progress, affecting reads and recovery.</li><li>[concept] orders writes through one leader and replays its log on followers that may serve reads with explicit freshness limits.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Single-leader replication: 4; WAL: 2; commit index: 1; follower lag: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Single-leader replication: 4; WAL: 1; commit index: 2; follower lag: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Single-leader replication: 4; WAL: 3; commit index: 1; follower lag: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Single-leader replication: 1; WAL: 4; commit index: 2; follower lag: 3</label>
@@ -185,7 +185,7 @@ async function write(command) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] distributes reads while preserving the chosen freshness and consistency contract.</li><li>[concept] transfers responsibility after a failure. Detecting failure, preventing two active owners, and preserving acknowledged data are separate problems.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. failover: 1; read scaling: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. failover: 2; read scaling: 1</label>
@@ -197,7 +197,7 @@ async function write(command) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Lag, conflict, or partition intervenes: Some nodes respond, reject, diverge, or remain uncertain according to policy.</li><li>Read, repair, failover, or merge completes: History, positions, conflicts, staleness, lost writes, and product invariant expose the guarantee.</li><li>Operation targets replicated state: Required consistency, session token, version, and deadline define acceptable outcomes.</li><li>Leaders or quorums coordinate versions: Log position, acknowledgements, causal metadata, and topology govern visibility.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -209,13 +209,13 @@ async function write(command) {
         <p>Partition one replica group immediately after a write acknowledgement, then read from every side. Evidence to inspect: Version, log or vector position, quorum responses, session token, lag, conflict siblings, repair, failover, and returned value.</p>
       </details>
     </article>
-    <p><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Review the lesson source: Google Spanner paper</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://research.google/pubs/pub45855/" target="_blank" rel="noreferrer">Review the lesson source: Google Spanner paper</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

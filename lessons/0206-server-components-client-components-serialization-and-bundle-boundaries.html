@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate the Server Component environment from SSR, trace payload references, async server rendering, client boundaries, serializable props, and bundle exclusion.</p>
-      <p class="analogy">React is a projection system: state is the film frame, rendering proposes the picture, and commit changes the screen. Effects synchronize equipment outside the projector.</p>
+      <p>Server and Client Component boundaries control code location, serialization and browser bundle contents. Server-only data access can stay out of the client bundle while a smaller component owns interaction. Client Components may still be pre-rendered on the server, so the directive does not mean browser-only execution. The local like counter only changes local state. Persistence, authorization and sanitization remain separate responsibilities.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · REQUEST</span><strong>A route or action reaches the server</strong><small>Authenticate and load server-owned data.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVER</span><strong>React produces server output</strong><small>Render HTML or a serialized component/action result.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BOUNDARY</span><strong>Serializable data crosses</strong><small>Code and non-serializable values stay on their side.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLIENT</span><strong>The browser resumes interaction</strong><small>Hydration or a client update makes behavior observable.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Move one value across the server/client boundary and predict whether serialization succeeds.</strong>
         <small><b>Inspect:</b> Server logs, payload shape, hydration warnings, bundle size, and interactive behavior.</small>
       </div>
@@ -100,7 +100,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Move data access and a heavy dependency to a Server Component while retaining a small interactive Client Component.</p>
-    <p class="lab-scope">Core: explain the supplied component or acceptance recipe and predict one changed-input result. Component snippets require the project&#039;s React imports, named collaborators and compatible runtime; they are not standalone files. Browser, framework, accessibility and deployment acceptance need separate execution evidence. No packages are installed by this review.</p>
+    <p class="lab-scope">Explain the component or exercise specification, then predict the result of changing one input. Component snippets need the named collaborators, React imports and a compatible project. They are not standalone files. Verify browser behavior, framework integration, accessibility and deployment separately.</p>
 
 
 
@@ -136,7 +136,7 @@ function LikeButton({ articleId, initialLikes }) {
     <ol class="interview-questions">
       <li>Explain why use server does not mark Server Components and how RSC changes the module graph.</li>
       <li>Explain how a server-to-client render works, starting with the input and following it through to the result.</li>
-      <li>How would you move data access and a heavy dependency to a Server Component while retaining a small interactive Client Component, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -144,13 +144,13 @@ function LikeButton({ articleId, initialLikes }) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a server-to-client render. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="react">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate the Server Component environment from SSR, trace payload references, async server rendering, client boundaries, serializable props, and bundle exclusion.</p>
+
         <p class="worked-answer">The server-only data/markdown code and separate client module have different authority. Client Components may also be pre-rendered on the server, so the directive does not mean browser-only execution. The local like counter neither persists nor authorizes likes. The sanitizer and framework serialization contract must be supplied and tested.</p>
         <p>Look for: Server logs, payload shape, hydration warnings, bundle size, and interactive behavior.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#react">Worked track case: An old search response replaces a new one ↗</a></p>
       </details>
     </div>
@@ -158,9 +158,9 @@ function LikeButton({ articleId, initialLikes }) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] converts a value into a representation for storage or transport. Define which types, identities, versions, and precision survive the round trip.</li><li>[concept] decide which modules ship to clients or remain on servers, affecting size and secret exposure.</li><li>A Server Component renders before the client bundle, in a server-only environment. It can read server data and use server-only packages, but it cannot hold interactive browser state.</li><li>A Client Component is included in the browser bundle and may use state, effects, event handlers, and browser APIs. The client boundary also becomes a serialization and bundle-size boundary.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Server Components: 3; Client Components: 4; serialization: 2; bundle boundaries: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Server Components: 3; Client Components: 1; serialization: 2; bundle boundaries: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Server Components: 3; Client Components: 4; serialization: 1; bundle boundaries: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Server Components: 3; Client Components: 2; serialization: 1; bundle boundaries: 4</label>
@@ -172,7 +172,7 @@ function LikeButton({ articleId, initialLikes }) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>React produces server output: Render HTML or a serialized component/action result.</li><li>Serializable data crosses: Code and non-serializable values stay on their side.</li><li>The browser resumes interaction: Hydration or a client update makes behavior observable.</li><li>A route or action reaches the server: Authenticate and load server-owned data.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 4 → 1 → 2 → 3</label>
@@ -184,13 +184,13 @@ function LikeButton({ articleId, initialLikes }) {
         <p>Move one value across the server/client boundary and predict whether serialization succeeds. Evidence to inspect: Server logs, payload shape, hydration warnings, bundle size, and interactive behavior.</p>
       </details>
     </article>
-    <p><a href="https://react.dev/reference/rsc/server-components" target="_blank" rel="noreferrer">Review the lesson source: React Server Components reference</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://react.dev/reference/rsc/server-components" target="_blank" rel="noreferrer">Review the lesson source: React Server Components reference</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

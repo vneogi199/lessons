@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Move requests through descriptors and the virtual filesystem to caches, device queues, persistent media, metadata, and crash-recovery records while distinguishing visibility from durability.</p>
-      <p class="analogy">Production software is a parcel crossing nested transport systems: the application labels intent, protocols add delivery information, and the kernel moves bytes while preserving isolation and resource limits.</p>
+      <p>A file operation passes through descriptors, filesystem logic, caches and device queues before data reaches persistent storage. A successful write can leave data buffered. Journaling supports recovery for selected changes without making every application write durable. For replacement, stage a file in the same trusted directory, sync its content, replace the name and sync the directory. If that final sync fails, replacement may already be visible. Report the uncertain state rather than assuming the exception rolled it back.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · STAGE</span><strong>Create an owned temporary file</strong><small>Unique same-directory staging avoids sharing one fixed temporary name.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SYNC</span><strong>Flush and fsync file data</strong><small>Do not replace the visible destination before staged data is ready.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REPLACE</span><strong>Atomically change the name</strong><small>Readers see the old or new file, not a partially rewritten destination.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SYNC DIRECTORY</span><strong>Persist namespace change</strong><small>A later sync failure does not roll back an already completed rename.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>If directory fsync fails, can the caller safely assume the old file remains?</strong>
         <small><b>Inspect:</b> No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence.</small>
       </div>
@@ -178,7 +178,7 @@ with TemporaryDirectory() as location:
     <ol class="interview-questions">
       <li>Explain why a successful write call may not mean durable data and trace pathname lookup, caching, writeback, and recovery.</li>
       <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>How would you perform an atomic file replacement with flush and directory synchronization, inspect metadata, and compare sequential, random, buffered, and durable I/O costs, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -186,13 +186,13 @@ with TemporaryDirectory() as location:
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="systems-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Move requests through descriptors and the virtual filesystem to caches, device queues, persistent media, metadata, and crash-recovery records while distinguishing visibility from durability.</p>
+
         <p class="worked-answer">The protocol stages in the same trusted directory, flushes/fsyncs content, replaces the name and syncs the directory. Rename visibility is not equivalent to crash durability; already-open readers may still see the old inode. If directory fsync fails, replacement may already be visible, so an exception does not imply rollback. The fixture checks content preservation and cleanup on invalid data, not power-loss behavior. Compare in-place rewrite with replacement under ownership, metadata and filesystem guarantees.</p>
         <p>Look for: No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
       </details>
     </div>
@@ -200,9 +200,9 @@ with TemporaryDirectory() as location:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] persist data in flash, with erase/write constraints and controller behavior affecting latency, endurance, and recovery.</li><li>[concept] expose named or referenced byte sequences through operating-system APIs, with permissions, lifecycle, and durability behavior.</li><li>Input/output moves data between a process and external devices or systems. Waiting for [concept] differs from consuming CPU.</li><li>Magnetic [concept] persist data on rotating media; seek and rotational latency make access patterns important.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. I/O: 3; disks: 4; SSDs: 2; files: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. I/O: 3; disks: 1; SSDs: 2; files: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. I/O: 3; disks: 4; SSDs: 1; files: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. I/O: 3; disks: 2; SSDs: 1; files: 4</label>
@@ -214,7 +214,7 @@ with TemporaryDirectory() as location:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] temporarily stores data between producers and consumers. Unbounded [concept] converts a throughput mismatch into memory exhaustion.</li><li>[concept] reuses stored results to avoid repeated work. Define key scope, freshness, invalidation, memory limits, and behavior on misses.</li><li>[concept] map names to filesystem objects. Path resolution and permissions determine which object an operation reaches.</li><li>A virtual filesystem layer presents common file operations over different filesystem implementations.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. directories: 3; VFS: 4; buffering: 2; caching: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. directories: 3; VFS: 1; buffering: 2; caching: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. directories: 3; VFS: 4; buffering: 1; caching: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. directories: 3; VFS: 2; buffering: 1; caching: 4</label>
@@ -226,7 +226,7 @@ with TemporaryDirectory() as location:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] records selected filesystem changes to support recovery after interruption. It does not imply every application write is durable.</li><li>[concept] means acknowledged data survives the failures covered by a stated contract. Buffered writes may require explicit synchronization.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. journaling: 1; durability: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. journaling: 2; durability: 1</label>
@@ -238,7 +238,7 @@ with TemporaryDirectory() as location:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Atomically change the name: Readers see the old or new file, not a partially rewritten destination.</li><li>Persist namespace change: A later sync failure does not roll back an already completed rename.</li><li>Create an owned temporary file: Unique same-directory staging avoids sharing one fixed temporary name.</li><li>Flush and fsync file data: Do not replace the visible destination before staged data is ready.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -250,13 +250,13 @@ with TemporaryDirectory() as location:
         <p>If directory fsync fails, can the caller safely assume the old file remains? Evidence to inspect: No; reconcile visible state. Local tests check replacement/cleanup, while crash durability needs filesystem-specific evidence.</p>
       </details>
     </article>
-    <p><a href="https://docs.kernel.org/filesystems/vfs.html" target="_blank" rel="noreferrer">Review the lesson source: Linux virtual filesystem documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.kernel.org/filesystems/vfs.html" target="_blank" rel="noreferrer">Review the lesson source: Linux virtual filesystem documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

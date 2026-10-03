@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate ASGI mounts, template rendering and escaping, cacheable assets, browser security, and GraphQL execution mounted alongside REST.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>Static assets, templates and GraphQL can share an ASGI application while retaining different contracts. Template autoescaping protects ordinary HTML text contexts, not every URL or trusted-markup use. A nonce value does not install a CSP header. GraphQL still needs authenticated context and operation limits when mounted beside REST. Supply the directories, template and schema before treating the fragment as a working integration.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOCKET</span><strong>HTTP bytes reach Uvicorn</strong><small>The server parses protocol data and creates an ASGI scope.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><strong>Events enter the application</strong><small>Middleware wraps receive, routing, and endpoint handling.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><strong>Dependencies and business logic run</strong><small>Typed inputs become a return value or exception.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>ASGI send emits wire events</strong><small>Status, headers, and body become observable to the client.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one valid request and one failure while recording every ASGI event.</strong>
         <small><b>Inspect:</b> Scope fields, middleware order, dependency calls, send events, and client response.</small>
       </div>
@@ -101,7 +101,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Serve hashed static assets and an escaped template, then mount a minimal GraphQL endpoint with shared authentication and isolated schema ownership.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -138,7 +138,7 @@ app.include_router(graphql, prefix=&quot;/graphql&quot;)
     <ol class="interview-questions">
       <li>Explain when FastAPI should render HTML or host GraphQL and when a separate frontend boundary is clearer.</li>
       <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>How would you serve hashed static assets and an escaped template, then mount a minimal GraphQL endpoint with shared authentication and isolated schema ownership, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -146,13 +146,13 @@ app.include_router(graphql, prefix=&quot;/graphql&quot;)
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate ASGI mounts, template rendering and escaping, cacheable assets, browser security, and GraphQL execution mounted alongside REST.</p>
+
         <p class="worked-answer">Autoescaping protects ordinary HTML text contexts, not every URL, script or trusted-markup context. A nonce variable alone does not install a CSP header. The template, static directory, schema and GraphQL authorization are missing integrations; mounted GraphQL still needs depth, complexity and rate limits.</p>
         <p>Look for: Scope fields, middleware order, dependency calls, send events, and client response.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -160,9 +160,9 @@ app.include_router(graphql, prefix=&quot;/graphql&quot;)
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] combine a document pattern with application data to create an HTML response.</li><li>An HTML response sends browser-rendered markup with the text/html media type.</li><li>[concept] define where GraphQL parsing and execution meet FastAPI identity, dependencies, errors, and operation limits.</li><li>[concept] are unchanged assets such as images, style sheets, or browser scripts served from a directory.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Static files: 4; templates: 2; HTML responses: 1; GraphQL integration boundaries: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Static files: 4; templates: 1; HTML responses: 2; GraphQL integration boundaries: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Static files: 4; templates: 3; HTML responses: 1; GraphQL integration boundaries: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Static files: 1; templates: 4; HTML responses: 2; GraphQL integration boundaries: 3</label>
@@ -174,7 +174,7 @@ app.include_router(graphql, prefix=&quot;/graphql&quot;)
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>ASGI send emits wire events: Status, headers, and body become observable to the client.</li><li>HTTP bytes reach Uvicorn: The server parses protocol data and creates an ASGI scope.</li><li>Events enter the application: Middleware wraps receive, routing, and endpoint handling.</li><li>Dependencies and business logic run: Typed inputs become a return value or exception.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -186,13 +186,13 @@ app.include_router(graphql, prefix=&quot;/graphql&quot;)
         <p>Trace one valid request and one failure while recording every ASGI event. Evidence to inspect: Scope fields, middleware order, dependency calls, send events, and client response.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

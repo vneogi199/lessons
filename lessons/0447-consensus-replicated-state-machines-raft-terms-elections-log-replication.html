@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ELECT</span><strong>A candidate needs a majority</strong><small>Persist term and vote. Check log freshness. A term can end without a leader.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICATE</span><strong>Followers check the preceding entry</strong><small>Matching index and term anchor the prefix before durable append or conflict repair.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><strong>Count replicas for a current-term entry</strong><small>A majority storing it allows commitment of it and the preceding log.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · APPLY</span><strong>Replicas apply committed commands in order</strong><small>A higher observed term ends old leadership. External effects need separate replay controls.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Partition five replicas into groups of two and three, then heal the partition.</strong>
         <small><b>Inspect:</b> Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</small>
       </div>
@@ -173,7 +173,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
     <ol class="interview-questions">
       <li>Explain what consensus solves, trace a Raft write, and distinguish leader election from failure detection and replication alone.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -181,13 +181,13 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Trace the five-node partition. Who can commit? What happens to the old leader after healing? Then change membership from five servers to three. Explain which majorities the transition requires and what the precheck code cannot establish.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>C, D and E can elect a term-5 leader and commit current-term entries. A and B cannot commit alone. A steps down after learning term 5; conflicting uncommitted suffixes can be repaired. Joint consensus needs both configuration majorities. The precheck verifies durable term handling and prefix rejection only; election, append durability, commitment, application and membership safety still need the full protocol.</p>
         <p class="worked-answer">A higher term is persisted even when the prefix check fails. The success-shaped outcome deliberately says readyForLogProcessing, not append success. Trusted RPCs, serialized dispatch and durable hard-state adapter behavior are assumptions; rejecting a failed persistence promise must also stop normal node processing. Elections, conflict repair, commit rules and membership remain outside this precheck.</p>
         <p>Look for: Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -195,7 +195,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="scenario">
       <h3>1. A five-node Raft cluster splits into groups of two and three. The old leader is in the group of two. Which statement is correct?</h3>
       <ol><li>Logs initially match. The three-node side communicates reliably and can complete an election.</li></ol>
@@ -209,7 +209,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
         <p>Explain why an older-term entry on a majority still needs the current-term commitment rule.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</li><li>[concept] lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</li><li>[concept] apply an agreed command sequence to deterministic state transitions across replicas.</li><li>[concept] are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Consensus: 2; replicated state machines: 4; Raft terms: 3; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Consensus: 2; replicated state machines: 1; Raft terms: 3; elections: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Consensus: 3; replicated state machines: 2; Raft terms: 4; elections: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Consensus: 2; replicated state machines: 3; Raft terms: 4; elections: 1</label>
@@ -221,7 +221,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>Distributed-systems [concept] means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break [concept], but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#39;s guarantees.</li><li>[concept] distributes ordered records and establishes commitment under a consensus or replication protocol.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. log replication: 1; safety: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. log replication: 2; safety: 1</label>
@@ -233,7 +233,7 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Count replicas for a current-term entry: A majority storing it allows commitment of it and the preceding log.</li><li>Replicas apply committed commands in order: A higher observed term ends old leadership. External effects need separate replay controls.</li><li>A candidate needs a majority: Persist term and vote. Check log freshness. A term can end without a leader.</li><li>Followers check the preceding entry: Matching index and term anchor the prefix before durable append or conflict repair.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -245,13 +245,13 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
         <p>Partition five replicas into groups of two and three, then heal the partition. Evidence to inspect: Election votes, observed terms, committed indices and application order. A precheck test is not a protocol proof.</p>
       </details>
     </article>
-    <p><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Review the lesson source: Raft paper: elections, safety and membership</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Review the lesson source: Raft paper: elections, safety and membership</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow dependency resolution, lockfile integrity, installation and lifecycle execution, package contents, transitive graph, and registry identity.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>A package manifest describes dependencies and entry points, while a lockfile records a resolved graph. Inspect the files actually distributed as well as the source repository. Lifecycle scripts execute code during supported package operations. Disabling them for installation narrows that execution path, but does not make imported package code safe. Semver and provenance supply compatibility intent and origin evidence, not freedom from vulnerabilities.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SPECIFIER</span><strong>Code requests one module</strong><small>Syntax, package type, URL, and conditions choose the loader model.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><strong>Node selects an exact resource</strong><small>Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · LOAD</span><strong>Format is parsed and evaluated</strong><small>Cache insertion, linking, interop, cycles, and type stripping affect initialization.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXPORT</span><strong>Consumer observes the public surface</strong><small>Namespace shape, shared state, errors, and packed artifacts prove behavior.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</strong>
         <small><b>Inspect:</b> import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Audit and pack a minimal package, inspect its dependency graph and artifact, and install it without lifecycle scripts in a clean directory.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
 
 
@@ -145,7 +145,7 @@ npm explain DEPENDENCY_NAME
     <ol class="interview-questions">
       <li>Explain the distinct jobs of package.json, a lockfile, semver ranges, and artifact provenance.</li>
       <li>Explain how a module import works, starting with the input and following it through to the result.</li>
-      <li>How would you audit and pack a minimal package, inspect its dependency graph and artifact, and install it without lifecycle scripts in a clean directory, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ npm explain DEPENDENCY_NAME
     <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow dependency resolution, lockfile integrity, installation and lifecycle execution, package contents, transitive graph, and registry identity.</p>
-        <p class="worked-answer">The commands are an installation/audit recipe, not executed in this review. ignore-scripts blocks lifecycle execution for that install, not malicious imported code. Inspect actual package contents and supported lock/install flags; semver and provenance communicate intent/evidence, not absence of vulnerabilities.</p>
+
+        <p class="worked-answer">The commands describe an installation and audit workflow. ignore-scripts blocks lifecycle execution for that install, not malicious imported code. Inspect actual package contents and supported lock/install flags; semver and provenance communicate intent/evidence, not absence of vulnerabilities.</p>
         <p>Look for: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ npm explain DEPENDENCY_NAME
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] records an exact resolved npm dependency graph and integrity values for a supported install model. It complements package.json ranges.</li><li>[concept] communicates compatibility intent through major, minor, and patch changes; a range states which future versions installation may select.</li><li>A Node package is a folder tree controlled by package.json boundaries, module type, entry points, metadata, and the files actually distributed.</li><li>[concept] manages package installation and scripts using manifests and lockfiles; scripts and dependencies are executable supply-chain inputs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Packages: 3; npm: 4; package-lock: 2; semantic versioning: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Packages: 3; npm: 1; package-lock: 2; semantic versioning: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Packages: 3; npm: 4; package-lock: 1; semantic versioning: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Packages: 3; npm: 2; package-lock: 1; semantic versioning: 4</label>
@@ -181,7 +181,7 @@ npm explain DEPENDENCY_NAME
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>npm [concept] execute package-defined commands during selected install, pack, publish, and run phases and therefore cross a code-execution trust boundary.</li><li>[concept] records where an artifact came from and how it was built. Verify the identity and evidence; a signed artifact can still contain vulnerable or incorrect code.</li><li>[concept] comes from trusting dependencies, lifecycle scripts, registries, maintainers, and build artifacts.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. lifecycle scripts: 1; provenance: 3; supply-chain risk: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. lifecycle scripts: 2; provenance: 3; supply-chain risk: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. lifecycle scripts: 1; provenance: 2; supply-chain risk: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. lifecycle scripts: 3; provenance: 2; supply-chain risk: 1</label>
@@ -193,7 +193,7 @@ npm explain DEPENDENCY_NAME
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Node selects an exact resource: Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</li><li>Format is parsed and evaluated: Cache insertion, linking, interop, cycles, and type stripping affect initialization.</li><li>Consumer observes the public surface: Namespace shape, shared state, errors, and packed artifacts prove behavior.</li><li>Code requests one module: Syntax, package type, URL, and conditions choose the loader model.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 1 → 2 → 3</label>
@@ -205,13 +205,13 @@ npm explain DEPENDENCY_NAME
         <p>Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity. Evidence to inspect: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace one commit through event matching, runner isolation, dependency restore, parallel jobs, artifacts, and result aggregation.</p>
-      <p class="analogy">DevOps is a learning conveyor belt: small changes move through automated checks into production, telemetry returns feedback, and teams improve the whole flow.</p>
+      <p>A CI pipeline is a graph of jobs running under particular trust and environment rules. Dependencies determine which work waits and which can run in parallel. Caches reuse prior work; artifacts carry a specific build result to later stages. The two-job example still needs its make targets and runtime setup. Its integration stage should consume the candidate artifact whose identity the build recorded.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SOURCE</span><strong>Reviewed change identifies intent</strong><small>Code, configuration, and dependencies are versioned.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD</span><strong>CI creates an immutable artifact</strong><small>Tests and scans attach evidence to one identity.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DEPLOY</span><strong>Platform rolls out that artifact</strong><small>Health, capacity, secrets, and strategy control exposure.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><strong>Telemetry confirms behavior</strong><small>Rollback or progression follows production evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Fail readiness during a staged rollout and verify traffic and rollback behavior.</strong>
         <small><b>Inspect:</b> Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</small>
       </div>
@@ -120,7 +120,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build a matrix pipeline with deterministic caches, immutable artifacts, cancellation, and failure diagnostics.</p>
-    <p class="lab-scope">Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
+    <p class="lab-scope">Work through the scenario or recipe and predict a failure before reading the answer. Shell, pipeline and deployment fragments need their named adapters and environment. A completed lab should include observed release, database, infrastructure or incident behavior under controlled conditions.</p>
 
 
 
@@ -159,7 +159,7 @@ jobs:
     <ol class="interview-questions">
       <li>Explain cache versus artifact and diagnose a flaky or unexpectedly slow pipeline.</li>
       <li>Explain how a delivery change and its evidence works, starting with the input and following it through to the result.</li>
-      <li>How would you build a matrix pipeline with deterministic caches, immutable artifacts, cancellation, and failure diagnostics, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -167,13 +167,13 @@ jobs:
     <textarea id="teachback" placeholder="Define the boundary. Trace a delivery change and its evidence. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace one commit through event matching, runner isolation, dependency restore, parallel jobs, artifacts, and result aggregation.</p>
+
         <p class="worked-answer">The YAML has two dependent jobs, not a matrix, cache or cancellation policy. make targets and runtime setup must exist; ubuntu-latest and action tags can move. Pin reviewed action revisions and build inputs for reproducibility. The integration job must consume the downloaded candidate rather than silently rebuild it, and the artifact needs a retained digest/attestation chain.</p>
         <p>Look for: Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>
       </details>
     </div>
@@ -181,9 +181,9 @@ jobs:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A delivery pipeline is a dependency graph of isolated jobs, evidence, artifacts, approvals, and environment changes triggered by an event.</li><li>CI [concept] define which events start automation and under which trust context.</li><li>[concept] execute automation jobs and require isolation, credential boundaries, and lifecycle management.</li><li>[concept] group automation steps with a defined execution environment and dependency order.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. CI pipeline graphs: 1; triggers: 2; runners: 3; jobs: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. CI pipeline graphs: 1; triggers: 2; runners: 4; jobs: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. CI pipeline graphs: 1; triggers: 3; runners: 4; jobs: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. CI pipeline graphs: 1; triggers: 4; runners: 3; jobs: 2</label>
@@ -195,7 +195,7 @@ jobs:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>CI [concept] run combinations such as runtime versions and platforms, expanding coverage and resource cost.</li><li>CI [concept] reuse work under keys; untrusted or stale cache content can undermine correctness or security.</li><li>An artifact is an immutable build output identified by version and preferably digest. The same artifact should be promoted rather than rebuilt per environment.</li><li>[concept] allows tasks to make overlapping progress. Shared state still needs an explicit ordering or ownership rule.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. matrices: 1; caches: 2; artifacts: 3; concurrency: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. matrices: 1; caches: 2; artifacts: 4; concurrency: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. matrices: 1; caches: 3; artifacts: 4; concurrency: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. matrices: 1; caches: 4; artifacts: 3; concurrency: 2</label>
@@ -207,7 +207,7 @@ jobs:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] allows tasks to make overlapping progress. Shared state still needs an explicit ordering or ownership rule.</li><li>[concept] means another run can use the recorded inputs, versions, configuration, and procedure to check the result. Record environmental differences and randomness where they matter.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. concurrency: 1; reproducibility: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. concurrency: 2; reproducibility: 1</label>
@@ -219,7 +219,7 @@ jobs:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>CI creates an immutable artifact: Tests and scans attach evidence to one identity.</li><li>Platform rolls out that artifact: Health, capacity, secrets, and strategy control exposure.</li><li>Telemetry confirms behavior: Rollback or progression follows production evidence.</li><li>Reviewed change identifies intent: Code, configuration, and dependencies are versioned.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -231,13 +231,13 @@ jobs:
         <p>Fail readiness during a staged rollout and verify traffic and rollback behavior. Evidence to inspect: Commit, artifact digest, test result, rollout state, health, metrics, and rollback event.</p>
       </details>
     </article>
-    <p><a href="https://docs.github.com/en/actions" target="_blank" rel="noreferrer">Review the lesson source: GitHub Actions documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.github.com/en/actions" target="_blank" rel="noreferrer">Review the lesson source: GitHub Actions documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

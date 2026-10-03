@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · START</span><strong>Loading r1</strong><small>The loading shape requires an attempt identifier.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SUPERSEDE</span><strong>Loading r2</strong><small>A newer start becomes the only active attempt under this policy.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IGNORE</span><strong>Completion for r1 arrives</strong><small>Its shape is valid, but its ID is stale. Keep loading r2.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETE</span><strong>Success for r2</strong><small>Matching completion supplies data. The exhaustive renderer handles the resulting variant.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.</strong>
         <small><b>Inspect:</b> State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#039;s never check until its behavior is explicitly implemented.</small>
       </div>
@@ -181,13 +181,12 @@ console.log(&quot;State-machine checks passed&quot;);
   </section>
 
 <section class="card" id="typescript-review">
-    <h2>Understand, challenge, verify</h2>
+    <h2>Check your understanding</h2>
     <p>A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.</p>
-    <details><summary>Senior reasoning checkpoint — answer before opening</summary>
+    <details><summary>Answer before opening</summary>
       <p>Can two individually well-typed states form an illegal transition? Explain stale successes and failures, unique attempt IDs, runtime validation, cancellation versus ignoring results, and how to introduce a new state without silently defaulting old consumers.</p>
     </details>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Primary documentation for this review</a></p>
-    <p>Reconstruct the distinction tomorrow without notes. Explain one failure case and one simpler alternative. Reviewing content is not evidence of learner mastery.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript documentation</a></p>
   </section>
 
 
@@ -199,7 +198,7 @@ console.log(&quot;State-machine checks passed&quot;);
     <ol class="interview-questions">
       <li>Can two individually well-typed states form an illegal transition? Explain stale successes and failures, unique attempt IDs, runtime validation, cancellation versus ignoring results, and how to introduce a new state without silently defaulting old consumers.</li>
       <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>How would you predict the state after start r1, start r2, resolve r1, resolve r2. Compile and run the lab; expect State-machine checks passed. Remove a request-ID guard to expose the stale-response failure, then restore it. Add a cancelled state and follow the compiler error to the missing consumer. Tomorrow, explain why a union alone cannot enforce transitions, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -207,12 +206,12 @@ console.log(&quot;State-machine checks passed&quot;);
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="typescript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.</p>
         <p>Look for: State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#039;s never check until its behavior is explicitly implemented.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#typescript">Worked track case: The compiler accepts an invalid request ↗</a></p>
       </details>
     </div>
@@ -220,9 +219,9 @@ console.log(&quot;State-machine checks passed&quot;);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] proves every currently possible variant is handled. Assigning the remainder to never turns a new variant into compile-time change feedback.</li><li>[concept] represents values that cannot occur. It appears for non-returning functions, impossible intersections, and branches eliminated by exhaustive analysis.</li><li>A discriminated union gives every variant a shared literal property, allowing control flow to correlate the discriminant with the correct remaining fields.</li><li>A state machine defines allowed states and the rules for moving between them. A union models state shapes; a transition function must separately enforce temporal rules, such as accepting a completion only for the active request ID.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Discriminated unions: 3; state machines: 4; exhaustiveness: 2; never: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Discriminated unions: 3; state machines: 1; exhaustiveness: 2; never: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Discriminated unions: 3; state machines: 4; exhaustiveness: 1; never: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Discriminated unions: 3; state machines: 2; exhaustiveness: 1; never: 4</label>
@@ -234,7 +233,7 @@ console.log(&quot;State-machine checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] represents values that cannot occur. It appears for non-returning functions, impossible intersections, and branches eliminated by exhaustive analysis.</li><li>A modeled contradiction, such as success without required data, can be rejected by the checker. A discriminated union removes such combinations from checked construction, but does not automatically prevent illegal transitions, stale events, assertions, or malformed external input.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. never: 1; illegal states: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. never: 2; illegal states: 1</label>
@@ -246,7 +245,7 @@ console.log(&quot;State-machine checks passed&quot;);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Loading r2: A newer start becomes the only active attempt under this policy.</li><li>Completion for r1 arrives: Its shape is valid, but its ID is stale. Keep loading r2.</li><li>Success for r2: Matching completion supplies data. The exhaustive renderer handles the resulting variant.</li><li>Loading r1: The loading shape requires an attempt identifier.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 1 → 4 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 1 → 2 → 3</label>
@@ -258,13 +257,13 @@ console.log(&quot;State-machine checks passed&quot;);
         <p>Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch. Evidence to inspect: State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#39;s never check until its behavior is explicitly implemented.</p>
       </details>
     </article>
-    <p><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: discriminated unions and exhaustiveness</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: discriminated unions and exhaustiveness</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

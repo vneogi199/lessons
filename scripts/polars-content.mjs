@@ -659,9 +659,9 @@ export const POLARS_CONTENT = Object.fromEntries(POLARS_LESSONS.map((item, index
   const number = String(645 + index).padStart(4, "0");
   return [number, {
     ...item,
-    reading: "Predict the assertions before using an existing Polars environment. Record pl.__version__. These examples target the documented stable Python API reviewed on 2026-09-24; pin and check your installed release. No package installation or runtime success is implied. " + item.expected,
+    reading: "Record pl.__version__ when checking the example in an existing environment. The API references were reviewed on 2026-09-24; compare them with your installed release. Predict the assertions first, then check the worked answer.",
     profile: {
-      analogy: item.tradeoff,
+      analogy: "",
       code: item.code,
       sourceLabel: "Polars official documentation",
       sourceUrl: item.source,
@@ -670,9 +670,9 @@ export const POLARS_CONTENT = Object.fromEntries(POLARS_LESSONS.map((item, index
     },
     mechanism: item.paragraphs.map(text => `<p>${escapeHtml(text)}</p>`).join("\n") +
       (item.extraSource ? `<p><a href="${item.extraSource}">Related official documentation</a>.</p>` : ""),
-    pitfalls: [["Failure to diagnose", item.failure], ["Tradeoff to defend", item.tradeoff]],
+    pitfalls: [["Check this case", item.failure]],
     rehearsal: item.challenge,
-    answer: item.expected + " " + item.tradeoff
+    answer: item.tradeoff
   }];
 }));
 

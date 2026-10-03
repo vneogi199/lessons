@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow callback ownership, synchronous throws, promise rejection, async resumption, multiple completion hazards, and util.promisify conventions.</p>
-      <p class="analogy">Node is a restaurant with one head waiter and several specialist kitchens: JavaScript coordinates orders while the OS and worker pool perform eligible work.</p>
+      <p>A one-shot error-first callback reports failure in its first argument and success in later arguments. A Promise wrapper follows only the first settlement, and its executor turns a synchronous throw into rejection. That does not cancel the callback API or undo duplicate side effects. Use promisify for a matching conventional API, preserve any required receiver, and supply an explicit adapter when the callback contract differs.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EVENT</span><strong>Input reaches the Node process</strong><small>A request, timer, signal, or message creates work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><strong>Handler coordinates the operation</strong><small>Promises and callbacks describe continuation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><strong>Runtime performs external work</strong><small>Sockets, files, workers, or child processes progress.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><strong>Result returns to JavaScript</strong><small>Response, log, exit state, or error becomes visible.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Trace one operation with async hooks and inject a timeout or shutdown.</strong>
         <small><b>Inspect:</b> Async IDs, handle count, event-loop delay, response, and exit sequence.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Wrap a callback API safely, preserve errors and cancellation, and prove it settles exactly once.</p>
-    <p class="lab-scope">Core: predict the supplied bounded fixture or inspect the labelled integration recipe. Use the stated module format and synthetic data. External network, TLS certificates, package installation, profiler targets and service adapters are separate requirements; local/fake checks do not verify those integrations. No installs are performed by this review.</p>
+    <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
 
 
@@ -147,7 +147,7 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
     <ol class="interview-questions">
       <li>Compare callback and Promise failure channels and identify lost rejection paths.</li>
       <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>How would you wrap a callback API safely, preserve errors and cancellation, and prove it settles exactly once, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -155,13 +155,13 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="nodejs">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow callback ownership, synchronous throws, promise rejection, async resumption, multiple completion hazards, and util.promisify conventions.</p>
+
         <p class="worked-answer">The Promise executor converts synchronous throws to rejection, and only the first completion settles the Promise. The wrapper does not cancel underlying work or undo duplicated side effects. Promisify is preferable for a conventional API; preserve method receivers for receiver-dependent callbacks.</p>
         <p>Look for: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#nodejs">Worked track case: Promise.all overwhelms the database ↗</a></p>
       </details>
     </div>
@@ -169,9 +169,9 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>util.[concept] adapts conventional error-first callback APIs into Promises. Nonstandard callback layouts need an explicit adapter.</li><li>[concept] report completion through a supplied function, commonly with an error-first convention.</li><li>A one-shot error-first callback receives an error (or null) as its first argument and success values in later arguments. The API must define timing and invoke completion once; this convention is not a streaming event protocol.</li><li>[concept] represent eventual completion but do not automatically cancel work or prevent unhandled rejection.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Callback APIs: 2; error-first callbacks: 4; promises: 3; promisify: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Callback APIs: 2; error-first callbacks: 1; promises: 3; promisify: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Callback APIs: 3; error-first callbacks: 2; promises: 4; promisify: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Callback APIs: 2; error-first callbacks: 3; promises: 4; promisify: 1</label>
@@ -183,7 +183,7 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Node errors travel through synchronous throws, callback arguments, EventEmitter error events, Promise rejection, streams, workers, and process exit; each boundary needs ownership.</li><li>[concept] return Promises; synchronous work before suspension still runs on the current JavaScript thread.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. async functions: 1; error propagation: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. async functions: 2; error propagation: 1</label>
@@ -195,7 +195,7 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Runtime performs external work: Sockets, files, workers, or child processes progress.</li><li>Result returns to JavaScript: Response, log, exit state, or error becomes visible.</li><li>Input reaches the Node process: A request, timer, signal, or message creates work.</li><li>Handler coordinates the operation: Promises and callbacks describe continuation.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -207,13 +207,13 @@ await exactlyOnce(callback =&gt; callback(null, 42)).then(value =&gt; console.as
         <p>Trace one operation with async hooks and inject a timeout or shutdown. Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p>
       </details>
     </article>
-    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Connect cumulative statistics, current session state, lock graphs, normalized query fingerprints, backend wait categories, maintenance progress, and structured logs.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>Start with the affected workload and time interval. Activity and lock views show current waiting; query statistics summarize accumulated work. Use deltas and account for resets before comparing totals. Mean latency can hide tails, and a wait snapshot is not an incident timeline. Correlate plans with host and application evidence while redacting query text that could reveal sensitive data.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SYMPTOM</span><strong>Define the slow or failing workload</strong><small>Record request shape, concurrency, time window and the affected service objective.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><strong>Locate waiting and repeated work</strong><small>Session waits, query statistics, plans and host metrics narrow the hypothesis.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Test one bounded intervention</strong><small>Use representative data and hold workload conditions steady enough for comparison.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Check improvement and regressions</strong><small>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.</strong>
         <small><b>Inspect:</b> Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Diagnose one lock incident and one slow-query incident from database views without relying on application guesses.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 <p>Configure the required statistics extension and permissions in a disposable database, then correlate a slow query with waits and locks. Use PostgreSQL-version-appropriate views; cumulative counters need time deltas and reset awareness.</p>
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -145,7 +145,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
     <ol class="interview-questions">
       <li>Present a systematic PostgreSQL diagnosis path from user symptom to sessions, waits, query plans, storage, and host evidence.</li>
       <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>How would you diagnose one lock incident and one slow-query incident from database views without relying on application guesses, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Connect cumulative statistics, current session state, lock graphs, normalized query fingerprints, backend wait categories, maintenance progress, and structured logs.</p>
+
         <p class="worked-answer">pg_stat_statements requires prior configuration and extension availability; cumulative totals need a known interval or deltas. Mean latency hides tails and normalized query text still deserves redaction. Wait views are snapshots, not a complete incident timeline; correlate host and application evidence.</p>
         <p>Look for: Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] exposes backend activity and wait context, useful for identifying long-running or idle-in-transaction sessions.</li><li>[concept] exposes held or awaited lock information for contention analysis.</li><li>[concept] groups structurally similar SQL and accumulates calls, time, rows, I/O, WAL, and other evidence so high-impact query families can be ranked.</li><li>[concept] combines activity, locks, waits, plans, logs, and resource measurements to explain database behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. PostgreSQL observability: 4; pg_stat_activity: 2; pg_locks: 1; pg_stat_statements: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. PostgreSQL observability: 4; pg_stat_activity: 1; pg_locks: 2; pg_stat_statements: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. PostgreSQL observability: 4; pg_stat_activity: 3; pg_locks: 1; pg_stat_statements: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. PostgreSQL observability: 1; pg_stat_activity: 4; pg_locks: 2; pg_stat_statements: 3</label>
@@ -181,7 +181,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] report supported long-running operations&#39; stages and counters rather than assuming elapsed time predicts completion.</li><li>[concept] record individual events with relevant context. Include enough identity and timing to investigate behavior, while excluding secrets and unnecessary personal data.</li><li>[concept] identify what a backend is waiting on, distinguishing lock, I/O, client, and other waits.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. progress views: 2; logs: 1; wait events: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. progress views: 1; logs: 2; wait events: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. progress views: 3; logs: 1; wait events: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. progress views: 1; logs: 3; wait events: 2</label>
@@ -193,7 +193,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Locate waiting and repeated work: Session waits, query statistics, plans and host metrics narrow the hypothesis.</li><li>Test one bounded intervention: Use representative data and hold workload conditions steady enough for comparison.</li><li>Check improvement and regressions: Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</li><li>Define the slow or failing workload: Record request shape, concurrency, time window and the affected service objective.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -205,13 +205,13 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity. Evidence to inspect: Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

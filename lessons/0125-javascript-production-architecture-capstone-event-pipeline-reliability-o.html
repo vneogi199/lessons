@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Connect language semantics, async scheduling, module design, resource ownership, validation, error taxonomy, runtime measurement, and operational constraints in one service.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>Build the event-processing service around its failure contract. Define duplicate handling, cancellation, bounded admission and recovery alongside the normal path. The starter supplies serial orchestration only: a later failure does not undo earlier commits. Implement the repository and relay before claiming durable replay or crash recovery. Use real failure evidence for those guarantees; an in-memory fake can establish call order, not durability.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ADMIT</span><strong>The processor accepts a command</strong><small>Cancellation and validation gate the next operation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMMIT</span><strong>The repository owns atomic effects</strong><small>Business state, stable result, intent identity and outbox must share a transaction.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RELAY</span><strong>Committed events are delivered</strong><small>A separate relay may retry; consumers own duplicate-safe effects.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>Outcomes reveal the boundary</strong><small>Partial batches, uncertain commits and replay require explicit recovery evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Inject a failure after one committed command and explain what may already be durable.</strong>
         <small><b>Inspect:</b> Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</small>
       </div>
@@ -108,7 +108,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an event-processing slice with bounded concurrency, cancellation, idempotency, structured errors, tests, metrics, profiles, and a failure runbook.</p>
-    <p class="lab-scope">Core: explain and check the supplied bounded fixture in its stated runtime. Worker, browser, profiler and repository integrations require the additional setup stated in the exercise; they are extensions, not silently completed tests. No dependency installation is required for the local content review.</p>
+    <p class="lab-scope">Explain the bounded fixture in its stated runtime. Worker, browser, profiler and repository exercises need the additional setup named in the lesson. You can predict the local result before setting up those integrations.</p>
 <p>Implement the repository and relay in the capstone, then demonstrate crash recovery, replay, authorization and bounded admission. Defend the concurrency limit using measured pool capacity; do not count the integration sketch as a deployed system.</p>
 
 
@@ -151,7 +151,7 @@ export function createProcessor({ repository, validateCommand }) {
     <ol class="interview-questions">
       <li>Defend the complete design by tracing success, overload, cancellation, duplicate input, dependency failure, memory growth, and recovery.</li>
       <li>Explain how a validated command works, starting with the input and following it through to the result.</li>
-      <li>How would you build an event-processing slice with bounded concurrency, cancellation, idempotency, structured errors, tests, metrics, profiles, and a failure runbook, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -159,13 +159,13 @@ export function createProcessor({ repository, validateCommand }) {
     <textarea id="teachback" placeholder="Define the boundary. Trace a validated command. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Connect language semantics, async scheduling, module design, resource ownership, validation, error taxonomy, runtime measurement, and operational constraints in one service.</p>
+
         <p class="worked-answer">The starter implements only serial orchestration. A later failure does not roll back earlier commits, and caller abort does not prove transaction rollback. The capstone acceptance contract still requires real duplicate-intent, crash/replay, overload and recovery evidence. A memory fake can test call order, not certify durable idempotency or a production-ready service.</p>
         <p>Look for: Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -173,9 +173,9 @@ export function createProcessor({ repository, validateCommand }) {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An [concept] accepts events, validates them, processes bounded work, and records outcomes. Identity, retry, ordering, and cleanup policies determine behavior under failure.</li><li>[concept] is meeting the intended behavior under stated operating and failure conditions. Define the promise and test failures rather than treating absence of exceptions as success.</li><li>[concept] is the ability to investigate system behavior using its outputs, such as metrics, logs, traces, and profiles. Collect signals that can distinguish competing explanations for a failure.</li><li>The JavaScript capstone joins language semantics with bounded async execution, cancellation, validation, errors, testing, telemetry, security, performance evidence, and operational recovery.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. JavaScript production architecture capstone: 4; event pipeline: 2; reliability: 1; observability: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. JavaScript production architecture capstone: 4; event pipeline: 1; reliability: 2; observability: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. JavaScript production architecture capstone: 4; event pipeline: 3; reliability: 1; observability: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. JavaScript production architecture capstone: 1; event pipeline: 4; reliability: 2; observability: 3</label>
@@ -187,7 +187,7 @@ export function createProcessor({ repository, validateCommand }) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] describes costs such as latency, throughput, CPU, and memory under a stated workload. A fast isolated microbenchmark may not improve the user-visible operation.</li><li>[concept] preserves intended authority and data boundaries against misuse. Validate external input, constrain capabilities, and test denied as well as allowed operations.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. security: 1; performance: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. security: 2; performance: 1</label>
@@ -199,7 +199,7 @@ export function createProcessor({ repository, validateCommand }) {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>The repository owns atomic effects: Business state, stable result, intent identity and outbox must share a transaction.</li><li>Committed events are delivered: A separate relay may retry; consumers own duplicate-safe effects.</li><li>Outcomes reveal the boundary: Partial batches, uncertain commits and replay require explicit recovery evidence.</li><li>The processor accepts a command: Cancellation and validation gate the next operation.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -211,13 +211,13 @@ export function createProcessor({ repository, validateCommand }) {
         <p>Inject a failure after one committed command and explain what may already be durable. Evidence to inspect: Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p>
       </details>
     </article>
-    <p><a href="https://tc39.es/ecma262/" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript language specification</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://tc39.es/ecma262/" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript language specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

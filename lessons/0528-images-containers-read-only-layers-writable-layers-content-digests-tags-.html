@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow content-addressed blobs and configuration into an image manifest and a running container snapshot.</p>
-      <p class="analogy">A container is a constrained process, not a tiny computer: the image supplies its filesystem and defaults while the host kernel supplies execution and isolation.</p>
+      <p>An image provides immutable layers and configuration. Creating a container adds its own writable state and runtime settings. Stopping and restarting that same container preserves its writable layer; replacing it with a new container does not copy that state. Mounted volumes have separate lifetimes. Use a digest to identify image content because a tag can move.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CONTEXT</span><strong>Builder receives declared inputs</strong><small>Dockerfile, context, base digests, args, and mounts enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUILD GRAPH</span><strong>BuildKit evaluates dependencies</strong><small>Cache keys decide which operations execute or reuse output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IMAGE</span><strong>Layers and config form a manifest</strong><small>Content digests identify immutable platform artifacts.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Registry and policy inspect output</strong><small>SBOM, provenance, signature, scan, and test attach evidence.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one dependency and predict exactly which build nodes invalidate.</strong>
         <small><b>Inspect:</b> Context size, build log, cache hits, layer history, digest, SBOM, and signature.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build, tag, inspect, run, modify, stop, remove, and compare image and container state by digest.</p>
-    <p class="lab-scope">Core: predict the specified image/runtime experiment and compare the worked criteria without installing or invoking Docker. Extension: use an existing authorized disposable daemon, verified images and bounded fixtures to collect actual build, isolation, shutdown and restore evidence. Recipes do not represent completed container labs.</p>
+    <p class="lab-scope">Predict the image or runtime experiment and compare the worked answer. To perform it, use an existing disposable daemon, verified images and bounded fixtures. Record build, isolation, shutdown or restore behavior before claiming that the recipe works in that environment.</p>
 
 
 
@@ -142,7 +142,7 @@
     <ol class="interview-questions">
       <li>Distinguish image, container, layer, tag, digest, and writable state.</li>
       <li>Explain how an image build and delivery works, starting with the input and following it through to the result.</li>
-      <li>How would you build, tag, inspect, run, modify, stop, remove, and compare image and container state by digest, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -150,13 +150,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace an image build and delivery. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="docker">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow content-addressed blobs and configuration into an image manifest and a running container snapshot.</p>
+
         <p class="worked-answer">Restarting the original container preserves its writable marker; a newly created container from the same digest lacks it. A volume mount can hide image contents at its path and has an independent lifecycle. A stopped container is still an object with writable state. The build diagram explains image identity; the runtime exercise tests the separate container layer.</p>
         <p>Look for: Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#docker">Worked track case: The container ignores graceful shutdown ↗</a></p>
       </details>
     </div>
@@ -164,9 +164,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A container image is immutable configuration plus content-addressed filesystem layers and metadata. A digest identifies content; a tag is a movable name.</li><li>A container is a running or stopped process configuration created from an image, with a writable layer, namespaces, cgroups, mounts, and networking.</li><li>Image layers store filesystem changes and are shared by content digest. Build instruction inputs determine when a cached layer can be reused.</li><li>A container&#39;s writable layer records that container&#39;s filesystem changes above its image layers. It survives stopping/restarting the same container but disappears when the container is removed; mounts have separate lifetimes.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Images: 1; containers: 2; read-only layers: 3; writable layers: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Images: 1; containers: 2; read-only layers: 4; writable layers: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Images: 1; containers: 3; read-only layers: 4; writable layers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Images: 1; containers: 4; read-only layers: 3; writable layers: 2</label>
@@ -178,7 +178,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] name image references and can be moved; a tag alone does not guarantee immutable content.</li><li>A [concept] is the sequence from creation through use to termination or release. Each transition needs a responsible component and defined failure behavior.</li><li>[concept] identify content cryptographically rather than through a movable human-readable tag.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. content digests: 3; tags: 1; lifecycle: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. content digests: 3; tags: 2; lifecycle: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. content digests: 1; tags: 2; lifecycle: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. content digests: 2; tags: 1; lifecycle: 3</label>
@@ -190,7 +190,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Layers and config form a manifest: Content digests identify immutable platform artifacts.</li><li>Registry and policy inspect output: SBOM, provenance, signature, scan, and test attach evidence.</li><li>Builder receives declared inputs: Dockerfile, context, base digests, args, and mounts enter.</li><li>BuildKit evaluates dependencies: Cache keys decide which operations execute or reuse output.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -202,13 +202,13 @@
         <p>Change one dependency and predict exactly which build nodes invalidate. Evidence to inspect: Context size, build log, cache hits, layer history, digest, SBOM, and signature.</p>
       </details>
     </article>
-    <p><a href="https://docs.docker.com/engine/" target="_blank" rel="noreferrer">Review the lesson source: Docker Engine documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.docker.com/engine/" target="_blank" rel="noreferrer">Review the lesson source: Docker Engine documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

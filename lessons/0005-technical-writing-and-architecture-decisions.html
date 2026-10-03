@@ -52,7 +52,6 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand how written context reduces coordination cost in distributed teams.</p>
       <p>Write for the reader&#039;s next action. A README explains purpose and entry points; a runbook gives symptoms, safe checks, mitigation, verification and escalation; an incident note separates observed timeline from hypotheses; a pull-request description states what changed, why, tests and rollout risk. An ADR records a significant choice with context, alternatives and consequences. Keep assumptions distinguishable from measurements. Under the linked ADR process, accepted decisions are superseded by a new record when circumstances change, rather than silently rewriting their historical rationale.</p>
       <p class="analogy">A decision record is the reasoning attached to a fork in the road, so the next team knows both why you turned and when a different route would make sense.</p>
     </section>
@@ -64,7 +63,7 @@
         <li class="trace-stage"><span>01 · CONSTRAIN</span><strong>Name the loss requirement</strong><small>Notification loss after order commit is unacceptable in this scenario.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMPARE</span><strong>Expose the crash gap</strong><small>Direct post-commit publication leaves committed orders without durable notification intent.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><strong>Commit order and intent</strong><small>An outbox shares the database transaction; the relay still permits duplicate publication.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REVISIT</span><strong>Test and assign ownership</strong><small>Specify crash tests, lag metrics, retention ownership and a decision review trigger.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>If notification loss becomes acceptable, which complexity can be removed?</strong>
         <small><b>Inspect:</b> A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes.</small>
       </div>
@@ -130,7 +129,7 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     <ol class="interview-questions">
       <li>Communicate assumptions, tradeoffs, risks, and decisions clearly in English.</li>
       <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
-      <li>How would you write READMEs, runbooks, ADRs, incident notes, and concise pull-request descriptions, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -138,13 +137,13 @@ Owner: Name the team that handles replay, retention, and incidents before approv
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="engineering-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand how written context reduces coordination cost in distributed teams.</p>
+
         <p class="worked-answer">Explain the database-commit/publish crash gap and why durable intent does not remove duplicate delivery. A consumer must make its local effect idempotent atomically with deduplication, or use the external provider&#039;s idempotency contract; merely remembering an event ID is insufficient. Best-effort analytics may justify simpler direct publication. A good record states this changed constraint, rejected alternatives, operational cost, owner and revisit trigger; it does not describe the preferred technology as universally best.</p>
         <p>Look for: A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#engineering-foundations">Worked track case: A release works locally and fails in CI ↗</a></p>
       </details>
     </div>
@@ -152,9 +151,9 @@ Owner: Name the team that handles replay, retention, and incidents before approv
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>An architecture decision records a significant choice, its context, alternatives, consequences, and the evidence that supports it.</li><li>[concept] explains a system, decision, or procedure with precise terms, evidence, and a structure that the reader can follow.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Technical writing: 1; architecture decisions: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Technical writing: 2; architecture decisions: 1</label>
@@ -166,7 +165,7 @@ Owner: Name the team that handles replay, retention, and incidents before approv
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Expose the crash gap: Direct post-commit publication leaves committed orders without durable notification intent.</li><li>Commit order and intent: An outbox shares the database transaction; the relay still permits duplicate publication.</li><li>Test and assign ownership: Specify crash tests, lag metrics, retention ownership and a decision review trigger.</li><li>Name the loss requirement: Notification loss after order commit is unacceptable in this scenario.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -178,13 +177,13 @@ Owner: Name the team that handles replay, retention, and incidents before approv
         <p>If notification loss becomes acceptable, which complexity can be removed? Evidence to inspect: A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Prescriptive Guidance: architecture decision records</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Prescriptive Guidance: architecture decision records</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

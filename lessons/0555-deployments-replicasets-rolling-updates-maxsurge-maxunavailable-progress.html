@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow template changes through new ReplicaSet scaling, availability constraints, readiness, progress deadlines, and revision history.</p>
-      <p class="analogy">Kubernetes is a control room: you declare desired state through an API, controllers compare it with reality, and node agents keep reconciling until status matches or evidence explains why not.</p>
+      <p>A Deployment creates a new ReplicaSet when its Pod template changes and adjusts old and new replica counts. Surge and unavailability settings constrain that process, provided capacity and readiness allow progress. Terminating Pods can still consume resources. A progress deadline reports a stalled rollout; it does not automatically supply a rollback policy or reverse committed application data.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SPEC</span><strong>Desired workload enters the API</strong><small>Template, replicas, resources, placement, and strategy are stored.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONTROLLERS</span><strong>Reconcilers create child objects</strong><small>ReplicaSets, Jobs, autoscalers, and ownership update desired work.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SCHEDULE + RUN</span><strong>Pods bind to nodes and start</strong><small>Scheduler, kubelet, runtime, CNI, and CSI cooperate.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Health drives the next reconcile</strong><small>Conditions, events, metrics, and failures change controller action.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Break readiness or capacity during a rollout and follow every controller decision.</strong>
         <small><b>Inspect:</b> Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Perform, pause, fail, diagnose, and roll back a zero-downtime deployment.</p>
-    <p class="lab-scope">Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
+    <p class="lab-scope">Predict what the manifest or scenario requests, then explain the acceptance criteria. Runtime and recovery exercises need an existing isolated cluster, available tools and images, and bounded disposable fixtures. Resolve those prerequisites before applying configuration.</p>
 
 
 
@@ -156,7 +156,7 @@ spec:
     <ol class="interview-questions">
       <li>Trace a Deployment rollout and identify why it can stall.</li>
       <li>Explain how Kubernetes desired state and observed behavior works, starting with the input and following it through to the result.</li>
-      <li>How would you perform, pause, fail, diagnose, and roll back a zero-downtime deployment, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -164,13 +164,13 @@ spec:
     <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow template changes through new ReplicaSet scaling, availability constraints, readiness, progress deadlines, and revision history.</p>
+
         <p class="worked-answer">Four replicas with surge one allow a rollout toward five nonterminating Pods while keeping four available, assuming readiness and capacity. Terminating Pods can still consume extra resources. The 300-second deadline reports failure, not automatic rollback; ten seconds of readiness is not a user SLO. Rollback restores a template revision, not committed data.</p>
         <p>Look for: Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>
       </details>
     </div>
@@ -178,9 +178,9 @@ spec:
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] bounds additional Pods above the desired replica count during a Deployment rolling update.</li><li>A Deployment manages ReplicaSets and performs declarative stateless rollouts while respecting availability and surge settings.</li><li>[concept] maintain a desired count of matching Pods and commonly sit beneath Deployments.</li><li>[concept] replace Pods gradually under availability and surge constraints.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Deployments: 2; ReplicaSets: 4; rolling updates: 3; maxSurge: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Deployments: 2; ReplicaSets: 1; rolling updates: 3; maxSurge: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Deployments: 3; ReplicaSets: 2; rolling updates: 4; maxSurge: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Deployments: 2; ReplicaSets: 3; rolling updates: 4; maxSurge: 1</label>
@@ -192,7 +192,7 @@ spec:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] abandons uncommitted database changes or returns a deployed component to an earlier version, depending on the boundary. Code [concept] does not automatically undo committed data, emitted events, or external effects.</li><li>[concept] bounds permitted unavailability during the relevant rollout strategy.</li><li>Deployment [concept] records rollout advancement; a [concept] deadline failure does not automatically implement every desired rollback policy.</li><li>Pausing a Deployment suspends further rollout processing while allowing controlled changes to accumulate.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. maxUnavailable: 2; progress: 4; pause: 3; rollback: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. maxUnavailable: 2; progress: 1; pause: 3; rollback: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. maxUnavailable: 3; progress: 2; pause: 4; rollback: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. maxUnavailable: 2; progress: 3; pause: 4; rollback: 1</label>
@@ -204,7 +204,7 @@ spec:
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Pods bind to nodes and start: Scheduler, kubelet, runtime, CNI, and CSI cooperate.</li><li>Health drives the next reconcile: Conditions, events, metrics, and failures change controller action.</li><li>Desired workload enters the API: Template, replicas, resources, placement, and strategy are stored.</li><li>Reconcilers create child objects: ReplicaSets, Jobs, autoscalers, and ownership update desired work.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -216,13 +216,13 @@ spec:
         <p>Break readiness or capacity during a rollout and follow every controller decision. Evidence to inspect: Spec/status, owner tree, events, scheduler result, kubelet state, readiness, and rollout.</p>
       </details>
     </article>
-    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Keep a sender within receiver capacity and estimated network capacity while acknowledgements grow windows, loss reduces them, retransmission repairs gaps, and applications propagate pressure.</p>
-      <p class="analogy">Production software is a parcel crossing nested transport systems: the application labels intent, protocols add delivery information, and the kernel moves bytes while preserving isolation and resource limits.</p>
+      <p>The receiver&#039;s window limits how much outstanding data it can accept. The congestion window limits sending according to estimated network capacity. The smaller window constrains outstanding data; subtract bytes already in flight to find the allowance for new data. Slow start and later growth respond to acknowledgements and congestion signals. Retransmission repairs missing stream data. Applications also need admission limits and backpressure, because bounded socket buffers cannot bound an upstream work queue.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · ROUND</span><strong>Window starts at one</strong><small>The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GROW</span><strong>Double, then add</strong><small>Below threshold the toy window doubles; above it, each round adds one.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TIMEOUT</span><strong>Reset and lower threshold</strong><small>Round five models timeout loss, not duplicate-ACK fast recovery.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · LIMIT</span><strong>Receiver can be tighter</strong><small>The usable window is bounded by both congestion and receiver windows.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Why would doubling on every ACK overstate slow-start growth?</strong>
         <small><b>Inspect:</b> Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</small>
       </div>
@@ -160,7 +160,7 @@ assert new_data_allowance == 3
     <ol class="interview-questions">
       <li>Separate flow control, congestion control, retransmission, backpressure, and admission control.</li>
       <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>How would you simulate congestion-window growth and loss, compare it with a receive window, and connect socket buffering to application-level bounded queues, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -168,13 +168,13 @@ assert new_data_allowance == 3
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="systems-foundations">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Keep a sender within receiver capacity and estimated network capacity while acknowledgements grow windows, loss reduces them, retransmission repairs gaps, and applications propagate pressure.</p>
+
         <p class="worked-answer">min(cwnd,rwnd) caps outstanding data; subtract in-flight data before calling the remainder new-data allowance. The example uses toy units and RTT rounds, not an update per ACK or a live controller. Timeout reset differs from fast recovery and modern algorithm behavior. Compare socket-level flow control with admission limits: a bounded socket cannot prevent an upstream application queue from exhausting memory. Measure queue age, outstanding bytes and rejection before increasing buffers.</p>
         <p>Look for: Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#systems-foundations">Worked track case: Connections time out while CPU stays low ↗</a></p>
       </details>
     </div>
@@ -182,9 +182,9 @@ assert new_data_allowance == 3
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] uses the receiver&#39;s advertised window to avoid sending more outstanding data than it can accept.</li><li>[concept] adapts sending pressure to network conditions, distinct from a receiver&#39;s buffer capacity.</li><li>[concept] increases TCP&#39;s congestion window rapidly from a small starting point until a threshold or congestion signal changes behavior.</li><li>Additive increase and multiplicative decrease cautiously raises sending allowance and sharply reduces it after congestion evidence.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. TCP flow control: 1; congestion control: 2; slow start: 3; AIMD: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. TCP flow control: 1; congestion control: 2; slow start: 4; AIMD: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. TCP flow control: 1; congestion control: 3; slow start: 4; AIMD: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. TCP flow control: 1; congestion control: 4; slow start: 3; AIMD: 2</label>
@@ -196,7 +196,7 @@ assert new_data_allowance == 3
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] makes a producer slow down when a consumer cannot keep up. It limits queued work rather than allowing memory and latency to grow without bound.</li><li>[concept] occurs when offered work exceeds sustainable capacity, growing queues or causing rejection and failure.</li><li>[concept] sends unacknowledged data again after loss is inferred. The receiver must distinguish repeats from new bytes.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. retransmission: 3; backpressure: 1; overload: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. retransmission: 3; backpressure: 2; overload: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. retransmission: 1; backpressure: 2; overload: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. retransmission: 2; backpressure: 1; overload: 3</label>
@@ -208,7 +208,7 @@ assert new_data_allowance == 3
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Reset and lower threshold: Round five models timeout loss, not duplicate-ACK fast recovery.</li><li>Receiver can be tighter: The usable window is bounded by both congestion and receiver windows.</li><li>Window starts at one: The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</li><li>Double, then add: Below threshold the toy window doubles; above it, each round adds one.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -220,13 +220,13 @@ assert new_data_allowance == 3
         <p>Why would doubling on every ACK overstate slow-start growth? Evidence to inspect: Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p>
       </details>
     </article>
-    <p><a href="https://www.rfc-editor.org/rfc/rfc5681.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 5681 TCP Congestion Control</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.rfc-editor.org/rfc/rfc5681.html" target="_blank" rel="noreferrer">Review the lesson source: RFC 5681 TCP Congestion Control</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate file bytes from database metadata while tracing authorization, temporary upload capability, multipart assembly, content validation, quarantine, object naming, versioning, lifecycle policy, and controlled download.</p>
-      <p class="analogy">Quality engineering is a safety case: tests supply evidence, security identifies adversaries, observability exposes reality, and incident practice limits the blast radius.</p>
+      <p>A direct upload grants the client limited access to object storage. Keep uploaded bytes in quarantine until the server verifies their size, content and policy. Bind scanning and promotion to an immutable accepted version because a reusable grant can replace a key. The example uses a presigned POST. Multipart completion, abandoned uploads and rejected versions need their own cleanup path.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · AUTHORIZE</span><strong>Server creates a narrow upload grant</strong><small>Owner, object key, byte limit, media policy, checksum, and short expiry constrain capability.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFER</span><strong>Client sends bytes to storage</strong><small>Multipart parts, retry, checksum, encryption, and private access avoid proxying large files through the app.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUARANTINE</span><strong>Server validates stored content</strong><small>Size, magic bytes, parser limits, malware scan, and metadata determine promotion or rejection.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SERVE / DELETE</span><strong>Authorized lifecycle continues</strong><small>Safe download headers, versions, retention, cleanup, and audit evidence govern every later operation.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Upload a valid file, a mislabeled executable, an oversized multipart file, and an abandoned upload; then revoke download access.</strong>
         <small><b>Inspect:</b> Grant conditions, object checksum and size, multipart state, scanner result, metadata transition, authorization decision, lifecycle action, and bytes removed.</small>
       </div>
@@ -120,7 +120,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Implement a direct-to-object-storage upload flow with short-lived authorization, size and type limits, checksum verification, quarantine scanning, durable metadata, private delivery, and deletion cleanup.</p>
-    <p class="lab-scope">Core: trace the supplied security boundary and predict replay, stale ownership or altered-input outcomes. Only existing local fixtures run; SDK/framework/storage/database adapters remain explicit requirements. Extension: test those adapters in an authorized isolated environment with no real credentials or user data. This review installs nothing.</p>
+    <p class="lab-scope">Predict replay, stale-ownership and altered-input outcomes at the shown boundary. SDK, framework, storage and database adapters must be supplied where named. Use synthetic data and an authorized isolated environment to check those integrations.</p>
 
 
 
@@ -186,7 +186,7 @@ def complete_upload(user, upload_id, s3, db, jobs):
     <ol class="interview-questions">
       <li>Design secure large-file upload and download paths and explain why filenames, MIME headers, public buckets, and application-server proxying are unsafe defaults.</li>
       <li>Explain how a file upload lifecycle works, starting with the input and following it through to the result.</li>
-      <li>How would you implement a direct-to-object-storage upload flow with short-lived authorization, size and type limits, checksum verification, quarantine scanning, durable metadata, private delivery, and deletion cleanup, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -194,13 +194,13 @@ def complete_upload(user, upload_id, s3, db, jobs):
     <textarea id="teachback" placeholder="Define the boundary. Trace a file upload lifecycle. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="quality-security">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate file bytes from database metadata while tracing authorization, temporary upload capability, multipart assembly, content validation, quarantine, object naming, versioning, lifecycle policy, and controlled download.</p>
+
         <p class="worked-answer">The flow uses a presigned POST, not a multipart implementation. The signed range allows up to MAX_BYTES; completion separately enforces the declared size and checksum. A reusable upload grant can replace the key, so bind scan and promotion to the accepted immutable VersionId. Missing database/job adapters must commit together; pending records, abandoned parts and rejected versions need cleanup ownership.</p>
         <p>Look for: Grant conditions, object checksum and size, multipart state, scanner result, metadata transition, authorization decision, lifecycle action, and bytes removed.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#quality-security">Worked track case: A valid user reads another tenant&#039;s document ↗</a></p>
       </details>
     </div>
@@ -208,9 +208,9 @@ def complete_upload(user, upload_id, s3, db, jobs):
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] divides a large object into independently retriable parts and completes them as one object. Abandoned part sets require lifecycle cleanup.</li><li>[concept] keeps user-supplied bytes in an object store and stores ownership, state, policy, and display metadata separately in a database.</li><li>A direct upload sends file bytes from the client to object storage using a narrowly scoped temporary grant, so the application server does not relay the large body.</li><li>A presigned URL is a bearer capability for a specific storage request, not a single-use token. S3 also checks credential validity and access policy, so it can fail before its stated expiry. An accepted download may continue after expiry.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Application file storage: 2; direct uploads: 4; presigned URLs: 3; multipart transfer: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Application file storage: 2; direct uploads: 1; presigned URLs: 3; multipart transfer: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Application file storage: 3; direct uploads: 2; presigned URLs: 4; multipart transfer: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Application file storage: 2; direct uploads: 3; presigned URLs: 4; multipart transfer: 1</label>
@@ -222,7 +222,7 @@ def complete_upload(user, upload_id, s3, db, jobs):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A file [concept] defines pending upload, quarantine, clean or rejected state, versions, retention, archival, expiration, and complete deletion of bytes and metadata.</li><li>File [concept] checks declared size and type, actual magic bytes, parser limits, checksums, ownership, and policy before the application trusts or serves content.</li><li>[concept] examines quarantined bytes with current detection tools before promotion. A clean result reduces risk but does not replace safe parsing and isolation.</li><li>File [concept] records the stable object key, owner, original display name, media type, size, checksum, state, and retention dates without putting file bytes in normal relational rows.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. validation: 2; malware scanning: 4; metadata: 3; lifecycle: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. validation: 2; malware scanning: 1; metadata: 3; lifecycle: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. validation: 3; malware scanning: 2; metadata: 4; lifecycle: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. validation: 2; malware scanning: 3; metadata: 4; lifecycle: 1</label>
@@ -234,7 +234,7 @@ def complete_upload(user, upload_id, s3, db, jobs):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>File [concept] authorizes every read and returns a short-lived private URL or controlled response with safe content type, disposition, caching, and range behavior.</li><li>A file [concept] defines pending upload, quarantine, clean or rejected state, versions, retention, archival, expiration, and complete deletion of bytes and metadata.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. lifecycle: 1; delivery: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. lifecycle: 2; delivery: 1</label>
@@ -246,7 +246,7 @@ def complete_upload(user, upload_id, s3, db, jobs):
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Server validates stored content: Size, magic bytes, parser limits, malware scan, and metadata determine promotion or rejection.</li><li>Authorized lifecycle continues: Safe download headers, versions, retention, cleanup, and audit evidence govern every later operation.</li><li>Server creates a narrow upload grant: Owner, object key, byte limit, media policy, checksum, and short expiry constrain capability.</li><li>Client sends bytes to storage: Multipart parts, retry, checksum, encryption, and private access avoid proxying large files through the app.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -258,13 +258,13 @@ def complete_upload(user, upload_id, s3, db, jobs):
         <p>Upload a valid file, a mislabeled executable, an oversized multipart file, and an abandoned upload; then revoke download access. Evidence to inspect: Grant conditions, object checksum and size, multipart state, scanner result, metadata transition, authorization decision, lifecycle action, and bytes removed.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" target="_blank" rel="noreferrer">Review the lesson source: Amazon S3 presigned upload documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" target="_blank" rel="noreferrer">Review the lesson source: Amazon S3 presigned upload documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

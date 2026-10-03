@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace viewer request normalization, edge cache lookup, origin fetch, response caching, and security inspection.</p>
-      <p class="analogy">AWS is a programmable city: accounts set legal boundaries, IAM issues authority, VPCs define roads, managed services operate utilities, and telemetry shows whether citizens are safe.</p>
+      <p>A cache key decides which requests may reuse the same bytes. Forwarding an authorization header to an origin does not necessarily put it in that key. If users receive different representations, isolate those entries or disable caching. Check path behavior order and direct-origin access as well. Signed viewer access grants permission but does not repair an unsafe representation-sharing policy.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · NAME / ROUTE</span><strong>Client selects an endpoint</strong><small>DNS, address family, and route tables choose a path.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FILTER</span><strong>Network controls admit traffic</strong><small>Gateways, security groups, NACLs, and firewalls decide.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SERVICE</span><strong>Edge or load balancer selects target</strong><small>Health, listener, cache, and target policy apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><strong>Return traffic reaches the client</strong><small>State, latency, headers, and logs expose the path.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Break one route or rule, predict the failure layer, then prove it from network evidence.</strong>
         <small><b>Inspect:</b> DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Serve private S3 content through CloudFront with an explicit cache policy, origin access control, TLS, and WAF rule.</p>
-    <p class="lab-scope">Core: trace the supplied tabletop or configuration fragment and explain an expected failure plus its evidence. Extension: supply the missing resources in an authorized isolated AWS account and measure behavior, costs and recovery. No cloud command, credential, deployment or installation is executed by this content review.</p>
+    <p class="lab-scope">Trace the scenario or configuration fragment and explain an expected failure. To check deployed behavior, supply the missing resources in an authorized isolated AWS account and measure cost and recovery as well as the normal result.</p>
 
 
 
@@ -146,7 +146,7 @@
     <ol class="interview-questions">
       <li>Diagnose stale or unsafe cached content and explain what belongs in a cache key.</li>
       <li>Explain how untrusted input crossing a boundary works, starting with the input and following it through to the result.</li>
-      <li>How would you serve private S3 content through CloudFront with an explicit cache policy, origin access control, TLS, and WAF rule, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -154,13 +154,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="cloud-aws">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace viewer request normalization, edge cache lookup, origin fetch, response caching, and security inspection.</p>
+
         <p class="worked-answer">A forwarded Authorization header does not necessarily vary the cache key. If authorized users receive different bytes, isolate representations or disable caching; signed viewer access alone does not solve this. Check behavior ordering and origin bypass. Minimum TTL and response headers interact, so validate the actual cache policy and two-user outcome.</p>
         <p>Look for: DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#cloud-aws">Worked track case: Multi-AZ compute still has a single failure path ↗</a></p>
       </details>
     </div>
@@ -168,9 +168,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A cache key identifies requests allowed to reuse one stored response. Include every relevant representation dimension or disable caching; forwarding a header to the origin does not necessarily put it in the cache key.</li><li>CloudFront cache [concept] match path patterns and select origins, cache policies and other handling rules. Ordered matching and the default behavior can expose unintended paths if configured incorrectly.</li><li>CloudFront serves content through edge caches. Cache keys, origin policies, TTLs, invalidation, and authorization determine both correctness and performance.</li><li>A CloudFront origin supplies content on an eligible cache miss. Origin access control, forwarded request data and origin-response policy must preserve the intended authorization and representation.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. CloudFront distributions: 3; origins: 4; cache keys: 2; behaviors: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. CloudFront distributions: 3; origins: 1; cache keys: 2; behaviors: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. CloudFront distributions: 3; origins: 4; cache keys: 1; behaviors: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. CloudFront distributions: 3; origins: 2; cache keys: 1; behaviors: 4</label>
@@ -182,7 +182,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>AWS [concept] evaluates supported web requests against configured rules such as IP, rate and content checks. It reduces selected application threats but does not replace resource authorization or safe code.</li><li>[concept] applies viewer TLS, access rules, request inspection and origin protection near entry points. Preserve identity and cache isolation across the edge-to-origin boundary.</li><li>[concept] prevents stale cached data from being served after a relevant change. Coordinate keys, versions, and races explicitly.</li><li>CloudFront signed URLs or cookies grant constrained viewer access using a trusted signer. They must be paired with origin restrictions when direct origin access would bypass the grant.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. invalidation: 3; signed access: 4; WAF: 2; edge security: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. invalidation: 3; signed access: 1; WAF: 2; edge security: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. invalidation: 3; signed access: 4; WAF: 1; edge security: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. invalidation: 3; signed access: 2; WAF: 1; edge security: 4</label>
@@ -194,7 +194,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Edge or load balancer selects target: Health, listener, cache, and target policy apply.</li><li>Return traffic reaches the client: State, latency, headers, and logs expose the path.</li><li>Client selects an endpoint: DNS, address family, and route tables choose a path.</li><li>Network controls admit traffic: Gateways, security groups, NACLs, and firewalls decide.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -206,13 +206,13 @@
         <p>Break one route or rule, predict the failure layer, then prove it from network evidence. Evidence to inspect: DNS answer, routes, reachability, flow logs, listener decision, target health, and timing.</p>
       </details>
     </article>
-    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

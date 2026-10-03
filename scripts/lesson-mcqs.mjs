@@ -95,7 +95,7 @@ export function lessonMcqs(lesson, diagram, concepts) {
     questions.push({
       kind: "concept-matching",
       terms: group.map(item => item.term),
-      prompt: "Which mapping pairs the concepts with their explanations in this lesson?",
+      prompt: "Match each concept to its explanation.",
       context: definitions.map(item => concealTerms(item.definition, [item.term])),
       options: variants.map(mapping => group.map((item, index) => `${item.term}: ${mapping[index]}`).join("; ")),
       answer,
@@ -120,7 +120,7 @@ export function lessonMcqs(lesson, diagram, concepts) {
     const { variants, answer } = choices(correct, seed);
     questions.push({
       kind: "mechanism-trace", terms: [],
-      prompt: "Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.",
+      prompt: "Put these steps in the order used by the lesson's trace. This teaching order may differ from the order of events at runtime.",
       context: shuffled.map(stage => `${stage.name}: ${stage.detail}`),
       options: variants.map(mapping => mapping.join(" → ")),
       answer,
@@ -140,7 +140,7 @@ export function mcqMarkup(bank, source) {
   const e = escapeHtml;
   return `<section class="card lab" id="lesson-mcqs" data-mcq-count="${bank.questions.length}">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     ${bank.questions.map((question, index) => `<article class="senior-practice" data-mcq-kind="${question.kind}">
       <h3>${index + 1}. ${e(question.prompt)}</h3>
       <ol>${question.context.map(text => `<li>${e(text)}</li>`).join("")}</ol>
@@ -154,7 +154,7 @@ export function mcqMarkup(bank, source) {
         <p>${e(question.followup)}</p>
       </details>
     </article>`).join("")}
-    <p><a href="${e(source.sourceUrl)}" target="_blank" rel="noreferrer">Review the lesson source: ${e(source.sourceLabel)}</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="${e(source.sourceUrl)}" target="_blank" rel="noreferrer">Review the lesson source: ${e(source.sourceLabel)}</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     ${bank.uncoveredTerms.length ? `<p>Separate term questions still need authoring for: ${bank.uncoveredTerms.map(e).join(", ")}. Their coverage is not implied by the mechanism questions.</p>` : ""}
   </section>`;
 }

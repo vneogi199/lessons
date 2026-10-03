@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Compare organization by technical layer, dependency-inverted ports, use-case policy, feature slice, persistence abstraction, transaction boundary, and deployable module while keeping domain and operational boundaries explicit.</p>
-      <p class="analogy">Software design is arranging a workshop: frequently changing work stays easy to reach, dangerous machinery sits behind guards, and each tool earns its space by solving a real task.</p>
+      <p>Architecture sets responsibility and dependency boundaries. Layers group technical roles; vertical slices group the work for one feature. Hexagonal and clean architecture keep policy independent of external adapters. A repository hides persistence details, while a unit of work owns a transaction. A modular monolith can enforce these boundaries within one deployment. Moving files or creating more deployments does not enforce them by itself.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>A use case enters one application boundary</strong><small>Validated input, identity, transaction need, and expected outcome are explicit.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · POLICY</span><strong>Domain and application rules decide</strong><small>Stable business logic depends on owned ports rather than frameworks or vendors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPTER</span><strong>Infrastructure performs external work</strong><small>HTTP, database, queue, clock, and model details translate at the edge.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><strong>One observable outcome completes</strong><small>Transaction state, response, events, tests, and telemetry prove boundary behavior.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Replace one database adapter and move one feature between folders without changing the domain or application contract.</strong>
         <small><b>Inspect:</b> Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</small>
       </div>
@@ -159,7 +159,7 @@ export class PlaceOrder {
     <ol class="interview-questions">
       <li>Choose an architecture from team, domain, change, deployment, consistency, and operational constraints without confusing folder names with boundaries.</li>
       <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
-      <li>How would you organize one order workflow as a modular monolith with a vertical application slice, pure domain policy, HTTP and database adapters, explicit transaction ownership, and dependency tests, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -167,13 +167,13 @@ export class PlaceOrder {
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Compare organization by technical layer, dependency-inverted ports, use-case policy, feature slice, persistence abstraction, transaction boundary, and deployable module while keeping domain and operational boundaries explicit.</p>
-        <p class="worked-answer">The use case owns policy while injected persistence owns the transaction. The fake proves save/commit/rollback branching, not isolation, connection cleanup or durability. A real adapter must prevent concurrent draft-to-placed races and release resources on both success and failure. Rollback failure now preserves the original error too. A lost commit response may mean committed state; rollback cannot prove it did not commit. Define reconciliation/idempotency before retrying. Compare direct transaction code in one module with ports when substitution actually helps; moving folders or splitting deployments alone does not enforce boundaries.</p>
+
+        <p class="worked-answer">The use case owns policy, and the injected persistence component owns the transaction. The fake checks the save, commit and rollback branches. Database tests must check isolation, connection cleanup and durability. A real adapter must prevent concurrent draft-to-placed races and release resources on success and failure. If rollback fails, the original error is preserved. A lost commit response can leave the outcome unknown; calling rollback does not prove that the commit failed. Define reconciliation and idempotency before retrying. Compare direct transaction code in one module with ports when substitution helps. Moving folders or splitting deployments alone does not enforce boundaries.</p>
         <p>Look for: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>
       </details>
     </div>
@@ -181,9 +181,9 @@ export class PlaceOrder {
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] groups technical responsibilities such as presentation, application, domain, and data access with defined dependency rules.</li><li>[concept] places application policy inside and connects external actors and infrastructure through owned ports and adapters.</li><li>[concept] directs source dependencies inward toward enterprise and application policy while outer frameworks implement boundary interfaces.</li><li>[concept] organize major responsibilities and dependency relationships across an application; their names matter less than enforced boundaries.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Architecture patterns: 4; layered architecture: 2; hexagonal architecture: 1; clean architecture: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Architecture patterns: 4; layered architecture: 1; hexagonal architecture: 2; clean architecture: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Architecture patterns: 4; layered architecture: 3; hexagonal architecture: 1; clean architecture: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Architecture patterns: 1; layered architecture: 4; hexagonal architecture: 2; clean architecture: 3</label>
@@ -195,7 +195,7 @@ export class PlaceOrder {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A [concept] provides a collection-like domain interface for loading and saving aggregates while hiding persistence queries and mappings.</li><li>A [concept] owns one transaction boundary, tracks intended changes, and commits or rolls them back as one consistency decision.</li><li>A modular monolith deploys as one application but enforces internal module ownership and contracts so features do not share arbitrary state.</li><li>A vertical slice groups the endpoint, use case, validation, and related adapters for one feature so a change stays near its user behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. vertical slices: 4; repository: 2; unit of work: 1; modular monoliths: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. vertical slices: 4; repository: 1; unit of work: 2; modular monoliths: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. vertical slices: 4; repository: 3; unit of work: 1; modular monoliths: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. vertical slices: 1; repository: 4; unit of work: 2; modular monoliths: 3</label>
@@ -207,7 +207,7 @@ export class PlaceOrder {
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Domain and application rules decide: Stable business logic depends on owned ports rather than frameworks or vendors.</li><li>Infrastructure performs external work: HTTP, database, queue, clock, and model details translate at the edge.</li><li>One observable outcome completes: Transaction state, response, events, tests, and telemetry prove boundary behavior.</li><li>A use case enters one application boundary: Validated input, identity, transaction need, and expected outcome are explicit.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -219,13 +219,13 @@ export class PlaceOrder {
         <p>Replace one database adapter and move one feature between folders without changing the domain or application contract. Evidence to inspect: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p>
       </details>
     </article>
-    <p><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/" target="_blank" rel="noreferrer">Review the lesson source: Microsoft application architecture fundamentals</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/" target="_blank" rel="noreferrer">Review the lesson source: Microsoft application architecture fundamentals</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

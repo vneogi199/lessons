@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate command validation from query models and optionally treat an append-only event history as authority while rebuilding projections, evolving events, and snapshotting long streams.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>CQRS separates command handling from query models. Event sourcing goes further by making the accepted event history authoritative. Replaying that history rebuilds state, while projections serve particular queries. The local aggregate reaches version 3, but an array append supplies no durable concurrency check. A real store must atomically compare the expected version before accepting events, and projections need their own duplicate policy.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · DECIDE</span><strong>Command is checked against current state</strong><small>Replayed history supplies the state and expected version used to evaluate the business rule.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · APPEND</span><strong>Events become authoritative history</strong><small>A real event store must atomically reject version conflicts or durably append the new events.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROJECT</span><strong>Read model consumes committed events</strong><small>Projection progress, duplicate handling and schema interpretation govern the query view.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REBUILD</span><strong>Replay verifies the derived state</strong><small>Compare full replay with a versioned snapshot plus tail; promote rebuilt views without mixing versions.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Decide two commands from the same version and specify which append must fail; then replay the accepted history.</strong>
         <small><b>Inspect:</b> Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an event-sourced aggregate and rebuild two projections, then test duplicate events, version migration, snapshot restore, and temporal debugging.</p>
-    <p class="lab-scope">Core: predict the supplied local example or design worksheet and explain a counterexample before consulting the criteria. Extension: supply missing runtime, persistence and deployment adapters; collect compatibility, failure and changed-constraint evidence. No installation, live broker, provider, fault injection or deployment is performed by this content review.</p>
+    <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
 
 
@@ -164,7 +164,7 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
     <ol class="interview-questions">
       <li>Explain when CQRS or event sourcing earns its complexity and distinguish an event log from ordinary audit logging.</li>
       <li>Explain how a distributed request or message works, starting with the input and following it through to the result.</li>
-      <li>How would you build an event-sourced aggregate and rebuild two projections, then test duplicate events, version migration, snapshot restore, and temporal debugging, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -172,13 +172,13 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
     <textarea id="teachback" placeholder="Define the boundary. Trace a distributed request or message. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate command validation from query models and optionally treat an append-only event history as authority while rebuilding projections, evolving events, and snapshotting long streams.</p>
+
         <p class="worked-answer">The aggregate reaches done at version 3 and replay reconstructs that state. decide is pure relative to this object, but pushing into an array is not atomic durable append. Rejecting an invalid repeated event is not projection deduplication. Snapshots, two read models, schema migration and temporal queries are extensions requiring stream/version and event-time semantics.</p>
         <p>Look for: Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -186,9 +186,9 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] separates the model that validates commands from models optimized for queries. It adds synchronization and operational work between those views.</li><li>[concept] stores an ordered event history as authoritative state and rebuilds current state by replay, often with snapshots and projections.</li><li>[concept] store derived read models that need refresh, replay, and consistency policy.</li><li>A snapshot captures a view of state at a defined boundary. State what consistency it guarantees and whether concurrent changes are included.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. CQRS: 1; event sourcing: 2; materialized views: 3; snapshots: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. CQRS: 1; event sourcing: 2; materialized views: 4; snapshots: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. CQRS: 1; event sourcing: 3; materialized views: 4; snapshots: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. CQRS: 1; event sourcing: 4; materialized views: 3; snapshots: 2</label>
@@ -200,7 +200,7 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A snapshot captures a view of state at a defined boundary. State what consistency it guarantees and whether concurrent changes are included.</li><li>[concept] ask about state at a time or across changes and require a clear event-time and validity model.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. snapshots: 1; temporal queries: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. snapshots: 2; temporal queries: 1</label>
@@ -212,7 +212,7 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Events become authoritative history: A real event store must atomically reject version conflicts or durably append the new events.</li><li>Read model consumes committed events: Projection progress, duplicate handling and schema interpretation govern the query view.</li><li>Replay verifies the derived state: Compare full replay with a versioned snapshot plus tail; promote rebuilt views without mixing versions.</li><li>Command is checked against current state: Replayed history supplies the state and expected version used to evaluate the business rule.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 4 → 2 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 1 → 4 → 2 → 3</label>
@@ -224,13 +224,13 @@ for (const action of [() =&gt; rebuilt.decide(&quot;Complete&quot;), () =&gt; re
         <p>Decide two commands from the same version and specify which append must fail; then replay the accepted history. Evidence to inspect: Expected version, append result, accepted event order, projection position and replayed state. The local starter tests replay only.</p>
       </details>
     </article>
-    <p><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs" target="_blank" rel="noreferrer">Review the lesson source: Microsoft: CQRS and its relationship to event sourcing</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs" target="_blank" rel="noreferrer">Review the lesson source: Microsoft: CQRS and its relationship to event sourcing</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

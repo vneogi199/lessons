@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace the abstract conversion operations selected by addition, relational operators, property keys, conditionals, and wrapper objects.</p>
-      <p class="analogy">JavaScript execution is a set of labelled rooms: lexical environments hold bindings, the call stack tracks the current route, and job queues decide which door opens next.</p>
+      <p>An operator can convert its operands before using them. An object may supply a primitive value through conversion methods, so an expression can run more code than its syntax suggests. Truthiness and numeric conversion use different rules: an empty array is truthy even though numeric conversion can produce zero. At an input boundary, validate the complete accepted format instead of relying on whichever conversion happens to succeed.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · EXPRESSION</span><strong>Source code requests an operation</strong><small>Values and references enter the evaluation.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COERCE</span><strong>Language rules select conversions</strong><small>Type, equality, property, or call semantics apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><strong>The operation changes control or state</strong><small>Scopes, prototypes, and closures affect behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><strong>A value or exception appears</strong><small>A focused example reveals the specification path.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one operand type or binding and predict the exact value and type.</strong>
         <small><b>Inspect:</b> Console value, typeof, identity checks, property descriptors, and exception.</small>
       </div>
@@ -158,7 +158,7 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
     <ol class="interview-questions">
       <li>Derive coercion results from ToPrimitive and conversion rules rather than memorizing puzzle outputs.</li>
       <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>How would you predict coercion before execution, then replace ambiguous boundaries with explicit parsing and validation, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -166,13 +166,13 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace the abstract conversion operations selected by addition, relational operators, property keys, conditionals, and wrapper objects.</p>
+
         <p class="worked-answer">An empty array is truthy even though numeric conversion yields zero. The parser accepts canonical nonnegative safe-integer text, rejecting whitespace, signs, leading zeros and suffixes deliberately. If the product needs a different grammar, change that contract explicitly; parseInt alone does not validate the entire input.</p>
         <p>Look for: Console value, typeof, identity checks, property descriptors, and exception.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -180,9 +180,9 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] asks an object for a primitive representation using Symbol.[concept] or an ordered valueOf and toString fallback determined by a hint.</li><li>[concept] is a method an object can expose for primitive conversion. Its effect depends on the conversion operation and whether Symbol.toPrimitive overrides the ordinary method order.</li><li>[concept] can provide a string representation of a value. During ordinary primitive conversion its position relative to valueOf depends on the conversion hint.</li><li>[concept] converts a value because an operation expects another type. The selected conversion depends on the operator and follows explicit abstract algorithms.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Type coercion: 4; ToPrimitive: 2; valueOf: 1; toString: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Type coercion: 4; ToPrimitive: 1; valueOf: 2; toString: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Type coercion: 4; ToPrimitive: 3; valueOf: 1; toString: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Type coercion: 1; ToPrimitive: 4; valueOf: 2; toString: 3</label>
@@ -194,7 +194,7 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] select language operations such as addition, comparison, or assignment. Their operand conversion rules differ; for example, + can concatenate strings while subtraction requests numeric conversion.</li><li>Conditions convert values to booleans. false, numeric zeros, 0n, the empty string, null, undefined, and NaN are falsy. Ordinary objects are truthy, including empty arrays; the legacy browser document.all object is a special exception.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. truthiness: 1; operators: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. truthiness: 2; operators: 1</label>
@@ -206,7 +206,7 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>A value or exception appears: A focused example reveals the specification path.</li><li>Source code requests an operation: Values and references enter the evaluation.</li><li>Language rules select conversions: Type, equality, property, or call semantics apply.</li><li>The operation changes control or state: Scopes, prototypes, and closures affect behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -218,13 +218,13 @@ catch (error) { console.assert(error instanceof TypeError); }</code></pre>
         <p>Change one operand type or binding and predict the exact value and type. Evidence to inspect: Console value, typeof, identity checks, property descriptors, and exception.</p>
       </details>
     </article>
-    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noreferrer">Review the lesson source: MDN JavaScript Guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noreferrer">Review the lesson source: MDN JavaScript Guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

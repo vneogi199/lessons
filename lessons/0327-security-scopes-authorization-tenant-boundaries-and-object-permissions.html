@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate scheme declaration, SecurityScopes aggregation, authenticated principal construction, role or scope checks, object ownership, and database enforcement.</p>
-      <p class="analogy">A FastAPI request is a package moving through checkpoints: the server accepts it, routing identifies the destination, validation inspects it, dependencies prepare resources, and serialization seals the response.</p>
+      <p>An endpoint scope expresses a broad capability, while authorization must decide whether this principal can perform this action on this object. A global scope does not grant access to another tenant&#039;s record. SecurityScopes provides requested names for enforcement code; it does not make the decision itself. Test membership, ownership and action separately, including denial behavior that avoids leaking record existence.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CREDENTIAL</span><strong>Request presents identity evidence</strong><small>Token, cookie, certificate, or trusted proxy data arrives.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><strong>Server verifies the principal</strong><small>Check integrity, expiry, issuer, audience, and session state.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><strong>Policy evaluates this resource</strong><small>Tenant, ownership, role, and scope rules decide access.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECISION</span><strong>Allow or reject safely</strong><small>Return minimal data and a stable denial response.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Replay the request as another tenant and with an expired credential.</strong>
         <small><b>Inspect:</b> Principal fields, policy decision, audit event, response status, and leaked fields.</small>
       </div>
@@ -101,7 +101,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Enforce scope and tenant-aware resource authorization with tests for cross-tenant identifiers and confused-deputy paths.</p>
-    <p class="lab-scope">Core: trace the supplied FastAPI example and predict one success and one failure before reading the worked answer criteria. Most snippets are integration sketches with missing application types, services or imports; syntax checks are not framework execution. Extension: assemble the stated adapters and run compatible framework, database, browser and deployment tests in their required environments. This review installs nothing and claims no such integration result.</p>
+    <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
 
 
@@ -141,7 +141,7 @@ async def project(tenant_id: UUID, project_id: UUID,
     <ol class="interview-questions">
       <li>Diagnose insecure direct-object references and explain why authentication alone never authorizes a resource.</li>
       <li>Explain how untrusted input crossing a boundary works, starting with the input and following it through to the result.</li>
-      <li>How would you enforce scope and tenant-aware resource authorization with tests for cross-tenant identifiers and confused-deputy paths, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -149,13 +149,13 @@ async def project(tenant_id: UUID, project_id: UUID,
     <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="fastapi">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate scheme declaration, SecurityScopes aggregation, authenticated principal construction, role or scope checks, object ownership, and database enforcement.</p>
+
         <p class="worked-answer">SecurityScopes supplies requested names; authenticate and get_authorized must enforce actual authority. A passing global scope does not grant another tenant&#039;s object. Test membership, object ownership and action independently, and avoid leaking existence through inconsistent denial behavior.</p>
         <p>Look for: Principal fields, policy decision, audit event, response status, and leaked fields.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#fastapi">Worked track case: A background task uses a closed session ↗</a></p>
       </details>
     </div>
@@ -163,9 +163,9 @@ async def project(tenant_id: UUID, project_id: UUID,
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] apply authorization to one specific record or resource, not only to an endpoint category.</li><li>[concept] are named permissions requested by an operation and checked while building the current principal. They help document broad capabilities but do not replace resource-level authorization.</li><li>[concept] checks whether the current principal can perform a specified action on a specified resource.</li><li>[concept] prevent one customer or organization from reading or changing another tenant&#39;s data.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Security scopes: 2; authorization: 4; tenant boundaries: 3; object permissions: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Security scopes: 2; authorization: 1; tenant boundaries: 3; object permissions: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Security scopes: 3; authorization: 2; tenant boundaries: 4; object permissions: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Security scopes: 2; authorization: 3; tenant boundaries: 4; object permissions: 1</label>
@@ -177,7 +177,7 @@ async def project(tenant_id: UUID, project_id: UUID,
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Policy evaluates this resource: Tenant, ownership, role, and scope rules decide access.</li><li>Allow or reject safely: Return minimal data and a stable denial response.</li><li>Request presents identity evidence: Token, cookie, certificate, or trusted proxy data arrives.</li><li>Server verifies the principal: Check integrity, expiry, issuer, audience, and session state.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -189,13 +189,13 @@ async def project(tenant_id: UUID, project_id: UUID,
         <p>Replay the request as another tenant and with an expired credential. Evidence to inspect: Principal fields, policy decision, audit event, response status, and leaked fields.</p>
       </details>
     </article>
-    <p><a href="https://fastapi.tiangolo.com/tutorial/security/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Security guide</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://fastapi.tiangolo.com/tutorial/security/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Security guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

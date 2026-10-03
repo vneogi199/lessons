@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Relate workload concurrency to shared and per-operation memory, operating-system cache, storage latency, WAL pressure, checkpoint pacing, and saturation queues.</p>
-      <p class="analogy">A database is a shared ledger with librarians: constraints protect meaning, indexes shorten searches, transactions coordinate edits, and recovery logs preserve history.</p>
+      <p>Tune the measured bottleneck under representative concurrency. Work_mem applies to individual operations, so several operations, workers and queries can multiply memory demand. Hash work can have an additional multiplier. Shared buffers and the OS cache are separate layers. Keep throughput, errors, latency and memory together in the comparison. A diagnostics query by itself provides neither a load test nor a justified configuration change.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SYMPTOM</span><strong>Define the slow or failing workload</strong><small>Record request shape, concurrency, time window and the affected service objective.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><strong>Locate waiting and repeated work</strong><small>Session waits, query statistics, plans and host metrics narrow the hypothesis.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><strong>Test one bounded intervention</strong><small>Use representative data and hold workload conditions steady enough for comparison.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Check improvement and regressions</strong><small>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.</strong>
         <small><b>Inspect:</b> Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</small>
       </div>
@@ -112,7 +112,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Establish a reproducible baseline, change one setting, load-test to saturation, and retain latency, throughput, error, and resource evidence.</p>
-    <p class="lab-scope">Core: trace this independent database fixture and predict its rows, rejection or failure schedule before comparing the worked answer criteria. Supply its own schema and bind parameters using the stated client; the catalog is not one sequential migration. Extension: use an authorized disposable PostgreSQL environment for concurrency, plans, recovery and topology evidence. No database or extension is installed or executed by this content review; local adapter checks prove only their exercised control flow.</p>
+    <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 <p>Reuse observability queries as a baseline, then change one measured bottleneck under representative concurrency. Budget work_mem across concurrent operations rather than treating it as a single server-wide allocation. Keep throughput, latency and memory evidence together.</p>
 
 <p>Use an existing disposable database and the schema required by this example. These are independent fixtures, not one cumulative schema. SQL, psql commands, shell commands, configuration files and separate sessions have different execution contexts; follow their labels. Parameters such as $1 require a prepared statement or driver binding. Do not install extensions or run administrative commands merely to read the lesson. Local text and adapter checks do not verify PostgreSQL behavior.</p>
@@ -145,7 +145,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
     <ol class="interview-questions">
       <li>Explain why PostgreSQL tuning starts with workload and query evidence rather than a universal configuration template.</li>
       <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>How would you establish a reproducible baseline, change one setting, load-test to saturation, and retain latency, throughput, error, and resource evidence, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -153,13 +153,13 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="data-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Relate workload concurrency to shared and per-operation memory, operating-system cache, storage latency, WAL pressure, checkpoint pacing, and saturation queues.</p>
+
         <p class="worked-answer">work_mem applies to individual operations and can multiply across workers and concurrent queries; hash memory may use an additional multiplier. Shared buffers and OS cache are different layers. The shared diagnostics script supplies no load generator or tuning change: establish matched baselines before modifying settings.</p>
         <p>Look for: Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#data-systems">Worked track case: A check-then-write oversells inventory ↗</a></p>
       </details>
     </div>
@@ -167,9 +167,9 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Input/output moves data between a process and external devices or systems. Waiting for [concept] differs from consuming CPU.</li><li>[concept] establish recovery progress by coordinating dirty-page persistence and WAL recovery boundaries.</li><li>PostgreSQL tuning starts from workload and plan evidence, then changes queries, indexes, concurrency, or settings with measurements.</li><li>[concept] holds active code and data. Measure retained objects, buffers, and peak allocation, not just average usage.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. PostgreSQL performance tuning: 3; memory: 4; I/O: 2; checkpoints: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. PostgreSQL performance tuning: 3; memory: 1; I/O: 2; checkpoints: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. PostgreSQL performance tuning: 3; memory: 4; I/O: 1; checkpoints: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. PostgreSQL performance tuning: 3; memory: 2; I/O: 1; checkpoints: 4</label>
@@ -181,7 +181,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>Database caching reuses pages or results at different layers; warm-[concept] behavior can hide storage costs.</li><li>Load testing applies a defined workload and checks latency, errors, saturation, and recovery rather than only maximum throughput.</li><li>[concept] influences memory available to individual query operations, so concurrent operations can multiply total usage.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. work_mem: 3; cache: 2; capacity testing: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. work_mem: 1; cache: 2; capacity testing: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. work_mem: 3; cache: 1; capacity testing: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. work_mem: 2; cache: 1; capacity testing: 3</label>
@@ -193,7 +193,7 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Test one bounded intervention: Use representative data and hold workload conditions steady enough for comparison.</li><li>Check improvement and regressions: Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</li><li>Define the slow or failing workload: Record request shape, concurrency, time window and the affected service objective.</li><li>Locate waiting and repeated work: Session waits, query statistics, plans and host metrics narrow the hypothesis.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -205,13 +205,13 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
         <p>A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity. Evidence to inspect: Timestamped workload, waits, normalized query statistics, plan, host metrics and matched before/after measurements.</p>
       </details>
     </article>
-    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL current documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

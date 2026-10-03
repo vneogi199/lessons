@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
-      <p class="analogy">A distributed system is a team communicating by delayed letters: messages can arrive late, twice, out of order, or not at all, so correctness must survive uncertainty.</p>
+      <p>An outbox stores a business change and its outgoing event intent in one database transaction. A relay publishes the event later and may publish it more than once after a crash. An inbox can couple incoming identity with a local consumer effect. These boundaries close specific gaps; they do not make every external action atomic. Relay progress, retention and schema evolution still need explicit handling.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · PUBLISH</span><strong>Producer emits identified intent or fact</strong><small>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><strong>Durable channel stores and assigns</strong><small>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><strong>Consumer creates a local effect</strong><small>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><strong>Ack, commit, retry, quarantine, or replay</strong><small>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Crash at every boundary before and after the side effect and acknowledgement.</strong>
         <small><b>Inspect:</b> Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</small>
       </div>
@@ -104,7 +104,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an outbox relay and inbox consumer, crash each step, and prove no committed intent is lost and no duplicate business effect survives.</p>
-    <p class="lab-scope">Core: trace each local adapter or SQL fragment across commit, response loss and replay, naming missing authority and expected state. Extension: supply the broker/database/workflow adapters and collect actual crash, rebalance and recovery evidence. No broker, database, provider or installation is exercised by this content review.</p>
+    <p class="lab-scope">Trace the adapter or SQL fragment through commit, response loss and replay. Name the component that must make each decision and predict its state. Supply the broker, database or workflow adapters before testing actual crash, rebalance and recovery behavior.</p>
 
 
 
@@ -163,7 +163,7 @@ COMMIT;
     <ol class="interview-questions">
       <li>Explain which dual-write gap the outbox closes, which duplicates remain, and how CDC position and schema evolution are managed.</li>
       <li>Explain how a database transaction works, starting with the input and following it through to the result.</li>
-      <li>How would you build an outbox relay and inbox consumer, crash each step, and prove no committed intent is lost and no duplicate business effect survives, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -171,13 +171,13 @@ COMMIT;
     <textarea id="teachback" placeholder="Define the boundary. Trace a database transaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="api-distributed-systems">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Commit domain state and an outgoing event record together, publish it at least once from change data, and atomically record incoming identities with local effects.</p>
+
         <p class="worked-answer">The SQL fragments require separate parameter sets, schemas and an explicit transaction adapter. The outbox closes the local state/intent gap, not the broker publication/relay-checkpoint gap. A zero-row producer update emits no event; reconcile why. Consumer target existence and canonical duplicate comparison are required contracts, and the relay/CDC position, schema evolution and retention still need implementation.</p>
         <p>Look for: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Worked track case: A timed-out payment has an unknown outcome ↗</a></p>
       </details>
     </div>
@@ -185,9 +185,9 @@ COMMIT;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>Change data capture exposes database changes for downstream processing, with position, schema, and delivery semantics.</li><li>[concept] couples state change and event intent so a crash cannot silently leave only one committed; outbox patterns require a reliable relay.</li><li>A [concept] commits the business change and an event record in the same local database transaction, closing the dual-write loss gap.</li><li>An [concept] records an incoming event identity in the same transaction as the consumer&#39;s local effect, making redelivery locally duplicate-safe.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Transactional outbox: 3; inbox: 4; CDC: 2; atomic publication: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Transactional outbox: 3; inbox: 1; CDC: 2; atomic publication: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Transactional outbox: 3; inbox: 4; CDC: 1; atomic publication: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Transactional outbox: 3; inbox: 2; CDC: 1; atomic publication: 4</label>
@@ -199,7 +199,7 @@ COMMIT;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] couples state change and event intent so a crash cannot silently leave only one committed; outbox patterns require a reliable relay.</li><li>An idempotent consumer makes repeated delivery of the same logical event safe. Its deduplication record and local state change should share an atomic boundary.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. atomic publication: 1; idempotent consumers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. atomic publication: 2; idempotent consumers: 1</label>
@@ -211,7 +211,7 @@ COMMIT;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Consumer creates a local effect: Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</li><li>Ack, commit, retry, quarantine, or replay: Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</li><li>Producer emits identified intent or fact: Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</li><li>Durable channel stores and assigns: Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -223,13 +223,13 @@ COMMIT;
         <p>Crash at every boundary before and after the side effect and acknowledgement. Evidence to inspect: Event ID, broker position, assignment, delivery count, inbox row, local effect, committed offset, lag, retry, and quarantine record.</p>
       </details>
     </article>
-    <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

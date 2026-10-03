@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Understand evaluator bias, variance, leakage, position effects, and disagreement.</p>
-      <p class="analogy">AI quality is a flight test program: a single demo proves takeoff, while datasets, slices, red-team cases, traces, and release gates establish an operating envelope.</p>
+      <p>A model grader makes decisions that need calibration against reviewed labels. Measure false passes, false failures and sensitivity to answer order. Humans can disagree too, so document how labels are adjudicated. Use deterministic checks for exact schema or verified tool outcomes and an appropriate rubric for source support. Keep grader tuning separate from final evaluation cases.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CASE</span><strong>Versioned input and expectation</strong><small>Dataset slices represent important users and failures.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUN</span><strong>System produces an output</strong><small>Model, prompt, tools, retrieval, and configuration are recorded.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SCORE</span><strong>Checks apply a rubric</strong><small>Deterministic rules, model graders, and humans cover different risks.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DECIDE</span><strong>Evidence gates a change</strong><small>Regressions, uncertainty, cost, and safety shape release.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one system component and compare results on the same frozen cases.</strong>
         <small><b>Inspect:</b> Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</small>
       </div>
@@ -100,7 +100,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Calibrate automated graders against blinded human labels and investigate disagreement.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
 
 
@@ -130,7 +130,7 @@
     <ol class="interview-questions">
       <li>Explain why an LLM judge is not ground truth.</li>
       <li>Explain how an evaluation case works, starting with the input and following it through to the result.</li>
-      <li>How would you calibrate automated graders against blinded human labels and investigate disagreement, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -138,13 +138,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace an evaluation case. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="ai-quality-safety">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Understand evaluator bias, variance, leakage, position effects, and disagreement.</p>
+
         <p class="worked-answer">Treat the judge as a classifier against adjudicated labels: false passes are especially important when the gate controls unsafe output. Report a confusion matrix, slice counts and order sensitivity rather than only agreement. Humans can disagree too; document adjudication. Separate deterministic schema/tool-outcome checks from source-support judgments, and keep grader tuning off the final test set.</p>
         <p>Look for: Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#ai-quality-safety">Worked track case: The average improves while a critical slice regresses ↗</a></p>
       </details>
     </div>
@@ -152,9 +152,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="2">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>A model grader uses another model call to score or classify output according to a rubric.</li><li>[concept] uses trained people to judge examples, resolve ambiguity, and calibrate automated evaluation.</li><li>[concept] compares grader decisions with trusted human decisions and measures disagreement or bias.</li><li>A deterministic check gives the same result for the same input and is suitable for exact rules.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Deterministic checks: 4; model graders: 2; human review: 1; judge calibration: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Deterministic checks: 4; model graders: 1; human review: 2; judge calibration: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Deterministic checks: 4; model graders: 3; human review: 1; judge calibration: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Deterministic checks: 1; model graders: 4; human review: 2; judge calibration: 3</label>
@@ -166,7 +166,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>2. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>2. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Evidence gates a change: Regressions, uncertainty, cost, and safety shape release.</li><li>Versioned input and expectation: Dataset slices represent important users and failures.</li><li>System produces an output: Model, prompt, tools, retrieval, and configuration are recorded.</li><li>Checks apply a rubric: Deterministic rules, model graders, and humans cover different risks.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -178,13 +178,13 @@
         <p>Change one system component and compare results on the same frozen cases. Evidence to inspect: Version IDs, per-slice scores, grader rationale, disagreement, latency, and cost.</p>
       </details>
     </article>
-    <p><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noreferrer">Review the lesson source: NIST AI Risk Management Framework</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noreferrer">Review the lesson source: NIST AI Risk Management Framework</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

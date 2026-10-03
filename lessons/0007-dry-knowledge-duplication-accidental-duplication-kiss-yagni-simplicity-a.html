@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Separate duplicated business knowledge that must change together from code that only looks similar, then compare the current cost of repetition with the future coupling created by an abstraction.</p>
-      <p class="analogy">Software design is arranging a workshop: frequently changing work stays easy to reach, dangerous machinery sits behind guards, and each tool earns its space by solving a real task.</p>
+      <p>Two functions can look alike without representing the same rule. Search normalization and display-name normalization, for example, may need different behavior later. Combining them would force unrelated changes through one function. A business rule shared by every checkout has a different need: one authoritative implementation. Compare the cost of keeping copies with the coupling a shared abstraction would introduce. Leave unused capabilities out until a requirement needs them.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CHANGE</span><strong>A concrete requirement creates pressure</strong><small>The requested behavior and likely reasons to change identify the real design problem.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Code ownership and dependencies are traced</strong><small>Names, cohesion, coupling, state, contracts, and boundaries reveal the affected area.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · MODIFY</span><strong>The smallest clear design changes</strong><small>Simple control flow, narrow capabilities, composition, tests, and explicit tradeoffs contain impact.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><strong>Evidence measures the result</strong><small>Behavior, files changed, dependency direction, complexity, readability, and failure handling test the claim.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Apply one realistic change before and after the refactor and compare how much unrelated code must be understood or edited.</strong>
         <small><b>Inspect:</b> Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</small>
       </div>
@@ -149,7 +149,7 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
     <ol class="interview-questions">
       <li>Explain why DRY does not mean removing every repeated line and how KISS and YAGNI constrain speculative design.</li>
       <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
-      <li>How would you refactor one real duplicated rule, deliberately leave two accidental similarities separate, delete an unused extension point, and record the change-cost evidence for each decision, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -157,13 +157,13 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="software-design">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Separate duplicated business knowledge that must change together from code that only looks similar, then compare the current cost of repetition with the future coupling created by an abstraction.</p>
-        <p class="worked-answer">A shipping rule shared by every checkout has one business owner; search normalization and display-name normalization need not change together. For a new case-sensitive search requirement, change only the search function and preserve displayed capitalization. Compare that change with a flag-heavy shared normalizer. These functions accept typed internal inputs, not arbitrary HTTP payloads; parse region and numeric values at the application boundary. A duplication count alone cannot decide whether an abstraction is worthwhile.</p>
+
+        <p class="worked-answer">The shared shipping rule has one business owner. Search and display-name normalization can change independently. If search becomes case sensitive, change the search function while preserving displayed capitalization. Compare that edit with adding flags to a shared normalizer. These functions expect typed internal values, so parse region and numeric inputs at the HTTP boundary. Counting repeated lines cannot tell you whether a shared abstraction will help.</p>
         <p>Look for: Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#software-design">Worked track case: Two similar rules begin to diverge ↗</a></p>
       </details>
     </div>
@@ -171,9 +171,9 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] asks for the simplest design that correctly meets current constraints. Simple means fewer ideas and dependencies to understand, not merely shorter syntax.</li><li>[concept] means every important piece of knowledge should have one authoritative representation. It does not require combining code that only happens to look similar.</li><li>[concept] occurs when the same business rule or fact has multiple owners that must be updated together to remain correct.</li><li>[concept] is similar-looking code that represents different concepts or changes for different reasons. Combining it can create harmful coupling.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. DRY: 2; knowledge duplication: 4; accidental duplication: 3; KISS: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. DRY: 2; knowledge duplication: 1; accidental duplication: 3; KISS: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. DRY: 3; knowledge duplication: 2; accidental duplication: 4; KISS: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. DRY: 2; knowledge duplication: 3; accidental duplication: 4; KISS: 1</label>
@@ -185,7 +185,7 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A [concept] generalizes code before its true variations are known, forcing unrelated cases through a guessed shared contract.</li><li>[concept] means do not build a capability until a current requirement needs it. It prevents paying implementation and maintenance cost for predicted futures.</li><li>[concept] minimizes the concepts, states, dependencies, and exceptional paths required to solve the present problem while preserving correctness and safety.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. YAGNI: 3; simplicity: 2; premature abstraction: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. YAGNI: 1; simplicity: 2; premature abstraction: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. YAGNI: 2; simplicity: 1; premature abstraction: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. YAGNI: 2; simplicity: 3; premature abstraction: 1</label>
@@ -197,7 +197,7 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Evidence measures the result: Behavior, files changed, dependency direction, complexity, readability, and failure handling test the claim.</li><li>A concrete requirement creates pressure: The requested behavior and likely reasons to change identify the real design problem.</li><li>Code ownership and dependencies are traced: Names, cohesion, coupling, state, contracts, and boundaries reveal the affected area.</li><li>The smallest clear design changes: Simple control flow, narrow capabilities, composition, tests, and explicit tradeoffs contain impact.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 2 → 3 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 2 → 3 → 1 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 2 → 4 → 1 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 2 → 1 → 4 → 3</label>
@@ -209,13 +209,13 @@ console.assert(normalizeSearchQuery(&quot;  React  &quot;) === &quot;react&quot;
         <p>Apply one realistic change before and after the refactor and compare how much unrelated code must be understood or edited. Evidence to inspect: Passing behavior tests, dependency graph, affected files, mutation points, complexity, reader explanation, and review feedback.</p>
       </details>
     </article>
-    <p><a href="https://google.github.io/eng-practices/review/reviewer/looking-for.html" target="_blank" rel="noreferrer">Review the lesson source: Google engineering practices for code review</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://google.github.io/eng-practices/review/reviewer/looking-for.html" target="_blank" rel="noreferrer">Review the lesson source: Google engineering practices for code review</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

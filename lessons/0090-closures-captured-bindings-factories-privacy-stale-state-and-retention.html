@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · CREATE</span><strong>A call creates a local binding</strong><small>createCounter starts value at zero for this call.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RETURN</span><strong>Functions retain access</strong><small>read and increment share this call&#039;s value binding.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · UPDATE</span><strong>A later call changes value</strong><small>increment writes the binding; read observes the new number.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><strong>Owners release references</strong><small>Remove registry or listener references when no longer needed; other paths can still retain data.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Compare two counters, then predict live count and old message in the deferred callback.</strong>
         <small><b>Inspect:</b> Independent values, callback outputs and registry size; heap paths are a separate retention check.</small>
       </div>
@@ -172,7 +172,7 @@ console.assert(registry.size === 0);
     <ol class="interview-questions">
       <li>Define a closure, trace one captured binding, and discuss both useful encapsulation and memory cost.</li>
       <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>How would you implement a private counter, fix a loop capture bug, diagnose stale asynchronous state, and release a retained object graph, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -180,13 +180,13 @@ console.assert(registry.size === 0);
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="javascript">
       <p>A deferred callback prints Count: 0 after count becomes 1. Explain the result without saying that closures freeze values. Then describe when keeping the old message is intentional. How would you investigate a retained 10 MB response?</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
         <p>Trace the count and message bindings separately. Choose current data for a live display, or the earlier snapshot for an event record. For retention, identify the owning listener or registry, remove its reference at the correct lifecycle boundary, and inspect remaining heap paths. Do not promise a collection time.</p>
         <p class="worked-answer">The left counter reaches two while the independently created right counter stays zero. Freezing the returned API does not freeze captured state. A let loop supplies per-iteration bindings; a shared var binding changes the callbacks&#039; results. Retention requires a reachable owner: remove the listener or registry reference, then use heap evidence rather than assuming immediate collection.</p>
         <p>Look for: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#javascript">Worked track case: A copy changes the original object ↗</a></p>
       </details>
     </div>
@@ -194,7 +194,7 @@ console.assert(registry.size === 0);
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="scenario">
       <h3>1. count starts at 0. message is assigned &#39;Count: &#39; + count. A deferred callback reads both after count becomes 1. What does it read?</h3>
       <ol><li>No code assigns a new value to message.</li></ol>
@@ -208,7 +208,7 @@ console.assert(registry.size === 0);
         <p>Move message construction into the callback. Predict the result and explain when retaining the old message would be correct.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A factory is a function that creates a value or object for callers. A closure-based factory can keep instance state in its lexical environment without requiring a class.</li><li>[concept] limits which code can access state. Closures and #private elements provide different access mechanisms; a naming convention such as _secret is not enforcement.</li><li>A closure is a function together with access to the lexical environment where it was created. It captures bindings, so later updates to those bindings remain observable.</li><li>A closure retains access to lexical bindings, not necessarily frozen copies of their current values. A later assignment to a captured binding can be visible when the closure runs.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. Closures: 3; captured bindings: 4; factories: 2; privacy: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. Closures: 3; captured bindings: 1; factories: 2; privacy: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. Closures: 3; captured bindings: 4; factories: 1; privacy: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. Closures: 3; captured bindings: 2; factories: 1; privacy: 4</label>
@@ -220,7 +220,7 @@ console.assert(registry.size === 0);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] occurs when deferred code uses a value or assumption from an older logical snapshot. The fix is to make current input or ownership explicit, not to abandon closures.</li><li>[concept] means an object remains reachable through a reference path. A closure, listener, or cache can retain a large object graph after the original operation ends.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. stale state: 1; retention: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. stale state: 2; retention: 1</label>
@@ -232,7 +232,7 @@ console.assert(registry.size === 0);
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>A later call changes value: increment writes the binding; read observes the new number.</li><li>Owners release references: Remove registry or listener references when no longer needed; other paths can still retain data.</li><li>A call creates a local binding: createCounter starts value at zero for this call.</li><li>Functions retain access: read and increment share this call&#39;s value binding.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 3 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 3 → 4 → 1 → 2</label>
@@ -244,13 +244,13 @@ console.assert(registry.size === 0);
         <p>Compare two counters, then predict live count and old message in the deferred callback. Evidence to inspect: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p>
       </details>
     </article>
-    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">Review the lesson source: MDN: closures and lexical scope</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" target="_blank" rel="noreferrer">Review the lesson source: MDN: closures and lexical scope</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

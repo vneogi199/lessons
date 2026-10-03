@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow name resolution, packets, handshakes, certificates, protocol messages, proxy hops, and deadline budgets.</p>
-      <p class="analogy">DevOps is a learning conveyor belt: small changes move through automated checks into production, telemetry returns feedback, and teams improve the whole flow.</p>
+      <p>Follow a request through DNS, routing, TCP, TLS and HTTP. Success at one layer narrows the search but does not establish success at the next. Record proxy hops, address family and timeout budgets so the failing observation has context. Preserve certificate and hostname checks while investigating. A timeout can leave the remote business outcome unknown.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · SCOPE</span><strong>Name the affected request or workload</strong><small>Capture the symptom, time window, recent changes and expected behavior.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><strong>Identify the failing layer</strong><small>Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TEST</span><strong>Check one hypothesis safely</strong><small>Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><strong>Confirm recovery without a hidden regression</strong><small>Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it.</strong>
         <small><b>Inspect:</b> Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</small>
       </div>
@@ -120,7 +120,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Diagnose five connectivity failures using dig, ip, ss, curl, openssl, packet capture, and application logs.</p>
-    <p class="lab-scope">Core: solve the supplied tabletop or recipe, predict a failure and compare the worked criteria. Shell, pipeline and deployment fragments require their named adapters and environment. Extension: collect actual controlled release, database, infrastructure or incident evidence. This review installs nothing and executes no deployment or external mutation.</p>
+    <p class="lab-scope">Work through the scenario or recipe and predict a failure before reading the answer. Shell, pipeline and deployment fragments need their named adapters and environment. A completed lab should include observed release, database, infrastructure or incident behavior under controlled conditions.</p>
 
 
 
@@ -150,7 +150,7 @@
     <ol class="interview-questions">
       <li>Give a layered network-debugging sequence without guessing.</li>
       <li>Explain how an operational diagnosis and response works, starting with the input and following it through to the result.</li>
-      <li>How would you diagnose five connectivity failures using dig, ip, ss, curl, openssl, packet capture, and application logs, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,13 +158,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace an operational diagnosis and response. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="devops">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow name resolution, packets, handshakes, certificates, protocol messages, proxy hops, and deadline budgets.</p>
+
         <p class="worked-answer">Wrong DNS, refused TCP and HTTP 500 can fail different layers while earlier checks succeed. Preserve TLS hostname verification and distinguish DNS/connect/handshake/response budgets. Capture proxy and address-family context; a timeout gives incomplete evidence of whether the remote operation happened.</p>
         <p>Look for: Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#devops">Worked track case: A canary passes health checks but corrupts writes ↗</a></p>
       </details>
     </div>
@@ -172,9 +172,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] resolves names to records such as addresses using a distributed hierarchy and caches. Record lifetimes, resolver behavior, and negative caching affect changes and failures.</li><li>[concept] chooses where traffic or work goes based on destinations and policy. Examine the actual decision path when diagnosis differs from expectation.</li><li>[concept] provides a reliable ordered byte stream between endpoints. It does not preserve application message boundaries or prove that a remote business operation committed.</li><li>[concept] trace name resolution, routing, connection, TLS, and application behavior separately.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Networking diagnostics: 4; DNS: 2; routing: 1; TCP: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Networking diagnostics: 4; DNS: 1; routing: 2; TCP: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Networking diagnostics: 4; DNS: 3; routing: 1; TCP: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Networking diagnostics: 1; DNS: 4; routing: 2; TCP: 3</label>
@@ -186,7 +186,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] defines request and response semantics between clients, servers, and intermediaries. Methods, status codes, headers, caching, and preconditions are part of the contract.</li><li>A proxy handles traffic on behalf of another endpoint. Its routing, timeout, buffering, trust, and header behavior can change the end-to-end result.</li><li>A load balancer selects a target for traffic. Define whether selection is per connection or request, how health is measured, and how existing traffic behaves during failure.</li><li>[concept] protects a connection&#39;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. TLS: 4; HTTP: 2; proxies: 1; load balancers: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. TLS: 4; HTTP: 1; proxies: 2; load balancers: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. TLS: 4; HTTP: 3; proxies: 1; load balancers: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. TLS: 1; HTTP: 4; proxies: 2; load balancers: 3</label>
@@ -198,7 +198,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>A timeout limits how long a caller waits. It does not prove that the underlying operation stopped or that a remote side effect did not happen.</li><li>A load balancer selects a target for traffic. Define whether selection is per connection or request, how health is measured, and how existing traffic behaves during failure.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. load balancers: 1; timeouts: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. load balancers: 2; timeouts: 1</label>
@@ -210,7 +210,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Identify the failing layer: Use process or workload state, DNS/TCP/TLS checks, events and resource measurements to narrow the cause.</li><li>Check one hypothesis safely: Prefer read-only evidence first; bound any diagnostic workload and protect sensitive output.</li><li>Confirm recovery without a hidden regression: Compare the same user-facing signal and check recurrence, capacity and rollback criteria.</li><li>Name the affected request or workload: Capture the symptom, time window, recent changes and expected behavior.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 4 → 1 → 3 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 4 → 2 → 3 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 4 → 1 → 2 → 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 3 → 2 → 1</label>
@@ -222,13 +222,13 @@
         <p>The application is unreachable: distinguish absent process, failed name resolution, refused connection and application error before restarting it. Evidence to inspect: Timestamped symptom, workload state, relevant events, connection results, resource use and user-facing recovery evidence.</p>
       </details>
     </article>
-    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://sre.google/books/" target="_blank" rel="noreferrer">Review the lesson source: Google SRE books</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Follow an assigned Pod through kubelet sync, runtime calls, sandbox networking, containers, probes, status, and eviction.</p>
-      <p class="analogy">Kubernetes is a control room: you declare desired state through an API, controllers compare it with reality, and node agents keep reconciling until status matches or evidence explains why not.</p>
+      <p>After assignment, kubelet coordinates the Pod sandbox, image and containers through runtime and network interfaces. A pull failure differs from a runtime or node failure. Missed heartbeats create uncertainty about a node; a partitioned process may still be running. Replacing stateful work therefore requires application and storage authority controls as well as another scheduled Pod.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · APPLY</span><strong>Client submits desired API state</strong><small>Identity, object version, spec, and field ownership enter.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · API SERVER</span><strong>Request is authorized and stored</strong><small>Admission, validation, conversion, etcd, and watch events apply.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>Controller or node agent acts</strong><small>Observed state is moved toward the declared spec.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STATUS</span><strong>Reality is reported through the API</strong><small>Conditions, events, resources, and data-plane behavior show progress.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Change one spec field and watch API, controller, scheduler, and node evidence.</strong>
         <small><b>Inspect:</b> Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</small>
       </div>
@@ -120,7 +120,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Inspect kubelet and runtime state and diagnose NotReady, image pull, sandbox, and node-pressure failures.</p>
-    <p class="lab-scope">Core: predict the supplied manifest or tabletop and explain the worked acceptance criteria. Extension: use an existing authorized isolated cluster, pinned available tools/images and bounded disposable fixtures to verify runtime and recovery behavior. This content review installs nothing and executes no kubectl, image pulls, cluster changes or cloud operations.</p>
+    <p class="lab-scope">Predict what the manifest or scenario requests, then explain the acceptance criteria. Runtime and recovery exercises need an existing isolated cluster, available tools and images, and bounded disposable fixtures. Resolve those prerequisites before applying configuration.</p>
 
 
 
@@ -150,7 +150,7 @@
     <ol class="interview-questions">
       <li>Separate control-plane, kubelet, runtime, and CNI responsibilities.</li>
       <li>Explain how Kubernetes desired state and observed behavior works, starting with the input and following it through to the result.</li>
-      <li>How would you inspect kubelet and runtime state and diagnose NotReady, image pull, sandbox, and node-pressure failures, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -158,13 +158,13 @@
     <textarea id="teachback" placeholder="Define the boundary. Trace Kubernetes desired state and observed behavior. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="kubernetes">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Follow an assigned Pod through kubelet sync, runtime calls, sandbox networking, containers, probes, status, and eviction.</p>
+
         <p class="worked-answer">Trace Pod assignment through sandbox, image and container creation; separate pull failure from kubelet or runtime unavailability. Missed heartbeats create suspicion, not proof a partitioned node stopped executing. Replacement of stateful work needs fencing and storage rules, not merely a new scheduled Pod.</p>
         <p>Look for: Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#kubernetes">Worked track case: A database outage causes a restart storm ↗</a></p>
       </details>
     </div>
@@ -172,9 +172,9 @@
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="4">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] supply execution capacity through kubelet, a container runtime, networking, and host resources.</li><li>The [concept] watches assigned Pod specs on one node and asks the container runtime and other node plugins to make them real.</li><li>The Container Runtime Interface connects kubelet to a supported container runtime implementation.</li><li>The [concept] manages image and container execution operations requested by kubelet.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. Nodes: 1; kubelet: 2; CRI: 3; container runtime: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. Nodes: 1; kubelet: 2; CRI: 4; container runtime: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. Nodes: 1; kubelet: 3; CRI: 4; container runtime: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. Nodes: 1; kubelet: 4; CRI: 3; container runtime: 2</label>
@@ -186,7 +186,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>A [concept] establishes shared execution context such as networking for its containers.</li><li>[concept] retrieve required image content under registry credentials, policy, and node storage constraints.</li><li>[concept] reports observed state recorded by Kubernetes components. Compare it with spec and conditions to see whether reconciliation succeeded.</li><li>[concept] record renewable coordination or heartbeat information used by supported cluster components.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. pod sandbox: 1; image pulls: 2; status: 3; leases: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. pod sandbox: 1; image pulls: 2; status: 4; leases: 3</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. pod sandbox: 1; image pulls: 3; status: 4; leases: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. pod sandbox: 1; image pulls: 4; status: 3; leases: 2</label>
@@ -198,7 +198,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>3. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>3. Match each concept to its explanation.</h3>
       <ol><li>[concept] record renewable coordination or heartbeat information used by supported cluster components.</li><li>[concept] affects Pods and attached resources; detection and replacement take time and do not guarantee application-level recovery.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. leases: 1; node failure: 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. leases: 2; node failure: 1</label>
@@ -210,7 +210,7 @@
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>4. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>4. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>Controller or node agent acts: Observed state is moved toward the declared spec.</li><li>Reality is reported through the API: Conditions, events, resources, and data-plane behavior show progress.</li><li>Client submits desired API state: Identity, object version, spec, and field ownership enter.</li><li>Request is authorized and stored: Admission, validation, conversion, etcd, and watch events apply.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="0"> A. 3 → 1 → 4 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="1"> B. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="2"> C. 3 → 2 → 4 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-3" value="3"> D. 4 → 3 → 1 → 2</label>
@@ -222,13 +222,13 @@
         <p>Change one spec field and watch API, controller, scheduler, and node evidence. Evidence to inspect: Audit event, resourceVersion, watch stream, owners, conditions, events, Pod state, and traffic.</p>
       </details>
     </article>
-    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://kubernetes.io/docs/concepts/" target="_blank" rel="noreferrer">Review the lesson source: Kubernetes Concepts</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">

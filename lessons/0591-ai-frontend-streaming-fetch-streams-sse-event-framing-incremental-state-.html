@@ -52,8 +52,8 @@
   <div class="grid">
     <section class="card">
 
-      <p>Trace bytes from a model stream through HTTP framing, UTF-8 decoding, event parsing, application message parts, batched rendering, abort propagation, disconnect handling, and slow-consumer limits.</p>
-      <p class="analogy">An AI feature is a probabilistic service behind a strict border: prompts shape the request, schemas inspect the response, and fallbacks protect the product contract.</p>
+      <p>Network chunks can split both UTF-8 characters and application messages. Decode bytes incrementally, then frame and validate events before applying UI state. The sample parser supports a deliberately narrow LF-delimited format. An incomplete trailing frame cannot establish completion. Persist a cursor after applying valid state, and distinguish stopping browser consumption from confirmed termination of remote generation.</p>
+
     </section>
 
     <aside class="card blackboard">
@@ -63,7 +63,7 @@
         <li class="trace-stage"><span>01 · INTENT</span><strong>User action becomes a durable request</strong><small>Authentication, chat ownership, message ID, idempotency key, and abort signal cross to the server.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · STREAM</span><strong>Typed events cross incrementally</strong><small>Framing reconstructs text, data, citation, tool, error, and completion parts from arbitrary byte chunks.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECONCILE</span><strong>UI state applies each event</strong><small>A typed state machine handles approval, optimistic state, accessible status, cancellation, and errors.</small><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESUME</span><strong>Server truth repairs interruption</strong><small>Persisted sequence IDs let reconnection replay missing events without duplicating messages or effects.</small></li>
       </ol>
       <div class="trace-proof">
-        <span>↺ TEST THE MODEL</span>
+        <span>Check your prediction</span>
         <strong>Disconnect halfway through a tool call, reload, resume from the last committed event, and attempt access as another user.</strong>
         <small><b>Inspect:</b> Request/message/stream IDs, raw frames, event sequence, render count, focus and announcements, auth denial, persisted state, and final evaluation.</small>
       </div>
@@ -116,7 +116,7 @@
   <section class="card lab">
     <h2>Practice</h2>
     <p>Build an accessible streaming chat without a framework helper, correctly handle split chunks, cancel generation, reconnect with an event cursor, and measure time to first token and render frequency.</p>
-    <p class="lab-scope">Core: predict and explain the supplied local fixture or complete the stated design specification against the worked criteria. Extension: provide the missing product, labelled data and authorized preinstalled integrations, then measure real outcomes. This content review installs nothing and makes no model calls, database mutations or deployment requests; examples are not evidence of learner mastery or live product readiness.</p>
+    <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
 
 
@@ -183,7 +183,7 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
     <ol class="interview-questions">
       <li>Explain why network chunks are not messages and design a resilient streaming protocol from server emission to browser state.</li>
       <li>Explain how a streamed AI interaction works, starting with the input and following it through to the result.</li>
-      <li>How would you build an accessible streaming chat without a framework helper, correctly handle split chunks, cancel generation, reconnect with an event cursor, and measure time to first token and render frequency, and which evidence would prove the result?</li>
+      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
       <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
     </ol>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
@@ -191,13 +191,13 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
     <textarea id="teachback" placeholder="Define the boundary. Trace a streamed AI interaction. Name a failure mode. Explain the evidence you would inspect."></textarea>
     <div class="senior-practice" data-senior-track="ai-application-engineering">
       <p>Compare your solution with a simpler one. When would you choose the simpler version? Explain how you would check that decision and who would be responsible for making the change.</p>
-      <p>Tomorrow, explain this in 90 seconds without your notes. Include something that could fail and a reason to change your design. Check your answer afterward. If you get stuck, repeat the part of the exercise that gave you trouble.</p>
+      <p>Tomorrow, explain this in 90 seconds without notes. Describe a failure and a constraint that would change your design. Then check your answer and revisit any part you could not explain.</p>
       <details>
         <summary>Check your reasoning after answering</summary>
-        <p>Trace bytes from a model stream through HTTP framing, UTF-8 decoding, event parsing, application message parts, batched rendering, abort propagation, disconnect handling, and slow-consumer limits.</p>
+
         <p class="worked-answer">The parser handles split UTF-8 and LF-delimited JSON-data events, not full SSE or any provider&#039;s typed protocol. CR/CRLF and oversized aggregate chunks are deliberately rejected. A trailing unterminated frame is discarded; a server terminal event must prove completion. Persist the cursor after applying validated state and distinguish local cancellation from remote generation termination.</p>
         <p>Look for: Request/message/stream IDs, raw frames, event sequence, render count, focus and announcements, auth denial, persisted state, and final evaluation.</p>
-        <p>Your explanation should make a prediction that someone can check. Say where it stops applying and how a different constraint would change your answer.</p>
+        <p>State a result someone can check, the conditions it depends on and what would change your answer.</p>
         <p><a href="../reference/senior-interview-practice.html#ai-application-engineering">Worked track case: Valid JSON requests an invalid action ↗</a></p>
       </details>
     </div>
@@ -205,9 +205,9 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
 
   <section class="card lab" id="lesson-mcqs" data-mcq-count="3">
     <h2>Practice MCQs</h2>
-    <p>Answer without looking back, then reveal the explanation. These are concept and mechanism recall checks, not a substitute for the coding lab or senior design rehearsal. A correct guess does not establish mastery.</p>
+    <p>Answer from memory, then read the explanation. These questions check recall of concepts and mechanisms. You still need the coding exercise and design rehearsal; a correct guess does not show that you understand the topic.</p>
     <article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>1. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>1. Match each concept to its explanation.</h3>
       <ol><li>[concept] defines how arbitrary transport bytes are buffered and separated into complete typed messages before parsing.</li><li>[concept] displays typed output events while generation is still running. The frontend must parse a protocol, update state incrementally, and handle cancellation and partial failure.</li><li>A fetch response stream is a ReadableStream of byte chunks. Chunk boundaries follow network buffering and are not application-message boundaries.</li><li>Server-Sent Events is a text event format over an HTTP response. Blank lines separate events, data may span lines, and an event ID can support reconnection.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="0"> A. AI frontend streaming: 2; fetch streams: 4; SSE: 3; event framing: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="1"> B. AI frontend streaming: 2; fetch streams: 1; SSE: 3; event framing: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="2"> C. AI frontend streaming: 3; fetch streams: 2; SSE: 4; event framing: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-0" value="3"> D. AI frontend streaming: 2; fetch streams: 3; SSE: 4; event framing: 1</label>
@@ -219,7 +219,7 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="concept-matching">
-      <h3>2. Which mapping pairs the concepts with their explanations in this lesson?</h3>
+      <h3>2. Match each concept to its explanation.</h3>
       <ol><li>[concept] prevents a fast producer from creating unbounded buffered data when the network or consumer processes output more slowly.</li><li>[concept] applies ordered stream events to a current UI state without rebuilding or overwriting already confirmed information incorrectly.</li><li>[concept] propagates a user stop or disconnected request through the browser, application server, model call, tools, and persistence path.</li><li>[concept] creates a new transport after interruption and asks for events after the last durably applied sequence rather than starting the operation twice.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="0"> A. incremental state: 2; cancellation: 4; reconnection: 3; backpressure: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="1"> B. incremental state: 2; cancellation: 1; reconnection: 3; backpressure: 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="2"> C. incremental state: 3; cancellation: 2; reconnection: 4; backpressure: 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-1" value="3"> D. incremental state: 2; cancellation: 3; reconnection: 4; backpressure: 1</label>
@@ -231,7 +231,7 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
         <p>Without looking back, give a concrete example and a counterexample for each concept. Explain the distinction aloud tomorrow.</p>
       </details>
     </article><article class="senior-practice" data-mcq-kind="mechanism-trace">
-      <h3>3. Which sequence reconstructs this part of the lesson’s mechanism trace? Use the trace’s explanatory order, not an assumed universal runtime order.</h3>
+      <h3>3. Put these steps in the order used by the lesson&#39;s trace. This teaching order may differ from the order of events at runtime.</h3>
       <ol><li>UI state applies each event: A typed state machine handles approval, optimistic state, accessible status, cancellation, and errors.</li><li>Server truth repairs interruption: Persisted sequence IDs let reconnection replay missing events without duplicating messages or effects.</li><li>User action becomes a durable request: Authentication, chat ownership, message ID, idempotency key, and abort signal cross to the server.</li><li>Typed events cross incrementally: Framing reconstructs text, data, citation, tool, error, and completion parts from arbitrary byte chunks.</li></ol>
       <fieldset><legend>Choose one answer</legend>
       <label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="0"> A. 3 → 4 → 1 → 2</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="1"> B. 3 → 4 → 2 → 1</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="2"> C. 3 → 1 → 2 → 4</label><label style="display:block;margin:10px 0"><input type="radio" name="mcq-2" value="3"> D. 3 → 2 → 1 → 4</label>
@@ -243,13 +243,13 @@ export async function* readSse(response: Response): AsyncGenerator&lt;StreamEven
         <p>Disconnect halfway through a tool call, reload, resume from the last committed event, and attempt access as another user. Evidence to inspect: Request/message/stream IDs, raw frames, event sequence, render count, focus and announcements, auth denial, persisted state, and final evaluation.</p>
       </details>
     </article>
-    <p><a href="https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol" target="_blank" rel="noreferrer">Review the lesson source: AI SDK UI stream protocol documentation</a>. Ask your teacher about unclear distinctions. Revisit missed questions tomorrow and explain your reasoning before opening the answer.</p>
+    <p><a href="https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol" target="_blank" rel="noreferrer">Review the lesson source: AI SDK UI stream protocol documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
     
   </section>
 
   <section class="card mastery">
 
-    <p>This legacy orientation check records progress only. It does not assess topic knowledge or establish senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
+    <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
     <form id="mastery-form">
       <div class="options">
