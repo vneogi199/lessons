@@ -1,0 +1,17 @@
+{
+  "title": "AI task cost and latency",
+  "uid": "lesson-ai-cost",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "templating": {"list": [{"name": "DS_PROMETHEUS", "type": "datasource", "query": "prometheus", "label": "Metrics source"}]},
+  "panels": [
+    {"id": 1, "title": "Endpoint p95 seconds, all outcomes", "type": "timeseries", "gridPos": {"x": 0,"y": 0,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(ai_endpoint_seconds_bucket[5m])))"}]},
+    {"id": 2, "title": "First released token p95 seconds", "type": "timeseries", "gridPos": {"x": 12,"y": 0,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(ai_ttft_seconds_bucket[5m])))"}]},
+    {"id": 3, "title": "Known USD per successful task (includes failed attempts)", "type": "timeseries", "gridPos": {"x": 0,"y": 8,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "(sum(increase(ai_cost_usd_total[1h])) / sum(increase(ai_tasks_total{outcome=\"success\"}[1h]))) and (sum(increase(ai_tasks_total{outcome=\"success\"}[1h])) > 0)"}]},
+    {"id": 4, "title": "Unknown-cost attempts: investigate any increase", "type": "timeseries", "gridPos": {"x": 12,"y": 8,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "sum(increase(ai_unknown_cost_attempts_total[1h]))"}]},
+    {"id": 5, "title": "Tokens per second by disjoint billing category", "type": "timeseries", "gridPos": {"x": 0,"y": 16,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "sum by (kind) (rate(ai_tokens_total[5m]))", "legendFormat": "{{kind}}"}]},
+    {"id": 6, "title": "Tasks without released tokens", "type": "timeseries", "gridPos": {"x": 12,"y": 16,"w": 12,"h": 8}, "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"}, "targets": [{"refId": "A", "expr": "sum(rate(ai_no_token_total[5m]))"}]}
+  ]
+}
