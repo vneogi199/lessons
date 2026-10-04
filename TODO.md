@@ -189,8 +189,10 @@ Existing: lessons 0589–0590, 0609, 0612–0616 and [gateway/evaluation/tracing
 - [ ] OPS-08 — Supply token-cost and latency metric collection plus dashboard definitions. Include billed retries/failures, cached-token distinctions, time to first token, endpoint percentiles and cost per successful task.
 - [x] OPS-09 — Add a multi-step debugging exercise using observable tool inputs/results, policy decisions and state transitions. Do not expose or collect hidden chain-of-thought.
   - [Trace exercise](reference/agent-debugging-practice.html) includes a synthetic JSON event sequence and five answer keys. No live instrumentation or model reasoning collected.
-- [ ] OPS-10 — Implement privacy-aware session outcome tracking with pseudonymous IDs in protected traces, bounded retention and low-cardinality aggregate metrics.
-- [ ] OPS-11 — Build a redacted trace-export → reviewed failure-case → versioned evaluation-data workflow with consent, lineage and access controls. Do not automatically train on unreviewed private traces.
+- [x] OPS-10 — Implement privacy-aware session outcome tracking with pseudonymous IDs in protected traces, bounded retention and low-cardinality aggregate metrics.
+  - [Private telemetry project](practice/private-telemetry/README.md) supplies tenant-bound HMAC session IDs, bounded retention and fixed-label aggregates. Storage/key access are deployment prerequisites. Tests unexecuted.
+- [x] OPS-11 — Build a redacted trace-export → reviewed failure-case → versioned evaluation-data workflow with consent, lineage and access controls. Do not automatically train on unreviewed private traces.
+  - [Consent-bound export workflow](practice/private-telemetry/README.md) exports allowlisted failure metadata tied to reviewed synthetic fixture IDs, dataset versions and lineage. Includes revocation/expiry tests and explicit downstream deletion duties; no export or training performed.
 
 ## 14. AuditMesh: connected capstone
 
