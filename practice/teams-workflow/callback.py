@@ -6,8 +6,9 @@ from uuid import UUID
 def decision(claims, body, *, tenant, client_id, flow_id, approvals, session_for):
     # claims must come from a maintained JWT verifier for THIS callback API audience.
     # The calling flow is a privileged identity assertion boundary, not an arbitrary user.
+    roles = claims.get("roles")
     if (claims.get("tid") != tenant or claims.get("azp", claims.get("appid")) != client_id
-            or "Workflow.Callback" not in claims.get("roles", []) or "scp" in claims):
+            or not isinstance(roles, list) or "Workflow.Callback" not in roles or "scp" in claims):
         raise PermissionError("workflow identity denied")
     if not isinstance(body, dict) or set(body) != {"flow_id", "tenant", "responder_oid", "operation", "hash", "choice"}:
         raise ValueError("callback contract")

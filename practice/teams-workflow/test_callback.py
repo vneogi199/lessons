@@ -14,7 +14,8 @@ class CallbackTests(unittest.TestCase):
                       approvals=approvals, session_for=Mock(return_value="current-session"))
         decision(claims, body, **policy)
         approvals.decide.assert_called_once_with("current-session", "a" * 32, "b" * 64, True)
-        for changed in ({**claims, "azp": "other"}, {**claims, "roles": []}, {**claims, "scp": "user-scope"}):
+        for changed in ({**claims, "azp": "other"}, {**claims, "roles": []},
+                        {**claims, "roles": "Workflow.Callback"}, {**claims, "scp": "user-scope"}):
             with self.assertRaises(PermissionError):
                 decision(changed, body, **policy)
         with self.assertRaises(ValueError):
