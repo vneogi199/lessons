@@ -39,7 +39,8 @@ class LocalCLIP:
             image.load()
             inputs = self.processor(images=image.convert("RGB"), return_tensors="pt").to(self.device)
         with self.torch.inference_mode():
-            features = self.model.get_image_features(**inputs)
+            vision = self.model.vision_model(**inputs, return_dict=True)
+            features = self.model.visual_projection(vision.pooler_output)
         return unit(features[0].float().cpu().tolist())
 
 
