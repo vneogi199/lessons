@@ -160,7 +160,8 @@ Existing: lessons 0326–0327, 0416, 0480 and the Entra/SAML extensions.
 Existing: [enterprise security labs](reference/enterprise-security-labs.html), lessons 0615–0617.
 
 - [ ] SECURITY-01 — Complete Presidio analyzer configuration for already-approved local assets and synthetic SSN/card/email/domain-ID fixtures. Test recognizers, thresholds, invalid/checksum negatives and unsupported inputs.
-- [ ] SECURITY-02 — Implement an encrypted, short-lived reversible-pseudonymization store. Bind mappings to tenant/user/run, deny unknown or replayed tokens and re-scan restored outputs. The existing dictionary example tests policy only.
+- [x] SECURITY-02 — Implement an encrypted, short-lived reversible-pseudonymization store. Bind mappings to tenant/user/run, deny unknown or replayed tokens and re-scan restored outputs. The existing dictionary example tests policy only.
+  - [Encrypted one-use store](practice/pseudonym-store/README.md) binds envelope/scope/expiry, consumes tokens atomically and requires authorization plus output re-scan. Key management and scanning are explicit deployment inputs. Tests supplied, unexecuted.
 - [x] SECURITY-03 — Build a PII scoring harness with span/entity precision and recall, explicitly defined false-positive denominator, per-type/language slices and utility-loss reporting.
   - [Scorer and tests](practice/pii-evaluation/README.md) use exact typed spans, character FPR, Unicode offsets, language/type intersections and task-labeled utility spans. No detector quality claimed; tests unexecuted.
 - [ ] SECURITY-04 — Complete the pinned Colang/NeMo configuration: actual scope-check action, model adapter, self-check prompt, input/output rails and topical-boundary tests. Keep semantic topicality separate from authorization.
