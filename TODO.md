@@ -35,8 +35,10 @@ Existing: lessons 0303–0345, 0408, 0413 and [API/cloud delivery labs](referenc
 Existing: lessons 0479–0494, 0504 and the provisioning/billing sections of [API/cloud delivery labs](reference/api-cloud-delivery-labs.html). All 13 requested subjects have explanations or walkthroughs; deployed behavior was not verified.
 
 - [ ] CLOUD-01 — Provide a cohesive provisioning recipe with explicit prerequisites, inputs, resource ownership and teardown: EC2, private RDS, S3 lifecycle rules, event-driven Lambda, VPC/subnets, NAT or endpoints and narrowly scoped security groups. Include allow/deny, duplicate-event and restore checks. Separate resource creation instructions from permission to run them.
-- [ ] CLOUD-02 — Add a concrete cross-account trust/caller-permission/target-permission example with permitted and denied assumption cases. Include scoped session behavior and third-party external-ID considerations where applicable.
-- [ ] CLOUD-03 — Extend budget walkthroughs with a reproducible notification-validation exercise and an optional reviewed budget-action design. Distinguish alerts from enforced workload limits; do not supply an unreviewed destructive spending response.
+- [x] CLOUD-02 — Add a concrete cross-account trust/caller-permission/target-permission example with permitted and denied assumption cases. Include scoped session behavior and third-party external-ID considerations where applicable.
+  - [Three JSON policy files and validation recipe](practice/cloud-controls/README.md). Synthetic accounts/resources; no AWS calls or permissions changed.
+- [x] CLOUD-03 — Extend budget walkthroughs with a reproducible notification-validation exercise and an optional reviewed budget-action design. Distinguish alerts from enforced workload limits; do not supply an unreviewed destructive spending response.
+  - [Budget exercise](practice/cloud-controls/README.md) separates topic tests from actual budget-trigger evidence; non-destructive admission-pause design and cleanup ownership included. Unexecuted.
 
 ## 4. Containerization and CI/CD
 
@@ -44,7 +46,8 @@ Existing: lessons 0342, 0487, 0491, 0512–0518, 0530–0545 and the ECS deliver
 
 - [ ] DELIVERY-01 — Supply the files omitted by the release recipe: FastAPI Dockerfile, Compose setup, task definition, CI test/smoke scripts and GitHub Actions workflow. Connect build, registry publication and ECS deployment around one verified immutable artifact. Document required pre-existing infrastructure and failure/rollback behavior.
 - [ ] DELIVERY-02 — Add complete ECS Application Auto Scaling target/policy examples: minimum/maximum tasks, chosen metric, cooldowns, scale-in draining and downstream database/provider limits. Include a controlled validation plan, not invented load results.
-- [ ] DELIVERY-03 — Add GitHub Secrets administration practice: repository versus environment scope, creating/referencing/rotating a synthetic secret, unavailable-secret behavior, fork/runner restrictions and log-leak prevention. Keep AWS deployment authentication on OIDC rather than introducing long-lived AWS keys.
+- [x] DELIVERY-03 — Add GitHub Secrets administration practice: repository versus environment scope, creating/referencing/rotating a synthetic secret, unavailable-secret behavior, fork/runner restrictions and log-leak prevention. Keep AWS deployment authentication on OIDC rather than introducing long-lived AWS keys.
+  - [Secrets lab](practice/cloud-controls/GITHUB-SECRETS.md), with inactive YAML example and acceptance cases. No active workflow, secret or external account changed.
 
 ## 5. LLM fundamentals and prompting
 
@@ -176,13 +179,16 @@ Existing: lessons 0589–0590, 0609, 0612–0616 and [gateway/evaluation/tracing
 
 Existing: [AuditMesh build brief and Streamlit form](reference/agent-operations-capstones.html). Reuse GRAPH, AGENT, CONNECT, IAM and OPS work rather than creating separate inconsistent versions.
 
-- [ ] AUDIT-01 — Supply a worked five-step process map and bottleneck analysis with clearly synthetic handling/waiting times, owners and approval queues.
-- [ ] AUDIT-02 — Draft a complete latency/cost service-level template: machine time versus human waiting, workload assumptions, budgets, measurement windows, escalation and breach response. Keep targets distinct from measured results and contractual promises.
+- [x] AUDIT-01 — Supply a worked five-step process map and bottleneck analysis with clearly synthetic handling/waiting times, owners and approval queues.
+  - [Delivery pack](practice/client-delivery/DELIVERY-PACK.md): worked 39-minute handling/202-minute waiting case and approval bottleneck experiment. Figures explicitly synthetic.
+- [x] AUDIT-02 — Draft a complete latency/cost service-level template: machine time versus human waiting, workload assumptions, budgets, measurement windows, escalation and breach response. Keep targets distinct from measured results and contractual promises.
+  - [Delivery pack](practice/client-delivery/DELIVERY-PACK.md): workload, budgets, measurement definitions, escalation and breach response. No measured SLA claim.
 - [ ] AUDIT-03 — Assemble the supervisor, evidence/policy workers, deterministic join, persistent state and authenticated approval into one runnable application with fake model/Jira adapters by default.
 - [ ] AUDIT-04 — Implement the narrow Jira MCP server and deployment recipe: protocol/session handling, token audience/scopes, project/field allowlists, durable operation IDs, exact-intent approval and uncertain-create reconciliation.
 - [ ] AUDIT-05 — Complete the Streamlit approval UI and backend: authenticated sessions, appropriate CSRF protection, approve/reject, stale/changed payload handling, duplicate submissions and separate execution status. A separate Gradio implementation is optional because the requested UI can use either.
 - [ ] AUDIT-06 — Ship trace/token-cost dashboard definitions and end-to-end tests for denial, timeout, partial worker failure, restart recovery, duplicate ticket attempts and kill-switch activation.
-- [ ] AUDIT-07 — Write the operations/training handoff pack: setup, ownership, on-call escalation, revocation, retention, replay, rollback/restore, incident drills and UAT evidence templates. Do not claim live deployment or compliance certification from a passing mock demo.
+- [x] AUDIT-07 — Write the operations/training handoff pack: setup, ownership, on-call escalation, revocation, retention, replay, rollback/restore, incident drills and UAT evidence templates. Do not claim live deployment or compliance certification from a passing mock demo.
+  - [Handoff/UAT pack](practice/client-delivery/DELIVERY-PACK.md), with named-role placeholders to resolve privately and Not run evidence rows. Deployment/certification not claimed.
 
 ## 15. Older open items retained from pending.txt
 
@@ -196,7 +202,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
 - [ ] FDE-06 — Complete Terraform lab with supplied resources, reviewed plan, restricted state, drift checks and exact cleanup; coordinate with CLOUD-01.
 - [ ] FDE-07 — On-premises operations lessons/labs: kubeadm, Rancher, air-gapped registries and Ollama hosting, including artifact transfer, patching, recovery and network boundaries.
 - [ ] FDE-08 — Runnable Prometheus/Grafana/Locust and LangSmith/Langfuse/MLflow labs. Reuse OPS instrumentation, add existing-environment prerequisites and separate offline fixtures from live integration results.
-- [ ] FDE-09 — Complete client-facing architecture/template pack: discovery, requirements, HLD/LLD, API/data contracts, failure sequences, ADRs, SOW, ROI assumptions, UAT and handoff.
+- [x] FDE-09 — Complete client-facing architecture/template pack: discovery, requirements, HLD/LLD, API/data contracts, failure sequences, ADRs, SOW, ROI assumptions, UAT and handoff.
+  - [Worked delivery pack](practice/client-delivery/DELIVERY-PACK.md) supplies every named artifact using one synthetic case. Unresolved real-client decisions remain explicit.
 - [ ] FDE-10 — Build the OmniGuard capstone beyond its brief, reusing the secure API, retrieval, constrained SQL, identity, guardrails and delivery components. Supply mocks, negative tests and a clear optional deployment path.
 - [ ] VERIFY-01 — When execution is separately authorized, verify pending NumPy/Pandas/Polars library examples and SDK/database/model integrations in a provisioned environment. Record exact versions, observed results and failures; do not mark them executed based on static checks.
 - [ ] VERIFY-02 — When a browser is available, perform the outstanding real-browser/mobile check of catalog diagrams and prediction controls. This is presentation verification, not a missing content lesson.
