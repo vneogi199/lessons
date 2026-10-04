@@ -95,20 +95,29 @@ Existing: visual-retrieval/document-layout sections in [retrieval labs](referenc
 
 Existing: lessons 0603–0611 and [advanced graph lab](reference/agent-operations-capstones.html).
 
-- [ ] GRAPH-01 — Implement a bounded Plan & Execute workflow with typed plans, executor results, replanning criteria and stop/failure rules. Compare it with a fixed workflow and ReAct on the same deterministic cases.
-- [ ] GRAPH-02 — Implement an actual supervisor coordinating specialist workers. Define authority, routing, disagreement resolution, partial results, deadlines and evidence ownership; do not treat worker agreement as correctness proof.
-- [ ] GRAPH-03 — Extend the static parallel child graph into dynamic map-reduce with stable work-item IDs, bounded fan-out, deterministic merging and conflict/duplicate handling. Test varied completion order and one failed worker.
-- [ ] GRAPH-04 — Add an integration test suite for state schemas, nodes/edges, conditional routing, compile/invoke, async branches and nested parent-child graphs. Separate already-written recipe coverage from runtime-verified behavior.
+- [x] GRAPH-01 — Implement a bounded Plan & Execute workflow with typed plans, executor results, replanning criteria and stop/failure rules. Compare it with a fixed workflow and ReAct on the same deterministic cases.
+  - [Workflow project](practice/agent-workflows/README.md) supplies typed steps, bounded replan, same-case strategy comparison and tests. Deterministic planner fixtures, no model-performance claim.
+- [x] GRAPH-02 — Implement an actual supervisor coordinating specialist workers. Define authority, routing, disagreement resolution, partial results, deadlines and evidence ownership; do not treat worker agreement as correctness proof.
+  - Actual LangGraph supervisor/worker subgraph with read-only adapters, scope checks, incomplete/conflict outcomes and human-review terminal state. Tests authored, not executed.
+- [x] GRAPH-03 — Extend the static parallel child graph into dynamic map-reduce with stable work-item IDs, bounded fan-out, deterministic merging and conflict/duplicate handling. Test varied completion order and one failed worker.
+  - Dynamic Send dispatch, bounded concurrency, stable result slots, merge-order and duplicate/conflict tests; failed worker retained explicitly. See [worked lesson](reference/agent-workflow-practice.html).
+- [x] GRAPH-04 — Add an integration test suite for state schemas, nodes/edges, conditional routing, compile/invoke, async branches and nested parent-child graphs. Separate already-written recipe coverage from runtime-verified behavior.
+  - test_graphs.py supplies the framework integration suite. Execution remains VERIFY-01; no runtime signoff inferred.
 
 ## 9. Advanced agent orchestration
 
 Existing: lessons 0604, 0606–0609, 0611 and managed-memory/enterprise AI extensions.
 
-- [ ] AGENT-01 — Add persistent checkpoint storage and process-restart recovery. Test interrupted nodes, replay before/after external effects, tenant-scoped run identity and checkpoint compatibility. InMemorySaver is not durable storage.
-- [ ] AGENT-02 — Implement semantic long-term memory retrieval with source/version metadata, consent, tenant/owner filters, expiry, deletion and stale-fact handling. Keep semantic facts distinct from episodic history.
-- [ ] AGENT-03 — Complete authenticated manual-approval storage and resume handling. Bind actor, tenant, exact payload/version/hash and expiry; serialize conflicting decisions and reject stale approvals.
-- [ ] AGENT-04 — Implement explicit repeated-action/cycle/no-progress detection alongside step, time and spend limits. Test legitimate repeated reads, changed arguments and blocked external calls.
-- [ ] AGENT-05 — Implement a bounded self-correction loop driven by validation or evidence failures. Compare correction against baseline; prevent endless critique and distinguish prompted self-critique from trained Self-RAG.
+- [x] AGENT-01 — Add persistent checkpoint storage and process-restart recovery. Test interrupted nodes, replay before/after external effects, tenant-scoped run identity and checkpoint compatibility. InMemorySaver is not durable storage.
+  - SQLite checkpoint and separate-process tests in [agent project](practice/agent-workflows/README.md). Effect fixture is local/idempotent; remote-effect reconciliation is explicitly not claimed. Tests unexecuted.
+- [x] AGENT-02 — Implement semantic long-term memory retrieval with source/version metadata, consent, tenant/owner filters, expiry, deletion and stale-fact handling. Keep semantic facts distinct from episodic history.
+  - memory.py and storage tests: scoped vector retrieval, immutable revisions, consent, source filters, expiry and tombstones. Synthetic encoder; release-time revalidation and backup limits documented.
+- [x] AGENT-03 — Complete authenticated manual-approval storage and resume handling. Bind actor, tenant, exact payload/version/hash and expiry; serialize conflicting decisions and reject stale approvals.
+  - approval.py supplies hashed opaque sessions, payload-bound decisions and checked graph resume. Session issuance requires verified server identity; HTTP/SSO and distributed lease integration remain separate. Crash-after-claim recovery is explicitly operator-mediated, not exactly-once remote execution.
+- [x] AGENT-04 — Implement explicit repeated-action/cycle/no-progress detection alongside step, time and spend limits. Test legitimate repeated reads, changed arguments and blocked external calls.
+  - Guard and tests cover bounded polling, evidence changes, cycles, no progress and admission budgets. Cost units are synthetic reservations, not billed-dollar telemetry.
+- [x] AGENT-05 — Implement a bounded self-correction loop driven by validation or evidence failures. Compare correction against baseline; prevent endless critique and distinguish prompted self-critique from trained Self-RAG.
+  - Correction controller/tests compare a failing baseline with one correction and a stalled loop. Citation-marker fixture does not establish entailment. All tests remain unexecuted.
 - [ ] AGENT-06 — Add complete managed-agent provisioning/version/alias and knowledge-base integration recipes, with scoped roles, readiness checks, allowed/denied documents and teardown. Current Bedrock coverage is a walkthrough, not an executable provisioning package.
 
 ## 10. Legacy systems and integrations

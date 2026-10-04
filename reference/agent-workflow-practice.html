@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bounded plans and worker graphs</title><style>body{max-width:880px;margin:auto;padding:24px;font:18px/1.65 system-ui,sans-serif;color:#172638;background:#fafbfd}a{color:#075b9b}pre{overflow:auto;padding:16px;background:#eaf0f6}summary{cursor:pointer}details{margin:18px 0}</style></head><body><main>
+<a href="agent-operations-capstones.html">Agent operations</a><h1>Bounded plans and worker graphs</h1>
+<p>The <a href="../practice/agent-workflows/README.md">project</a> supplies planner, correction and LangGraph code with tests. No runtime checks have been performed. Work through one mechanism per sitting.</p>
+<h2>Give a plan a small vocabulary</h2>
+<p>Imagine a checklist with two permitted actions: read the evidence and read the policy. The planner can choose their sources and order. It cannot add send_money to the checklist. The application validates each step before a worker starts.</p>
+<p>Plan &amp; Execute validates a bounded list of typed steps. A missing or stale read permits one new plan. Successful reads cannot be repeated by that replan. Failed evidence stays visible and the final outcome requires review if any failure remains.</p>
+<p>For a known two-read process, a fixed workflow has fewer decisions to test. Plan &amp; Execute adds a planning stage that can select alternate sources. ReAct chooses the next action after each observation. On the same missing-policy case, compare: fixed flow stops for review; the supplied planner can try a fallback once; a ReAct controller needs an equivalent stop budget. No strategy gains permission to invent the missing policy.</p>
+<h2>Catch a loop before the next call</h2>
+<p>Reading A, then B, then A again against the same evidence version is a cycle in the guard fixture. Reading A after its authoritative version changes is different work. Explicit polling permits two identical reads, then stops. Model-generated version strings must never reset this guard.</p>
+<p>The guard also checks step, time and reserved-cost budgets. Three observations without a new authoritative version trigger no_progress. These checks run before admission; a separate transport deadline controls an admitted request.</p>
+<h2>Let workers return separate results</h2>
+<p>The LangGraph supervisor dispatches evidence and policy work by stable IDs. Each worker returns only its own result slot. The reducer accepts identical duplicates and rejects different values under the same ID. Merge order cannot silently decide which finding survives.</p>
+<pre>Supervisor checks scope and work count
+  → worker one: evidence, result under "one"
+  → worker two: policy, result under "two"
+Join checks completeness and conflicting claims
+  → ready_for_human / incomplete_review / conflicting_evidence</pre>
+<p>The worker subgraph uses dynamic Send calls. The parent routes denied input directly to the end. Failure in one worker does not turn the other worker's success into a complete review. Agreement also does not prove correctness; every accepted finding keeps its source and version.</p>
+<p>Compare this with storing all worker output in one answer field. Concurrent writes would need a defined merge rule, and last-writer-wins could hide a failed policy check. The result map makes that failure inspectable.</p>
+<h2>Correct only against a stated check</h2>
+<p>The project also includes a persistent checkpoint exercise. A node pauses for a trusted test approval, then records a synthetic local effect. One test crashes after that effect commits. A fresh graph resumes from the same SQLite checkpoint and the unique operation key prevents a second local effect. Another test starts and resumes in separate Python processes. Neither test has been run.</p>
+<p>Checkpoint state has a schema version and tenant check. An incompatible state fails before work. Keep external effects after the interrupt and protect them with their own idempotency/reconciliation boundary. See <a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph persistence</a> and <a href="https://docs.langchain.com/oss/python/langgraph/interrupts">interrupt replay behavior</a>.</p>
+<p>The correction fixture first returns an answer without a citation, then an answer with the required source marker. Its validator supplies the failure category. Repeating the same broken draft stops the loop. A marker check verifies format only; an independent evidence check is needed to establish support.</p>
+<details><summary>Interview: a critic agrees with the evidence worker. Can you create a ticket?</summary><p>Agreement is not authorization. Check source support, policy, completeness and the exact human-approved payload. This project deliberately stops before external effects.</p></details>
+<h2>Approve one exact action</h2>
+<p>The approval ledger acts like signing a specific form. The signature is not permission to replace its destination or content afterward. Each proposal stores a hash of the exact payload, including its source versions. A current authenticated reviewer session must match the tenant and have approval capability.</p>
+<p>Approval and rejection race through one SQLite write transaction. Only one wins. An identical retry by the same reviewer returns the earlier decision. Changed payloads, expired sessions and cross-tenant requests fail. The resume adapter checks the server-selected waiting graph before claiming the decision.</p>
+<p>The session issuer is a trusted server integration point, not a public login API. A browser wrapper still needs CSRF and session protections. A crash between approval claim and graph resumption needs reconciliation; the code retains the claimed state so an operator can inspect it.</p>
+<h2>Forget a fact without reviving an old copy</h2>
+<p>The memory fixture stores a current fact with its owner, source version and expiry. Search excludes another tenant, another owner, expired consent and an outdated source before ranking. The synthetic example changes limit 10 at policy v1 to limit 20 at policy v2.</p>
+<p>Forget removes the text and vector but keeps the last revision number. A delayed revision-1 write cannot restore revision-2 data. A newly consented higher revision is a new publication. Old backups require a separate deletion policy. Recheck permissions at answer release because a search result can become stale after retrieval.</p>
+<details><summary>Practice: two workers return different results under the same ID. Which result wins?</summary><p>Neither. The reducer raises a conflict. Assign stable IDs correctly and resolve the disagreement explicitly.</p></details>
+<p>Tomorrow, trace one timeout and one changed-evidence retry. Ask your teacher which component owns the stop decision if the distinction is unclear.</p>
+<p>Primary source: <a href="https://docs.langchain.com/oss/python/langgraph/graph-api">LangGraph graph API</a>. These examples use injected deterministic workers, not a claim of model accuracy.</p>
+</main></body></html>
