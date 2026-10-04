@@ -40,7 +40,7 @@ def grade(store, case, result):
             "document_recall_at_3": len(expected & ids) / len(expected) if expected else None}
 
 
-def run_case(directory, fixtures, case):
+def run_case(directory, fixtures, case, *, include_result=False):
     # Every case starts from the same baseline; mutations cannot leak between cases.
     store = Store(Path(directory) / (case["id"] + ".sqlite3"))
     for item in fixtures["documents"]:
@@ -53,12 +53,14 @@ def run_case(directory, fixtures, case):
         else:
             raise ValueError("unknown fixture operation")
     start = time.perf_counter()
+    result = None
     try:
         result = store.ask(case["tenant"], case["question"])
         outcome = grade(store, case, result)
     except Error as exc:
         outcome = {"passed": False, "error": exc.code, "document_recall_at_3": None}
     return {"case": case["id"], "slice": case["slice"], **outcome,
+            **({"result": result} if include_result else {}),
             "known_gap": case.get("known_gap"),
             "latency_ms": round((time.perf_counter() - start) * 1000, 3)}
 
