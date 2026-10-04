@@ -1,0 +1,31 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 127.0.0.1:4318
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 128
+    spike_limit_mib: 32
+  batch:
+    send_batch_size: 64
+    send_batch_max_size: 128
+    timeout: 1s
+exporters:
+  otlphttp:
+    endpoint: ${env:LESSON_TRACE_BACKEND}
+    tls:
+      ca_file: ${env:LESSON_TRACE_CA_FILE}
+      cert_file: ${env:LESSON_TRACE_CERT_FILE}
+      key_file: ${env:LESSON_TRACE_KEY_FILE}
+    sending_queue:
+      queue_size: 256
+    retry_on_failure:
+      max_elapsed_time: 10s
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
