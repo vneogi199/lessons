@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import AsyncMock
 from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from tracing import request, consume
@@ -9,7 +10,7 @@ from tracing import request, consume
 class TraceTests(unittest.IsolatedAsyncioTestCase):
     async def test_retry_tree_queue_parent_and_no_content(self):
         exporter = InMemorySpanExporter()
-        provider = TracerProvider()
+        provider = TracerProvider(sampler=ALWAYS_ON)
         provider.add_span_processor(SimpleSpanProcessor(exporter))
         tracer = provider.get_tracer("test")
         publish = AsyncMock()
