@@ -2,6 +2,11 @@
 
 ## Knowledge
 
+- [OAuth security BCP](https://www.rfc-editor.org/rfc/rfc9700.html), [OIDC Core](https://openid.net/specs/openid-connect-core-1_0.html) and [device authorization](https://www.rfc-editor.org/rfc/rfc8628.html): grant-selection practice and token lifecycle boundaries.
+- [Claude Code skills](https://code.claude.com/docs/en/skills) and [memory](https://code.claude.com/docs/en/memory): scoped coding-assistant instructions and context practice.
+- [Aikido GitHub integration](https://help.aikido.dev/code-scanning/connect-your-source-code/connect-github-account-to-aikido): optional repository-scoped security review walkthrough.
+- [Precision and recall](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html): definitions for the dependency-free PII evaluation harness.
+
 - [Confluent Python client](https://docs.confluent.io/kafka-clients/python/current/overview.html): producer callbacks, consumer offsets and client lifecycle.
 - [Kafka Streams concepts](https://kafka.apache.org/41/streams/core-concepts/): JVM topologies, keyed state and processing guarantees.
 - [Spark Structured Streaming](https://spark.apache.org/docs/latest/streaming/apis-on-dataframes-and-datasets.html): event time, watermarks, state and recovery; use version-matched connectors.
