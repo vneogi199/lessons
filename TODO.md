@@ -34,7 +34,8 @@ Existing: lessons 0303–0345, 0408, 0413 and [API/cloud delivery labs](referenc
 
 Existing: lessons 0479–0494, 0504 and the provisioning/billing sections of [API/cloud delivery labs](reference/api-cloud-delivery-labs.html). All 13 requested subjects have explanations or walkthroughs; deployed behavior was not verified.
 
-- [ ] CLOUD-01 — Provide a cohesive provisioning recipe with explicit prerequisites, inputs, resource ownership and teardown: EC2, private RDS, S3 lifecycle rules, event-driven Lambda, VPC/subnets, NAT or endpoints and narrowly scoped security groups. Include allow/deny, duplicate-event and restore checks. Separate resource creation instructions from permission to run them.
+- [x] CLOUD-01 — Provide a cohesive provisioning recipe with explicit prerequisites, inputs, resource ownership and teardown: EC2, private RDS, S3 lifecycle rules, event-driven Lambda, VPC/subnets, NAT or endpoints and narrowly scoped security groups. Include allow/deny, duplicate-event and restore checks. Separate resource creation instructions from permission to run them.
+  - `practice/cloud-foundation/` supplies private-network Terraform resources, receipt-only Lambda, mock checks and an explicit allow/deny/restore/cleanup recipe. No provider initialization, validation, plan or cloud execution performed.
 - [x] CLOUD-02 — Add a concrete cross-account trust/caller-permission/target-permission example with permitted and denied assumption cases. Include scoped session behavior and third-party external-ID considerations where applicable.
   - [Three JSON policy files and validation recipe](practice/cloud-controls/README.md). Synthetic accounts/resources; no AWS calls or permissions changed.
 - [x] CLOUD-03 — Extend budget walkthroughs with a reproducible notification-validation exercise and an optional reviewed budget-action design. Distinguish alerts from enforced workload limits; do not supply an unreviewed destructive spending response.
@@ -233,7 +234,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
   - [Shopping project](practice/shopping-agent/README.md) supplies an allowlisted proposal boundary, synthetic SQLite purchases, approval hashes, budgets, replay handling, kill switch and negative tests. Identity is a trusted caller prerequisite; no model or tests executed.
 - [x] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
   - [Azure recipe](practice/cloud-controls/AZURE.md) covers registry permission modes, separate identities, digest promotion, managed-identity secret access, rotation/revocation and denial drills. No Azure operations performed.
-- [ ] FDE-06 — Complete Terraform lab with supplied resources, reviewed plan, restricted state, drift checks and exact cleanup; coordinate with CLOUD-01.
+- [x] FDE-06 — Complete Terraform lab with supplied resources, reviewed plan, restricted state, drift checks and exact cleanup; coordinate with CLOUD-01.
+  - Reuses `practice/cloud-foundation/`: isolated remote state/locking, saved-plan review procedure, drift experiment and protected teardown. Plan review is an unexecuted learner exercise, not claimed approval or deployment evidence.
 - [x] FDE-07 — On-premises operations lessons/labs: kubeadm, Rancher, air-gapped registries and Ollama hosting, including artifact transfer, patching, recovery and network boundaries.
   - [Isolated operations lab](practice/cloud-controls/ON-PREM.md) supplies ownership, artifact inventory, cold-start/denial checks, patching and restore drills. Tabletop recipe only; no installation or cluster operation performed.
 - [ ] FDE-08 — Runnable Prometheus/Grafana/Locust and LangSmith/Langfuse/MLflow labs. Reuse OPS instrumentation, add existing-environment prerequisites and separate offline fixtures from live integration results.
