@@ -1,5 +1,7 @@
 # Keep release evidence separate from a fluent answer
 
+Prepare reviewed cases with the [source-bound dataset builder](DATASET-BUILDING.md).
+
 `release_eval.py` extends the existing evaluator's per-case contract. Preserve `case`, `slice`, `passed`, `error` and `latency_ms` from `run_case`. Add two independently collected judge scores and `cost_usd`. A missing score remains missing. Feed the resulting rows to `release_report`, save its JSON as the CI artifact, then exit unsuccessfully when `release` is false. `persist` stores immutable run IDs in a local SQLite history. `compare` reports paired changes, failures, cost completeness and a seeded bootstrap interval.
 
 The existing deterministic evaluator checks citation provenance and permission fixtures. Those checks do not prove semantic support. Judges should score whether each answer claim follows from the permitted evidence, using the same frozen rubric and blinded model identity. Score 1 for supported, 0.5 for partly supported and 0 for unsupported. An answer that refuses an answerable question can be safe but should fail the task-quality rubric. Use the correct rubric for each case type.
