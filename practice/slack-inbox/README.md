@@ -1,0 +1,19 @@
+# Save a Slack event before acknowledging it
+
+Slack retries an event when acknowledgment is lost. `Inbox.accept` commits one normalized record before returning. Repeating the same event acknowledges the existing record. Reusing its ID with changed content fails. The HTTP handler never waits for a model or performs a business effect.
+
+Use an approved FastAPI environment and a protected persistent SQLite file. Construct `Inbox(path, allowed_team, allowed_app)` and `create_app(inbox, signing_secret)`. The app factory is explicit; importing the module neither opens a port nor reads secrets. Expose `/slack/events` through HTTPS with a 32 KiB ingress limit and bounded connections. Configure that URL for Events API and interactivity only after authorization. No app was installed and no messages were sent during authoring.
+
+Signature verification uses the raw bytes before parsing. A five-minute timestamp window and durable event IDs address different replay risks. Keep clocks synchronized. The two-second handler budget aims to leave room within Slack's acknowledgment deadline; deployment latency still needs measurement. A timeout during a database thread can leave a committed event. The retry then finds that event. This is intentional; a timeout cannot prove no write occurred.
+
+Only `app_mention` events and single approve/reject actions are accepted. An event subscription needs the corresponding `app_mentions:read` scope. Add `chat:write` only if a separate reviewed sender posts replies. Do not request full channel history for this lab. Bot tokens, signing secrets and incoming-webhook URLs have different purposes. Inject them from approved secret storage, rotate separately, and test revocation. Do not log raw bodies, authorization headers, legacy tokens or response URLs.
+
+Buttons contain JSON with the existing approval ledger's operation ID and payload hash. `process_decision` calls `Approvals.decide` from `practice/agent-workflows/approval.py`. Its `session_for(team, user)` callback must map the signed Slack identity to a current local session and current approval permission. It must not auto-enroll an unknown user. The ledger checks tenant, hash, expiry and conflicting decisions. Changed proposals need new approval. A signed click does not itself authorize execution.
+
+Run a separate supervised worker over pending decision IDs. Denials/conflicts need terminal status handling and an operator-visible reason; outages can retry this idempotent decision operation. This handler records decisions only. It does not resume agents, create tickets or infer that a decision means execution succeeded. Mention records require a separately authorized read-only responder. Retain inbox IDs through the chosen replay horizon; archive/purge only terminal records under a reviewed retention policy. Capacity exhaustion returns an error instead of silently dropping work.
+
+The SQLite design is for one host. For several replicas use a shared transactional inbox and worker leases. Concurrent repeated decision calls are safe only because the reused approval ledger enforces the same reviewer/choice. Do not replace it with an unguarded external effect.
+
+Tests are supplied, unexecuted: tampered bytes, stale timestamp, durable duplicate, foreign workspace and exact proposal forwarding. Add deployment tests for storage-full, slow commit and lost acknowledgment before claiming reliability. Interview: can you acknowledge first and queue later? A crash between those steps loses acknowledged work. Ask the teacher to review the failure sequence.
+
+Sources: [request signatures](https://docs.slack.dev/authentication/verifying-requests-from-slack/), [interaction handling](https://docs.slack.dev/interactivity/handling-user-interaction/), [Events API](https://docs.slack.dev/apis/events-api/).
