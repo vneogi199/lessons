@@ -1,0 +1,15 @@
+# Ingest a small SOP and an RFQ export
+
+These adapters require already-approved `python-docx`, `openpyxl` and `defusedxml` libraries. Nothing is installed or executed. Tests construct synthetic Office packages in memory. After execution approval, run `python3 -m unittest -v` from this directory.
+
+The shared ZIP preflight caps compressed input, expanded bytes, member count, per-member size and expansion ratio. It rejects encrypted packages, duplicate/traversing names, macros, embedded files, external relationships and XML DTD/entity declarations. XML input is restricted to UTF-8. It does not extract members to disk. Keep libraries patched and run real uploads in an isolated worker with OS memory/CPU limits; archive metadata bounds alone are not a full parser sandbox. See [ZIP behavior](https://docs.python.org/3/library/zipfile.html) and [XML security](https://docs.python.org/3/library/xml.html#xml-vulnerabilities).
+
+Word output preserves top-level paragraph/table order, paragraph style and simple cell structure. A heading remains a heading-style record. Complex merged/nested tables require review rather than flattening. This is a constrained SOP adapter, not a layout renderer: page numbers cannot be inferred reliably from DOCX paragraph order. Use body positions and a file-content hash for provenance. Images and substantive headers/footers require a richer extractor.
+
+Excel accepts one visible three-column sheet with `rfq_id`, `currency`, `amount`. Amounts must be positive finite decimals in range; IDs are unique; currency uses an explicit allowlist. Missing values, formulas, errors, hyperlinks and hidden rows fail. Formulas are not evaluated and stale cached formula values are not accepted as business data. Cell coordinates accompany every field. Excel may already have rounded numeric cells; converting them to Decimal cannot recover lost precision. Export exact financial amounts as decimal strings under an agreed schema.
+
+The caller supplies verified source ID, tenant and reader IDs from the source connector. Every output inherits them and a SHA-256 content version. These fields preserve permissions; they do not authenticate the caller. Recheck current access at indexing, retrieval and release. A permission change must invalidate old indexed/cached material even if file bytes are unchanged.
+
+Worked task: ingest the synthetic SOP heading and its owner table, then the one-row USD export. Expected output has three ordered Word blocks and one RFQ with amount `12.50` plus its sheet/cell provenance. Delete the amount and predict rejection before opening the test. An empty cell is not zero.
+
+Unsupported legacy `.doc`/`.xls`, encrypted files, charts, comments, tracked revisions and advanced spreadsheet layouts require a separately reviewed conversion/extraction path. Do not silently assume that these adapters preserve every Office feature. Tests are authored, not run. Ask your teacher to review a source-permission revocation case before connecting an enterprise folder.
