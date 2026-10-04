@@ -50,10 +50,14 @@ Existing: lessons 0342, 0487, 0491, 0512–0518, 0530–0545 and the ECS deliver
 
 Existing: lessons 0581, 0587–0590 and [context/typed-output/tool labs](reference/retrieval-document-labs.html).
 
-- [ ] LLM-01 — Add an actual model-specific token-counting example alongside the supplied-count arithmetic. Account for messages, tools, evidence and reserved output; compare estimates with recorded usage when an authorized provider run is available.
-- [ ] LLM-02 — Implement a context-window/compression comparison fixture. Preserve complete tool-call/result pairs, early constraints, updated facts and provenance. Compare full history, recent-window history and summary-plus-history without treating a summary as authoritative.
-- [ ] LLM-03 — Implement a tested bounded parsing/repair wrapper. Separate malformed JSON, schema failure, refusal, truncation, transport failure and business/authorization rejection. Bound attempts and total time; never retry an external effect because its narration failed validation.
-- [ ] LLM-04 — Supply a complete provider/tool continuation loop with precise schemas, validated arguments, unknown-tool rejection, independent parallel reads, per-call results and correct call-ID correlation. Include deadlines, partial failure, repeated IDs, side-effect safeguards and deterministic fake-provider tests.
+- [x] LLM-01 — Add an actual model-specific token-counting example alongside the supplied-count arithmetic. Account for messages, tools, evidence and reserved output; compare estimates with recorded usage when an authorized provider run is available.
+  - Authored 2026-10-04: Claude count endpoint, output reservation and response-usage comparison in [model boundaries](practice/model-boundaries/README.md). Mock HTTP tests supplied. Live recorded usage remains VERIFY-01; no provider count fabricated.
+- [x] LLM-02 — Implement a context-window/compression comparison fixture. Preserve complete tool-call/result pairs, early constraints, updated facts and provenance. Compare full history, recent-window history and summary-plus-history without treating a summary as authoritative.
+  - Authored 2026-10-04: [context fixture and tests](practice/model-boundaries/README.md). Word-budget comparison and exact summary references are explicit teaching limits; no generated-summary quality claim.
+- [x] LLM-03 — Implement a tested bounded parsing/repair wrapper. Separate malformed JSON, schema failure, refusal, truncation, transport failure and business/authorization rejection. Bound attempts and total time; never retry an external effect because its narration failed validation.
+  - Authored 2026-10-04: [structured parser, retry owner and fake-provider tests](practice/model-boundaries/README.md). Tests are supplied, not executed; VERIFY-01 retains runtime verification. Real provider adapter remains LLM-04.
+- [x] LLM-04 — Supply a complete provider/tool continuation loop with precise schemas, validated arguments, unknown-tool rejection, independent parallel reads, per-call results and correct call-ID correlation. Include deadlines, partial failure, repeated IDs, side-effect safeguards and deterministic fake-provider tests.
+  - Authored 2026-10-04: Claude continuation loop, fixed-endpoint HTTP adapter and fake-provider/HTTP tests in [model boundaries](practice/model-boundaries/README.md). Explicitly read-only; live provider/runtime verification remains open.
 
 ## 6. Vector search and core RAG
 
@@ -141,7 +145,8 @@ Existing: [enterprise security labs](reference/enterprise-security-labs.html), l
 Existing: lessons 0589–0590, 0609, 0612–0616 and [gateway/evaluation/tracing labs](reference/agent-operations-capstones.html).
 
 - [ ] OPS-01 — Supply a deployable LiteLLM or Portkey example for an authorized environment: scoped virtual credentials, provider-key management, aliases, rate limits, compatible fallback routes and rotation/revocation. Choose one working implementation and explain the other.
-- [ ] OPS-02 — Implement bounded exponential backoff with jitter, Retry-After handling and a total deadline in the shared gateway/tool adapter. Test layered retry amplification and uncertain side effects; reuse LLM-03/LLM-04 rather than duplicating retry code.
+- [x] OPS-02 — Implement bounded exponential backoff with jitter, Retry-After handling and a total deadline in the shared gateway/tool adapter. Test layered retry amplification and uncertain side effects; reuse LLM-03/LLM-04 rather than duplicating retry code.
+  - Authored 2026-10-04: shared retry.py integrated into the Claude transport, with call-count, Retry-After and uncertain-effect tests. No retries of tool writes. Tests not executed; cancellation and billing limits documented.
 - [ ] OPS-03 — Connect deterministic checks and calibrated LLM judges into an evaluation runner and CI release artifact. Include missing scores, grader disagreement, critical slices and declared release gates.
 - [ ] OPS-04 — Extend the Ragas recipe to calculate answer relevance and context precision as well as its existing faithfulness/correctness/context-recall metrics. Pin metric variants and adapters; include required references, missing-label behavior and controlled test cases.
 - [ ] OPS-05 — Implement source-grounded synthetic evaluation-data generation with document-family splits, provenance, human review and answerability checks. Include unanswerable, contradictory, stale and forbidden-source cases.
