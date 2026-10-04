@@ -145,7 +145,8 @@ Existing: [enterprise connectors and security labs](reference/enterprise-securit
 
 Existing: lessons 0326–0327, 0416, 0480 and the Entra/SAML extensions.
 
-- [ ] IAM-01 — Add a comprehensive grant-selection lesson: authorization code + PKCE, client credentials, refresh tokens and relevant device-flow use cases. Explain legacy/unsuitable flows and distinguish OAuth from OIDC.
+- [x] IAM-01 — Add a comprehensive grant-selection lesson: authorization code + PKCE, client credentials, refresh tokens and relevant device-flow use cases. Explain legacy/unsuitable flows and distinguish OAuth from OIDC.
+  - [Grant-selection practice](reference/oauth-grant-practice.html) supplies caller cases, login sequence, refresh concurrency and interview answers. Runtime integrations remain separate.
 - [ ] IAM-02 — Implement an end-to-end OIDC login recipe with a fake issuer/test transport, callback/session handling and wrong-state/issuer/audience/expiry cases. Provide an optional approved-IdP integration path.
 - [ ] IAM-03 — Complete SAML integration using a maintained implementation and synthetic assertions. Test audience, request correlation, replay, expiry, key rollover and session creation; do not write a custom XML-signature verifier.
 - [ ] IAM-04 — Connect verified Entra identity → group-overage resolution → local RBAC → object permissions. Test membership revocation and cache/session propagation, not only the existing post-verification mapping function.
@@ -199,8 +200,10 @@ Existing: [AuditMesh build brief and Streamlit form](reference/agent-operations-
 
 These predate the latest coverage checks. They remain candidates for audit and implementation, not new claims that the recent lesson-example pass omitted them.
 
-- [ ] FDE-01 — Dedicated AI coding-assistant workflow: choose one tool, cover Skills/CLAUDE.md/context management, spec-first planning, diff review, hallucinated APIs, secrets and regression tests.
-- [ ] FDE-02 — Aikido security-integration walkthrough with scoped permissions, findings review and false-positive/exception handling; no account connection implied.
+- [x] FDE-01 — Dedicated AI coding-assistant workflow: choose one tool, cover Skills/CLAUDE.md/context management, spec-first planning, diff review, hallucinated APIs, secrets and regression tests.
+  - [Claude Code review exercise](reference/ai-coding-review-practice.html) supplies an RFQ contract and review defects with answers. Guidance is inactive; no tool installed or code executed.
+- [x] FDE-02 — Aikido security-integration walkthrough with scoped permissions, findings review and false-positive/exception handling; no account connection implied.
+  - [Scoped scan walkthrough](reference/ai-coding-review-practice.html) includes approval, triage, exception expiry and removal. No account connected or scan performed.
 - [ ] FDE-03 — Word SOP and Excel-export ingestion practice with provenance, structure, schemas, malformed files and permission propagation.
 - [ ] FDE-04 — Complete the shopping-agent assignment with bounded tools, fake external effects, approvals and evaluations.
 - [ ] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
