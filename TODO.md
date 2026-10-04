@@ -155,7 +155,8 @@ Existing: lessons 0326–0327, 0416, 0480 and the Entra/SAML extensions.
   - [Grant-selection practice](reference/oauth-grant-practice.html) supplies caller cases, login sequence, refresh concurrency and interview answers. Runtime integrations remain separate.
 - [ ] IAM-02 — Implement an end-to-end OIDC login recipe with a fake issuer/test transport, callback/session handling and wrong-state/issuer/audience/expiry cases. Provide an optional approved-IdP integration path.
 - [ ] IAM-03 — Complete SAML integration using a maintained implementation and synthetic assertions. Test audience, request correlation, replay, expiry, key rollover and session creation; do not write a custom XML-signature verifier.
-- [ ] IAM-04 — Connect verified Entra identity → group-overage resolution → local RBAC → object permissions. Test membership revocation and cache/session propagation, not only the existing post-verification mapping function.
+- [x] IAM-04 — Connect verified Entra identity → group-overage resolution → local RBAC → object permissions. Test membership revocation and cache/session propagation, not only the existing post-verification mapping function.
+  - `practice/entra-access/` supplies fixed-endpoint Graph lookup, bounded cache, fresh approval lookup, local revocation epochs, role/object checks and fake-verifier/HTTP tests. Login/signature verification remains IAM-02; tests and directory integration are unexecuted.
 - [x] IAM-05 — Implement and test data-level authorization across lexical/vector/graph retrieval, parent expansion, model/reranker exposure and answer caches. Include revoked/deleted documents and cross-tenant negative cases.
   - [Retrieval permission fixture](practice/retrieval-permissions/README.md) implements all three paths, parent/edge checks, reranker/model boundaries and revisioned cache invalidation. Tests supplied but unexecuted; production identity/database integration remains separate.
 
