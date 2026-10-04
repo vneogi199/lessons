@@ -83,10 +83,12 @@ Existing: lessons 0577, 0594–0602, [retrieval labs](reference/retrieval-docume
 
 Existing: visual-retrieval/document-layout sections in [retrieval labs](reference/retrieval-document-labs.html) and the brief PDF adapter in [data preparation](reference/data-preparation-and-terminal.html).
 
-- [ ] VISION-01 — Build a document/page classification fixture for native text, scans, mixed content, forms, tables and charts. Preserve immutable source/version/page identity and reading-order evidence.
+- [x] VISION-01 — Build a document/page classification fixture for native text, scans, mixed content, forms, tables and charts. Preserve immutable source/version/page identity and reading-order evidence.
+  - [Six synthetic page fixtures](practice/document-pages/README.md), immutable identity, multi-label classifier and validation tests supplied. No PDF parsing or classification accuracy claimed; tests unexecuted.
 - [ ] VISION-02 — Implement a bounded OCR pipeline adapter with isolated rendering, preprocessing decisions, text/layout output, error handling and quality checks. Use approved synthetic fixtures; no automatic engine/model downloads.
 - [ ] VISION-03 — Add actual ColPali processor/model integration for an already provisioned environment, including page rendering, multi-vector indexing and late-interaction retrieval. Keep the existing synthetic MaxSim exercise distinct from inference evidence.
-- [ ] VISION-04 — Add a small vision-language bridge walkthrough showing patch representations, projection/attention and language-model input shapes. Contrast retrieval encoders with generative VLMs without claiming one universal architecture.
+- [x] VISION-04 — Add a small vision-language bridge walkthrough showing patch representations, projection/attention and language-model input shapes. Contrast retrieval encoders with generative VLMs without claiming one universal architecture.
+  - [Shape walkthrough](reference/vision-bridge-practice.html) uses an explicitly synthetic architecture, worked dimensions, counterexamples and answer keys. No inference performed.
 - [ ] VISION-05 — Provide a complete image-prompting API adapter with page/crop IDs, bounded image inputs, typed answers, refusals, timeouts and citation checks. Include a fake transport for offline contract tests.
 - [ ] VISION-06 — Implement an image-to-image search example with an approved local CLIP-style encoder, index contract and labelled results. Contrast image identity, similarity and task relevance.
 - [ ] VISION-07 — Implement nested-table extraction and XML/JSON-style structural validation as appropriate to the chosen document provider. Preserve hierarchical headers, merged cells, units, footnotes and per-field source boxes; test totals and missing cells.
