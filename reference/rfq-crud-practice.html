@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>An RFQ API that catches duplicate and stale writes</title>
+<style>body{max-width:880px;margin:auto;padding:24px;font:18px/1.65 system-ui,sans-serif;color:#172638;background:#fafbfd}a{color:#075b9b}pre{overflow:auto;padding:16px;background:#eaf0f6}summary{cursor:pointer}details{margin:18px 0}h1,h2{line-height:1.25}code{overflow-wrap:anywhere}a:focus-visible,summary:focus-visible{outline:3px solid #976300}@media print{body{font-size:11pt}}</style></head>
+<body><main>
+<a href="api-cloud-delivery-labs.html">API practice</a>
+<h1>An RFQ API that catches duplicate and stale writes</h1>
+<p>An RFQ is a request for a quote. In this example, a trader records an instrument and a quantity. No prices are calculated and no trades are booked. The exercise is to keep that small record correct when clients retry or two traders edit it.</p>
+<p>Read the explanation in one sitting. Then inspect <a href="../practice/rfq-api/app.py">the application</a> and <a href="../practice/rfq-api/test_app.py">the tests</a>. The <a href="../practice/rfq-api/README.md">project guide</a> lists prerequisites and the optional test command. The tests have not been run.</p>
+
+<h2>A simple example</h2>
+<p>Imagine two people editing the same paper form. Both copy revision 1. Anna saves quantity 20, so the form becomes revision 2. Ben then submits quantity 30 with revision 1. The API rejects Ben's old copy. Ben must read the current form before deciding what to change.</p>
+<pre aria-label="Two edits to the same revision">Stored: quantity 10, version 1
+Anna sends: quantity 20, version 1 → accepted; stored version 2
+Ben sends:  quantity 30, version 1 → 409 stale_version
+Stored: quantity 20, version 2</pre>
+<p>The update checks the version in its SQL condition. Checking it in Python and then issuing an unconditional update would leave a gap between the check and the write.</p>
+<pre><code>UPDATE rfqs SET quantity=?, version=version+1
+WHERE tenant=? AND id=? AND version=?</code></pre>
+<p>One changed row means the expected revision existed. Zero changed rows means the condition did not match. The route first checks whether the tenant can see the record. It returns 404 for a missing or inaccessible record and 409 for an old revision.</p>
+
+<h2>Follow one request</h2>
+<p>Send POST /rfqs with an Idempotency-Key header and a body such as {"instrument":"BOND-A","quantity":10}. Pydantic checks the fields. Unknown fields are rejected, so a client cannot assign its own tenant or version. A boolean is not accepted as a quantity.</p>
+<p>The identity dependency supplies a tenant and write permission. It rejects every request by default. Tests replace it with a synthetic identity. This keeps authentication visibly separate from authorization: the routes enforce which tenant and operations an already identified caller can access.</p>
+<p>The session dependency opens one database connection and closes it after use. Each write route owns its transaction and commits before returning. A failed transaction rolls back. Delaying a commit until response cleanup could report success before the write is durable.</p>
+<p>The create route stores the RFQ and its replay response in the same transaction. The request key is unique within a tenant. Repeating the same key and payload returns the stored response. Reusing the key with another quantity returns 409. Separate tenants can use the same key.</p>
+<p>A replay returns the original create response, even after the RFQ changes or is deleted. It does not describe the current record and does not recreate it. A client must GET the record to learn its current state. Production systems need an explicit retention period for these replay records.</p>
+
+<h2>Read and change records</h2>
+<p>GET /rfqs?limit=2 returns at most two records and a next_after value when another page exists. Pass that value as after for the next request. The query orders by the unique ID and filters by tenant. The tenant/ID index supports that access pattern.</p>
+<p>This cursor walks a changing dataset. New records can appear on later pages, and deleted records disappear. It does not provide a frozen export. An audit export needs a separately defined snapshot contract.</p>
+<p>PATCH requires a quantity and the version the client read. DELETE requires the version as a query parameter. Both reject stale versions. Retrying a successful PATCH with the old version returns 409; only creation has replay storage in this example. After an ambiguous update timeout, read the current record before deciding what to do next.</p>
+<p>Errors use an error.code field. Validation failures return invalid_input without echoing the submitted body. Expected database lock contention returns database_busy with status 503. Other database operational failures return database_failure with status 500, without exposing SQL or filesystem details.</p>
+
+<h2>What the tests should prove</h2>
+<p>Read each assertion before executing anything. The CRUD test follows a record through creation, replay, update and deletion. The permission test switches tenants and removes write access. Pagination tests check the boundary and order. Two thread-based tests submit competing updates and duplicate creates through separate requests.</p>
+<p>For competing updates, predict one 200 response and one 409 response. For duplicate creates, predict two equal 201 responses and only one stored record. A barrier releases both calls together, but it cannot guarantee a particular operating-system schedule. These tests do not prove behavior under arbitrary load.</p>
+<p>SQLite reserves the writer at BEGIN IMMEDIATE. This makes the read/check/write sequence easy to inspect, but only one writer can hold that reservation. The one-second lock timeout bounds that wait. It is not an overall request deadline.</p>
+<p>RequestBounds admits up to 16 active requests per process. It counts actual body bytes, rejects more than 4096 bytes, and allows five seconds to receive a body. Compressed bodies are rejected. Separate tests cover chunked oversize input and admission rejection. The ASGI server or proxy still needs connection, header and frame limits. Multiple workers multiply the admission allowance, and database growth still needs quotas and retention. Do not publish this teaching API unchanged.</p>
+
+<details><summary>Interview: why not just check whether the key exists before inserting?</summary><p>Two requests can both observe an absent key. The database must enforce uniqueness, and the record and replay response must commit together. This example also serializes the write sequence with BEGIN IMMEDIATE. A PostgreSQL design needs its own conflict-handling transaction logic; copying SQLite's locking syntax is not a migration strategy.</p></details>
+<details><summary>Practice: which condition prevents an old edit from overwriting a new edit?</summary><p>A. Check the tenant only.<br>B. Check the version too.<br>C. Check the quantity only.</p><p>Answer: B. Tenant checks stop cross-tenant access. Version checks detect a changed record. Quantity validation cannot detect that another writer saved first.</p></details>
+<details><summary>Tomorrow: explain why a retry after deletion returns an old create response.</summary><p>The key identifies the original request. Its stored response survives deletion. Retrying that request repeats the response rather than creating another record. A fresh request requires a fresh key.</p></details>
+<p>Ask your teacher to trace a request with you if the transaction or dependency boundary is unclear.</p>
+<p>Primary sources: <a href="https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/">FastAPI dependency cleanup</a>, <a href="https://docs.python.org/3/library/sqlite3.html">Python SQLite transactions and connections</a>, and <a href="https://fastapi.tiangolo.com/tutorial/testing/">FastAPI testing</a>. Framework and database integration remain unverified in this project.</p>
+</main></body></html>
