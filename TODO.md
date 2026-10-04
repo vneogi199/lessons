@@ -45,7 +45,8 @@ Existing: lessons 0479–0494, 0504 and the provisioning/billing sections of [AP
 Existing: lessons 0342, 0487, 0491, 0512–0518, 0530–0545 and the ECS delivery lab.
 
 - [ ] DELIVERY-01 — Supply the files omitted by the release recipe: FastAPI Dockerfile, Compose setup, task definition, CI test/smoke scripts and GitHub Actions workflow. Connect build, registry publication and ECS deployment around one verified immutable artifact. Document required pre-existing infrastructure and failure/rollback behavior.
-- [ ] DELIVERY-02 — Add complete ECS Application Auto Scaling target/policy examples: minimum/maximum tasks, chosen metric, cooldowns, scale-in draining and downstream database/provider limits. Include a controlled validation plan, not invented load results.
+- [x] DELIVERY-02 — Add complete ECS Application Auto Scaling target/policy examples: minimum/maximum tasks, chosen metric, cooldowns, scale-in draining and downstream database/provider limits. Include a controlled validation plan, not invented load results.
+  - [Scaling JSON inputs and recipe](practice/cloud-controls/SCALING.md) include rollout surge capacity, draining and rollback/ownership checks. No AWS calls or load tests performed.
 - [x] DELIVERY-03 — Add GitHub Secrets administration practice: repository versus environment scope, creating/referencing/rotating a synthetic secret, unavailable-secret behavior, fork/runner restrictions and log-leak prevention. Keep AWS deployment authentication on OIDC rather than introducing long-lived AWS keys.
   - [Secrets lab](practice/cloud-controls/GITHUB-SECRETS.md), with inactive YAML example and acceptance cases. No active workflow, secret or external account changed.
 
@@ -181,7 +182,8 @@ Existing: lessons 0589–0590, 0609, 0612–0616 and [gateway/evaluation/tracing
 - [ ] OPS-06 — Persist evaluation runs with dataset/model/prompt/index/guardrail versions and paired per-case results. Provide comparison reports across deployments, including failures, counts, costs and uncertainty.
 - [ ] OPS-07 — Instrument the full request tree: retrieval, reranking, model attempts, tools, approvals and queued work. Configure an exporter/collector, context propagation, redaction, sampling and error statuses; the current example supplies only one retrieval span.
 - [ ] OPS-08 — Supply token-cost and latency metric collection plus dashboard definitions. Include billed retries/failures, cached-token distinctions, time to first token, endpoint percentiles and cost per successful task.
-- [ ] OPS-09 — Add a multi-step debugging exercise using observable tool inputs/results, policy decisions and state transitions. Do not expose or collect hidden chain-of-thought.
+- [x] OPS-09 — Add a multi-step debugging exercise using observable tool inputs/results, policy decisions and state transitions. Do not expose or collect hidden chain-of-thought.
+  - [Trace exercise](reference/agent-debugging-practice.html) includes a synthetic JSON event sequence and five answer keys. No live instrumentation or model reasoning collected.
 - [ ] OPS-10 — Implement privacy-aware session outcome tracking with pseudonymous IDs in protected traces, bounded retention and low-cardinality aggregate metrics.
 - [ ] OPS-11 — Build a redacted trace-export → reviewed failure-case → versioned evaluation-data workflow with consent, lineage and access controls. Do not automatically train on unreviewed private traces.
 
