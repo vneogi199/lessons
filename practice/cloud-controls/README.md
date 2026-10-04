@@ -1,6 +1,7 @@
 # Cloud permission and budget exercises
 
 For task-count control, use the [ECS scaling inputs and validation plan](SCALING.md).
+For Azure delivery, use the [ACR and Key Vault identity/rotation recipe](AZURE.md).
 
 These are unexecuted recipes. Account IDs, role names, bucket and external ID are
 synthetic. Replace them in a reviewed private configuration before any authorized

@@ -213,7 +213,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
 - [ ] FDE-03 — Word SOP and Excel-export ingestion practice with provenance, structure, schemas, malformed files and permission propagation.
 - [x] FDE-04 — Complete the shopping-agent assignment with bounded tools, fake external effects, approvals and evaluations.
   - [Shopping project](practice/shopping-agent/README.md) supplies an allowlisted proposal boundary, synthetic SQLite purchases, approval hashes, budgets, replay handling, kill switch and negative tests. Identity is a trusted caller prerequisite; no model or tests executed.
-- [ ] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
+- [x] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
+  - [Azure recipe](practice/cloud-controls/AZURE.md) covers registry permission modes, separate identities, digest promotion, managed-identity secret access, rotation/revocation and denial drills. No Azure operations performed.
 - [ ] FDE-06 — Complete Terraform lab with supplied resources, reviewed plan, restricted state, drift checks and exact cleanup; coordinate with CLOUD-01.
 - [ ] FDE-07 — On-premises operations lessons/labs: kubeadm, Rancher, air-gapped registries and Ollama hosting, including artifact transfer, patching, recovery and network boundaries.
 - [ ] FDE-08 — Runnable Prometheus/Grafana/Locust and LangSmith/Langfuse/MLflow labs. Reuse OPS instrumentation, add existing-environment prerequisites and separate offline fixtures from live integration results.
