@@ -219,7 +219,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
   - [Claude Code review exercise](reference/ai-coding-review-practice.html) supplies an RFQ contract and review defects with answers. Guidance is inactive; no tool installed or code executed.
 - [x] FDE-02 — Aikido security-integration walkthrough with scoped permissions, findings review and false-positive/exception handling; no account connection implied.
   - [Scoped scan walkthrough](reference/ai-coding-review-practice.html) includes approval, triage, exception expiry and removal. No account connected or scan performed.
-- [ ] FDE-03 — Word SOP and Excel-export ingestion practice with provenance, structure, schemas, malformed files and permission propagation.
+- [x] FDE-03 — Word SOP and Excel-export ingestion practice with provenance, structure, schemas, malformed files and permission propagation.
+  - [Constrained Office adapters](practice/office-ingestion/README.md) supply package bounds, ordered SOP blocks, typed RFQ rows, cell/source provenance and inherited ACL metadata. Unsupported features are explicit; synthetic tests supplied but unexecuted.
 - [x] FDE-04 — Complete the shopping-agent assignment with bounded tools, fake external effects, approvals and evaluations.
   - [Shopping project](practice/shopping-agent/README.md) supplies an allowlisted proposal boundary, synthetic SQLite purchases, approval hashes, budgets, replay handling, kill switch and negative tests. Identity is a trusted caller prerequisite; no model or tests executed.
 - [x] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
