@@ -225,7 +225,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
 - [x] FDE-05 — Azure ACR and Key Vault delivery/secrets recipes with identity, rotation and failure checks.
   - [Azure recipe](practice/cloud-controls/AZURE.md) covers registry permission modes, separate identities, digest promotion, managed-identity secret access, rotation/revocation and denial drills. No Azure operations performed.
 - [ ] FDE-06 — Complete Terraform lab with supplied resources, reviewed plan, restricted state, drift checks and exact cleanup; coordinate with CLOUD-01.
-- [ ] FDE-07 — On-premises operations lessons/labs: kubeadm, Rancher, air-gapped registries and Ollama hosting, including artifact transfer, patching, recovery and network boundaries.
+- [x] FDE-07 — On-premises operations lessons/labs: kubeadm, Rancher, air-gapped registries and Ollama hosting, including artifact transfer, patching, recovery and network boundaries.
+  - [Isolated operations lab](practice/cloud-controls/ON-PREM.md) supplies ownership, artifact inventory, cold-start/denial checks, patching and restore drills. Tabletop recipe only; no installation or cluster operation performed.
 - [ ] FDE-08 — Runnable Prometheus/Grafana/Locust and LangSmith/Langfuse/MLflow labs. Reuse OPS instrumentation, add existing-environment prerequisites and separate offline fixtures from live integration results.
 - [x] FDE-09 — Complete client-facing architecture/template pack: discovery, requirements, HLD/LLD, API/data contracts, failure sequences, ADRs, SOW, ROI assumptions, UAT and handoff.
   - [Worked delivery pack](practice/client-delivery/DELIVERY-PACK.md) supplies every named artifact using one synthetic case. Unresolved real-client decisions remain explicit.
