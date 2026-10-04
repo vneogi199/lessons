@@ -135,6 +135,7 @@ async def ask(mode: str, payload: Ask, request: Request,
 <p>Primary references: <a href="https://fastapi.tiangolo.com/tutorial/background-tasks/">background tasks</a>, <a href="https://fastapi.tiangolo.com/tutorial/handling-errors/">error handling</a> and <a href="https://developers.openai.com/api/docs/guides/text">Python model calls</a>. No server/model call was executed here. Tomorrow, trace one invalid request and one upstream error through different boundaries.</p></section>
 
 <section id="graphql"><h2>GraphQL schemas, resolvers and N+1 queries</h2>
+<p>Supplied implementation: <a href="api-query-practice.html#graphql">tenant-scoped SQLite repository, loader ordering and schema tests</a>. Tests are authored, not executed.</p>
 <p>A schema describes fields, object relationships and input types; a resolver supplies each field's value. Queries read data; mutations express changes. Top-level mutation fields execute serially under GraphQL semantics, but that does not make the entire operation a database transaction or serialize other requests. Keep authorization and transaction boundaries inside the application service.</p>
 <p>Strawberry derives schema types from Python annotations; Graphene uses explicit ObjectType/InputObjectType declarations. Choose one rather than mixing frameworks. This recipe uses <a href="https://strawberry.rocks/docs/general/mutations">Strawberry mutations</a> and <a href="https://strawberry.rocks/docs/guides/dataloaders">DataLoader batching</a>. The repository interface is deliberately supplied by your application; it must enforce tenant filtering and use bounded parameterized SQL.</p>
 <pre><code data-python="integration">import strawberry
@@ -194,6 +195,7 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 <p>Tomorrow, explain why an HTTP 200 GraphQL response can still contain errors and why a mutation is not automatically transactional.</p></section>
 
 <section id="versioning"><h2>URL versus header versioning</h2>
+<p>Supplied project: <a href="api-query-practice.html#versioning">version routes, cache-isolation tests and matched debugger configuration</a>.</p>
 <p>URL versioning makes the contract visible, for example /v1/orders versus /v2/orders. Header versioning keeps the URL stable but adds routing and caching obligations. Pick a documented default, reject unsupported versions and define conflict handling when both mechanisms appear. Version the external representation, not every internal refactor.</p>
 <pre><code data-python="offline">def choose_version(path_version=None, header_version=None):
     supported = {"1", "2"}
