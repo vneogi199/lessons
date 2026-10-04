@@ -66,6 +66,21 @@ The provider schema is specific to Claude; it must not be sent to other provider
 unchanged. Context limits and model IDs are deliberate deployment inputs because
 they vary. Protocol errors and unsupported stop reasons fail closed.
 
+## Hosted reranker adapter
+
+reranker.py uses the same retry owner with a fixed Cohere HTTPS endpoint. Pass
+only permission-filtered candidates and a server-derived allowed-ID set. It limits
+input sizes and response bytes, rejects duplicate/out-of-range result indexes,
+and preserves source metadata even when texts are identical. Timeout, invalid
+response or exhausted retries return the original ranking with mode=fallback and
+a safe reason code. Cancellation propagates instead of triggering fallback.
+
+Tests use MockTransport for reordered/duplicate/malformed indexes, service failure,
+timeouts and denied candidates. Nothing has been sent to Cohere. Before approved
+use, review provider residency/retention and supply the selected model and secret.
+The adapter is not wired into the synchronous RAG baseline. Its fallback indication
+must reach telemetry and the answer path; never report fallback as reranked.
+
 Acceptance: repairs recover without exceeding attempt limits; terminal failures
 make one call; retry delays respect the total budget; a denied instrument is never
 sent back for repair; context truncation never keeps half a tool exchange.

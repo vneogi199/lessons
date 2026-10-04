@@ -59,6 +59,32 @@ Use an HTTP client with a private credential store. Do not place literal tokens 
 
 Documents publish atomically in SQLite. Reusing a version with different content is a conflict; a delayed old-version retry cannot roll back current publication. Deletion retains digest-only revision tombstones so an old retry cannot resurrect content. Explicitly publishing a new version after deletion is allowed. Tombstones grow with versions and need a retention policy at scale. Disk backups, WAL/journals and filesystem recovery are outside logical deletion guarantees.
 
+## Hybrid extension and chunk experiments
+
+The [worked lesson](../../reference/retrieval-index-practice.html) adds chunking.py,
+hybrid.py and test_hybrid.py. The HTTP server still defaults to lexical Store.
+To assemble the hybrid path in an approved session, construct
+`HybridStore(database_path, encoder, dimension)` and pass it to the existing
+`server(store, accounts)`. Authentication and versioned ingestion are reused.
+
+An encoder takes texts and returns same-length, same-dimension vectors.
+`LocalEncoder(existing_model_directory)` requires an already-installed
+SentenceTransformer library and approved local model files; it disables downloads
+and remote code. Model identity, revision and dimension are deployment inputs.
+Tests use hand-authored concepts, not learned embeddings. They check filtering
+before encoding, updates, deletion, context bounds and provenance. The temporary
+exact index rebuilds on each query and caps input at 500 chunks. Object ACLs remain
+pending; tenant authorization is inherited.
+
+chunking.py is a separate span experiment; it does not change the baseline's
+120-word ingestion splitter. `overlap_report` computes duplication, serialized
+bytes, gold-span containment and context coverage. Semantic boundaries take an
+adjacent-sentence similarity callback; long sections fall back to bounded spans.
+Character limits are not embedding-token limits. Source/version changes alter IDs.
+
+When authorized, `python3 -m unittest -v test_hybrid` runs the new stdlib fixtures.
+None has been run. Existing challenge evaluations still have known quality gaps.
+
 ## Retrieval and generation
 
 The default is tenant-filtered BM25-style lexical retrieval with up to three chunks and verbatim cited excerpts. It returns `status: evidence`, not a claim of synthesized answering. No lexical match returns `insufficient_evidence`. Lexical overlap is not an answerability classifier; synonyms and conflicting evidence need richer evaluation.
@@ -77,9 +103,9 @@ Generated responses are marked `generated`. Valid citation IDs do **not** prove 
 
 - Request logs contain only request ID, status and latency—not tokens, queries or documents. No cost or token-usage dashboard is implemented yet.
 - Stop with Ctrl-C; restart against the same DB to retain documents. Back up a stopped database using an approved process, test restore separately, and protect backups like source data.
-- No embeddings/vector database, hybrid retrieval, reranker, UI, OCR, ingestion worker, OAuth/SSO, production rate limiter, container deployment or cloud CI is claimed here.
+- The optional hybrid extension supplies an exact in-memory vector index and postings search. No external vector database, reranker, UI, OCR, ingestion worker, OAuth/SSO, production rate limiter, container deployment or cloud CI is claimed here.
 - Authorization is tenant-wide with reader/editor roles, not per-document ACLs. The direct Python Store API assumes trusted caller-supplied tenant context; HTTP derives it from the token.
-- Do not interpret the synthetic cases as a representative held-out benchmark. Add independently labeled real task cases and human-groundedness labels before comparing retrieval/model variants. Hybrid retrieval and reranking remain unimplemented.
+- Do not interpret the synthetic cases as a representative held-out benchmark. Add independently labeled real task cases and human-groundedness labels before comparing retrieval/model variants. The hybrid extension is unexecuted; reranking is not wired into this baseline.
 - Before production: hardened serving, TLS/identity, capacity/rate limits, secret rotation, document ACLs, deletion/backup retention, real load/fault tests, and a reviewed deployment/rollback plan.
 
 The curriculum's [project guide](../../reference/ai-engineer-practice.html#rag-project) describes the broader target. This baseline implements the local vertical slice and leaves the above gaps explicit.

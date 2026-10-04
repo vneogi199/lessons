@@ -63,12 +63,18 @@ Existing: lessons 0581, 0587–0590 and [context/typed-output/tool labs](referen
 
 Existing: lessons 0577, 0594–0602, [retrieval labs](reference/retrieval-document-labs.html), [Pinecone recipe](reference/enterprise-ai-practice.html) and [reranking practice](reference/cross-encoder-reranking.html).
 
-- [ ] RAG-01 — Implement fixed-size and semantic-boundary chunkers with bounded fallback sizes, source spans and deterministic identities. Add the overlap sweep with measured duplication, boundary-answer recall, index size and context coverage.
-- [ ] RAG-02 — Add a worked embedding-dimension comparison with controlled model/metric contracts, memory arithmetic and quality/cost tradeoffs. Do not mix incompatible embedding spaces or invent benchmark results.
-- [ ] RAG-03 — Extend the BM25 mechanics example with a concrete sparse document–term/postings representation and keyword-query trace. Explain that the current Counter-based example is not a production search engine.
-- [ ] RAG-04 — Supply explicit cloud-vector-index creation/configuration and cleanup recipes. Cover region, dimensions, metric, scoped credentials, readiness, filtered query, update/delete and visibility checks. The existing Pinecone example assumes an index already exists.
-- [ ] RAG-05 — Connect ingestion → embeddings → index → keyword/vector retrieval → RRF → bounded context into one small testable retrieval project. Preserve permissions and provenance; test updates, deletions, empty results and missing relevant candidates.
-- [ ] RAG-06 — Complete the hosted-reranker adapter with bounded timeout/retry/fallback behavior and tests for out-of-order indexes, duplicates, malformed responses and unavailable service. Retain source identity and distinguish reranked results from fallback results.
+- [x] RAG-01 — Implement fixed-size and semantic-boundary chunkers with bounded fallback sizes, source spans and deterministic identities. Add the overlap sweep with measured duplication, boundary-answer recall, index size and context coverage.
+  - Authored 2026-10-04: chunking.py and tests in [RAG project](projects/evaluated-rag/README.md); report computes duplication, bytes, gold-span containment and context coverage. Containment is explicitly distinct from end-to-end retrieval recall. Measurements remain unexecuted.
+- [x] RAG-02 — Add a worked embedding-dimension comparison with controlled model/metric contracts, memory arithmetic and quality/cost tradeoffs. Do not mix incompatible embedding spaces or invent benchmark results.
+  - [Worked raw-storage arithmetic and experiment contract](reference/retrieval-index-practice.html); no quality/performance numbers invented.
+- [x] RAG-03 — Extend the BM25 mechanics example with a concrete sparse document–term/postings representation and keyword-query trace. Explain that the current Counter-based example is not a production search engine.
+  - hybrid.py supplies Postings, BM25-style scoring and RRF; tests assert postings and missing candidates. [Worked trace](reference/retrieval-index-practice.html).
+- [x] RAG-04 — Supply explicit cloud-vector-index creation/configuration and cleanup recipes. Cover region, dimensions, metric, scoped credentials, readiness, filtered query, update/delete and visibility checks. The existing Pinecone example assumes an index already exists.
+  - [Pinecone recipe](practice/pinecone-index/README.md), with approval boundaries and acceptance checks. No cloud execution or credential setup performed.
+- [x] RAG-05 — Connect ingestion → embeddings → index → keyword/vector retrieval → RRF → bounded context into one small testable retrieval project. Preserve permissions and provenance; test updates, deletions, empty results and missing relevant candidates.
+  - HybridStore extends the existing [versioned RAG project](projects/evaluated-rag/README.md), with ephemeral exact index, optional approved local encoder and explicit synthetic-test scope. Rebuilding per query and tenant-wide authorization are documented limits. Tests unexecuted.
+- [x] RAG-06 — Complete the hosted-reranker adapter with bounded timeout/retry/fallback behavior and tests for out-of-order indexes, duplicates, malformed responses and unavailable service. Retain source identity and distinguish reranked results from fallback results.
+  - [Cohere adapter and MockTransport tests](practice/model-boundaries/README.md) reuse the retry owner. Separate from baseline server; live provider verification remains VERIFY-01.
 
 ## 7. Multimodal RAG and vision AI
 
