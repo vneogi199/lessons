@@ -70,8 +70,10 @@ async def request(tracer, *, retrieve, rerank, model, tools, approve, publish, o
                 # TaskGroup cancels sibling reads on failure and waits for cancellation.
                 async with asyncio.TaskGroup() as group:
                     reads = [group.create_task(stage(tracer, "tool.lookup", tool)) for tool in tools]
-            if await stage(tracer, "approval", approve, proposal, [task.result() for task in reads]) is not True:
-                raise PermissionError("approval denied")
+            async def checked_approval():
+                if await approve(proposal, [task.result() for task in reads]) is not True:
+                    raise PermissionError("approval denied")
+            await stage(tracer, "approval", checked_approval)
             with span(tracer, "queue.publish", kind=SpanKind.PRODUCER):
                 carrier = {}
                 PROPAGATOR.inject(carrier)
