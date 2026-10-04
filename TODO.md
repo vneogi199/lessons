@@ -137,7 +137,8 @@ Existing: [enterprise connectors and security labs](reference/enterprise-securit
 
 - [x] CONNECT-01 — Complete Slack event/webhook and interactive-action handlers around the signature fixture: bounded raw input, replay storage, durable acknowledgment, scoped bot permissions and payload-bound approvals.
   - `practice/slack-inbox/` supplies the signed FastAPI route, bounded durable SQLite inbox, exact-intent approval adapter and offline tests. Single-host/worker and timeout limits are explicit. No tests or Slack setup executed.
-- [ ] CONNECT-02 — Add a separate supported Teams bot/Workflow integration recipe and deterministic callback tests. Do not reuse Slack authentication assumptions; include token/secret lifecycle and Adaptive Card action validation.
+- [x] CONNECT-02 — Add a separate supported Teams bot/Workflow integration recipe and deterministic callback tests. Do not reuse Slack authentication assumptions; include token/secret lifecycle and Adaptive Card action validation.
+  - `practice/teams-workflow/` supplies a Workflows recipe, card template, normalized authenticated callback policy and mock tests. Trusted flow metadata and audience-verifier requirements are explicit; no flow or callback tests executed.
 - [ ] CONNECT-03 — Implement an authorized Jira issue reader and ticket-creation adapter with field/project allowlists, rich-text handling and operation-ledger reconciliation after lost responses. Explain and separately scope Confluence page access.
 - [x] CONNECT-04 — Supply a local synthetic WSDL/XSD bundle and success/fault XML fixtures. Generate envelopes with Zeep, inspect namespaces/types and test safe parsing, imports, malformed XML and transport limits.
   - [Legacy project](practice/legacy-integrations/README.md) supplies local-only Zeep transport, fixtures and rejection tests. No network transport or execution claimed.
