@@ -95,6 +95,7 @@ Existing: visual-retrieval/document-layout sections in [retrieval labs](referenc
 - [ ] VISION-07 — Implement nested-table extraction and XML/JSON-style structural validation as appropriate to the chosen document provider. Preserve hierarchical headers, merged cells, units, footnotes and per-field source boxes; test totals and missing cells.
 - [ ] VISION-08 — Add chart/infographic practice fixtures with answer keys: linear/log/dual axes, truncated scales, legend ambiguity and approximate versus exact values. Measure evidence support separately from fluency.
 - [ ] VISION-09 — Complete chunk-to-box alignment and overlay verification, including rotation/scale transforms, multi-box chunks and mismatched-coordinate failure tests. Normalization alone is not alignment.
+  - Authored [offset alignment, transforms, SVG overlay and tests](practice/document-pages/README.md). Real rendered-page overlay verification remains pending; no visual result claimed.
 - [ ] VISION-10 — Connect legacy PDF ingestion → OCR/layout or visual embeddings → retrieval → multi-page answer with page/box citations. Test missing pages, split table headers, conflicting versions, permissions and image-token budgets.
 
 ## 8. Agentic frameworks and LangGraph

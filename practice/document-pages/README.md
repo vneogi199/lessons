@@ -1,5 +1,15 @@
 # Classify a page before choosing extraction
 
+## Align chunks with their source words
+
+`alignment.py` maps a chunk's character interval to word boxes through exact source offsets. It rejects changed text, versions, missing non-whitespace coverage and mismatched coordinate conventions. A chunk spanning two lines keeps multiple boxes. A partial word uses its full word box, a conservative bound rather than invented character geometry.
+
+The display transform supports clockwise 0/90/180/270-degree rotation and scale. On a 100-by-200 point page, box `(10,20,30,40)` rotated 90 degrees becomes `(160,10,180,30)`; scale two produces `(320,20,360,60)`. Rotate all corners before finding bounds. Normalizing coordinates alone cannot establish which words a chunk came from.
+
+`overlay` returns a diagnostic SVG with source word boxes in gray and selected boxes in blue. Tests assert known output geometry. They are supplied but unexecuted, and no browser overlay inspection is claimed. In an approved real-PDF check, render the same immutable page beneath the boxes and inspect corner landmarks, both lines and a rotated page. Record page hash, dimensions, rotation, scale and screenshot. A boxes-only overlay cannot prove the parser's original boxes match the raster.
+
+This adapter expects unrotated, top-left point coordinates with page origin zero. Reject cropped/translated input until its adapter explicitly converts the origin. PyMuPDF distinguishes unrotated extraction coordinates from rotated display coordinates; use its documented transformation/rotation matrices when adapting actual pages. See [page coordinate contracts](https://pymupdf.readthedocs.io/en/latest/page.html). No PDF library is required for these synthetic geometry tests.
+
 `pages.py` supplies six synthetic page observations and expected classifications. It does not parse PDFs or infer layout from pixels. No parser/model download is needed. The fixture's source digest hashes an explicitly labeled synthetic descriptor. For a real approved file, hash its immutable bytes and retain the original in controlled storage.
 
 Page identity is `(source, version, one-based page number)`. A new file version changes identity even when a page number stays the same. Each block keeps its type, ID, text and normalized top-left box. Reading order is explicit and includes its evidence. Never assume that sorting boxes from top to bottom correctly reads two columns.
