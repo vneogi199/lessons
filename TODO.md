@@ -130,11 +130,16 @@ Existing: [enterprise connectors and security labs](reference/enterprise-securit
 - [ ] CONNECT-01 — Complete Slack event/webhook and interactive-action handlers around the signature fixture: bounded raw input, replay storage, durable acknowledgment, scoped bot permissions and payload-bound approvals.
 - [ ] CONNECT-02 — Add a separate supported Teams bot/Workflow integration recipe and deterministic callback tests. Do not reuse Slack authentication assumptions; include token/secret lifecycle and Adaptive Card action validation.
 - [ ] CONNECT-03 — Implement an authorized Jira issue reader and ticket-creation adapter with field/project allowlists, rich-text handling and operation-ledger reconciliation after lost responses. Explain and separately scope Confluence page access.
-- [ ] CONNECT-04 — Supply a local synthetic WSDL/XSD bundle and success/fault XML fixtures. Generate envelopes with Zeep, inspect namespaces/types and test safe parsing, imports, malformed XML and transport limits.
-- [ ] CONNECT-05 — Add a typed SOAP fault/legacy-code mapping and retry policy. Preserve safe diagnostic categories and reconcile uncertain mutations before retrying.
-- [ ] CONNECT-06 — Implement a domain-specific SOAP/XML-to-JSON converter preserving namespaces, repeated elements, attributes, decimal/date types and absent-versus-null semantics. Validate the output against fixtures.
-- [ ] CONNECT-07 — Add explicit secure pyodbc, python-oracledb and SQLAlchemy connection-factory recipes with certificate verification, external credentials, pools, timeouts and cleanup. Existing query examples assume connections are supplied.
-- [ ] CONNECT-08 — Connect curated schema context → typed intent → approved parameterized SQL → bounded result/fallback. Include read-only-role denial tests and ambiguous requests. If free-form SQL is included, implement a dialect-specific AST allowlist rather than a SELECT-prefix check.
+- [x] CONNECT-04 — Supply a local synthetic WSDL/XSD bundle and success/fault XML fixtures. Generate envelopes with Zeep, inspect namespaces/types and test safe parsing, imports, malformed XML and transport limits.
+  - [Legacy project](practice/legacy-integrations/README.md) supplies local-only Zeep transport, fixtures and rejection tests. No network transport or execution claimed.
+- [x] CONNECT-05 — Add a typed SOAP fault/legacy-code mapping and retry policy. Preserve safe diagnostic categories and reconcile uncertain mutations before retrying.
+  - Typed FaultDecision maps read-retry versus uncertain-write reconciliation; tests cover BUSY/AUTH/INVALID. Raw private diagnostics stay out of output.
+- [x] CONNECT-06 — Implement a domain-specific SOAP/XML-to-JSON converter preserving namespaces, repeated elements, attributes, decimal/date types and absent-versus-null semantics. Validate the output against fixtures.
+  - Strict RFQ converter and expected fixtures in [legacy project](practice/legacy-integrations/README.md). Domain-specific, not a generic lossless converter; tests unexecuted.
+- [x] CONNECT-07 — Add explicit secure pyodbc, python-oracledb and SQLAlchemy connection-factory recipes with certificate verification, external credentials, pools, timeouts and cleanup. Existing query examples assume connections are supplied.
+  - databases.py supplies factories/context managers and shutdown guidance. Drivers/wallets/accounts are prerequisites; no connections opened.
+- [x] CONNECT-08 — Connect curated schema context → typed intent → approved parameterized SQL → bounded result/fallback. Include read-only-role denial tests and ambiguous requests. If free-form SQL is included, implement a dialect-specific AST allowlist rather than a SELECT-prefix check.
+  - Curated SQL Server templates, typed compiler/executor, mocks and explicitly opt-in principal-denial integration test. No arbitrary SQL; ambiguous input needs clarification. DB permission/TLS/runtime evidence remains VERIFY-01.
 
 ## 11. Identity and access management
 

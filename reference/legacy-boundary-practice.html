@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Read legacy data without widening access</title><style>body{max-width:880px;margin:auto;padding:24px;font:18px/1.65 system-ui,sans-serif;color:#172638;background:#fafbfd}a{color:#075b9b}pre{overflow:auto;padding:16px;background:#eaf0f6}details{margin:18px 0}summary{cursor:pointer}</style></head><body><main>
+<a href="enterprise-security-labs.html">Enterprise integrations</a><h1>Read legacy data without widening access</h1>
+<p>The <a href="../practice/legacy-integrations/README.md">supplied project</a> contains a WSDL/XSD bundle, XML success/fault fixtures, Zeep envelope generation, a strict converter, connection factories and typed SQL templates. Tests have not been run.</p>
+<h2>Translate a form without changing its meaning</h2>
+<p>Think of XML as a form with named boxes and labels. The namespace identifies which form definition owns a box. Removing every namespace can make two different fields look the same.</p>
+<p>The sample has two records. The first contains 12.50 USD and an explicitly null note. The second contains 3.00 GBP and no note field. The converter keeps decimal values as strings, preserves currency, and treats absent and null differently. It does not add the amounts because they have different currencies.</p>
+<pre>Absent Note → no JSON key
+Note xsi:nil="true" → "note": null
+Present empty Note → "note": ""</pre>
+<p>Zeep constructs the request from local schemas. The test transport rejects remote imports and network calls. The XML parser rejects DTDs and external entities before conversion. A SOAP fault becomes a safe category; raw diagnostic text is not copied into the answer.</p>
+<details><summary>Interview: a write timed out with BUSY. Retry immediately?</summary><p>No. The server may have performed the write before losing the response. Reconcile by the agreed operation ID. A read-only BUSY can follow a bounded retry policy.</p></details>
+<h2>Let a model choose an intent, not write SQL</h2>
+<p>A restaurant menu offers named dishes. Ordering one does not grant access to the kitchen's tools. The SQL exercise uses the same boundary: latest_rfq or exposure_by_desk selects one reviewed query. Tenant comes from the server, and desk/date are validated parameters.</p>
+<p>The latest-record query sorts by timestamp and unique RFQ ID, so equal timestamps do not make the result arbitrary. The exposure query assumes a defined currency and row grain. If the user omits the desk or date, ask for it. Missing data stays missing.</p>
+<p>Database connections verify TLS and use bounded pools/timeouts. Parameterization protects values; read-only database permissions limit the principal. Neither replaces tenant authorization. The included denial procedure needs a real approved database and remains unexecuted.</p>
+<details><summary>Practice: can a SELECT-prefix check make arbitrary SQL safe?</summary><p>No. This project avoids arbitrary SQL altogether. More flexible SQL requires a dialect-aware parser, object/function allowlists, database restrictions and resource controls.</p></details>
+<p>Tomorrow, explain one XML meaning that a naive dictionary conversion loses. Ask your teacher to inspect a query's grain before using its total in an interview example.</p>
+</main></body></html>
