@@ -165,7 +165,8 @@ Existing: [enterprise security labs](reference/enterprise-security-labs.html), l
 - [ ] SECURITY-04 — Complete the pinned Colang/NeMo configuration: actual scope-check action, model adapter, self-check prompt, input/output rails and topical-boundary tests. Keep semantic topicality separate from authorization.
 - [ ] SECURITY-05 — Implement the native Python input → authorization → redaction → retrieval → generation → output validation/PII → release pipeline. Define fail-closed/review behavior and safe streaming release.
 - [ ] SECURITY-06 — Complete Bedrock guardrail clients, creation/version promotion, INPUT and OUTPUT application, action/transformed-output handling, deadlines and failure tests. Use mocked SDK responses before any approved cloud run.
-- [ ] SECURITY-07 — Integrate an approved jailbreak-testing library or reproducible synthetic attack harness. Cover direct/indirect injection, tool-output attacks, exfiltration, benign lookalikes and guardrail outages; report unsafe pass rate, benign block rate, utility and latency. Never promise total prevention.
+- [x] SECURITY-07 — Integrate an approved jailbreak-testing library or reproducible synthetic attack harness. Cover direct/indirect injection, tool-output attacks, exfiltration, benign lookalikes and guardrail outages; report unsafe pass rate, benign block rate, utility and latency. Never promise total prevention.
+  - [Synthetic harness](practice/attack-evaluation/README.md) supplies seven cases, injected application contract, outcome metrics and failure-reporting tests. No model or test executed; live adapter evidence remains unverified.
 
 ## 13. AI observability and gateway management
 
