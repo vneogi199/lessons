@@ -133,7 +133,8 @@ Existing: lessons 0604, 0606–0609, 0611 and managed-memory/enterprise AI exten
 
 Existing: [enterprise connectors and security labs](reference/enterprise-security-labs.html).
 
-- [ ] CONNECT-01 — Complete Slack event/webhook and interactive-action handlers around the signature fixture: bounded raw input, replay storage, durable acknowledgment, scoped bot permissions and payload-bound approvals.
+- [x] CONNECT-01 — Complete Slack event/webhook and interactive-action handlers around the signature fixture: bounded raw input, replay storage, durable acknowledgment, scoped bot permissions and payload-bound approvals.
+  - `practice/slack-inbox/` supplies the signed FastAPI route, bounded durable SQLite inbox, exact-intent approval adapter and offline tests. Single-host/worker and timeout limits are explicit. No tests or Slack setup executed.
 - [ ] CONNECT-02 — Add a separate supported Teams bot/Workflow integration recipe and deterministic callback tests. Do not reuse Slack authentication assumptions; include token/secret lifecycle and Adaptive Card action validation.
 - [ ] CONNECT-03 — Implement an authorized Jira issue reader and ticket-creation adapter with field/project allowlists, rich-text handling and operation-ledger reconciliation after lost responses. Explain and separately scope Confluence page access.
 - [x] CONNECT-04 — Supply a local synthetic WSDL/XSD bundle and success/fault XML fixtures. Generate envelopes with Zeep, inspect namespaces/types and test safe parsing, imports, malformed XML and transport limits.
