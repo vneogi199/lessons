@@ -158,7 +158,8 @@ Existing: [enterprise security labs](reference/enterprise-security-labs.html), l
 
 - [ ] SECURITY-01 — Complete Presidio analyzer configuration for already-approved local assets and synthetic SSN/card/email/domain-ID fixtures. Test recognizers, thresholds, invalid/checksum negatives and unsupported inputs.
 - [ ] SECURITY-02 — Implement an encrypted, short-lived reversible-pseudonymization store. Bind mappings to tenant/user/run, deny unknown or replayed tokens and re-scan restored outputs. The existing dictionary example tests policy only.
-- [ ] SECURITY-03 — Build a PII scoring harness with span/entity precision and recall, explicitly defined false-positive denominator, per-type/language slices and utility-loss reporting.
+- [x] SECURITY-03 — Build a PII scoring harness with span/entity precision and recall, explicitly defined false-positive denominator, per-type/language slices and utility-loss reporting.
+  - [Scorer and tests](practice/pii-evaluation/README.md) use exact typed spans, character FPR, Unicode offsets, language/type intersections and task-labeled utility spans. No detector quality claimed; tests unexecuted.
 - [ ] SECURITY-04 — Complete the pinned Colang/NeMo configuration: actual scope-check action, model adapter, self-check prompt, input/output rails and topical-boundary tests. Keep semantic topicality separate from authorization.
 - [ ] SECURITY-05 — Implement the native Python input → authorization → redaction → retrieval → generation → output validation/PII → release pipeline. Define fail-closed/review behavior and safe streaming release.
 - [ ] SECURITY-06 — Complete Bedrock guardrail clients, creation/version promotion, INPUT and OUTPUT application, action/transformed-output handling, deadlines and failure tests. Use mocked SDK responses before any approved cloud run.
