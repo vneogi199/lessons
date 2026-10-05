@@ -1,0 +1,16 @@
+services:
+  api:
+    image: ${TESTED_IMAGE:?Supply the locally tested image ID or registry digest}
+    pull_policy: never
+    ports: ["127.0.0.1:8000:8000"]
+    read_only: true
+    tmpfs: ["/tmp:uid=10001,gid=10001,mode=1770,size=67108864"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    cpus: 1
+    healthcheck:
+      test: [CMD, python, smoke.py]
+      interval: 10s
+      timeout: 5s
+      retries: 3
