@@ -1,0 +1,16 @@
+{
+  "family": "lesson-rfq-demo",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {"cpuArchitecture": "X86_64", "operatingSystemFamily": "LINUX"},
+  "containerDefinitions": [{
+    "name": "api", "image": "RENDERED_BY_RELEASE_SCRIPT", "essential": true,
+    "user": "10001:10001",
+    "portMappings": [{"containerPort": 8000, "protocol": "tcp"}],
+    "linuxParameters": {"capabilities": {"drop": ["ALL"]}},
+    "healthCheck": {"command": ["CMD", "python", "smoke.py"], "interval": 30, "timeout": 5, "retries": 3, "startPeriod": 20},
+    "logConfiguration": {"logDriver": "awslogs", "options": {"awslogs-group": "/lessons/rfq-demo", "awslogs-region": "RENDERED_BY_RELEASE_SCRIPT", "awslogs-stream-prefix": "api"}}
+  }]
+}
