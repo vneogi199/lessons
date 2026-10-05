@@ -60,5 +60,35 @@ Answer: the server must also check the current session, tenant, expiry and
 decision state. A copied hash grants no permission. Ask your teacher to review
 the crash window before adapting this example to a real write operation.
 
+## Observe the exercise
+
+The optional `--telemetry` launcher flag uses the existing
+[OpenTelemetry provider](../../practice/ai-tracing/README.md). It requires the
+already-provisioned OpenTelemetry SDK/OTLP exporter and prometheus-client.
+It sends sampled request spans to a pre-existing loopback collector and exposes
+`/metrics` for a private Prometheus scraper. This switch makes network calls to
+that collector; it has not been enabled here.
+
+Import `dashboard.json` into your existing Grafana instance and select its Tempo
+data source. Also import [the cost/latency dashboard](../../practice/ai-metrics/dashboard.json)
+and select the Prometheus source that scrapes this application. Request metrics
+count all API calls, not completed compliance cases. Short tests can leave rate
+panels empty until enough samples exist. Trace sampling can omit failed requests;
+SQLite decisions, not sampled traces, are the durable exercise record.
+
+The default workers do not call a model. Token and cost panels therefore have no
+model-attempt series; this is not measured zero-dollar production operation.
+When adding an authorized real adapter, report each attempt through
+`app.state.metrics.attempt` with observed usage and a reviewed price table.
+Missing usage/prices must use the unknown-cost path. Never fabricate token counts
+from the fixture strings. HTTP spans omit session tokens, payloads and user IDs.
+Worker-level spans are demonstrated separately in the tracing lab; this assembly
+currently exports request spans only.
+
+`test_api.py` adds actual FastAPI test-client flows for bounded input, denied
+sessions, stale hashes, separate approval and duplicate execution. Service tests
+cover worker failure, restart and the kill switch. None were executed. Importing
+a dashboard is not evidence that the queries match a live backend version.
+
 UI settings follow [Streamlit configuration](https://docs.streamlit.io/develop/api-reference/configuration/config.toml).
 Graph persistence concepts follow [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence).
