@@ -88,8 +88,10 @@ Existing: visual-retrieval/document-layout sections in [retrieval labs](referenc
 
 - [x] VISION-01 — Build a document/page classification fixture for native text, scans, mixed content, forms, tables and charts. Preserve immutable source/version/page identity and reading-order evidence.
   - [Six synthetic page fixtures](practice/document-pages/README.md), immutable identity, multi-label classifier and validation tests supplied. No PDF parsing or classification accuracy claimed; tests unexecuted.
-- [ ] VISION-02 — Implement a bounded OCR pipeline adapter with isolated rendering, preprocessing decisions, text/layout output, error handling and quality checks. Use approved synthetic fixtures; no automatic engine/model downloads.
-- [ ] VISION-03 — Add actual ColPali processor/model integration for an already provisioned environment, including page rendering, multi-vector indexing and late-interaction retrieval. Keep the existing synthetic MaxSim exercise distinct from inference evidence.
+- [x] VISION-02 — Implement a bounded OCR pipeline adapter with isolated rendering, preprocessing decisions, text/layout output, error handling and quality checks. Use approved synthetic fixtures; no automatic engine/model downloads.
+  - [Document pipeline](practice/document-pages/PIPELINE.md) supplies Linux resource-limited rendering/Tesseract subprocesses, explicit preprocessing, TSV boxes, quality flags and synthetic fixture/tests. Process isolation is not a full security sandbox. Nothing rendered or executed.
+- [x] VISION-03 — Add actual ColPali processor/model integration for an already provisioned environment, including page rendering, multi-vector indexing and late-interaction retrieval. Keep the existing synthetic MaxSim exercise distinct from inference evidence.
+  - Local-only safetensors/processor adapter, eight-page permission-filtered multi-vector index and actual scorer calls supplied in `practice/document-pages/colpali.py`. Opt-in engine test requires pre-provisioned model assets. No model loaded or inference measured.
 - [x] VISION-04 — Add a small vision-language bridge walkthrough showing patch representations, projection/attention and language-model input shapes. Contrast retrieval encoders with generative VLMs without claiming one universal architecture.
   - [Shape walkthrough](reference/vision-bridge-practice.html) uses an explicitly synthetic architecture, worked dimensions, counterexamples and answer keys. No inference performed.
 - [x] VISION-05 — Provide a complete image-prompting API adapter with page/crop IDs, bounded image inputs, typed answers, refusals, timeouts and citation checks. Include a fake transport for offline contract tests.
@@ -102,7 +104,8 @@ Existing: visual-retrieval/document-layout sections in [retrieval labs](referenc
   - [Six synthetic chart fixtures](reference/chart-evidence-practice.html) include answer keys and separate evidence, precision and readability scoring. No learner/model scores or browser verification claimed.
 - [ ] VISION-09 — Complete chunk-to-box alignment and overlay verification, including rotation/scale transforms, multi-box chunks and mismatched-coordinate failure tests. Normalization alone is not alignment.
   - Authored [offset alignment, transforms, SVG overlay and tests](practice/document-pages/README.md). Real rendered-page overlay verification remains pending; no visual result claimed.
-- [ ] VISION-10 — Connect legacy PDF ingestion → OCR/layout or visual embeddings → retrieval → multi-page answer with page/box citations. Test missing pages, split table headers, conflicting versions, permissions and image-token budgets.
+- [x] VISION-10 — Connect legacy PDF ingestion → OCR/layout or visual embeddings → retrieval → multi-page answer with page/box citations. Test missing pages, split table headers, conflicting versions, permissions and image-token budgets.
+  - `document_rag.py` connects ingestion, OCR/visual retrieval, explicit header dependencies and the existing bounded typed vision-answer transport. Whole-rendered-page citation boxes are explicitly coarse. Synthetic boundary tests supplied, not run; real rendering and provider verification remain open.
 
 ## 8. Agentic frameworks and LangGraph
 

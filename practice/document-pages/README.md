@@ -1,5 +1,8 @@
 # Classify a page before choosing extraction
 
+The [connected PDF/OCR/ColPali retrieval exercise](PIPELINE.md) supplies the actual
+local-engine adapters, multi-page answer wiring and unexecuted fixtures.
+
 ## Keep table structure
 
 `tables.py` extracts a validated table representation from saved Azure Document
