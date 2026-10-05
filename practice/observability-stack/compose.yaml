@@ -1,0 +1,38 @@
+services:
+  fixture:
+    image: ${FIXTURE_IMAGE:?Existing digest-pinned Python runtime with FastAPI Uvicorn prometheus-client}
+    pull_policy: never
+    user: "10001:10001"
+    working_dir: /lesson
+    command: [python, -m, uvicorn, app:app, --host, 0.0.0.0, --port, "8000", --no-access-log]
+    volumes:
+      - ./app.py:/lesson/app.py:ro
+      - ../ai-metrics/metrics.py:/lesson/metrics.py:ro
+    read_only: true
+    ports: ["127.0.0.1:8000:8000"]
+    mem_limit: 256m
+    cpus: 1
+    cap_drop: [ALL]
+  prometheus:
+    image: ${PROMETHEUS_IMAGE:?Existing reviewed Prometheus digest}
+    pull_policy: never
+    command: [--config.file=/etc/prometheus/prometheus.yml, --storage.tsdb.retention.time=1h]
+    volumes: ["./prometheus.yml:/etc/prometheus/prometheus.yml:ro"]
+    ports: ["127.0.0.1:9090:9090"]
+    mem_limit: 512m
+  grafana:
+    image: ${GRAFANA_IMAGE:?Existing reviewed Grafana digest}
+    pull_policy: never
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_admin
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    secrets: [grafana_admin]
+    volumes:
+      - ./datasources.yml:/etc/grafana/provisioning/datasources/lesson.yml:ro
+    mem_limit: 512m
+secrets:
+  grafana_admin:
+    file: ${GRAFANA_ADMIN_FILE:?Private existing password file outside the repository}
