@@ -1,5 +1,49 @@
 # Classify a page before choosing extraction
 
+## Keep table structure
+
+`tables.py` extracts a validated table representation from saved Azure Document
+Intelligence `prebuilt-layout` JSON, API version `2024-11-30`. It does not submit a
+document to Azure. `test_tables.py` uses synthetic response-shaped data, not a
+recorded extraction result. No cloud calls or tests were run.
+
+Think of a merged heading as one label across two drawers. Both grid positions
+point to the same cell object. The extractor preserves each cell's row/column
+span, text, polygon, page, unit and immutable source version. A body cell under
+`Amounts (USD)` and `Exposure` has both headings in its ordered header path.
+Units stay in their original text; the adapter does not guess unit conversions.
+
+Captions and footnotes remain separate source-bearing annotations. Azure's table
+regions do not necessarily enclose them. A note without its own region fails
+this strict adapter instead of receiving an invented box. Multi-page source
+references are retained, but the adapter does not infer that separate tables
+continue one another. Review that relationship before joining them.
+
+For an approved saved response, call
+`extract(raw_bytes, source='approved-document-id', version=sha256_of_pdf)`.
+The caller must bind the response to those exact bytes and enforce access before
+extraction and retrieval. A supplied hash alone does not prove provenance.
+The adapter rejects overlapping spans, missing source pages, invalid coordinates,
+duplicate JSON keys and oversized inputs. Missing grid positions remain `None`.
+Empty strings remain empty strings. Neither becomes a numeric zero.
+
+`check_total` accepts reviewed cell IDs and uses Decimal arithmetic. In the small
+fixture, exposure `12.50` equals total `12.50`; changing the total to `13` fails.
+The caller must establish matching units and choose the correct component cells.
+Comma-separated numbers, percentages and footnote markers require an explicit
+domain parser. A matching total does not prove OCR accuracy: two errors can cancel.
+
+After execution approval, run `python -m unittest test_tables -v`. Also inspect
+one approved provider result against its source page before claiming extraction
+accuracy. Actual nested tables embedded inside cells are unsupported; the example
+handles hierarchical headers and merged cells, not recursive table inference.
+
+Interview question: why not repeat a merged numeric value in each column?
+Answer: a later sum could count it twice. Preserve its single identity and apply
+a domain-specific allocation rule only when the source supports that rule.
+The provider contract is documented in
+[Azure Layout](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/prebuilt/layout?view=doc-intel-4.0.0).
+
 ## Align chunks with their source words
 
 `alignment.py` maps a chunk's character interval to word boxes through exact source offsets. It rejects changed text, versions, missing non-whitespace coverage and mismatched coordinate conventions. A chunk spanning two lines keeps multiple boxes. A partial word uses its full word box, a conservative bound rather than invented character geometry.
