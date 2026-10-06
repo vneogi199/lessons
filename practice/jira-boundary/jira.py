@@ -94,7 +94,7 @@ class Jira:
             raise PermissionError("permission changed")
         return {"key": key, "summary": fields["summary"], "description": description}
 
-    async def create(self, tenant, actor, operation, summary, description):
+    def intent(self, tenant, operation, summary, description):
         if not re.fullmatch(r"[0-9a-f]{32}", operation) or not isinstance(summary, str) or not 1 <= len(summary) <= 200:
             raise ValueError("bounded operation and summary required")
         label = "lesson-op-" + hashlib.sha256(json.dumps([tenant, operation]).encode()).hexdigest()
@@ -102,6 +102,10 @@ class Jira:
                   "summary": summary, "description": adf(description), "labels": [label]}
         encoded = json.dumps(fields, sort_keys=True, separators=(",", ":"))
         digest = hashlib.sha256(encoded.encode()).hexdigest()
+        return fields, encoded, digest
+
+    async def create(self, tenant, actor, operation, summary, description):
+        fields, encoded, digest = self.intent(tenant, operation, summary, description)
         if (await self.authorize(tenant, actor, "create", self.project) is not True
                 or await self.approved(tenant, actor, operation, digest) is not True):
             raise PermissionError("exact creation intent not approved")
