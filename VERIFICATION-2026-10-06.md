@@ -13,10 +13,12 @@ This records observed checks, not production certification. No packages or model
 - Node v26.10.0: `node scripts/check-polars-content.mjs`: 21 Polars lessons passed catalog/source, MCQ-link and Python-syntax checks. No Polars example executed.
 - Node v26.10.0: `node scripts/check-pages-links.mjs`: 10,233 local links and lesson URLs passed checks, including root and two deployment subpaths.
 
-## Remaining blockers
+## Unverified checks — skipped at user request
+
+The user waived these three tasks on 2026-10-06. The blockers below record why verification stopped; they are not active requests for setup or access.
 
 - **VISION-09:** Real PDF overlay inspection remains open. Neither checked Python environment has PyMuPDF, ReportLab or Pillow; `pdftoppm` is unavailable. Synthetic coordinate tests cannot establish rendered-page alignment.
 - **VERIFY-01:** Python 3.14.8 and the existing Python 3.11.16 environment lack NumPy, Pandas, Polars, pytest, FastAPI, httpx, boto3, LangGraph, FAISS, MCP and Semantic Kernel. Supply an existing prepared environment. Database/model/cloud integration checks also require separately approved services and synthetic fixtures; passing offline tests does not establish their behavior.
 - **VERIFY-02:** Computer-use access to Firefox was denied. Enable browser access to check actual mobile layouts, diagrams and prediction controls. Static assertions cannot establish visual or interaction correctness.
 
-These three TODOs remain unchecked. All other entries have their requested authoring artifacts; that status does not imply every supplied integration test has run.
+These three TODOs are closed as skipped, not passed. All other entries have their requested authoring artifacts; that status does not imply every supplied integration test has run.

@@ -113,6 +113,8 @@
 
   function lessonMatches(lesson, query) {
     if (!query) return true;
+    if (window.Tutorial.matchesLesson(lesson, query)) return true;
+    if (/^(?:lesson\s*#?\s*|#)?\d+$/.test(query)) return false;
     return [lesson.title, lesson.trackTitle, lesson.goal, lesson.behindTheScenes, lesson.practical, lesson.interview]
       .filter(Boolean).join(" ").toLowerCase().includes(query);
   }
@@ -389,6 +391,7 @@
   }
 
   function renderLoadError(error) {
+    document.querySelector("#universal-search").textContent = "Lesson search unavailable. Reload to retry.";
     lessonView.innerHTML = `<section class="load-error"><h2>Could not load the generated curriculum</h2><p>${escapeHtml(error.message)}</p><p>From the project root, run:</p><code>python3 -m http.server 8000</code><p>Then open <code>/</code>.</p></section>`;
     document.querySelector("#overall-count").textContent = "Curriculum unavailable";
     document.querySelector("#catalog-count").textContent = "Start the local server";
@@ -399,6 +402,7 @@
       const response = await fetch("lessons/manifest.json", { cache: "no-store" });
       if (!response.ok) throw new Error(`manifest request failed with status ${response.status}`);
       curriculum = validateManifest(await response.json());
+      window.Tutorial.initializeLessonSearch(curriculum.lessons, navigateTo);
       const initialLesson = lessonFromHash() || findLesson(readSavedLesson()) || nextLesson() || curriculum.lessons[0];
       activeLessonId = initialLesson.id;
       expandedTracks.add(initialLesson.trackId);

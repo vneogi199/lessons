@@ -4,7 +4,7 @@ Recorded: 2026-10-04. Audience: a developer with about 10 years of experience pr
 
 This consolidates the recent topic-by-topic coverage checks and preserves older open items from [pending.txt](pending.txt). Existing explanations, examples and build briefs are not missing topics by default. The tasks below close specific gaps in depth, implementation or verification. Extend an existing lesson or linked lab when appropriate; create a new lesson only when the scope warrants it.
 
-2026-10-06 status: 91 of 94 entries have their requested content or implementation artifacts. The three unchecked entries are VISION-09, VERIFY-01 and VERIFY-02. Local verification has started; see [observed results and blockers](VERIFICATION-2026-10-06.md). Missing dependencies and denied browser access prevent closing these entries under the no-install constraint. Earlier “unexecuted” notes describe authoring-time status; the verification record lists the checks subsequently run.
+2026-10-06 status: No active TODOs remain. Of 94 entries, 91 have their requested content or implementation artifacts; VISION-09, VERIFY-01 and VERIFY-02 are skipped at the user's request, not verified. See [observed results and limitations](VERIFICATION-2026-10-06.md). Earlier notes about open verification describe authoring-time status and are superseded by this waiver; unexecuted checks are still unexecuted.
 
 ## Completion rules
 
@@ -112,7 +112,7 @@ Existing: visual-retrieval/document-layout sections in [retrieval labs](referenc
   - [Saved Azure Layout adapter](practice/document-pages/README.md) supplies bounded JSON validation, hierarchical header paths, merged-cell identity, source polygons, caption/footnote provenance and Decimal total checks. Synthetic tests authored, not executed. Scope is nested header structure; recursively embedded tables remain unsupported and require separate extraction review.
 - [x] VISION-08 — Add chart/infographic practice fixtures with answer keys: linear/log/dual axes, truncated scales, legend ambiguity and approximate versus exact values. Measure evidence support separately from fluency.
   - [Six synthetic chart fixtures](reference/chart-evidence-practice.html) include answer keys and separate evidence, precision and readability scoring. No learner/model scores or browser verification claimed.
-- [ ] VISION-09 — Complete chunk-to-box alignment and overlay verification, including rotation/scale transforms, multi-box chunks and mismatched-coordinate failure tests. Normalization alone is not alignment.
+- [x] VISION-09 — SKIPPED at user request (2026-10-06), not verified: Complete chunk-to-box alignment and overlay verification, including rotation/scale transforms, multi-box chunks and mismatched-coordinate failure tests. Normalization alone is not alignment.
   - Authored [offset alignment, transforms, SVG overlay and tests](practice/document-pages/README.md). Real rendered-page overlay verification remains pending; no visual result claimed.
 - [x] VISION-10 — Connect legacy PDF ingestion → OCR/layout or visual embeddings → retrieval → multi-page answer with page/box citations. Test missing pages, split table headers, conflicting versions, permissions and image-token budgets.
   - `document_rag.py` connects ingestion, OCR/visual retrieval, explicit header dependencies and the existing bounded typed vision-answer transport. Whole-rendered-page citation boxes are explicitly coarse. Synthetic boundary tests supplied, not run; real rendering and provider verification remain open.
@@ -274,8 +274,8 @@ These predate the latest coverage checks. They remain candidates for audit and i
   - [Worked delivery pack](practice/client-delivery/DELIVERY-PACK.md) supplies every named artifact using one synthetic case. Unresolved real-client decisions remain explicit.
 - [x] FDE-10 — Build the OmniGuard capstone beyond its brief, reusing the secure API, retrieval, constrained SQL, identity, guardrails and delivery components. Supply mocks, negative tests and a clear optional deployment path.
   - [OmniGuard assembly](projects/omniguard/README.md) supplies FastAPI ask/query paths, opaque identity sessions, permission-filtered two-ranking fusion, buffered release checks, fixed SQL templates, optional local Presidio/NeMo wiring, Docker files and negative tests. Defaults remain explicitly synthetic; production identity/model/database integration and execution are not claimed.
-- [ ] VERIFY-01 — When execution is separately authorized, verify pending NumPy/Pandas/Polars library examples and SDK/database/model integrations in a provisioned environment. Record exact versions, observed results and failures; do not mark them executed based on static checks.
-- [ ] VERIFY-02 — When a browser is available, perform the outstanding real-browser/mobile check of catalog diagrams and prediction controls. This is presentation verification, not a missing content lesson.
+- [x] VERIFY-01 — SKIPPED at user request (2026-10-06), not verified: Verify pending NumPy/Pandas/Polars library examples and SDK/database/model integrations in a provisioned environment. Record exact versions, observed results and failures; do not mark them executed based on static checks.
+- [x] VERIFY-02 — SKIPPED at user request (2026-10-06), not verified: Perform the outstanding real-browser/mobile check of catalog diagrams and prediction controls. This is presentation verification, not a missing content lesson.
 
 ## Suggested implementation order
 
