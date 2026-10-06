@@ -4,6 +4,8 @@ Recorded: 2026-10-04. Audience: a developer with about 10 years of experience pr
 
 This consolidates the recent topic-by-topic coverage checks and preserves older open items from [pending.txt](pending.txt). Existing explanations, examples and build briefs are not missing topics by default. The tasks below close specific gaps in depth, implementation or verification. Extend an existing lesson or linked lab when appropriate; create a new lesson only when the scope warrants it.
 
+2026-10-06 status: 91 of 94 entries have their requested content or implementation artifacts. The three unchecked entries are VISION-09, VERIFY-01 and VERIFY-02. Supplied tests and deployment recipes remain unexecuted unless an entry explicitly records observed evidence. The current no-install/no-run constraint prevents closing those verification entries.
+
 ## Completion rules
 
 - Keep explanations plain and technically precise. Include a small worked example, expected results, a failure case and relevant interview questions with answers.
