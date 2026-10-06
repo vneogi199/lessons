@@ -127,7 +127,8 @@ Existing: lessons 0603–0611 and [advanced graph lab](reference/agent-operation
   - Dynamic Send dispatch, bounded concurrency, stable result slots, merge-order and duplicate/conflict tests; failed worker retained explicitly. See [worked lesson](reference/agent-workflow-practice.html).
 - [x] GRAPH-04 — Add an integration test suite for state schemas, nodes/edges, conditional routing, compile/invoke, async branches and nested parent-child graphs. Separate already-written recipe coverage from runtime-verified behavior.
   - test_graphs.py supplies the framework integration suite. Execution remains VERIFY-01; no runtime signoff inferred.
-- [ ] GRAPH-05 — Add Semantic Kernel practice with synthetic fixtures: kernel/plugins/planners, tool approval boundary, version-pinned SDK recipe and LangGraph comparison. Supply offline tests plus approval-gated run recipe. No SDK installed or executed.
+- [x] GRAPH-05 — Add Semantic Kernel practice with synthetic fixtures: kernel/plugins/planners, tool approval boundary, version-pinned SDK recipe and LangGraph comparison. Supply offline tests plus approval-gated run recipe. No SDK installed or executed.
+  - [Semantic Kernel practice](practice/agent-workflows/SEMANTIC-KERNEL.md) adds pinned native plugin dispatch, bounded synthetic planning and reuse of the exact-payload approval ledger. Offline tests supplied, not executed.
 
 ## 9. Advanced agent orchestration
 
