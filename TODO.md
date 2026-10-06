@@ -144,7 +144,8 @@ Existing: lessons 0604, 0606–0609, 0611 and managed-memory/enterprise AI exten
   - Guard and tests cover bounded polling, evidence changes, cycles, no progress and admission budgets. Cost units are synthetic reservations, not billed-dollar telemetry.
 - [x] AGENT-05 — Implement a bounded self-correction loop driven by validation or evidence failures. Compare correction against baseline; prevent endless critique and distinguish prompted self-critique from trained Self-RAG.
   - Correction controller/tests compare a failing baseline with one correction and a stalled loop. Citation-marker fixture does not establish entailment. All tests remain unexecuted.
-- [ ] AGENT-06 — Add complete managed-agent provisioning/version/alias and knowledge-base integration recipes, with scoped roles, readiness checks, allowed/denied documents and teardown. Current Bedrock coverage is a walkthrough, not an executable provisioning package.
+- [x] AGENT-06 — Add complete managed-agent provisioning/version/alias and knowledge-base integration recipes, with scoped roles, readiness checks, allowed/denied documents and teardown. Current Bedrock coverage is a walkthrough, not an executable provisioning package.
+  - [Managed Bedrock package](practice/managed-bedrock/README.md) includes two-stage provisioning, scoped policy builders, persistent operation IDs, readiness and numbered-alias checks, allow/deny acceptance and exact-run teardown. Prerequisite storage/roles require operator review; no AWS calls or tests executed.
 
 ## 10. Legacy systems and integrations
 
