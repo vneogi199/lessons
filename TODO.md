@@ -40,6 +40,9 @@ Existing: lessons 0479–0494, 0504 and the provisioning/billing sections of [AP
   - [Three JSON policy files and validation recipe](practice/cloud-controls/README.md). Synthetic accounts/resources; no AWS calls or permissions changed.
 - [x] CLOUD-03 — Extend budget walkthroughs with a reproducible notification-validation exercise and an optional reviewed budget-action design. Distinguish alerts from enforced workload limits; do not supply an unreviewed destructive spending response.
   - [Budget exercise](practice/cloud-controls/README.md) separates topic tests from actual budget-trigger evidence; non-destructive admission-pause design and cleanup ownership included. Unexecuted.
+- [ ] SNOW-01 — Add Snowflake warehouse practice with synthetic fixtures: warehouse sizing/suspend, RBAC/roles, stages, COPY/merge load, streams/tasks, time travel/restore, data sharing, query/cost controls and cleanup. Supply offline SQL fixtures plus approval-gated live-run recipe. No warehouse provisioned or executed.
+- [ ] DATAB-01 — Add Databricks practice with synthetic fixtures: workspace/cluster policy, Unity Catalog/RBAC, Delta Lake merge/time travel, jobs/workflows, cost controls and cleanup. Supply offline SQL/pipeline fixtures plus approval-gated live-run recipe. No workspace provisioned or executed.
+- [ ] CLICK-01 — Add ClickHouse practice with synthetic fixtures: MergeTree engine/sorting/partitioning, RBAC/quotas, batch inserts, materialized views, TTL/storage tiers, query/cost controls and cleanup. Supply offline SQL fixtures plus approval-gated live-run recipe. No cluster provisioned or executed.
 
 ## 4. Containerization and CI/CD
 
@@ -81,6 +84,8 @@ Existing: lessons 0577, 0594–0602, [retrieval labs](reference/retrieval-docume
   - HybridStore extends the existing [versioned RAG project](projects/evaluated-rag/README.md), with ephemeral exact index, optional approved local encoder and explicit synthetic-test scope. Rebuilding per query and tenant-wide authorization are documented limits. Tests unexecuted.
 - [x] RAG-06 — Complete the hosted-reranker adapter with bounded timeout/retry/fallback behavior and tests for out-of-order indexes, duplicates, malformed responses and unavailable service. Retain source identity and distinguish reranked results from fallback results.
   - [Cohere adapter and MockTransport tests](practice/model-boundaries/README.md) reuse the retry owner. Separate from baseline server; live provider verification remains VERIFY-01.
+- [x] RAG-07 — Add FAISS local index practice with synthetic fixtures: index factory, ID mapping, filtered search, save/load, update/delete and recall/latency checks. Supply offline tests plus approval-gated local-run recipe. No engine installed or executed.
+  - [FAISS package](practice/faiss-local/README.md) supplies a real exact index, authorized-subset search, trusted-artifact persistence, replacement/deletion and NumPy recall comparison. Tests are authored, not executed; integration evidence remains VERIFY-01.
 
 ## 7. Multimodal RAG and vision AI
 
@@ -119,6 +124,7 @@ Existing: lessons 0603–0611 and [advanced graph lab](reference/agent-operation
   - Dynamic Send dispatch, bounded concurrency, stable result slots, merge-order and duplicate/conflict tests; failed worker retained explicitly. See [worked lesson](reference/agent-workflow-practice.html).
 - [x] GRAPH-04 — Add an integration test suite for state schemas, nodes/edges, conditional routing, compile/invoke, async branches and nested parent-child graphs. Separate already-written recipe coverage from runtime-verified behavior.
   - test_graphs.py supplies the framework integration suite. Execution remains VERIFY-01; no runtime signoff inferred.
+- [ ] GRAPH-05 — Add Semantic Kernel practice with synthetic fixtures: kernel/plugins/planners, tool approval boundary, version-pinned SDK recipe and LangGraph comparison. Supply offline tests plus approval-gated run recipe. No SDK installed or executed.
 
 ## 9. Advanced agent orchestration
 
