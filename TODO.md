@@ -205,7 +205,8 @@ Existing: [enterprise security labs](reference/enterprise-security-labs.html), l
 
 Existing: lessons 0589–0590, 0609, 0612–0616 and [gateway/evaluation/tracing labs](reference/agent-operations-capstones.html).
 
-- [ ] OPS-01 — Supply a deployable LiteLLM or Portkey example for an authorized environment: scoped virtual credentials, provider-key management, aliases, rate limits, compatible fallback routes and rotation/revocation. Choose one working implementation and explain the other.
+- [x] OPS-01 — Supply a deployable LiteLLM or Portkey example for an authorized environment: scoped virtual credentials, provider-key management, aliases, rate limits, compatible fallback routes and rotation/revocation. Choose one working implementation and explain the other.
+  - [LiteLLM deployment package](practice/model-gateway/README.md) supplies mounted-secret startup, two compatible aliases, bounded fallback, DB/Redis fail-closed settings, virtual-key policy and rotation/revocation acceptance recipe. No deployment or enforcement verification was run.
 - [x] OPS-02 — Implement bounded exponential backoff with jitter, Retry-After handling and a total deadline in the shared gateway/tool adapter. Test layered retry amplification and uncertain side effects; reuse LLM-03/LLM-04 rather than duplicating retry code.
   - Authored 2026-10-04: shared retry.py integrated into the Claude transport, with call-count, Retry-After and uncertain-effect tests. No retries of tool writes. Tests not executed; cancellation and billing limits documented.
 - [x] OPS-03 — Connect deterministic checks and calibrated LLM judges into an evaluation runner and CI release artifact. Include missing scores, grader disagreement, critical slices and declared release gates.

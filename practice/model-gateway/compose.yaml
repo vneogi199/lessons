@@ -1,0 +1,17 @@
+services:
+  gateway:
+    image: ${APPROVED_LITELLM_DIGEST:?provide existing reviewed image@sha256 digest}
+    pull_policy: never
+    entrypoint: [python, /app/lesson/start.py]
+    environment:
+      APPROVED_GATEWAY_START: ${APPROVED_GATEWAY_START:?explicit authorization required}
+    volumes:
+      - ./start.py:/app/lesson/start.py:ro
+      - ./config.yaml:/app/lesson/config.yaml:ro
+      - ${APPROVED_GATEWAY_SECRET_FILE:?mounted secret file}:/run/secrets/gateway.json:ro
+      - ${APPROVED_GATEWAY_CA_FILE:?reviewed database CA}:/run/secrets/database-ca.pem:ro
+    ports: ["127.0.0.1:4000:4000"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    cpus: 1
