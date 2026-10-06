@@ -1,0 +1,36 @@
+model_list:
+  - model_name: lesson-primary
+    litellm_params:
+      model: openai/lesson-chat
+      api_base: os.environ/LESSON_PRIMARY_URL
+      api_key: os.environ/LESSON_PRIMARY_KEY
+      max_tokens: 256
+  - model_name: lesson-backup
+    litellm_params:
+      model: openai/lesson-chat
+      api_base: os.environ/LESSON_BACKUP_URL
+      api_key: os.environ/LESSON_BACKUP_KEY
+      max_tokens: 256
+router_settings:
+  redis_url: os.environ/REDIS_URL
+  num_retries: 0
+  max_fallbacks: 1
+  timeout: 10
+  fallbacks:
+    - lesson-primary: [lesson-backup]
+  enable_pre_call_checks: true
+litellm_settings:
+  drop_params: false
+  turn_off_message_logging: true
+  cache: false
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+  allow_requests_on_db_unavailable: false
+  fail_closed_budget_enforcement: true
+  fail_closed_rate_limit_enforcement: true
+  enforce_fallback_model_access: true
+  enforce_fallback_budget: true
+  store_prompts_in_spend_logs: false
+  forward_client_headers_to_llm_api: false
+  max_parallel_requests: 2
