@@ -12,6 +12,7 @@
       }
 
       const lessonsById = new Map(manifest.lessons.map((lesson) => [lesson.id, lesson]));
+      window.Tutorial.initializeLessonSearch(manifest.lessons);
       const overall = calculateProgress(store, manifest.lessons);
       const tracks = manifest.tracks.map((track) => {
         const lessons = track.lessonIds.map((id) => lessonsById.get(id)).filter(Boolean);
@@ -40,6 +41,7 @@
         </article>`;
       }).join("");
     } catch (error) {
+      document.querySelector("#universal-search").textContent = "Lesson search unavailable. Reload to retry.";
       const target = document.querySelector("#dashboard-error");
       target.hidden = false;
       target.innerHTML = `<h2>Could not load progress</h2><p>${escapeHtml(error.message)}</p>`;
