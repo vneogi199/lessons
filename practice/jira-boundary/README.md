@@ -1,5 +1,7 @@
 # A timeout is an unknown result
 
+The [authenticated MCP server](MCP.md) adds protocol handling, audience-bound tokens and exact-intent human approval around this adapter. It is supplied separately from the synthetic AuditMesh application; runtime and live Jira verification remain pending.
+
 The Jira server creates a ticket, but the response is lost. Repeating the POST may create a second ticket. This adapter stores an operation before sending and leaves uncertain operations in `unknown`. Repeated calls with that ID return the stored state; they do not POST again.
 
 `jira.py` supplies an issue reader, narrow creator and reconciliation search. It uses an injected HTTPX client with approved authentication, `trust_env=False` and TLS verification. The site must be one reviewed Jira Cloud hostname. Project and issue-type IDs are fixed server configuration. Nothing connects at import. Tests use MockTransport and are unexecuted; no Jira issue was read or created.
