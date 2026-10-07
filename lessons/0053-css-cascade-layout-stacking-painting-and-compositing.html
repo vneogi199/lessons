@@ -137,12 +137,19 @@ by itself prove allocation of a dedicated GPU compositing layer. --&gt;</code></
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain layout and rendering performance rather than memorizing properties.</li>
-      <li>Explain how a browser request or event works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A large child z-index stays inside its parent</p>
+<p>The child and front sibling overlap. The parent creates a stacking context at z-index 0.</p>
+<div class="foundation-grid"><div>Parent context: 0<br>└ Child inside it: 999</div><div>Front sibling context: 1<br>Painted above the parent context<br>Also above that parent's child</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would changing the child from 999 to a larger number let it escape?</h3><details><summary>Answer checkpoints</summary><p>No. Its ranking remains inside the parent context. Inspect the containing contexts, not just the largest number.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What changes when this fixture removes the parent's z-index?</h3><details><summary>Answer checkpoints</summary><p>The child can compete in the outer context. First confirm that the rectangles overlap; otherwise their visible positions do not test stacking order.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind CSS cascade, layout, stacking, painting, and compositing.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Create parent contexts.</strong> The positioned parent and sibling each establish a z-index context.</li><li><strong>Order within a context.</strong> The child&#39;s 999 is compared inside its parent, not globally against every element.</li><li><strong>Compare the overlap.</strong> Removing the parent&#39;s context changes where the child participates in stacking.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change the stated fixture condition and compare the observable result.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change the stated fixture condition and compare the observable result.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a browser request or event. Name a failure mode. Explain the evidence you would inspect."></textarea>

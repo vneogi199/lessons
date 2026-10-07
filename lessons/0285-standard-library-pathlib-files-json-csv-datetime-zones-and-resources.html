@@ -166,12 +166,19 @@ with tempfile.TemporaryDirectory(prefix=&quot;lesson-json-&quot;) as directory:
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain naive versus aware datetime, pathlib benefits, file buffering, and safe atomic writes.</li>
-      <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Keep the previous JSON when serialization fails</p>
+<p>The target already contains a valid payload. A later write contains an object that JSON cannot serialize.</p>
+<div class="foundation-grid"><div>Existing target<br>Valid payload</div><div>New temporary file<br>Serialization raises TypeError</div><div>Failure cleanup<br>Remove temporary file<br>Do not replace target</div><div>Target afterward<br>Previous payload remains</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why write beside the target before replacing it?</h3><details><summary>Answer checkpoints</summary><p>The staged file can be completed before the same-filesystem replacement publishes it.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the replacement prove crash durability on every storage system?</h3><details><summary>Answer checkpoints</summary><p>No. Directory synchronization and storage semantics still matter.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Standard library, pathlib, files, JSON, CSV, datetime, zones, and resources.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Python syntax enters a code block.</strong> The compiler determines names and produces executable code.</li><li><strong>A runtime namespace is created.</strong> Names bind to objects while instructions execute.</li><li><strong>Objects perform the operation.</strong> Type-defined behavior controls conversion and dispatch.</li><li><strong>State, value, or exception emerges.</strong> Tests and inspection make the behavior observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one binding, type, or mutable object and predict the resulting behavior.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one binding, type, or mutable object and predict the resulting behavior.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Object identity, type, frame locals, return value, exception, and timing.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a Python operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

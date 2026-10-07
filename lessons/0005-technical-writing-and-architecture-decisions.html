@@ -133,12 +133,20 @@ Owner: Name the team that handles replay, retention, and incidents before approv
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Communicate assumptions, tradeoffs, risks, and decisions clearly in English.</li>
-      <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Where a notification can disappear</p>
+<p>An order must produce a notification. Compare two designs when the process crashes after the database commit.</p>
+<div class="foundation-grid"><div>Direct publication<br>1. Commit order<br>2. Crash before publish<br>Result: order exists; notification intent was not saved</div><div>Transactional outbox<br>1. Commit order + notification intent together<br>2. Crash before relay<br>Result: order and intent exist; relay can resume</div></div>
+
+
+<p>A decision record should retain the requirement and tradeoff. Do not describe the preferred design as best for every system.</p></div>
+    <article class="senior-practice" data-interview-question><h3>1. The relay publishes, then crashes before recording success. Can the notification be sent twice?</h3><details><summary>Answer checkpoints</summary><p>Yes. On restart, the saved intent still looks unsent. A retry can publish it again. Use stable event identity and an idempotent effect; the outbox alone does not provide exactly-once delivery.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. The requirement changes: losing an analytics notification is acceptable. Must the outbox remain?</h3><details><summary>Answer checkpoints</summary><p>No. Direct publication may now be sufficient. Record the accepted loss risk and compare it with the cost of operating, retrying and cleaning up an outbox.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Technical writing and architecture decisions.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Name the loss requirement.</strong> Notification loss after order commit is unacceptable in this scenario.</li><li><strong>Expose the crash gap.</strong> Direct post-commit publication leaves committed orders without durable notification intent.</li><li><strong>Commit order and intent.</strong> An outbox shares the database transaction; the relay still permits duplicate publication.</li><li><strong>Test and assign ownership.</strong> Specify crash tests, lag metrics, retention ownership and a decision review trigger.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: If notification loss becomes acceptable, which complexity can be removed?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: If notification loss becomes acceptable, which complexity can be removed?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: A decision record must separate assumed numbers from measured evidence and explain when its conclusion changes.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>

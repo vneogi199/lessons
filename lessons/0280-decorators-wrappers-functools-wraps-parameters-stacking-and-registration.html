@@ -145,12 +145,19 @@ assert parse.__name__ == &quot;parse&quot; and parse(&quot;42&quot;) == 42</code
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain decorator execution order, wraps, decorator factories, and why retries require idempotency.</li>
-      <li>Explain how a Python operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Time a parse without replacing its result</p>
+<p>The decorated parse receives the text 42.</p>
+<div class="foundation-grid"><div>Wrapper starts<br>Read performance clock</div><div>Wrapped function<br>Convert 42 text to integer<br>Return 42</div><div>Finally<br>Print elapsed measurement<br>Preserve return value</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. What happens when parse receives text that int cannot convert?</h3><details><summary>Answer checkpoints</summary><p>The finally block still records timing, and the conversion exception continues to the caller.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why does parse.__name__ still equal parse?</h3><details><summary>Answer checkpoints</summary><p>functools.wraps copies the wrapped function's identifying metadata to the wrapper.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Decorators, wrappers, functools.wraps, parameters, stacking, and registration.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Python syntax enters a code block.</strong> The compiler determines names and produces executable code.</li><li><strong>A runtime namespace is created.</strong> Names bind to objects while instructions execute.</li><li><strong>Objects perform the operation.</strong> Type-defined behavior controls conversion and dispatch.</li><li><strong>State, value, or exception emerges.</strong> Tests and inspection make the behavior observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one binding, type, or mutable object and predict the resulting behavior.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one binding, type, or mutable object and predict the resulting behavior.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Object identity, type, frame locals, return value, exception, and timing.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a Python operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

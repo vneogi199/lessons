@@ -151,12 +151,19 @@ console.log(Reflect.ownKeys(project), Object.getOwnPropertyDescriptors(project))
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Draw the prototype chain for an instance and explain shadowing and inherited methods.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Lookup delegates without copying a property</p>
+<p>project has base as its prototype. base owns a non-writable property kind with value project.</p>
+<div class="foundation-grid"><div>Read project.kind<br>No own kind<br>↓<br>base.kind → project</div><div>Prototype chain<br>project → base → null<br>Property belongs to base</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Can ordinary assignment shadow this inherited non-writable kind property?</h3><details><summary>Answer checkpoints</summary><p>No. In strict mode the attempted assignment throws. It does not create a new own property through that operation.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Is explicitly defining an own property the same operation as ordinary assignment?</h3><details><summary>Answer checkpoints</summary><p>No. defineProperty has different semantics. Do not infer its outcome from the assignment rule.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Prototypes, delegation, property lookup, Object.create, and prototype mutation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>An operation produces a property key.</strong> Names become strings or symbols before lookup.</li><li><strong>Own descriptors are inspected.</strong> Data, accessor, and configuration flags constrain behavior.</li><li><strong>The prototype or trap participates.</strong> Lookup continues, invokes an accessor, or crosses a Proxy.</li><li><strong>Value or invariant failure returns.</strong> Ownership, receiver, and mutation become observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Shadow one inherited property and then repeat through a forwarding Proxy.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Shadow one inherited property and then repeat through a forwarding Proxy.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -145,12 +145,19 @@ console.table(cases.map(value =&gt; ({
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain primitives versus objects without the misleading phrase pass by reference.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">An alias shares the record; a spread creates another outer object</p>
+<p>record starts with name Ada. alias receives record, while copy receives a shallow spread of record.</p>
+<div class="foundation-grid"><div>record and alias<br>Both → object A<br>alias.name = Grace<br>Object A now holds Grace</div><div>copy<br>→ separate object B<br>Object B still holds Ada</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Are record and alias identical after the change?</h3><details><summary>Answer checkpoints</summary><p>Yes. They still identify object A. The mutation changes a property, not the identity of that object.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Would a spread also copy a nested mutable object independently?</h3><details><summary>Answer checkpoints</summary><p>No. It creates a new outer object but preserves references to nested objects. Decide which data may be mutated before choosing a copy strategy.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Primitive values, objects, typeof, null, undefined, and identity.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Create a primitive and an object.</strong> The string is immutable. The record object has its own identity.</li><li><strong>Two bindings hold the same object.</strong> alias = record copies the object value, so both bindings identify one object.</li><li><strong>Spread creates a new outer object.</strong> copy = {...record} copies own enumerable property values into a different object.</li><li><strong>Mutation follows object identity.</strong> Changing alias.name changes record.name; the copied string in copy.name stays unchanged.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Replace name with a nested profile object, make a shallow copy, and predict which mutation both records observe.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Replace name with a nested profile object, make a shallow copy, and predict which mutation both records observe.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: record === alias is true; record === copy is false; compare the original and copied nested profile identities.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

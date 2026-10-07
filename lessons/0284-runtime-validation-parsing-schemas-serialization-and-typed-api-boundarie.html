@@ -139,12 +139,19 @@ def parse_command(raw: Any) -&gt; CreateProject:
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain parsing versus casting, DTO versus domain model, coercion risk, and where schema validation belongs.</li>
-      <li>Explain how a validated data boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Create a trusted command from checked fields</p>
+<p>Input has name spaces around Demo and member_ids [1, 2].</p>
+<div class="foundation-grid"><div>Name check<br>Nonempty string after trim<br>Demo</div><div>Member check<br>List of exact integers<br>[1, 2]</div><div>Command<br>name: Demo<br>member_ids: tuple (1, 2)</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does member_ids [True] pass?</h3><details><summary>Answer checkpoints</summary><p>No. Each item must have exact type int. The boolean subclass is deliberately excluded.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the frozen dataclass alone establish these checks?</h3><details><summary>Answer checkpoints</summary><p>No. parse_command validates and normalizes the values before constructing it.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Runtime validation, parsing, schemas, serialization, and typed API boundaries.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Untrusted data enters.</strong> Text, bytes or paths have not earned permission to drive an operation.</li><li><strong>Choose a bounded format.</strong> JSON decoding does not establish a domain schema; untrusted pickle can execute code.</li><li><strong>Establish the intended contract.</strong> Check types, versions, sizes and authority before use.</li><li><strong>Perform the permitted operation.</strong> Record safe rejection or a validated result; copying is not a security boundary.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change the version, value type or path and predict which check rejects it.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change the version, value type or path and predict which check rejects it.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a validated data boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

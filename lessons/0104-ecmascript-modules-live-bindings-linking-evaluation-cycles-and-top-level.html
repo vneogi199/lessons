@@ -147,12 +147,19 @@ export async function loadAnalytics(enabled) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Compare ESM imports with copied object values and explain cycle and top-level-await risks.</li>
-      <li>Explain how a module import works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">An import observes the exporter's binding</p>
+<p>Split the labelled code into counter.mjs and feature.mjs. The counter module exports count, initially zero.</p>
+<div class="foundation-grid"><div>counter.mjs<br>count binding: 0 → 1<br>increment changes that binding</div><div>feature.mjs<br>Imported count → live view<br>After increment(): reads 1</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Was the initial zero copied into an independent imported variable?</h3><details><summary>Answer checkpoints</summary><p>No. The import observes the exporter's binding. It is a read-only view for the importer.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does this fixture establish that every cyclic module graph initializes safely?</h3><details><summary>Answer checkpoints</summary><p>No. It contains no cycle. Early reads of uninitialized lexical bindings in a cycle can fail.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind ECMAScript modules, live bindings, linking, evaluation, cycles, and top-level await.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Host identifies each module.</strong> Specifiers become module records under host rules.</li><li><strong>The dependency graph connects.</strong> Environments and live import bindings are initialized.</li><li><strong>Modules execute in graph order.</strong> Cycles and top-level await can delay or expose early reads.</li><li><strong>Importer observes live exports.</strong> Loaded chunks, values, or failures prove the boundary.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Create a two-module cycle and move one early read across initialization.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Create a two-module cycle and move one early read across initialization.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Resolution trace, network chunk, evaluation log, live value, TDZ error, and bundle graph.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -160,12 +160,19 @@ for invalid in ([], {&quot;schema_version&quot;: True, &quot;project&quot;: {}},
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain copy versus deepcopy, pickle risks, schema evolution, and identity in serialized graphs.</li>
-      <li>Explain how a validated data boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Validate the envelope before accepting its project field</p>
+<p>The wire envelope must have exactly schema_version and project. Version must be the integer 1.</p>
+<div class="foundation-grid"><div>Version 1, project object<br>Accept envelope</div><div>Version true, project object<br>Reject exact-type mismatch</div><div>Version 1, project list<br>Reject project shape</div><div>Accepted project<br>Domain fields still need validation</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does an accepted envelope prove the project has a valid name?</h3><details><summary>Answer checkpoints</summary><p>No. The decoder checks that project is a dictionary, not its domain fields.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Should pickle be substituted for JSON when input is untrusted?</h3><details><summary>Answer checkpoints</summary><p>No. Unpickling can execute code. Keep the trust boundary explicit.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Copying, serialization, pickle, JSON, object graphs, and trust boundaries.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Untrusted data enters.</strong> Text, bytes or paths have not earned permission to drive an operation.</li><li><strong>Choose a bounded format.</strong> JSON decoding does not establish a domain schema; untrusted pickle can execute code.</li><li><strong>Establish the intended contract.</strong> Check types, versions, sizes and authority before use.</li><li><strong>Perform the permitted operation.</strong> Record safe rejection or a validated result; copying is not a security boundary.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change the version, value type or path and predict which check rejects it.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change the version, value type or path and predict which check rejects it.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Rejected input, unchanged protected state and the validated representation. Filesystem races and external tools require separate integration checks.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a validated data boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

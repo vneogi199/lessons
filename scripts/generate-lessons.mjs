@@ -8,6 +8,7 @@ import { lessonMcqs, mcqMarkup } from "./lesson-mcqs.mjs";
 import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
 import { POLARS_CONTENT } from "./polars-content.mjs";
 import { PRODUCTION_DEPTH, productionDepthMarkup } from "./production-depth-links.mjs";
+import { interviewQuestions } from "./lesson-interviews.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18199,12 +18200,7 @@ ${reviewed ? `<section class="card common-mistakes"><h2>Common mistakes</h2><div
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>${escapeHtml(sentence(lesson.interview))}</li>
-      <li>Explain how ${escapeHtml(traceSubject)} works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    ${interviewQuestions(lesson, d)}
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace ${escapeHtml(traceSubject)}. Name a failure mode. Explain the evidence you would inspect."></textarea>

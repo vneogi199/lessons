@@ -146,12 +146,19 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain substitution and union distribution, including complexity limits.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Check union members separately or together</p>
+<p>The two conditional types deliberately ask different questions.</p>
+<div class="foundation-grid"><div>ElementOf string[]<br>Extract string</div><div>ElementOf number[]<br>Extract number</div><div>Distributed union result<br>string or number</div><div>Wrapped string-or-number check<br>Whole union is not assignable to string<br>Result: other</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why does ElementOf handle both array alternatives?</h3><details><summary>Answer checkpoints</summary><p>Its checked side is the bare type parameter T. The conditional distributes over the union and combines the results.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why does NonDistributive not return text or other?</h3><details><summary>Answer checkpoints</summary><p>The tuple wrapper checks the union as a whole. Because number is not a string, the whole check selects other.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Conditional types, constraints, infer, distributivity, recursion, and deferred evaluation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>API declares type parameters.</strong> Positions and constraints state information to preserve.</li><li><strong>Call sites contribute candidates.</strong> Arguments, context, constraints, and variance shape inference.</li><li><strong>Type expressions substitute arguments.</strong> Mapped, conditional, indexed, and template operations compute a result.</li><li><strong>Concrete relationship is tested.</strong> Inferred output, errors, and checker cost make the design observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one inference site or union input and predict the instantiated result and cost.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one inference site or union input and predict the instantiated result and cost.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Quick Info, type assertion tests, diagnostic, declaration output, instantiation count, and check time.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

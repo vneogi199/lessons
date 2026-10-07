@@ -144,12 +144,19 @@ async def list_projects(
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Model optional query parameters precisely and explain why unbounded pagination is an operational defect.</li>
-      <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Apply filter defaults, then check explicit values</p>
+<p>Compare an empty query with a query that asks for limit 101.</p>
+<div class="foundation-grid"><div>No filter values<br>limit: 50<br>offset: 0<br>order: created_at<br>tags: empty list</div><div>limit 101<br>Exceeds maximum 100<br>Reject</div><div>Unknown filter field<br>Extra fields forbidden<br>Reject</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Is X-Request-ID read from the query string?</h3><details><summary>Answer checkpoints</summary><p>No. The Header declaration reads it from the named HTTP header.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does receiving a session cookie establish a valid session?</h3><details><summary>Answer checkpoints</summary><p>No. This signature reads a value. Authentication must validate it separately.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Query parameters, headers, cookies, aliases, lists, and reusable filters.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Untrusted HTTP values arrive.</strong> Path, query, headers, cookies, or body carry text and bytes.</li><li><strong>Protocol representation is decoded.</strong> Content type and parameter source determine parsing.</li><li><strong>Pydantic applies the schema.</strong> Conversion, constraints, and validators produce data or errors.</li><li><strong>Endpoint receives a typed value.</strong> Invalid input instead becomes a structured 422 response.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Send one valid payload and three malformed boundary cases.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Send one valid payload and three malformed boundary cases.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Parsed types, validation error locations, status code, and generated schema.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>

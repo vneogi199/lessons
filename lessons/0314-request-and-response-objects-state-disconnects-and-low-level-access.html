@@ -136,12 +136,19 @@ async def diagnostics(request: Request, response: Response):
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain when direct Request access is justified and what contract information it removes from OpenAPI.</li>
-      <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Observe a disconnect before preparing diagnostics</p>
+<p>The route first asks whether the client has disconnected.</p>
+<div class="foundation-grid"><div>Disconnected<br>Return local response object<br>Status 499</div><div>Still connected<br>Set X-Request-ID<br>Return request diagnostics</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does returning 499 prove the disconnected client received it?</h3><details><summary>Answer checkpoints</summary><p>No. The connection is already gone. The response object is not evidence of delivery.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Where must request.state.request_id come from?</h3><details><summary>Answer checkpoints</summary><p>Earlier application code, such as middleware, must set it. This endpoint reads the value but does not initialize it.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Request and Response objects, state, disconnects, and low-level access.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>HTTP bytes reach Uvicorn.</strong> The server parses protocol data and creates an ASGI scope.</li><li><strong>Events enter the application.</strong> Middleware wraps receive, routing, and endpoint handling.</li><li><strong>Dependencies and business logic run.</strong> Typed inputs become a return value or exception.</li><li><strong>ASGI send emits wire events.</strong> Status, headers, and body become observable to the client.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Trace one valid request and one failure while recording every ASGI event.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Trace one valid request and one failure while recording every ASGI event.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Scope fields, middleware order, dependency calls, send events, and client response.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>

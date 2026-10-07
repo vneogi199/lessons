@@ -144,12 +144,19 @@ assert wire[0][&quot;header&quot;][&quot;message&quot;].startswith(&quot;GET&quo
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what crosses each boundary after an application sends a request without treating a network chunk as an application message.</li>
-      <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Different addresses answer different delivery questions</p>
+<p>The teaching fixture describes a health request sent toward 198.51.100.20. It labels layers rather than serializing real network bytes.</p>
+<div class="foundation-grid"><div>Application<br>GET /health HTTP/1.1</div><div>Transport<br>Source port 53000<br>Destination port 443</div><div>Network<br>192.0.2.10 → 198.51.100.20</div><div>Link<br>Source MAC ending :10<br>Next-hop MAC ending :01</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does a TCP receive chunk necessarily contain one whole application message?</h3><details><summary>Answer checkpoints</summary><p>No. Messages can be split across chunks or combined in one chunk. The receiver needs application framing.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a TCP acknowledgement prove the health request was processed successfully?</h3><details><summary>Answer checkpoints</summary><p>No. It confirms stream receipt. Application processing and persistence need their own evidence. HTTPS also adds TLS protection beyond this layer-label sketch.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Request to wire, sockets, encapsulation, frames, packets, segments, and application messages.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Application creates a message.</strong> A URL, payload, and protocol semantics define the intended exchange.</li><li><strong>Names and peers become addresses.</strong> DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</li><li><strong>Bytes cross layered networks.</strong> TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</li><li><strong>The destination observes the request.</strong> Acknowledgments, responses, packet captures, and errors expose the outcome.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one address, route, MTU, or loss condition and predict where the exchange changes.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one address, route, MTU, or loss condition and predict where the exchange changes.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -135,12 +135,19 @@ assert.equal(calls, 2);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Narrate a disciplined debugging process without guessing.</li>
-      <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Zero is a cached value</p>
+<p>The computation returns 0. Two calls use the key zero. Compare a truthiness check with a membership check.</p>
+<div class="foundation-grid"><div>Broken check: !cache.get(key)<br>First call: missing → compute 0<br>Second call: !0 is true → compute again<br>Total computations: 2</div><div>Membership check: !cache.has(key)<br>First call: missing → compute 0<br>Second call: key exists → reuse 0<br>Total computations: 1</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Call the fixed function with a different, missing key. How many computations have happened in total?</h3><details><summary>Answer checkpoints</summary><p>2. The original key computed once. The new key also needs one computation. This check catches a supposed fix that simply stops all computation.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do these results prove that simultaneous asynchronous calls are safe?</h3><details><summary>Answer checkpoints</summary><p>No. These calls are synchronous. Concurrent misses can start duplicate work before either result reaches the cache. Sharing in-flight work needs a separate design and test.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Debugging as hypothesis testing.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Repeated computation.</strong> Two reads of a cached zero still call the computation twice.</li><li><strong>Truthiness confused with absence.</strong> A falsey stored value does not mean the key is missing.</li><li><strong>Check membership.</strong> Map.has answers whether the key exists independently of its value.</li><li><strong>Test another key.</strong> An unseen key must still compute; fixing one symptom must preserve misses.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Would this test establish correctness for concurrent async requests?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Would this test establish correctness for concurrent async requests?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: The assertions reproduce two calls, then establish one call per distinct key in this synchronous example.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>

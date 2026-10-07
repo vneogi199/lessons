@@ -149,12 +149,19 @@ async function inspectRevision(revision, signal) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose the correct child-process API and explain command-injection prevention.</li>
-      <li>Explain how untrusted input crossing a boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Keep the revision inside one validated argument</p>
+<p>inspectRevision accepts only an entire lowercase hexadecimal SHA-1 abbreviation or full value, 7 to 40 characters long.</p>
+<div class="foundation-grid"><div>abcdef0<br>Passes syntax check<br>One Git argument</div><div>abcdef0 followed by a newline<br>Full-input check fails</div><div>Text with shell punctuation<br>Fails revision syntax check<br>No shell requested</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does valid hexadecimal syntax prove the revision exists?</h3><details><summary>Answer checkpoints</summary><p>No. Git can still reject an unknown or ambiguous revision. The child-process error must be handled.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does aborting the call prove all child effects were rolled back?</h3><details><summary>Answer checkpoints</summary><p>No. Cancellation sends a signal. Process-tree containment and rollback are separate concerns.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind child_process, spawn, execFile, exec, stdio, IPC, signals, and shell injection.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>External text or authority enters.</strong> HTTP, environment, path, URL, command, package, or file input is unproven.</li><li><strong>Parser establishes a narrow contract.</strong> Format, size, destination, permissions, and policy reject unsafe cases.</li><li><strong>Least-authority API performs work.</strong> Argument arrays, direct opens, AbortSignal, and permission controls constrain impact.</li><li><strong>Safe output or denial is recorded.</strong> Redacted evidence proves both allowed and adversarial paths.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: parsed value, resolved path or address, permission decision, spawned argv, error, audit record, and changed resources.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

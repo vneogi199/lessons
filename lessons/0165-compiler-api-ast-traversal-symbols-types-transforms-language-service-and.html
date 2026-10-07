@@ -155,12 +155,19 @@ for (const source of program.getSourceFiles()) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain the difference between AST nodes, symbols, and types.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Follow the tool's exact matching rule</p>
+<p>The traversal reports exported function declarations that have no written return type. It skips declaration files.</p>
+<div class="foundation-grid"><div>Exported function declaration<br>No return annotation<br>Report</div><div>Exported function declaration<br>Return annotation present<br>Skip</div><div>Exported arrow in a variable<br>Not a function declaration<br>Not matched by this rule</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does a reported function necessarily have an unknown return type?</h3><details><summary>Answer checkpoints</summary><p>No. The compiler may infer its type. This tool checks whether an annotation is present.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the traversal enforce the rule for every exported callable?</h3><details><summary>Answer checkpoints</summary><p>No. Its syntax predicate is narrower. Add explicit handling for other declaration forms if the intended policy includes them.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Compiler API, AST traversal, symbols, types, transforms, language service, and tooling.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Compiler discovers source graph.</strong> Configuration and resolution select files and libraries.</li><li><strong>Declarations become symbols.</strong> Scopes and named identities connect syntax across files.</li><li><strong>Types and relationships are computed.</strong> Control flow, instantiation, and assignability create diagnostics.</li><li><strong>Emit or editor answer returns.</strong> JavaScript, declarations, traces, or language-service data become evidence.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one compiler option or expensive type and compare diagnostics and phase timings.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one compiler option or expensive type and compare diagnostics and phase timings.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: showConfig, explainFiles, AST, symbols, inferred types, diagnostics, emitted files, and trace.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -130,12 +130,20 @@ git diff --cached --stat
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Compare merge and rebase and diagnose common repository failures.</li>
-      <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Three versions of one file</p>
+<p>A tracked file in HEAD contains quantity 10. You change it to 20 and stage it. Then you change the working file to 30 without staging again.</p>
+<div class="foundation-grid"><div>HEAD snapshot<br>quantity: 10</div><div>Index: next commit's snapshot<br>quantity: 20</div><div>Working file<br>quantity: 30</div><div>Two comparisons<br>HEAD → index: 10 → 20<br>Index → working file: 20 → 30</div></div>
+
+
+<p>A committed snapshot records content. It does not establish that the code passes tests.</p></div>
+    <article class="senior-practice" data-interview-question><h3>1. Without staging again, what does a normal git commit record?</h3><details><summary>Answer checkpoints</summary><p>20. The commit uses the index. The later value 30 remains an unstaged change in the working file. Staging does not keep a live connection to future edits.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Which change appears in git diff --cached?</h3><details><summary>Answer checkpoints</summary><p>10 to 20. It compares HEAD with the index. Plain git diff shows 20 to 30, comparing the index with the working file.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Git object model and collaborative workflows.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Working tree.</strong> Files may differ from the staged snapshot.</li><li><strong>Index.</strong> The index selects content for the next commit, not necessarily every current edit.</li><li><strong>Tree and blobs.</strong> The tree names content objects and nested trees.</li><li><strong>Commit and references.</strong> A commit records a tree and ancestry; branch references identify commits.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Why can one file have both staged and unstaged changes?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Why can one file have both staged and unstaged changes?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Compare git diff with git diff --cached; inspect HEAD&#39;s object type and tree.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>

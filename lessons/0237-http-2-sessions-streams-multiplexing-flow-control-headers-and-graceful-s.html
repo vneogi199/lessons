@@ -173,12 +173,19 @@ function shutdown() {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Compare HTTP/1 keep-alive and HTTP/2 multiplexing without promising automatic application speedups.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Drain an HTTP/2 session, then enforce a deadline</p>
+<p>Suppose one active session has a stalled stream when shutdown begins.</p>
+<div class="foundation-grid"><div>Begin shutdown<br>draining: true<br>Stop accepting new connections</div><div>Existing session<br>Request graceful close<br>Wait for its stream</div><div>After drain deadline<br>Reject shutdown promise<br>Destroy remaining sessions</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. What happens to a session reported after draining starts?</h3><details><summary>Answer checkpoints</summary><p>The session handler destroys it instead of adding it to the active set.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do two calls to shutdown start two independent drains?</h3><details><summary>Answer checkpoints</summary><p>No. The cached shutdownPromise gives both callers the same operation and outcome.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind HTTP/2, sessions, streams, multiplexing, flow control, headers, and graceful shutdown.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Name and transport establish a channel.</strong> Resolution, pooling, TCP, TLS, or an accepted socket creates connectivity.</li><li><strong>Protocol bytes become messages.</strong> Framing, headers, body limits, and stream state define input.</li><li><strong>Application performs bounded work.</strong> Validation, cancellation, deadlines, and dependencies shape the outcome.</li><li><strong>Response or failure closes ownership.</strong> Bodies, sockets, sessions, streams, and pool capacity become reusable or end.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Slow, abort, or fragment one request and predict which timeout and cleanup path owns it.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Slow, abort, or fragment one request and predict which timeout and cleanup path owns it.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: DNS result, socket state, TLS parameters, headers, body bytes, pool state, response, and close event.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

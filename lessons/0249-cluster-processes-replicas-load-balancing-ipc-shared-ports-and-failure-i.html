@@ -145,12 +145,19 @@ if (cluster.isPrimary) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose cluster or external replicas based on deployment ownership rather than CPU count alone.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Cap the cluster's process count</p>
+<p>Use two hypothetical machines to trace the minimum calculation.</p>
+<div class="foundation-grid"><div>Available parallelism: 2<br>min(2, 4)<br>Fork 2 workers</div><div>Available parallelism: 8<br>min(8, 4)<br>Fork 4 workers</div><div>Worker exit<br>Log outcome<br>Replace only when not shutting down</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does this snippet implement a complete service lifecycle?</h3><details><summary>Answer checkpoints</summary><p>No. startServer and shuttingDown belong to the surrounding application and must be supplied.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Should a platform-managed replica automatically create another replica layer inside it?</h3><details><summary>Answer checkpoints</summary><p>No. Decide who owns scaling, restart and resource limits. Independent platform replicas may already supply the required behavior.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Cluster, processes, replicas, load balancing, IPC, shared ports, and failure isolation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A ready process accepts work.</strong> Listeners, connections, jobs, and queues create owned in-flight state.</li><li><strong>Runtime coordinates work.</strong> Errors, retries, signals, and health state can change the path.</li><li><strong>Admission stops before cleanup.</strong> Readiness drops, connections or jobs finish, and deadlines bound waiting.</li><li><strong>Supervisor observes termination.</strong> Exit code, report, remaining handles, and restart policy expose the result.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Send SIGTERM or inject an uncaught failure during a slow operation and observe bounded termination.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Send SIGTERM or inject an uncaught failure during a slow operation and observe bounded termination.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: readiness, in-flight count, handles, signal log, cleanup, exit code, diagnostic report, and supervisor restart.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

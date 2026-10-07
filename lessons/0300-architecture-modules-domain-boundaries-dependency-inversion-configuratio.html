@@ -144,12 +144,19 @@ class CreateProjectHandler:
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain how to structure a Python service so framework, database, and vendor details do not own the domain.</li>
-      <li>Explain how an application use case works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Validate the command before calling the repository</p>
+<p>Compare a name with spaces around Demo and a name containing only spaces.</p>
+<div class="foundation-grid"><div>Spaces around Demo<br>Normalize to Demo<br>Call repository.add</div><div>Spaces only<br>Normalize to empty<br>Raise name required<br>No repository call</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Must the handler import a particular database library?</h3><details><summary>Answer checkpoints</summary><p>No. It receives a repository through its declared contract. The composition root supplies the concrete adapter.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does returning the project prove the repository is durable?</h3><details><summary>Answer checkpoints</summary><p>Only if the supplied adapter's contract and implementation establish that guarantee. The protocol alone does not.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Architecture, modules, domain boundaries, dependency inversion, configuration, and errors.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Validate a command.</strong> External representation is checked before application policy uses it.</li><li><strong>Apply the domain rule.</strong> The use case depends on an explicit repository or unit-of-work contract.</li><li><strong>Perform the owned effect.</strong> The adapter implements persistence; a Protocol supplies no transaction or rollback.</li><li><strong>Return a result or preserve failure.</strong> Test failed writes and, for the capstone, scoped intent replay and atomic commit.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Inject a failed write; explain which state is unchanged and which guarantee requires a real database test.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Call order, validated command, observed result and adapter failure; local fakes do not prove concurrent durability.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an application use case. Name a failure mode. Explain the evidence you would inspect."></textarea>

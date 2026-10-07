@@ -153,12 +153,19 @@ for bursts, quantum in [({&quot;a&quot;: 1}, 0), ({&quot;a&quot;: -1}, 2), ({&qu
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why concurrency is not parallelism and account for scheduling, context-switch, isolation, and communication costs.</li>
-      <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Share CPU turns with a quantum of two</p>
+<p>Both tasks are ready initially. api needs 5 units and worker needs 3. The simulation has one CPU and no I/O.</p>
+<div class="foundation-grid"><div>First round<br>api runs 2; remaining 3<br>worker runs 2; remaining 1</div><div>Second round<br>api runs 2; remaining 1<br>worker runs 1; completes</div><div>Last turn<br>api runs 1; completes</div><div>Total useful work<br>5 + 3 = 8 units</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why reject a quantum of zero?</h3><details><summary>Answer checkpoints</summary><p>No task would make progress. Positive bursts and a positive quantum ensure remaining work decreases.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does this prove a smaller quantum always improves real latency?</h3><details><summary>Answer checkpoints</summary><p>No. The simulation omits context-switch cost, I/O, priorities and other CPUs. Measure the actual scheduler workload.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Processes, threads, process control blocks, context switches, CPU scheduling, and IPC.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Require positive work and quantum.</strong> Zero quantum cannot reduce remaining work; reject it before the loop.</li><li><strong>Pop the next ready task.</strong> The ready queue gives each runnable task a turn.</li><li><strong>Consume at most one quantum.</strong> Remaining work decreases by min(quantum, remaining).</li><li><strong>Keep unfinished tasks only.</strong> Positive remaining work goes to the back; completed work leaves the queue.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: What loop invariant proves termination for positive finite bursts?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: What loop invariant proves termination for positive finite bursts?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: The total remaining burst decreases on every iteration; empty input yields an empty trace.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

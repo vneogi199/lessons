@@ -147,12 +147,19 @@ assert nat[(&quot;203.0.113.5&quot;, 40001)] == (&quot;10.42.0.9&quot;, 53000)
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Trace a packet across routers and explain which addresses change, which remain end-to-end, and what ICMP reveals.</li>
-      <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">The most specific matching route wins</p>
+<p>Look up destination 10.42.7.8 in the fixture's routing table.</p>
+<div class="foundation-grid"><div>Matching prefixes<br>0.0.0.0/0<br>10.0.0.0/8<br>10.42.0.0/16</div><div>Choose /16<br>Longest matching prefix<br>Gateway: 10.42.0.1</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Which route handles 8.8.8.8 in this table?</h3><details><summary>Answer checkpoints</summary><p>The default /0 route, through 192.0.2.1. Neither more-specific private prefix matches.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What does the fixture's reverse NAT entry map?</h3><details><summary>Answer checkpoints</summary><p>203.0.113.5:40001 maps to 10.42.0.9:53000. One mapping illustrates address translation; it is not a complete connection tracker or firewall.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Routing tables, longest-prefix match, default gateways, ICMP, traceroute, and NAT.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Application creates a message.</strong> A URL, payload, and protocol semantics define the intended exchange.</li><li><strong>Names and peers become addresses.</strong> DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</li><li><strong>Bytes cross layered networks.</strong> TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</li><li><strong>The destination observes the request.</strong> Acknowledgments, responses, packet captures, and errors expose the outcome.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one address, route, MTU, or loss condition and predict where the exchange changes.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one address, route, MTU, or loss condition and predict where the exchange changes.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -181,12 +181,19 @@ if (false) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Derive a generic signature from input-output relationships instead of adding a decorative type parameter.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Index two records with the same ID</p>
+<p>The input contains p1 named First, followed by p1 named Last. indexById puts each record into a Map.</p>
+<div class="foundation-grid"><div>First insertion<br>p1 → First</div><div>Second insertion<br>p1 → Last<br>Existing key replaced</div><div>Lookup p1<br>Returns the Last record<br>Full item type retained</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does the generic constraint require IDs to be unique?</h3><details><summary>Answer checkpoints</summary><p>No. It requires a string ID on each item. This implementation keeps the last record for a repeated ID. Enforce uniqueness separately if duplicates are invalid.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a valid key type guarantee a lookup finds a record?</h3><details><summary>Answer checkpoints</summary><p>No. Map.get can return undefined. The generic relationship preserves the record's fields; it does not prove that a particular entry exists.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Generics, type parameters, constraints, defaults, relationships, and reusable contracts.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>T connects input and output.</strong> indexById accepts items of type T and returns Map values of type T.</li><li><strong>Items supply the type argument.</strong> The caller&#39;s id, name and private fields determine the item type.</li><li><strong>The id capability is checked.</strong> T must have a string id; other fields remain part of T.</li><li><strong>Lookup preserves fields and absence.</strong> Map.get returns the full item type or undefined.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Inferred types, expected compiler errors, duplicate-ID result and missing-key result.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

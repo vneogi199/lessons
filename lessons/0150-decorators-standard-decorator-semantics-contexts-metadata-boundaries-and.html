@@ -151,12 +151,19 @@ class ProjectService {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Compare standard and legacy decorators and identify hidden control-flow or typing risks.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Watch the decorator around a synchronous call</p>
+<p>Call create with Ada surrounded by spaces.</p>
+<div class="foundation-grid"><div>Wrapper starts<br>Log method.start for create</div><div>Method runs<br>Trim spaces<br>Return name Ada</div><div>Finally runs<br>Log method.finish for create</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does the finish log still occur if the method throws?</h3><details><summary>Answer checkpoints</summary><p>Yes. The finally block runs when the call exits through either return or throw.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Would the same wrapper wait for an async method to finish?</h3><details><summary>Answer checkpoints</summary><p>No. It logs after the method returns its Promise. Promise settlement can occur later, so the log is not an async completion measurement.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Decorators, standard decorator semantics, contexts, metadata boundaries, and dependency injection.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>JavaScript plus type syntax.</strong> Declarations describe values and relationships.</li><li><strong>Control flow builds a type model.</strong> Inference, narrowing, generics, and assignability interact.</li><li><strong>Unsafe relationships are reported.</strong> Compiler options decide which uncertainty is rejected.</li><li><strong>Types disappear from JavaScript.</strong> Runtime behavior still needs real boundary validation.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Introduce one unsafe assignment and compare strict checker output with emitted JavaScript.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Type diagnostic, inferred type, declaration output, runtime value, and validation result.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

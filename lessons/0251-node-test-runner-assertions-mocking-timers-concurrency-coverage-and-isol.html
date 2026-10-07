@@ -157,12 +157,19 @@ test(&quot;client propagates cancellation&quot;, async t =&gt; {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose unit, integration, process, and contract tests for a Node service.</li>
-      <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Test cancellation at the adapter boundary</p>
+<p>The fetch mock receives the controller's signal. The test aborts it while the first call is pending, then calls again with that already-aborted signal.</p>
+<div class="foundation-grid"><div>First call<br>Register abort listener<br>Reject on test abort</div><div>Second call<br>Mock invoked again<br>throwIfAborted rejects</div><div>Expected mock count<br>2 calls</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does the second call prove fetch was never invoked?</h3><details><summary>Answer checkpoints</summary><p>No. The assertion expects two invocations. The mock checks the already-aborted signal inside the second call.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does this test verify real network cancellation?</h3><details><summary>Answer checkpoints</summary><p>No. It verifies signal propagation and rejection with an adapter fake. Real transport behavior needs separate evidence.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Node test runner, assertions, mocking, timers, concurrency, coverage, and isolation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>State one observable requirement.</strong> Specify inputs, expected behavior and the failure the test must detect.</li><li><strong>Arrange the relevant environment.</strong> Supply bounded fixtures and controllable dependencies; identify what a fake cannot prove.</li><li><strong>Exercise the real boundary under test.</strong> Trigger the operation or user interaction and await its observable completion.</li><li><strong>Compare outcomes and clean up.</strong> Check success and failure behavior, restore modified state and verify the test fails for a broken implementation.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Make the dependency fail or resolve out of order, then remove the production guard and confirm the test detects the regression.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Requirement, controlled fixture, actual result, failing/passing assertion and cleanup evidence; browser behavior needs browser verification.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>

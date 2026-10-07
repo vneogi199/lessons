@@ -149,12 +149,19 @@ assert evidence[&quot;open_file_limit&quot;] == resource.RLIM_INFINITY or eviden
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what containers do and do not isolate and debug a slow or terminated service from application symptoms down to kernel evidence.</li>
-      <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A process snapshot has a limited boundary</p>
+<p>The read-only helper reports one process's PID, CPU usage and open-file limit.</p>
+<div class="foundation-grid"><div>Measured scope<br>This process<br>User CPU time<br>System CPU time<br>Descriptor limit</div><div>Not established by this snapshot<br>Container-wide usage<br>Namespace isolation<br>cgroup throttling<br>Cause of an OOM exit</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Can you call a CPU-throttle incident confirmed from these fields alone?</h3><details><summary>Answer checkpoints</summary><p>No. Correlate the process behavior with actual controller counters and other relevant evidence.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why does the assertion permit RLIM_INFINITY explicitly?</h3><details><summary>Answer checkpoints</summary><p>An unlimited limit uses a platform sentinel that need not be a positive number. A simple positive-value test would reject a valid unlimited setting.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Namespaces, cgroups, containers, virtualization, resource limits, observability, and systems debugging capstone.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>User code requests an operation.</strong> A thread supplies arguments through a library or runtime boundary.</li><li><strong>The kernel validates and coordinates.</strong> Permissions, descriptors, scheduling, memory, and isolation rules apply.</li><li><strong>A CPU, page, file, or device changes.</strong> Kernel subsystems perform work while preserving ownership and concurrency invariants.</li><li><strong>Control and evidence return.</strong> A value, error, signal, trace, metric, or durable state makes the result visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Constrain or fail one resource and predict the syscall result and kernel evidence.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Constrain or fail one resource and predict the syscall result and kernel evidence.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Return values, errno, process state, scheduler events, memory counters, file metadata, and resource limits.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

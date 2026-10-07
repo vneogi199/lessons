@@ -154,12 +154,19 @@ console.assert(sawTemporalDeadZone, &quot;expected access before initialization 
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Replace the vague claim declarations move upward with the actual binding-creation and initialization sequence.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">An early lexical read is not the same as an early var read</p>
+<p>Compare reading temporal before its declaration executes in each version of the experiment.</p>
+<div class="foundation-grid"><div>let temporal = 1 later<br>Binding exists, uninitialized<br>Early read → ReferenceError</div><div>var temporal = 1 later<br>Binding initialized to undefined<br>Early read → undefined</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would the early var read produce the later value 1?</h3><details><summary>Answer checkpoints</summary><p>No. Initialization to undefined does not execute the later assignment ahead of time.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does const prevent changes to an object's properties?</h3><details><summary>Answer checkpoints</summary><p>No. It prevents reassigning that binding. Mutability of the referenced object is a separate property.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Hoisting, var, let, const, temporal dead zone, and global bindings.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Code establishes bindings.</strong> Declaration instantiation creates and sometimes initializes names.</li><li><strong>A reference searches environments.</strong> Outer links select the nearest matching binding.</li><li><strong>The running context uses it.</strong> Calls, closures, and blocks read or update the binding.</li><li><strong>Value, error, or retention appears.</strong> Output and heap evidence reveal the selected environment.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Shadow or capture one binding and predict every lookup and lifetime.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Shadow or capture one binding and predict every lookup and lifetime.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Debugger scopes, call stack, console values, ReferenceError, and heap retaining path.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

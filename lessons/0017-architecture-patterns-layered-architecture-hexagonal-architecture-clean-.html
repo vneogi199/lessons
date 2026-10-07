@@ -156,12 +156,19 @@ export class PlaceOrder {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose an architecture from team, domain, change, deployment, consistency, and operational constraints without confusing folder names with boundaries.</li>
-      <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A lost commit reply leaves a question</p>
+<p>The use case reads a draft order, saves it as placed, then asks the unit of work to commit.</p>
+<div class="foundation-grid"><div>Known success<br>Save placed<br>Commit succeeds<br>Reply reaches caller</div><div>Ambiguous result<br>Save placed<br>Commit may succeed<br>Reply is lost</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does calling rollback after a lost reply prove that the order was not placed?</h3><details><summary>Answer checkpoints</summary><p>No. The commit may already have completed. Reconcile the stored result and use an idempotent retry design before repeating the action.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What does a fake unit-of-work test establish?</h3><details><summary>Answer checkpoints</summary><p>It can check the caller's save, commit and rollback branches. It does not establish database durability, isolation or safe concurrent placement.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Architecture patterns, layered architecture, hexagonal architecture, clean architecture, vertical slices, repository, unit of work, and modular monoliths.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A use case enters one application boundary.</strong> Validated input, identity, transaction need, and expected outcome are explicit.</li><li><strong>Domain and application rules decide.</strong> Stable business logic depends on owned ports rather than frameworks or vendors.</li><li><strong>Infrastructure performs external work.</strong> HTTP, database, queue, clock, and model details translate at the edge.</li><li><strong>One observable outcome completes.</strong> Transaction state, response, events, tests, and telemetry prove boundary behavior.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Replace one database adapter and move one feature between folders without changing the domain or application contract.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Replace one database adapter and move one feature between folders without changing the domain or application contract.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Import graph, use-case test, transaction trace, adapter contract test, changed files, deployment boundary, and response.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>

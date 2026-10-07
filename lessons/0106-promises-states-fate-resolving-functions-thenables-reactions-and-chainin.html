@@ -151,12 +151,19 @@ console.assert(trace.join(&quot;|&quot;) === &quot;sync:start|sync:end|reaction:
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Distinguish resolved from fulfilled and explain why promise callbacks never run synchronously.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">The first resolution wins</p>
+<p>The supplied thenable tries to resolve 40, reject, then resolve 99.</p>
+<div class="foundation-grid"><div>Resolution attempts<br>40: accepted<br>Later rejection: ignored<br>99: ignored</div><div>Reaction chain<br>Receive 40<br>Add 2 → 42<br>Run finally<br>Fulfill with 42</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why does sync:end appear before reaction:40?</h3><details><summary>Answer checkpoints</summary><p>The registered reaction runs asynchronously after the current synchronous work. Calling the resolving function does not run that reaction inline.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Would a throw inside finally preserve the value 42?</h3><details><summary>Answer checkpoints</summary><p>No. A throwing finally can replace the prior outcome with rejection. The supplied callback does not throw.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Promises, states, fate, resolving functions, thenables, reactions, and chaining.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Synchronous code runs.</strong> Calls execute until the stack becomes empty.</li><li><strong>Async work registers continuation.</strong> Promise reactions and tasks enter different queues.</li><li><strong>Event loop chooses ready work.</strong> Microtasks drain before the next task and render opportunity.</li><li><strong>Continuation observes state.</strong> Order, errors, and UI timing expose the scheduling model.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Mix a timer, resolved promise, and synchronous log; predict exact output order.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Mix a timer, resolved promise, and synchronous log; predict exact output order.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Console order, task timestamps, unhandled rejection, and render timing.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

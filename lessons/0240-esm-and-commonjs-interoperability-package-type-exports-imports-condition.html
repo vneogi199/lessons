@@ -151,12 +151,19 @@ console.log(import.meta.url, import.meta.dirname, config);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Diagnose ERR_REQUIRE_ESM and the dual-package hazard from the real loader rules.</li>
-      <li>Explain how a module import works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Two package entry points can create two state owners</p>
+<p>The package directs import to dist/index.js and require to dist/index.cjs.</p>
+<div class="foundation-grid"><div>ESM consumer<br>Loads index.js</div><div>CommonJS consumer<br>Loads index.cjs</div><div>Shared-state question<br>Do both reach one implementation<br>or create independent instances?</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Do matching function names prove both consumers share one cache?</h3><details><summary>Answer checkpoints</summary><p>No. Separate implementations can hold separate state. Test the intended identity and state behavior.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Is testing only the ESM import enough for this package?</h3><details><summary>Answer checkpoints</summary><p>No. The exports map advertises both consumption paths. Check both from the published artifact.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind ESM and CommonJS interoperability, package type, exports, imports, conditions, and dual-package hazards.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Code requests one module.</strong> Syntax, package type, URL, and conditions choose the loader model.</li><li><strong>Node selects an exact resource.</strong> Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</li><li><strong>Format is parsed and evaluated.</strong> Cache insertion, linking, interop, cycles, and type stripping affect initialization.</li><li><strong>Consumer observes the public surface.</strong> Namespace shape, shared state, errors, and packed artifacts prove behavior.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a module import. Name a failure mode. Explain the evidence you would inspect."></textarea>

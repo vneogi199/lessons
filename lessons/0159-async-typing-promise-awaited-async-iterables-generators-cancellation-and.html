@@ -162,12 +162,19 @@ async function* pages&lt;T&gt;(
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what async types express and which scheduling, cancellation, and rejection behavior remains runtime-only.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Yield two items, then return the count</p>
+<p>Suppose the parser returns one page with items A and B and no next cursor.</p>
+<div class="foundation-grid"><div>First yield<br>Item A<br>Count: 1</div><div>Second yield<br>Item B<br>Count: 2</div><div>Generator completion<br>Return value: 2<br>No next page</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Is the final count a third yielded item?</h3><details><summary>Answer checkpoints</summary><p>No. The generator return value and yielded values occupy different protocol slots.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What if nextCursor points to another origin?</h3><details><summary>Answer checkpoints</summary><p>The explicit origin check throws before that next fetch. The generic item type does not enforce this security rule.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Async typing, Promise, Awaited, async iterables, generators, cancellation, and error channels.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Domain types describe intent.</strong> Commands, states, results, and ports exclude known-invalid combinations.</li><li><strong>Framework or host values are translated.</strong> React, Node, async, storage, and model details stay at boundaries.</li><li><strong>JavaScript performs the operation.</strong> Scheduling, I/O, cancellation, and errors remain real behavior.</li><li><strong>Types and operation agree.</strong> Type tests, runtime tests, telemetry, and failure paths verify the design.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Type diagnostic, parser output, async result, cleanup, telemetry, declaration, and runtime test.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -2,6 +2,8 @@
 
 ## Knowledge
 
+- [Harvard: evaluating and negotiating offers](https://careerservices.fas.harvard.edu/resources/hes-evaluating-and-negotiating-job-offers-2/) and [Stanford: negotiating](https://www.gsb.stanford.edu/alumni/career-resources/job-search/negotiating): preparation and offer comparison for the negotiation rehearsal. These are general career guidance, not current local salary benchmarks or legal advice.
+
 - [Claude Agent SDK Python reference](https://code.claude.com/docs/en/agent-sdk/python), [permissions](https://code.claude.com/docs/en/agent-sdk/permissions), [sessions](https://code.claude.com/docs/en/agent-sdk/sessions) and [secure deployment](https://code.claude.com/docs/en/agent-sdk/secure-deployment): runtime options, approval order, session ownership and isolation for the production AI extension.
 - [Logfire FastAPI instrumentation](https://pydantic.dev/docs/logfire/integrations/web-frameworks/fastapi/), [scrubbing](https://pydantic.dev/docs/logfire/instrument/python/scrubbing/) and [configuration](https://pydantic.dev/docs/logfire/manage/configuration/): data collection boundaries and explicit export settings.
 - [Agent evaluation methods](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents): tasks, trials, observable trajectories and grader choices; use with the synthetic multi-turn fixtures.

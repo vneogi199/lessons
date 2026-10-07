@@ -185,12 +185,19 @@ console.log(&quot;Boundary checks passed&quot;);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Why can a number-returning callback satisfy () =&gt; void, and why does changing an input from any to unknown still require runtime validation?</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Check the value before reading the project</p>
+<p>The parser accepts an unknown value. Compare two incoming records.</p>
+<div class="foundation-grid"><div>Record A<br>id: p1<br>name: Demo<br>Both fields are strings</div><div>Record B<br>id: p1<br>name: 7<br>Name is a number</div><div>Parser outcomes<br>A returns a project<br>B throws TypeError</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would an empty string ID pass this parser?</h3><details><summary>Answer checkpoints</summary><p>Yes. The parser checks field types. Add a separate nonempty-ID rule if the application requires one.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. The void callback pushes 7 into an empty array. What happens to its return value?</h3><details><summary>Answer checkpoints</summary><p>The JavaScript call returns 1, the new array length. The void callback type tells typed callers to ignore the result; it does not remove that runtime value.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind any, unknown, never, void, undefined, null, and top or bottom types.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>External data enters as unknown.</strong> The annotation permits any input value but forbids assuming it is a project.</li><li><strong>Runtime guards inspect the input.</strong> Reject null and non-objects, then check id and name are strings.</li><li><strong>Return a checked project value.</strong> Create a new object containing only the validated fields.</li><li><strong>Check types and runtime separately.</strong> Compiler checks reject unsafe assignments; runtime checks reject malformed data.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change name from a string to a number. Predict the runtime error, then replace unknown with any and compare the protection the compiler provides.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change name from a string to a number. Predict the runtime error, then replace unknown with any and compare the protection the compiler provides.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: tsc accepts the expected-error annotations; runtime prints Boundary checks passed; null, undefined, missing fields, and a numeric name are rejected.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

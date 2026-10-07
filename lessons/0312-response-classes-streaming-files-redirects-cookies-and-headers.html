@@ -151,12 +151,19 @@ async def latest(): return &quot;/reports/current&quot;</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose between returning data and returning a Response directly and describe what validation is bypassed.</li>
-      <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Export a name containing a comma as one CSV field</p>
+<p>Suppose project 7 has the name Rates, Europe. The export writes the ID and name with csv.writer.</p>
+<div class="foundation-grid"><div>Logical row<br>ID: 7<br>Name: Rates, Europe</div><div>CSV row<br>7,&quot;Rates, Europe&quot;</div><div>CSV reader<br>Two fields<br>Name keeps its comma</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does quoting also neutralize a spreadsheet formula?</h3><details><summary>Answer checkpoints</summary><p>No. Formula injection requires a separate spreadsheet-safe export policy.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the generator assemble the whole export before yielding?</h3><details><summary>Answer checkpoints</summary><p>No. It yields the header and then each encoded row. The repository iterator must honor its own resource and batching contract.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Response classes, streaming, files, redirects, cookies, and headers.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Choose the response representation.</strong> Declare status, media type and headers; returning a Response directly bypasses automatic response-model conversion and filtering.</li><li><strong>Create the body or stream.</strong> JSON, files, redirects and streamed chunks have different buffering and lifecycle requirements.</li><li><strong>Start the response, then send body events.</strong> Set cookies and headers before response start; a later stream failure cannot replace an already-sent status.</li><li><strong>Release resources on completion or failure.</strong> Close owned files and generators and test client disconnects with the actual server stack.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Compare ordinary JSON with a directly returned Response, then fail a stream after its first chunk.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Content type, headers, emitted bytes, response-model filtering and cleanup; buffered test clients do not prove live chunk timing.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>

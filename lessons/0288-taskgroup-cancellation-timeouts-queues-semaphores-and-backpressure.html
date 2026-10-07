@@ -170,12 +170,19 @@ asyncio.run(check())
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain cancellation propagation, TaskGroup failure semantics, backpressure, and why gather can be the wrong ownership model.</li>
-      <li>Explain how a concurrent task works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Account for stop messages as well as work items</p>
+<p>Four workers share the bounded queue. After submitting work, the producer puts four None sentinels into it.</p>
+<div class="foundation-grid"><div>Normal item<br>Process under timeout<br>Call task_done</div><div>None sentinel<br>Return from worker<br>Finally calls task_done</div><div>queue.join<br>Wait for every enqueued item<br>Including all four sentinels</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. What if the sentinel path returns without task_done?</h3><details><summary>Answer checkpoints</summary><p>The queue's unfinished count remains positive, so join can wait indefinitely.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does task_done prove the effect was committed?</h3><details><summary>Answer checkpoints</summary><p>No. It is queue accounting. This in-memory fixture provides no durable receipt or recovery after restart.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind TaskGroup, cancellation, timeouts, queues, semaphores, and backpressure.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A callable or coroutine is created.</strong> Its wait pattern and CPU cost determine a boundary.</li><li><strong>Loop, thread, or process owns it.</strong> The scheduler decides when execution can progress.</li><li><strong>Work waits or consumes CPU.</strong> Cancellation and synchronization shape interleaving.</li><li><strong>Result, error, or cancellation returns.</strong> The owner waits for cleanup before continuing.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Run the workload once normally and once with blocking, cancellation, or worker failure.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Run the workload once normally and once with blocking, cancellation, or worker failure.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>

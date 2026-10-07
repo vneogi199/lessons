@@ -164,12 +164,19 @@ for source, target, amount in [(a, a, 1), (a, b, -1), (a, b, True), (a, b, 1000)
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>State the invariant protected by synchronization and distinguish mutual exclusion, coordination, atomicity, starvation, and deadlock.</li>
-      <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Opposite transfers use the same lock order</p>
+<p>Accounts A and B each start at 100. One thread transfers 10 from A to B; another transfers 20 from B to A.</p>
+<div class="foundation-grid"><div>Both threads<br>Acquire lower-object-id lock<br>Then higher-object-id lock<br>Transfer while holding both</div><div>Final balances<br>A: 100 − 10 + 20 = 110<br>B: 100 + 10 − 20 = 90<br>Total: 200</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why not always lock the source account first?</h3><details><summary>Answer checkpoints</summary><p>The opposite transfers could each hold one account and wait for the other. A common acquisition order removes that circular wait for this operation.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do separately created Account objects for the same business account share protection?</h3><details><summary>Answer checkpoints</summary><p>No. Their locks are different. This design requires one shared object per account and cooperating readers and writers. It is not a cross-process transaction.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Race conditions, locks, semaphores, condition variables, atomics, deadlocks, and lock ordering.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Reject self-transfer and invalid amount.</strong> Acquiring the same non-reentrant lock twice would deadlock.</li><li><strong>Sort live objects by identity.</strong> Both transfer directions acquire the same two locks in the same order.</li><li><strong>Check funds while holding locks.</strong> Debit and credit occur together in the cooperating process.</li><li><strong>Exit both lock contexts.</strong> Verify balances and failed-transfer preservation; this is not durable storage.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: What breaks if two objects represent the same bank account?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: What breaks if two objects represent the same bank account?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: One shared object/lock per account is required; lock ordering alone does not enforce domain identity.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>
