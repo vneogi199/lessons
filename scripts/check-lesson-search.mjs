@@ -16,6 +16,9 @@ for (const lesson of lessons) {
   assert.ok(matchesLesson(lesson, lesson.title.toUpperCase()));
 }
 assert.ok(matchesLesson({ title: "Python async context managers" }, " context PYTHON "));
+for (const query of ["Logfire", "Harness engineering", "Replayable traces", "Claude Agent SDK", "multi-turn", "p99"]) {
+  assert.ok(lessons.some(lesson => matchesLesson(lesson, query)), query);
+}
 assert.equal(lessons.filter(lesson => matchesLesson(lesson, "999999")).length, 0);
 assert.equal(lessons.filter(lesson => matchesLesson(lesson, "unlikely-no-such-lesson")).length, 0);
 

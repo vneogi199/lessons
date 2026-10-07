@@ -1,0 +1,34 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>p50, p95 and p99 by stage</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="production-ai-depth.html">Practice sequence</a><a href="../practice/ai-metrics/README.md">Metrics implementation</a></nav><h1>p50, p95 and p99 by stage</h1>
+<p>A percentile locates a value in an ordered set. p50 describes its middle. p95 and p99 describe the slower tail. Always state the population and time window: “p95 of successful model attempts over five minutes” differs from “p95 of all client requests.”</p>
+<div class="example"><p>Ten children wait 1, 2, 3, 4, 5, 6, 7, 8, 9 and 100 seconds. With the nearest-rank convention, p50 is 5 seconds; p95 and p99 are both 100 seconds. Ten observations give a very coarse tail estimate. A smooth chart does not create more evidence.</p></div>
+<h2>Measure stage boundaries explicitly</h2>
+<table><thead><tr><th>Stage</th><th>Start and end</th><th>Population</th></tr></thead><tbody>
+<tr><td>queue</td><td>Admission wait begins to execution slot acquired or rejected</td><td>Every admission attempt</td></tr>
+<tr><td>validation</td><td>Input validation starts to accept/reject</td><td>Every input reaching validation</td></tr>
+<tr><td>retrieval</td><td>Authorized search starts to usable results or failure</td><td>Retrieval attempts; cache hits may bypass it</td></tr>
+<tr><td>model</td><td>One provider attempt starts to completion/error/cancellation</td><td>Every attempt, including retries</td></tr>
+<tr><td>tool</td><td>Authorized tool dispatch to observed outcome</td><td>Tool attempts; unknown effects remain labelled</td></tr>
+<tr><td>response</td><td>Output validation/serialization starts to completion</td><td>Requests reaching that stage</td></tr>
+</tbody></table>
+<p>Use a monotonic clock for elapsed time within a process. Do not subtract wall-clock timestamps from different machines unless your measurement accounts for clock uncertainty. Record the full request duration separately, including queue wait and retries. For streaming, also measure time to the first answer token actually released to the client.</p>
+<h2>Aggregate buckets before calculating percentiles</h2>
+<p>The metrics adapter now supplies <code>ai_stage_seconds</code> with bounded stage and outcome labels. Its dashboard has separate p50, p95 and p99 panels. The following classic-histogram query merges compatible bucket counts across instances before estimating a percentile. Keep the same bucket boundaries across the fleet. See <a href="https://prometheus.io/docs/practices/histograms/">Prometheus histogram guidance</a>.</p>
+<pre>histogram_quantile(0.95,
+  sum by (le, stage) (rate(ai_stage_seconds_bucket[5m]))
+)
+# Change 0.95 to 0.50 or 0.99 for the other panels.
+# Keep outcome in the grouping to compare success/error populations.
+sum by (stage) (increase(ai_stage_seconds_count[5m]))</pre>
+<p>The last query is sample count. Put it beside tail latency. An empty stage has no percentile, not a zero-second percentile. Bucket interpolation gives an estimate; choose boundaries near the thresholds you need to investigate. An overflow bucket cannot describe arbitrarily large latency precisely. <a href="https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile">The query reference</a> defines the calculation.</p>
+<h2>Do not add percentiles</h2>
+<p>Consider 100 synthetic requests. Request 1 spends ten seconds in retrieval and zero in generation. Request 2 does the reverse. The other 98 spend zero in both. Each stage's nearest-rank p99 is zero, yet request p99 is ten seconds. Stage percentiles come from different ranked populations. Measure total request latency directly.</p>
+<p>Parallel stages overlap. Two 200 ms reads may add about 200 ms to the critical path, not 400 ms. Parent spans already include child time, so adding all span durations double-counts work. Use traces to inspect overlap and histograms to compare populations.</p>
+<p>Do not average p95 values from pods either. A quiet pod and a busy pod have different weights. Sum histogram buckets, then calculate the fleet quantile. Filter by environment and service before merging; combining unrelated workloads can conceal a regression.</p>
+<h2>Diagnose a slow release</h2>
+<p>Suppose queue p99 rises while model p95 stays flat. Check admission concurrency, pool waits and retry amplification before switching models. Compare offered load, successful throughput, error rate, cache hit rate and stage counts. A faster p95 caused by rejecting slow requests is not automatically an improvement.</p>
+<p>The offline lab computes exact nearest-rank values for tiny arrays and demonstrates non-additivity. The supplied Prometheus adapter uses histogram estimates. Neither test establishes real service latency. Importing the dashboard and load testing require an existing approved environment.</p>
+<details><summary>Interview: why is p99 unstable with low traffic?</summary><p>Few samples place the percentile near a small number of observations. One slow request can move it sharply. Show counts, use an appropriate window, and retain incident traces. Do not hide long failures by treating timeouts as missing data.</p></details>
+<details><summary>MCQ: two pods report p95=1s and p95=9s. Choose: A) fleet p95 is 5s; B) merge their histogram buckets.</summary><p>B. The two quantiles omit sample counts and distribution shape. Their arithmetic mean is not the fleet percentile.</p></details>
+<p>Tomorrow, reproduce the non-additivity example without notes. Ask your teacher to check the denominator of every metric in your proposed dashboard.</p>
+</main></body></html>

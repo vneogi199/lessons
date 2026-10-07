@@ -21,3 +21,16 @@ Practice: with two known attempts costing $0.00032 each and one success, what is
 Ask the teacher to review your provider usage mapping before connecting real billing data.
 
 Sources: [Prometheus histograms](https://prometheus.io/docs/practices/histograms/), [Python client multiprocess mode](https://prometheus.github.io/client_python/multiprocess/), [Grafana dashboard JSON](https://grafana.com/docs/grafana/latest/visualizations/dashboards/build-dashboards/view-dashboard-json-model/).
+## Stage latency extension
+
+Read [p50/p95/p99 by stage](../../reference/stage-latency-percentiles.html).
+Call `metrics.stage(stage, outcome, elapsed_seconds)` once for each attempt,
+including failed retries. Stage names are queue, validation, retrieval, model,
+tool and response. Use a monotonic timer. Do not record zero for skipped stages.
+The dashboard includes three per-stage percentile panels and a count panel.
+They aggregate all outcomes; group by outcome as well for failure comparisons.
+Only merge matching service/environment series with identical bucket boundaries.
+The supplied dashboard assumes a dedicated data source for this teaching app.
+Stage percentiles cannot be added or averaged into request percentiles.
+The extra Prometheus test is supplied; runtime and dashboard import require
+existing packages/services and are not claimed here.
