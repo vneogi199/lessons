@@ -4,6 +4,19 @@ from metrics import Metrics
 
 
 class MetricsTests(unittest.TestCase):
+    def test_stage_attempts_and_bounded_labels(self):
+        m = Metrics()
+        m.stage("model", "error", 2)
+        m.stage("model", "success", 1)
+        labels = {"stage": "model", "outcome": "error"}
+        self.assertEqual(m.registry.get_sample_value("ai_stage_seconds_count", labels), 1)
+        self.assertEqual(m.registry.get_sample_value("ai_stage_seconds_sum", labels), 2)
+        for stage, outcome, value in [("customer-123", "success", 1),
+                                      ("model", "unknown", 1), ("model", "error", -1),
+                                      ("model", "success", True), ("tool", "success", float("inf"))]:
+            with self.assertRaises(ValueError):
+                m.stage(stage, outcome, value)
+
     def test_billed_failed_retry_and_cache(self):
         m = Metrics()
         usage = dict(input=100, cache_read=200, cache_write=0, output=10)

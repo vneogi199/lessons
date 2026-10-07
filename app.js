@@ -337,7 +337,8 @@
     const data = event.data;
     if (!data || data.version !== 1 || data.lessonId !== activeLessonId || !findLesson(data.lessonId)) return;
     if (data.type === "teach:resize" && Number.isFinite(data.height)) {
-      frame.style.height = `${Math.min(100000, Math.max(700, Math.ceil(data.height)))}px`;
+      const borderHeight = frame.offsetHeight - frame.clientHeight;
+      frame.style.height = `${Math.min(100000, Math.max(700, Math.ceil(data.height) + borderHeight))}px`;
       window.requestAnimationFrame(updateReadingProgress);
       return;
     }

@@ -71,7 +71,7 @@
     if (!normalized) return true;
     const number = normalized.match(/^(?:lesson\s*#?\s*|#)?(\d+)$/);
     if (number) return Number(lesson.number) === Number(number[1]);
-    const text = [lesson.title, lesson.trackTitle].filter(Boolean).join(" ").toLowerCase();
+    const text = [lesson.title, lesson.trackTitle, lesson.searchTerms].filter(Boolean).join(" ").toLowerCase();
     return normalized.split(/\s+/).every(word => text.includes(word));
   }
 

@@ -2,6 +2,12 @@
 
 ## Knowledge
 
+- [Claude Agent SDK Python reference](https://code.claude.com/docs/en/agent-sdk/python), [permissions](https://code.claude.com/docs/en/agent-sdk/permissions), [sessions](https://code.claude.com/docs/en/agent-sdk/sessions) and [secure deployment](https://code.claude.com/docs/en/agent-sdk/secure-deployment): runtime options, approval order, session ownership and isolation for the production AI extension.
+- [Logfire FastAPI instrumentation](https://pydantic.dev/docs/logfire/integrations/web-frameworks/fastapi/), [scrubbing](https://pydantic.dev/docs/logfire/instrument/python/scrubbing/) and [configuration](https://pydantic.dev/docs/logfire/manage/configuration/): data collection boundaries and explicit export settings.
+- [Agent evaluation methods](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents): tasks, trials, observable trajectories and grader choices; use with the synthetic multi-turn fixtures.
+- [Prometheus histograms](https://prometheus.io/docs/practices/histograms/) and [OpenTelemetry traces](https://opentelemetry.io/docs/concepts/signals/traces/): fleet percentile aggregation and causal request structure.
+- [FastAPI lifespan](https://fastapi.tiangolo.com/advanced/events/), [concurrency](https://fastapi.tiangolo.com/async/) and [deployment concepts](https://fastapi.tiangolo.com/deployment/concepts/): resource ownership and capacity reasoning for incident practice.
+
 - [OAuth security BCP](https://www.rfc-editor.org/rfc/rfc9700.html), [OIDC Core](https://openid.net/specs/openid-connect-core-1_0.html) and [device authorization](https://www.rfc-editor.org/rfc/rfc8628.html): grant-selection practice and token lifecycle boundaries.
 - [Claude Code skills](https://code.claude.com/docs/en/skills) and [memory](https://code.claude.com/docs/en/memory): scoped coding-assistant instructions and context practice.
 - [Aikido GitHub integration](https://help.aikido.dev/code-scanning/connect-your-source-code/connect-github-account-to-aikido): optional repository-scoped security review walkthrough.

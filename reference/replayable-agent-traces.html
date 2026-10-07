@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Replayable agent traces</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="production-ai-depth.html">Practice sequence</a><a href="../practice/production-ai/replay.py">Replay adapter</a></nav><h1>Replayable agent traces</h1>
+<p>A trace shows what a run did. A replay fixture supplies recorded responses so you can run application logic again without calling the original services. An ordinary sampled trace may omit bodies, ordering or configuration, so it may not contain enough information for replay.</p>
+<div class="example"><p>Think of replay as practising a conversation with cue cards. Your code asks a question; the fixture checks that it is the expected question and returns the recorded answer. If the question changes, the exercise stops instead of inventing an answer.</p></div>
+<h2>Keep three operations separate</h2>
+<table><thead><tr><th>Operation</th><th>What happens</th><th>Risk</th></tr></thead><tbody>
+<tr><td>Inspect</td><td>Read recorded events</td><td>Private information may be exposed</td></tr>
+<tr><td>Replay</td><td>Run code with recorded model/tool responses</td><td>An accidental live fallback can repeat an effect</td></tr>
+<tr><td>Re-execute</td><td>Call current models and services</td><td>New cost, different outputs and real side effects</td></tr>
+</tbody></table>
+<p>The supplied replay adapter has no network client or dispatch function. It fails on an unexpected call, changed arguments, missing response or unused response. This makes accidental live fallback impossible within that adapter. Keep the real executor out of the replay process too.</p>
+<h2>Record a reproducible boundary</h2>
+<p>Keep a schema version, application revision, workflow version, prompt hash, model identifier, tool schema version and fixture identity. Each recorded call has a sequence number, tool name, canonical arguments and response. Preserve recorded errors as well as successes. Capture the application's clock and random inputs when they affect decisions.</p>
+<p>For concurrent tools, a single global sequence may reject valid alternative completion orders. Use per-call IDs and explicit dependencies for those workflows. The supplied lab intentionally covers sequential calls only. Its SHA-256 digest detects accidental fixture changes when compared with a separately pinned digest; it does not authenticate a maliciously replaced fixture and digest.</p>
+<pre>Recorded call 1: read_limit({account: "A"}) → {limit: 10}
+Recorded call 2: read_exposure({account: "A"}) → {exposure: 8}
+Request: add 3 units
+Replay decision: 8 + 3 &gt; 10 → needs_review</pre>
+<p>Change the proposed quantity to one. The same read responses can support the changed decision, but this is now a counterfactual test. Do not label it the original run. Change the account to B and the adapter must reject the argument mismatch.</p>
+<h2>Do not replay writes against production</h2>
+<p>A recorded “ticket created” result represents a past effect. During replay, return that fixture result without creating a ticket. Live recovery is a separate path: verify current authority, find the original operation key and reconcile the external result. Checkpoint replay alone cannot establish exactly-once effects. Continue with <a href="agent-workflow-practice.html">the existing approval and checkpoint lab</a>.</p>
+<p>Store sanitized fixtures separately from operational traces. Scrubbing can remove information needed for exact replay; then use a synthetic equivalent and document the substitution. Keep access control, retention and deletion policy on replay artifacts. Do not save hidden model reasoning. Tool proposals, observations, policy decisions and terminal reasons are sufficient boundaries for these tests.</p>
+<h2>Run the failure cases</h2>
+<p>From the practice directory, run the supplied unittest suite in an existing Python environment. Predict which cases fail before reading the assertions. The suite tests normal replay, changed arguments, missing calls, unused calls and a changed fixture digest. The adapter makes defensive copies so mutations by a caller cannot rewrite later fixture values.</p>
+<details><summary>Interview: does temperature zero make a replay fixture unnecessary?</summary><p>No. Provider revisions, retrieval changes, tool state and execution timing can change results. A recorded boundary isolates application behavior. A fresh model evaluation answers a different question.</p></details>
+<details><summary>MCQ: the fixture has no response for a proposed tool. Choose: A) invoke the live tool; B) stop with a replay mismatch.</summary><p>B. Falling back to a live tool invalidates isolation and can repeat writes. Add a reviewed fixture only after deciding what the changed behavior should be.</p></details>
+<p>Tomorrow, explain the difference between replay and recovery. Ask your teacher whether your fixture contains enough state to reproduce a particular failure. Primary sources: <a href="https://opentelemetry.io/docs/concepts/signals/traces/">trace structure</a> and <a href="https://docs.langchain.com/oss/python/langgraph/persistence">checkpoint persistence</a>.</p>
+</main></body></html>

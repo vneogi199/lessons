@@ -5,6 +5,7 @@ from prometheus_client import CollectorRegistry, Counter, Histogram, generate_la
 
 
 OUTCOMES = {"success", "error", "denied", "cancelled"}
+STAGES = {"queue", "validation", "retrieval", "model", "tool", "response"}
 BUCKETS = (.05, .1, .25, .5, 1, 2, 5, 10, 30, 60, 120)
 
 
@@ -17,6 +18,8 @@ class Metrics:
                                   buckets=BUCKETS, **args)
         self.ttft = Histogram("ai_ttft_seconds", "Request start to first released answer token",
                               buckets=BUCKETS, **args)
+        self.stages = Histogram("ai_stage_seconds", "Individual stage attempts, including failures",
+                                ["stage", "outcome"], buckets=BUCKETS, **args)
         self.no_token = Counter("ai_no_token", "Tasks without a released answer token", **args)
         self.attempts = Counter("ai_attempts", "All model attempts including failed retries",
                                 ["model", "outcome"], **args)
@@ -26,6 +29,12 @@ class Metrics:
                             ["model"], **args)
         self.unknown = Counter("ai_unknown_cost_attempts", "Attempts missing usage or price",
                                ["model"], **args)
+
+    def stage(self, stage, outcome, seconds):
+        if (stage not in STAGES or outcome not in OUTCOMES
+                or type(seconds) not in {float, int} or not math.isfinite(seconds) or seconds < 0):
+            raise ValueError("known stage/outcome and finite nonnegative duration required")
+        self.stages.labels(stage, outcome).observe(seconds)
 
     def attempt(self, model, outcome, *, usage=None, prices=None):
         # Prices are USD per million tokens, from a reviewed, versioned price table.
