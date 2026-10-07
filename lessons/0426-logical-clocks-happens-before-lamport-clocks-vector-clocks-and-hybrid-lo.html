@@ -46,23 +46,62 @@
     <h1>Logical clocks, happens-before, Lamport clocks, vector clocks, and hybrid logical clocks</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Logical clocks">
+        <summary>Logical clocks</summary>
+        <p class="concept-definition">Logical clocks track ordering relationships without claiming exact wall-clock time; different designs preserve different information.</p>
+      </details><details open class="concept-card" data-subtopic="happens-before">
+        <summary>happens-before</summary>
+        <p class="concept-definition">Happens-before is a causal partial order built from local program order and message send-before-receive relationships.</p>
+      </details><details open class="concept-card" data-subtopic="Lamport clocks">
+        <summary>Lamport clocks</summary>
+        <p class="concept-definition">A Lamport clock assigns scalar numbers that respect known causal order, but comparing two numbers cannot prove the events were causally related.</p>
+      </details><details open class="concept-card" data-subtopic="vector clocks">
+        <summary>vector clocks</summary>
+        <p class="concept-definition">A vector clock tracks logical progress per participant and can distinguish one version causally following another from concurrent versions.</p>
+      </details><details open class="concept-card" data-subtopic="hybrid logical clocks">
+        <summary>hybrid logical clocks</summary>
+        <p class="concept-definition">Hybrid logical clocks combine physical-time estimates with logical ordering information under a defined update rule.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Message exchange creates causal relationships even when physical clocks disagree. Lamport timestamps preserve those relationships, but a smaller timestamp alone does not prove causation. Vector clocks can distinguish ordered changes from concurrent ones under their participant model. Equal vectors are not concurrent. The two-participant fixture checks comparisons; membership changes, durable counters and hybrid logical clocks need separate implementation.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0426" data-bespoke-example="0426" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Merge concurrent vector histories before recording receipt</figcaption><p>A has vector {A:2}; B has {B:2}.</p><div class="foundation-grid"><div>A versus B<br>Neither dominates</div><div>Component-wise maximum<br>{A:2, B:2}</div><div>A receives B<br>Increment A<br>{A:3, B:2}</div></div><details><summary>Is equality strict dominance?</summary><p>No. Dominance requires at least one strictly greater component and no smaller component.</p></details><details><summary>Does a larger Lamport number prove one event caused another?</summary><p>No. Causality implies increasing Lamport time, but the reverse implication does not hold.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Message exchange creates causal relationships even when physical clocks disagree. Lamport timestamps preserve those relationships, but a smaller timestamp alone does not prove causation. Vector clocks can distinguish ordered changes from concurrent ones under their participant model. Equal vectors are not concurrent. The two-participant fixture checks comparisons; membership changes, durable counters and hybrid logical clocks need separate implementation.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0426" data-bespoke-example="0426" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Merge concurrent vector histories before recording receipt</figcaption><p>A has vector {A:2}; B has {B:2}.</p><div class="foundation-grid"><div>A versus B<br>Neither dominates</div><div>Component-wise maximum<br>{A:2, B:2}</div><div>A receives B<br>Increment A<br>{A:3, B:2}</div></div><details open><summary>Is equality strict dominance?</summary><p>No. Dominance requires at least one strictly greater component and no smaller component.</p></details><details open><summary>Does a larger Lamport number prove one event caused another?</summary><p>No. Causality implies increasing Lamport time, but the reverse implication does not hold.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a distributed request or message</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="distributed-time" aria-label="Mechanism trace: A process observes or changes state then Message carries ordering evidence then Another process merges knowledge then System decides order or concurrency. Experiment: Move one wall clock backward and deliver two independent messages in opposite orders.">
         <li class="trace-stage"><span>01 · LOCAL EVENT</span><details class="trace-explanation" open><summary>A process observes or changes state</summary><p>Wall time, monotonic time, and logical state may all differ.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SEND</span><details class="trace-explanation"><summary>Message carries ordering evidence</summary><p>Timestamp, Lamport value, vector, version, or causal token leaves one process.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RECEIVE</span><details class="trace-explanation"><summary>Another process merges knowledge</summary><p>Delay and skew prevent arrival time from proving original global order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELATE</span><details class="trace-explanation"><summary>System decides order or concurrency</summary><p>Causal relation, conflict, duration, lease check, or arbitrary tie-break becomes explicit.</p></details></li>
       </ol>
@@ -74,34 +113,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Logical clocks">
-        <summary>Logical clocks</summary>
-        <p class="concept-definition">Logical clocks track ordering relationships without claiming exact wall-clock time; different designs preserve different information.</p>
-      </details><details class="concept-card" data-subtopic="happens-before">
-        <summary>happens-before</summary>
-        <p class="concept-definition">Happens-before is a causal partial order built from local program order and message send-before-receive relationships.</p>
-      </details><details class="concept-card" data-subtopic="Lamport clocks">
-        <summary>Lamport clocks</summary>
-        <p class="concept-definition">A Lamport clock assigns scalar numbers that respect known causal order, but comparing two numbers cannot prove the events were causally related.</p>
-      </details><details class="concept-card" data-subtopic="vector clocks">
-        <summary>vector clocks</summary>
-        <p class="concept-definition">A vector clock tracks logical progress per participant and can distinguish one version causally following another from concurrent versions.</p>
-      </details><details class="concept-card" data-subtopic="hybrid logical clocks">
-        <summary>hybrid logical clocks</summary>
-        <p class="concept-definition">Hybrid logical clocks combine physical-time estimates with logical ordering information under a defined update rule.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Implement Lamport and vector-clock updates for three processes and identify causal, concurrent, and arbitrarily tie-broken events.</p>
     <p class="lab-scope">Predict the local example, including a failure and the limit of its guarantee. Supply missing adapters before measuring a bounded workload and recovery behavior. Local assertions alone cannot verify a live distributed protocol or production capacity.</p>
 
@@ -152,8 +172,10 @@ assert.equal(receive(2, 5), 6);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Merge concurrent vector histories before recording receipt</p><p>A has vector {A:2}; B has {B:2}.</p><div class="foundation-grid"><div>A versus B<br>Neither dominates</div><div>Component-wise maximum<br>{A:2, B:2}</div><div>A receives B<br>Increment A<br>{A:3, B:2}</div></div></div>
@@ -221,10 +243,16 @@ assert.equal(receive(2, 5), 6);
       </details>
     </article>
     <p><a href="https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/" target="_blank" rel="noreferrer">Review the lesson source: Lamport: Time, Clocks, and Event Ordering</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@ assert.equal(receive(2, 5), 6);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.microsoft.com/en-us/research/publication/time-clocks-ordering-events-distributed-system/" target="_blank" rel="noreferrer">Lamport: Time, Clocks, and Event Ordering ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

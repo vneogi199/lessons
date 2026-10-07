@@ -46,23 +46,62 @@
     <h1>Delivery semantics, at-most-once, at-least-once, redelivery, and duplicate effects</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Delivery semantics">
+        <summary>Delivery semantics</summary>
+        <p class="concept-definition">Delivery semantics describe message-delivery guarantees under failures, not automatically the number of external business effects.</p>
+      </details><details open class="concept-card" data-subtopic="at-most-once">
+        <summary>at-most-once</summary>
+        <p class="concept-definition">At-most-once processing avoids duplicates by acknowledging before or instead of retrying, which allows loss when failure occurs.</p>
+      </details><details open class="concept-card" data-subtopic="at-least-once">
+        <summary>at-least-once</summary>
+        <p class="concept-definition">At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.</p>
+      </details><details open class="concept-card" data-subtopic="redelivery">
+        <summary>redelivery</summary>
+        <p class="concept-definition">Redelivery retries message delivery after uncertain or failed processing and can repeat previously completed effects.</p>
+      </details><details open class="concept-card" data-subtopic="duplicate effects">
+        <summary>duplicate effects</summary>
+        <p class="concept-definition">Duplicate effects occur when repeated attempts apply a business action more than intended; deduplicate at the authoritative effect boundary.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Acknowledging before an effect risks losing work after a crash. Acknowledging afterward permits delivery again when the effect succeeded but acknowledgement failed. An inbox can make repeated delivery safe for a local effect when both commit in one transaction. That guarantee depends on identity, retained records and durable storage. It does not extend automatically to an external business action.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0435" data-bespoke-example="0435" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Commit local effect before acknowledging delivery</figcaption><p>The consumer claims event E and applies its local effect in one transaction.</p><div class="foundation-grid"><div>Transaction commits<br>Inbox E and effect together</div><div>Crash before acknowledgment<br>Broker can redeliver E</div><div>Redelivery<br>Committed claim already exists<br>Skip repeated local effect</div></div><details><summary>Would acknowledging before the transaction improve safety?</summary><p>No. A crash before commit could lose the effect without redelivery.</p></details><details><summary>Does this transaction protect an unrelated external API call automatically?</summary><p>No. External effects need their own identity and reconciliation contract.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Acknowledging before an effect risks losing work after a crash. Acknowledging afterward permits delivery again when the effect succeeded but acknowledgement failed. An inbox can make repeated delivery safe for a local effect when both commit in one transaction. That guarantee depends on identity, retained records and durable storage. It does not extend automatically to an external business action.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0435" data-bespoke-example="0435" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Commit local effect before acknowledging delivery</figcaption><p>The consumer claims event E and applies its local effect in one transaction.</p><div class="foundation-grid"><div>Transaction commits<br>Inbox E and effect together</div><div>Crash before acknowledgment<br>Broker can redeliver E</div><div>Redelivery<br>Committed claim already exists<br>Skip repeated local effect</div></div><details open><summary>Would acknowledging before the transaction improve safety?</summary><p>No. A crash before commit could lose the effect without redelivery.</p></details><details open><summary>Does this transaction protect an unrelated external API call automatically?</summary><p>No. External effects need their own identity and reconciliation contract.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a distributed request or message</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="message-delivery" aria-label="Mechanism trace: Producer emits identified intent or fact then Durable channel stores and assigns then Consumer creates a local effect then Ack, commit, retry, quarantine, or replay. Experiment: Crash at every boundary before and after the side effect and acknowledgement.">
         <li class="trace-stage"><span>01 · PUBLISH</span><details class="trace-explanation" open><summary>Producer emits identified intent or fact</summary><p>Envelope, partition key, schema, transaction, and acknowledgement requirement enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BROKER</span><details class="trace-explanation"><summary>Durable channel stores and assigns</summary><p>Partition, replica, offset or visibility, retention, flow control, and consumer ownership apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><details class="trace-explanation"><summary>Consumer creates a local effect</summary><p>Ordering, inbox, transaction, timeout, crash, and external dependencies determine success.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Ack, commit, retry, quarantine, or replay</summary><p>Position, lag, attempts, duplicate identity, DLQ state, and business effect prove semantics.</p></details></li>
       </ol>
@@ -74,34 +113,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Delivery semantics">
-        <summary>Delivery semantics</summary>
-        <p class="concept-definition">Delivery semantics describe message-delivery guarantees under failures, not automatically the number of external business effects.</p>
-      </details><details class="concept-card" data-subtopic="at-most-once">
-        <summary>at-most-once</summary>
-        <p class="concept-definition">At-most-once processing avoids duplicates by acknowledging before or instead of retrying, which allows loss when failure occurs.</p>
-      </details><details class="concept-card" data-subtopic="at-least-once">
-        <summary>at-least-once</summary>
-        <p class="concept-definition">At-least-once delivery permits redelivery while retaining unacknowledged work under stated durability, retention and eventual-recovery assumptions. It does not guarantee delivery after arbitrary data loss or expiry, nor does it prevent duplicate business effects.</p>
-      </details><details class="concept-card" data-subtopic="redelivery">
-        <summary>redelivery</summary>
-        <p class="concept-definition">Redelivery retries message delivery after uncertain or failed processing and can repeat previously completed effects.</p>
-      </details><details class="concept-card" data-subtopic="duplicate effects">
-        <summary>duplicate effects</summary>
-        <p class="concept-definition">Duplicate effects occur when repeated attempts apply a business action more than intended; deduplicate at the authoritative effect boundary.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Crash a consumer at every boundary around processing and acknowledgement and verify the claimed delivery semantics against business state.</p>
     <p class="lab-scope">Trace the adapter or SQL fragment through commit, response loss and replay. Name the component that must make each decision and predict its state. Supply the broker, database or workflow adapters before testing actual crash, rebalance and recovery behavior.</p>
 
@@ -139,8 +159,10 @@ async function consume(record, database, broker) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Commit local effect before acknowledging delivery</p><p>The consumer claims event E and applies its local effect in one transaction.</p><div class="foundation-grid"><div>Transaction commits<br>Inbox E and effect together</div><div>Crash before acknowledgment<br>Broker can redeliver E</div><div>Redelivery<br>Committed claim already exists<br>Skip repeated local effect</div></div></div>
@@ -208,10 +230,16 @@ async function consume(record, database, broker) {
       </details>
     </article>
     <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -225,23 +253,23 @@ async function consume(record, database, broker) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Apache Kafka documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

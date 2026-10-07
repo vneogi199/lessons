@@ -9,6 +9,7 @@ import { REVIEWED_CONTENT } from "./reviewed-lesson-content.mjs";
 import { POLARS_CONTENT } from "./polars-content.mjs";
 import { PRODUCTION_DEPTH, productionDepthMarkup } from "./production-depth-links.mjs";
 import { interviewQuestions } from "./lesson-interviews.mjs";
+import { addStudyGuide } from "./lesson-study-guide.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18097,7 +18098,7 @@ const extensionMarkup = extensions.length ? `<section class="card lab"><h2>Apply
     evidenceSummary: `${lesson.title}: completed the orientation check; practical work and senior interview understanding are not verified.`
   }).replaceAll("<", "\\u003c");
 
-  return `<!doctype html>
+  return addStudyGuide(`<!doctype html>
 <html lang="en-US">
 <head>
   <meta charset="utf-8" />
@@ -18311,7 +18312,7 @@ ${!reviewed && (lesson.trackId === "python" || LESSON_EXPLANATIONS[lesson.number
 })();
 </script>
 </body>
-</html>`;
+</html>`);
 }
 
 function reactReferenceHtml(reactLessons) {

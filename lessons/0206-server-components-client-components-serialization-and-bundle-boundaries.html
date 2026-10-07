@@ -46,6 +46,47 @@
     <h1>Server Components, Client Components, serialization, and bundle boundaries</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="4">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Server Components">
+        <summary>Server Components</summary>
+        <p class="concept-definition">A Server Component renders before the client bundle, in a server-only environment. It can read server data and use server-only packages, but it cannot hold interactive browser state.</p>
+      </details><details open class="concept-card" data-subtopic="Client Components">
+        <summary>Client Components</summary>
+        <p class="concept-definition">A Client Component is included in the browser bundle and may use state, effects, event handlers, and browser APIs. The client boundary also becomes a serialization and bundle-size boundary.</p>
+      </details><details open class="concept-card" data-subtopic="serialization">
+        <summary>serialization</summary>
+        <p class="concept-definition">Serialization converts a value into a representation for storage or transport. Define which types, identities, versions, and precision survive the round trip.</p>
+      </details><details open class="concept-card" data-subtopic="bundle boundaries">
+        <summary>bundle boundaries</summary>
+        <p class="concept-definition">Bundle boundaries decide which modules ship to clients or remain on servers, affecting size and secret exposure.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Server and Client Component boundaries control code location, serialization and browser bundle contents. Server-only data access can stay out of the client bundle while a smaller component owns interaction. Client Components may still be pre-rendered on the server, so the directive does not mean browser-only execution. The local like counter only changes local state. Persistence, authorization and sanitization remain separate responsibilities.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>React converts component data into a user interface. React updates the interface when relevant data changes.</p>
@@ -55,18 +96,13 @@
   <figure class="card mechanism-map" data-lesson-map="0206" data-bespoke-example="0206" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A local like count does not update the database</figcaption>
 <p>Suppose the server reads 4 likes. It passes 4 to LikeButton, and the user clicks once.</p>
 <div class="foundation-grid"><div>Server data<br>article.likes: 4</div><div>Client initial state<br>likes: 4</div><div>After click<br>Local likes: 5<br>No persistence call in this example</div></div>
-<details><summary>Does this click prove the article now has 5 stored likes?</summary><p>No. The counter is local state. A real mutation needs persistence and authorization.</p></details>
-<details><summary>Why sanitize the rendered article HTML on the server?</summary><p>The HTML enters a raw-HTML rendering path. Keeping work on the server does not make untrusted content safe.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Server and Client Component boundaries control code location, serialization and browser bundle contents. Server-only data access can stay out of the client bundle while a smaller component owns interaction. Client Components may still be pre-rendered on the server, so the directive does not mean browser-only execution. The local like counter only changes local state. Persistence, authorization and sanitization remain separate responsibilities.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does this click prove the article now has 5 stored likes?</summary><p>No. The counter is local state. A real mutation needs persistence and authorization.</p></details>
+<details open><summary>Why sanitize the rendered article HTML on the server?</summary><p>The HTML enters a raw-HTML rendering path. Keeping work on the server does not make untrusted content safe.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a server-to-client render</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="react-server-client" aria-label="Mechanism trace: A route or action reaches the server then React produces server output then Serializable data crosses then The browser resumes interaction. Experiment: Move one value across the server/client boundary and predict whether serialization succeeds.">
         <li class="trace-stage"><span>01 · REQUEST</span><details class="trace-explanation" open><summary>A route or action reaches the server</summary><p>Authenticate and load server-owned data.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVER</span><details class="trace-explanation"><summary>React produces server output</summary><p>Render HTML or a serialized component/action result.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BOUNDARY</span><details class="trace-explanation"><summary>Serializable data crosses</summary><p>Code and non-serializable values stay on their side.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLIENT</span><details class="trace-explanation"><summary>The browser resumes interaction</summary><p>Hydration or a client update makes behavior observable.</p></details></li>
       </ol>
@@ -78,31 +114,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="4">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Server Components">
-        <summary>Server Components</summary>
-        <p class="concept-definition">A Server Component renders before the client bundle, in a server-only environment. It can read server data and use server-only packages, but it cannot hold interactive browser state.</p>
-      </details><details class="concept-card" data-subtopic="Client Components">
-        <summary>Client Components</summary>
-        <p class="concept-definition">A Client Component is included in the browser bundle and may use state, effects, event handlers, and browser APIs. The client boundary also becomes a serialization and bundle-size boundary.</p>
-      </details><details class="concept-card" data-subtopic="serialization">
-        <summary>serialization</summary>
-        <p class="concept-definition">Serialization converts a value into a representation for storage or transport. Define which types, identities, versions, and precision survive the round trip.</p>
-      </details><details class="concept-card" data-subtopic="bundle boundaries">
-        <summary>bundle boundaries</summary>
-        <p class="concept-definition">Bundle boundaries decide which modules ship to clients or remain on servers, affecting size and secret exposure.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Move data access and a heavy dependency to a Server Component while retaining a small interactive Client Component.</p>
     <p class="lab-scope">Explain the component or exercise specification, then predict the result of changing one input. Component snippets need the named collaborators, React imports and a compatible project. They are not standalone files. Verify browser behavior, framework integration, accessibility and deployment separately.</p>
 
@@ -135,8 +155,10 @@ function LikeButton({ articleId, initialLikes }) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A local like count does not update the database</p>
@@ -196,10 +218,16 @@ function LikeButton({ articleId, initialLikes }) {
       </details>
     </article>
     <p><a href="https://react.dev/reference/rsc/server-components" target="_blank" rel="noreferrer">Review the lesson source: React Server Components reference</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -214,22 +242,22 @@ function LikeButton({ articleId, initialLikes }) {
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://react.dev/reference/rsc/server-components" target="_blank" rel="noreferrer">React Server Components reference ↗</a></div>
     <a href="../reference/react-deep-dive-map.html" target="_blank">React coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

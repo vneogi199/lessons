@@ -46,6 +46,50 @@
     <h1>Discriminated unions, state machines, exhaustiveness, never, and illegal states</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Discriminated unions">
+        <summary>Discriminated unions</summary>
+        <p class="concept-definition">A discriminated union gives every variant a shared literal property, allowing control flow to correlate the discriminant with the correct remaining fields.</p>
+      </details><details open class="concept-card" data-subtopic="state machines">
+        <summary>state machines</summary>
+        <p class="concept-definition">A state machine defines allowed states and the rules for moving between them. A union models state shapes; a transition function must separately enforce temporal rules, such as accepting a completion only for the active request ID.</p>
+      </details><details open class="concept-card" data-subtopic="exhaustiveness">
+        <summary>exhaustiveness</summary>
+        <p class="concept-definition">Exhaustiveness proves every currently possible variant is handled. Assigning the remainder to never turns a new variant into compile-time change feedback.</p>
+      </details><details open class="concept-card" data-subtopic="never">
+        <summary>never</summary>
+        <p class="concept-definition">never represents values that cannot occur. It appears for non-returning functions, impossible intersections, and branches eliminated by exhaustive analysis.</p>
+      </details><details open class="concept-card" data-subtopic="illegal states">
+        <summary>illegal states</summary>
+        <p class="concept-definition">A modeled contradiction, such as success without required data, can be rejected by the checker. A discriminated union removes such combinations from checked construction, but does not automatically prevent illegal transitions, stale events, assertions, or malformed external input.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.</p>
+      <p class="analogy">A parcel has a labeled stage and stage-specific evidence. A valid delivered record does not prove it followed a valid route; transition rules must check the journey.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +99,13 @@
   <figure class="card mechanism-map" data-lesson-map="0134" data-bespoke-example="0134" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Ignore the response from the older request</figcaption>
 <p>Request r1 starts first. Request r2 starts before r1 finishes. The reducer uses a latest-start-wins policy.</p>
 <div class="foundation-grid"><div>Start r1<br>loading, requestId r1</div><div>Start r2<br>loading, requestId r2</div><div>Resolve r1 with old<br>Keep loading r2</div><div>Resolve r2 with new<br>success, data new</div></div>
-<details><summary>Why does the old response leave the state unchanged?</summary><p>Its request ID does not match the active loading state. Checking only for loading would allow the older response to replace newer work.</p></details>
-<details><summary>Does ignoring r1 cancel its network request?</summary><p>No. The reducer controls local state. Cancellation needs a separate mechanism, and remote work may already have occurred.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A literal status ties each variant to its required fields. Switching on status narrows the value; passing the remainder to a never parameter catches a forgotten variant. This protects modeled shapes in checked code, not temporal rules or untrusted input. The reducer separately enforces latest-start-wins using a unique request ID; stale completions leave state unchanged.</p>
-      <p class="analogy">A parcel has a labeled stage and stage-specific evidence. A valid delivered record does not prove it followed a valid route; transition rules must check the journey.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Why does the old response leave the state unchanged?</summary><p>Its request ID does not match the active loading state. Checking only for loading would allow the older response to replace newer work.</p></details>
+<details open><summary>Does ignoring r1 cancel its network request?</summary><p>No. The reducer controls local state. Cancellation needs a separate mechanism, and remote work may already have occurred.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-state-transitions" aria-label="Mechanism trace: Loading r1 then Loading r2 then Completion for r1 arrives then Success for r2. Experiment: Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.">
         <li class="trace-stage"><span>01 · START</span><details class="trace-explanation" open><summary>Loading r1</summary><p>The loading shape requires an attempt identifier.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SUPERSEDE</span><details class="trace-explanation"><summary>Loading r2</summary><p>A newer start becomes the only active attempt under this policy.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · IGNORE</span><details class="trace-explanation"><summary>Completion for r1 arrives</summary><p>Its shape is valid, but its ID is stale. Keep loading r2.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETE</span><details class="trace-explanation"><summary>Success for r2</summary><p>Matching completion supplies data. The exhaustive renderer handles the resulting variant.</p></details></li>
       </ol>
@@ -78,34 +117,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Discriminated unions">
-        <summary>Discriminated unions</summary>
-        <p class="concept-definition">A discriminated union gives every variant a shared literal property, allowing control flow to correlate the discriminant with the correct remaining fields.</p>
-      </details><details class="concept-card" data-subtopic="state machines">
-        <summary>state machines</summary>
-        <p class="concept-definition">A state machine defines allowed states and the rules for moving between them. A union models state shapes; a transition function must separately enforce temporal rules, such as accepting a completion only for the active request ID.</p>
-      </details><details class="concept-card" data-subtopic="exhaustiveness">
-        <summary>exhaustiveness</summary>
-        <p class="concept-definition">Exhaustiveness proves every currently possible variant is handled. Assigning the remainder to never turns a new variant into compile-time change feedback.</p>
-      </details><details class="concept-card" data-subtopic="never">
-        <summary>never</summary>
-        <p class="concept-definition">never represents values that cannot occur. It appears for non-returning functions, impossible intersections, and branches eliminated by exhaustive analysis.</p>
-      </details><details class="concept-card" data-subtopic="illegal states">
-        <summary>illegal states</summary>
-        <p class="concept-definition">A modeled contradiction, such as success without required data, can be rejected by the checker. A discriminated union removes such combinations from checked construction, but does not automatically prevent illegal transitions, stale events, assertions, or malformed external input.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Predict the state after start r1, start r2, resolve r1, resolve r2. Compile and run the lab; expect State-machine checks passed. Remove a request-ID guard to expose the stale-response failure, then restore it. Add a cancelled state and follow the compiler error to the missing consumer. Tomorrow, explain why a union alone cannot enforce transitions.</p>
 
 <p>Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
@@ -196,8 +216,10 @@ console.log(&quot;State-machine checks passed&quot;);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Ignore the response from the older request</p>
@@ -268,10 +290,16 @@ console.log(&quot;State-machine checks passed&quot;);
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: discriminated unions and exhaustiveness</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -285,23 +313,23 @@ console.log(&quot;State-machine checks passed&quot;);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions" target="_blank" rel="noreferrer">TypeScript: discriminated unions and exhaustiveness ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,53 @@
     <h1>ECMAScript modules, live bindings, linking, evaluation, cycles, and top-level await</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="ECMAScript modules">
+        <summary>ECMAScript modules</summary>
+        <p class="concept-definition">An ECMAScript module is parsed in strict mode, declares imports and exports, and participates in a resolved, linked, then evaluated dependency graph.</p>
+      </details><details open class="concept-card" data-subtopic="live bindings">
+        <summary>live bindings</summary>
+        <p class="concept-definition">A live import binding reads the exporter&#039;s current binding value. The importer cannot reassign it, and it is not a one-time property copy.</p>
+      </details><details open class="concept-card" data-subtopic="linking">
+        <summary>linking</summary>
+        <p class="concept-definition">Module linking connects imports and exports and prepares module environments before evaluation. Live bindings can exist before their values are initialized, which matters in cycles.</p>
+      </details><details open class="concept-card" data-subtopic="evaluation">
+        <summary>evaluation</summary>
+        <p class="concept-definition">Module evaluation executes module code after linking. Dependencies, cycles, and top-level await determine when exported values become usable.</p>
+      </details><details open class="concept-card" data-subtopic="cycles">
+        <summary>cycles</summary>
+        <p class="concept-definition">A module cycle occurs when dependencies eventually lead back to a module already in the graph. An early read of an uninitialized lexical export can throw even though linking succeeded.</p>
+      </details><details open class="concept-card" data-subtopic="top-level await">
+        <summary>top-level await</summary>
+        <p class="concept-definition">Top-level await makes a module&#039;s evaluation asynchronous and can delay dependent modules. Cycles involving asynchronous evaluation require particular care.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>An ES module is resolved and linked before evaluation. Imports are live bindings, so an exported value can change while the importer cannot reassign that binding. Cycles can expose a binding before initialization. Top-level await can delay dependent evaluation; it does not create another thread. Split the labelled module files before running the example, and add a cycle explicitly if that is the behavior you want to test.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0104" data-bespoke-example="0104" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">An import observes the exporter's binding</figcaption>
 <p>Split the labelled code into counter.mjs and feature.mjs. The counter module exports count, initially zero.</p>
 <div class="foundation-grid"><div>counter.mjs<br>count binding: 0 → 1<br>increment changes that binding</div><div>feature.mjs<br>Imported count → live view<br>After increment(): reads 1</div></div>
-<details><summary>Was the initial zero copied into an independent imported variable?</summary><p>No. The import observes the exporter's binding. It is a read-only view for the importer.</p></details>
-<details><summary>Does this fixture establish that every cyclic module graph initializes safely?</summary><p>No. It contains no cycle. Early reads of uninitialized lexical bindings in a cycle can fail.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>An ES module is resolved and linked before evaluation. Imports are live bindings, so an exported value can change while the importer cannot reassign that binding. Cycles can expose a binding before initialization. Top-level await can delay dependent evaluation; it does not create another thread. Split the labelled module files before running the example, and add a cycle explicitly if that is the behavior you want to test.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Was the initial zero copied into an independent imported variable?</summary><p>No. The import observes the exporter's binding. It is a read-only view for the importer.</p></details>
+<details open><summary>Does this fixture establish that every cyclic module graph initializes safely?</summary><p>No. It contains no cycle. Early reads of uninitialized lexical bindings in a cycle can fail.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a module import</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="javascript-modules" aria-label="Mechanism trace: Host identifies each module then The dependency graph connects then Modules execute in graph order then Importer observes live exports. Experiment: Create a two-module cycle and move one early read across initialization.">
         <li class="trace-stage"><span>01 · RESOLVE</span><details class="trace-explanation" open><summary>Host identifies each module</summary><p>Specifiers become module records under host rules.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LINK</span><details class="trace-explanation"><summary>The dependency graph connects</summary><p>Environments and live import bindings are initialized.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EVALUATE</span><details class="trace-explanation"><summary>Modules execute in graph order</summary><p>Cycles and top-level await can delay or expose early reads.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CONSUME</span><details class="trace-explanation"><summary>Importer observes live exports</summary><p>Loaded chunks, values, or failures prove the boundary.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="ECMAScript modules">
-        <summary>ECMAScript modules</summary>
-        <p class="concept-definition">An ECMAScript module is parsed in strict mode, declares imports and exports, and participates in a resolved, linked, then evaluated dependency graph.</p>
-      </details><details class="concept-card" data-subtopic="live bindings">
-        <summary>live bindings</summary>
-        <p class="concept-definition">A live import binding reads the exporter&#039;s current binding value. The importer cannot reassign it, and it is not a one-time property copy.</p>
-      </details><details class="concept-card" data-subtopic="linking">
-        <summary>linking</summary>
-        <p class="concept-definition">Module linking connects imports and exports and prepares module environments before evaluation. Live bindings can exist before their values are initialized, which matters in cycles.</p>
-      </details><details class="concept-card" data-subtopic="evaluation">
-        <summary>evaluation</summary>
-        <p class="concept-definition">Module evaluation executes module code after linking. Dependencies, cycles, and top-level await determine when exported values become usable.</p>
-      </details><details class="concept-card" data-subtopic="cycles">
-        <summary>cycles</summary>
-        <p class="concept-definition">A module cycle occurs when dependencies eventually lead back to a module already in the graph. An early read of an uninitialized lexical export can throw even though linking succeeded.</p>
-      </details><details class="concept-card" data-subtopic="top-level await">
-        <summary>top-level await</summary>
-        <p class="concept-definition">Top-level await makes a module&#039;s evaluation asynchronous and can delay dependent modules. Cycles involving asynchronous evaluation require particular care.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build a small cyclic module graph, observe a temporal-dead-zone failure, and refactor the dependency direction.</p>
     <p class="lab-scope">Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
 <p>Split the labelled counter.mjs and feature.mjs sections into actual files. Trace live binding updates, then create a cycle with an early lexical read. This is a multi-file recipe, not one runnable pasted module.</p>
@@ -145,8 +165,10 @@ export async function loadAnalytics(enabled) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">An import observes the exporter's binding</p>
@@ -218,10 +240,16 @@ export async function loadAnalytics(enabled) {
       </details>
     </article>
     <p><a href="https://tc39.es/ecma262/multipage/ecmascript-language-scripts-and-modules.html" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript scripts and modules specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -235,23 +263,23 @@ export async function loadAnalytics(enabled) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://tc39.es/ecma262/multipage/ecmascript-language-scripts-and-modules.html" target="_blank" rel="noreferrer">ECMAScript scripts and modules specification ↗</a></div>
-    
-    
-    
-    
+
+
+
+
     <a href="../reference/javascript-deep-dive-map.html" target="_blank">JavaScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

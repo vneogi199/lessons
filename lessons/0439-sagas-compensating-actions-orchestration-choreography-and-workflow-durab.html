@@ -46,23 +46,62 @@
     <h1>Sagas, compensating actions, orchestration, choreography, and workflow durability</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Sagas">
+        <summary>Sagas</summary>
+        <p class="concept-definition">A saga coordinates local transactions using durable forward actions and business compensations instead of one global atomic commit.</p>
+      </details><details open class="concept-card" data-subtopic="compensating actions">
+        <summary>compensating actions</summary>
+        <p class="concept-definition">Compensating actions counteract business effects but are not necessarily exact inverses or guaranteed to succeed.</p>
+      </details><details open class="concept-card" data-subtopic="orchestration">
+        <summary>orchestration</summary>
+        <p class="concept-definition">Orchestration centralizes workflow coordination while participants execute individual steps.</p>
+      </details><details open class="concept-card" data-subtopic="choreography">
+        <summary>choreography</summary>
+        <p class="concept-definition">Choreography coordinates participants through events, distributing workflow understanding and failure diagnosis.</p>
+      </details><details open class="concept-card" data-subtopic="workflow durability">
+        <summary>workflow durability</summary>
+        <p class="concept-definition">Workflow durability preserves progress and decisions across restarts so recovery does not depend only on process memory.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A saga records a sequence of local business actions and the compensations needed when later work fails. Compensation is another action and may fail or be impossible. Persist step outcomes, timers and repair ownership so restart does not erase the workflow. The example&#039;s timeout setting does nothing without a scheduler. Resolve an uncertain payment result before deciding which compensation is appropriate.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0439" data-bespoke-example="0439" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Persist a saga result and its next actions together</figcaption><p>Inventory is reserved, but payment authorization has an uncertain outcome.</p><div class="foundation-grid"><div>Known state<br>Inventory reserved</div><div>Unknown payment outcome<br>Reconcile before compensation</div><div>Durable transition<br>History, state and due actions<br>One transaction</div></div><details><summary>Should a timeout immediately trigger an assumed payment failure?</summary><p>No. The authorization may have succeeded remotely. Resolve that uncertainty.</p></details><details><summary>Can every compensation restore the original world perfectly?</summary><p>No. Irreversible or failed compensation needs explicit repair handling.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A saga records a sequence of local business actions and the compensations needed when later work fails. Compensation is another action and may fail or be impossible. Persist step outcomes, timers and repair ownership so restart does not erase the workflow. The example&#039;s timeout setting does nothing without a scheduler. Resolve an uncertain payment result before deciding which compensation is appropriate.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0439" data-bespoke-example="0439" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Persist a saga result and its next actions together</figcaption><p>Inventory is reserved, but payment authorization has an uncertain outcome.</p><div class="foundation-grid"><div>Known state<br>Inventory reserved</div><div>Unknown payment outcome<br>Reconcile before compensation</div><div>Durable transition<br>History, state and due actions<br>One transaction</div></div><details open><summary>Should a timeout immediately trigger an assumed payment failure?</summary><p>No. The authorization may have succeeded remotely. Resolve that uncertainty.</p></details><details open><summary>Can every compensation restore the original world perfectly?</summary><p>No. Irreversible or failed compensation needs explicit repair handling.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a distributed request or message</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="distributed-workflow" aria-label="Mechanism trace: Workflow records the next durable step then Participant commits a local transition then Coordinator observes result or uncertainty then One explainable outcome remains. Experiment: Stop the coordinator after a participant commits but before the result is recorded.">
         <li class="trace-stage"><span>01 · DECIDE</span><details class="trace-explanation" open><summary>Workflow records the next durable step</summary><p>State, version, idempotency, deadline, and participant ownership define intent.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EXECUTE</span><details class="trace-explanation"><summary>Participant commits a local transition</summary><p>Prepare or forward action may succeed while the response is lost.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RESOLVE</span><details class="trace-explanation"><summary>Coordinator observes result or uncertainty</summary><p>Retry, commit decision, compensation, timer, or manual repair advances state.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · HISTORY</span><details class="trace-explanation"><summary>One explainable outcome remains</summary><p>Durable decisions, locks, step attempts, compensations, invariant, and final state support recovery.</p></details></li>
       </ol>
@@ -74,34 +113,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Sagas">
-        <summary>Sagas</summary>
-        <p class="concept-definition">A saga coordinates local transactions using durable forward actions and business compensations instead of one global atomic commit.</p>
-      </details><details class="concept-card" data-subtopic="compensating actions">
-        <summary>compensating actions</summary>
-        <p class="concept-definition">Compensating actions counteract business effects but are not necessarily exact inverses or guaranteed to succeed.</p>
-      </details><details class="concept-card" data-subtopic="orchestration">
-        <summary>orchestration</summary>
-        <p class="concept-definition">Orchestration centralizes workflow coordination while participants execute individual steps.</p>
-      </details><details class="concept-card" data-subtopic="choreography">
-        <summary>choreography</summary>
-        <p class="concept-definition">Choreography coordinates participants through events, distributing workflow understanding and failure diagnosis.</p>
-      </details><details class="concept-card" data-subtopic="workflow durability">
-        <summary>workflow durability</summary>
-        <p class="concept-definition">Workflow durability preserves progress and decisions across restarts so recovery does not depend only on process memory.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Implement an order saga with orchestration, compensation, idempotent steps, timeout, manual repair, and a complete execution history.</p>
     <p class="lab-scope">Trace the adapter or SQL fragment through commit, response loss and replay. Name the component that must make each decision and predict its state. Supply the broker, database or workflow adapters before testing actual crash, rebalance and recovery behavior.</p>
 
@@ -137,8 +157,10 @@ async function advance(instance, result) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Persist a saga result and its next actions together</p><p>Inventory is reserved, but payment authorization has an uncertain outcome.</p><div class="foundation-grid"><div>Known state<br>Inventory reserved</div><div>Unknown payment outcome<br>Reconcile before compensation</div><div>Durable transition<br>History, state and due actions<br>One transaction</div></div></div>
@@ -206,10 +228,16 @@ async function advance(instance, result) {
       </details>
     </article>
     <p><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Review the lesson source: Apache Kafka documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -223,23 +251,23 @@ async function advance(instance, result) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noreferrer">Apache Kafka documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

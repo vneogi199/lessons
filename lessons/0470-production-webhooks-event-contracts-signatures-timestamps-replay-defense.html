@@ -46,23 +46,74 @@
     <h1>Production webhooks, event contracts, signatures, timestamps, replay defense, idempotency, retries, ordering, and secret rotation</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="9">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Production webhooks">
+        <summary>Production webhooks</summary>
+        <p class="concept-definition">A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.</p>
+      </details><details open class="concept-card" data-subtopic="event contracts">
+        <summary>event contracts</summary>
+        <p class="concept-definition">An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.</p>
+      </details><details open class="concept-card" data-subtopic="signatures">
+        <summary>signatures</summary>
+        <p class="concept-definition">Webhook verification checks the provider&#039;s signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key signatures. Use the provider&#039;s verifier and preserve the original bytes.</p>
+      </details><details open class="concept-card" data-subtopic="timestamps">
+        <summary>timestamps</summary>
+        <p class="concept-definition">A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.</p>
+      </details><details open class="concept-card" data-subtopic="replay defense">
+        <summary>replay defense</summary>
+        <p class="concept-definition">A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.</p>
+      </details><details open class="concept-card" data-subtopic="idempotency">
+        <summary>idempotency</summary>
+        <p class="concept-definition">Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
+      </details><details open class="concept-card" data-subtopic="retries">
+        <summary>retries</summary>
+        <p class="concept-definition">Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
+      </details><details open class="concept-card" data-subtopic="ordering">
+        <summary>ordering</summary>
+        <p class="concept-definition">Ordering describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</p>
+      </details><details open class="concept-card" data-subtopic="secret rotation">
+        <summary>secret rotation</summary>
+        <p class="concept-definition">Secret rotation replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A webhook receiver verifies the provider&#039;s original signed bytes, validates the event and durably accepts it before acknowledging delivery. A fresh signed timestamp can still be replayed inside its acceptance window. Store scoped identity and protect the worker&#039;s effect separately. Follow the provider&#039;s signature and rotation contract; the earlier local HMAC example is not a drop-in replacement for an SDK verifier.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Quality checks expected behavior. Security controls access. SaaS operations move files, events, jobs, and privileged changes through durable and observable workflows.</p>
     <p><a href="../reference/senior-interview-practice.html#quality-security">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0470" data-bespoke-example="0470" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Verify original bytes before accepting a webhook</figcaption><p>A provider sends event E. The receiver reads a bounded raw body and verifies its signature before durable acceptance.</p><div class="foundation-grid"><div>Original body and signature<br>Provider SDK verification</div><div>Verified event E<br>Scoped inbox and job commit</div><div>Repeated E<br>Same acceptance<br>No extra job</div></div><details><summary>Does a valid timestamp prevent replay during the allowed window?</summary><p>No. Event identity and durable deduplication still matter.</p></details><details><summary>Should a failed inbox commit return 204?</summary><p>No. Successful acceptance requires the durable commit. Reserializing the signed body also changes the bytes being verified.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A webhook receiver verifies the provider&#039;s original signed bytes, validates the event and durably accepts it before acknowledging delivery. A fresh signed timestamp can still be replayed inside its acceptance window. Store scoped identity and protect the worker&#039;s effect separately. Follow the provider&#039;s signature and rotation contract; the earlier local HMAC example is not a drop-in replacement for an SDK verifier.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0470" data-bespoke-example="0470" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Verify original bytes before accepting a webhook</figcaption><p>A provider sends event E. The receiver reads a bounded raw body and verifies its signature before durable acceptance.</p><div class="foundation-grid"><div>Original body and signature<br>Provider SDK verification</div><div>Verified event E<br>Scoped inbox and job commit</div><div>Repeated E<br>Same acceptance<br>No extra job</div></div><details open><summary>Does a valid timestamp prevent replay during the allowed window?</summary><p>No. Event identity and durable deduplication still matter.</p></details><details open><summary>Should a failed inbox commit return 204?</summary><p>No. Successful acceptance requires the durable commit. Reserializing the signed body also changes the bytes being verified.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a webhook event delivery</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="webhook-delivery" aria-label="Mechanism trace: Provider records event and delivery then Raw body crosses HTTP then Consumer authenticates and persists then Worker guards repeated effects. Experiment: Commit the event, lose the first response, alter one byte, replay an old request, and rotate from the old secret to the new one.">
         <li class="trace-stage"><span>01 · COMMIT</span><details class="trace-explanation" open><summary>Provider records event and delivery</summary><p>A stable event ID and version connect the business transaction to an outbox or delivery record.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SIGN + SEND</span><details class="trace-explanation"><summary>Raw body crosses HTTP</summary><p>Timestamped HMAC, timeout, attempt number, and secret version travel with the request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · VERIFY + STORE</span><details class="trace-explanation"><summary>Consumer authenticates and persists</summary><p>Raw-byte verification, freshness, schema checks, unique event ID, and transaction precede acknowledgment.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROCESS</span><details class="trace-explanation"><summary>Worker guards repeated effects</summary><p>Atomic receipts or a provider&#039;s idempotency contract must protect the effect; delivery deduplication alone is insufficient.</p></details></li>
       </ol>
@@ -74,47 +125,16 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="9">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Production webhooks">
-        <summary>Production webhooks</summary>
-        <p class="concept-definition">A production webhook is an authenticated HTTP delivery from one system to another after an event. The receiver must expect delay, duplication, disorder, retries, and version changes.</p>
-      </details><details class="concept-card" data-subtopic="event contracts">
-        <summary>event contracts</summary>
-        <p class="concept-definition">An event contract defines the event ID, type, version, time, subject, payload schema, and compatibility rules that providers and consumers share.</p>
-      </details><details class="concept-card" data-subtopic="signatures">
-        <summary>signatures</summary>
-        <p class="concept-definition">Webhook verification checks the provider&#039;s signed bytes and context using its specified algorithm. Stripe uses a shared-secret HMAC; other providers may use public-key signatures. Use the provider&#039;s verifier and preserve the original bytes.</p>
-      </details><details class="concept-card" data-subtopic="timestamps">
-        <summary>timestamps</summary>
-        <p class="concept-definition">A signed webhook timestamp states when the provider created the delivery. A narrow acceptance window helps reject captured requests that are replayed later.</p>
-      </details><details class="concept-card" data-subtopic="replay defense">
-        <summary>replay defense</summary>
-        <p class="concept-definition">A verified timestamp bounds accepted delivery age; it does not stop duplicates within that window. Scope event identity and atomically couple deduplication with local effects. External effects need their own idempotency or reconciliation boundary.</p>
-      </details><details class="concept-card" data-subtopic="idempotency">
-        <summary>idempotency</summary>
-        <p class="concept-definition">Idempotency makes repeated execution of one logical operation produce no additional unintended effect. A durable unique key usually protects the business state.</p>
-      </details><details class="concept-card" data-subtopic="retries">
-        <summary>retries</summary>
-        <p class="concept-definition">Retries repeat a failed delivery under a bounded schedule. Safe retries need timeouts, exponential backoff, jitter, idempotency, and a final failure destination.</p>
-      </details><details class="concept-card" data-subtopic="ordering">
-        <summary>ordering</summary>
-        <p class="concept-definition">Ordering describes which events are observed before others. Independent delivery attempts can complete out of order, so consumers use entity versions or current-state reads when order matters.</p>
-      </details><details class="concept-card" data-subtopic="secret rotation">
-        <summary>secret rotation</summary>
-        <p class="concept-definition">Secret rotation replaces signing credentials without interrupting delivery. A receiver temporarily accepts the active and previous secrets while recording which version verified each request.</p>
-      </details>
-    </div>
-  </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/enterprise-security-labs.html#collaboration-connectors">Slack, Teams and Jira integration</a></li></ul></section>
 
 
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build both sides of a signed webhook, persist the event before acknowledging it, reject stale or altered requests, retry failures, deduplicate repeated delivery, and rotate secrets safely.</p>
     <p class="lab-scope">Predict replay, stale-ownership and altered-input outcomes at the shown boundary. SDK, framework, storage and database adapters must be supplied where named. Use synthetic data and an authorized isolated environment to check those integrations.</p>
 
@@ -158,8 +178,10 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Verify original bytes before accepting a webhook</p><p>A provider sends event E. The receiver reads a bounded raw body and verifies its signature before durable acceptance.</p><div class="foundation-grid"><div>Original body and signature<br>Provider SDK verification</div><div>Verified event E<br>Scoped inbox and job commit</div><div>Repeated E<br>Same acceptance<br>No extra job</div></div></div>
@@ -239,10 +261,16 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
       </details>
     </article>
     <p><a href="https://docs.stripe.com/webhooks" target="_blank" rel="noreferrer">Review the lesson source: Stripe webhook production guidance</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -256,23 +284,23 @@ async function receive(request, stripe, endpointSecret, inbox, readBoundedRaw) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.stripe.com/webhooks" target="_blank" rel="noreferrer">Stripe webhook production guidance ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,59 @@
     <h1>System calls, user mode, kernel mode, file descriptors, process creation, exec, signals, and exit</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="8">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="System calls">
+        <summary>System calls</summary>
+        <p class="concept-definition">System calls cross from application code into operating-system services with validation and privilege-boundary handling.</p>
+      </details><details open class="concept-card" data-subtopic="user mode">
+        <summary>user mode</summary>
+        <p class="concept-definition">User mode restricts application access to privileged instructions and protected resources.</p>
+      </details><details open class="concept-card" data-subtopic="kernel mode">
+        <summary>kernel mode</summary>
+        <p class="concept-definition">Kernel mode permits privileged operating-system work; bugs there can affect the whole system.</p>
+      </details><details open class="concept-card" data-subtopic="file descriptors">
+        <summary>file descriptors</summary>
+        <p class="concept-definition">A file descriptor is a process-local integer referring to an open kernel-managed I/O resource. Close descriptors when their owning operation ends, including failure paths.</p>
+      </details><details open class="concept-card" data-subtopic="process creation">
+        <summary>process creation</summary>
+        <p class="concept-definition">Process creation allocates an execution context and resources; the exact inheritance and startup mechanism depends on the OS.</p>
+      </details><details open class="concept-card" data-subtopic="exec">
+        <summary>exec</summary>
+        <p class="concept-definition">On Unix-like systems, exec replaces the current process image with another program while preserving selected process properties.</p>
+      </details><details open class="concept-card" data-subtopic="signals">
+        <summary>signals</summary>
+        <p class="concept-definition">A signal notifies a process of an event such as termination. Some can be handled for cleanup; SIGKILL cannot be caught or used for graceful shutdown.</p>
+      </details><details open class="concept-card" data-subtopic="exit">
+        <summary>exit</summary>
+        <p class="concept-definition">Process exit ends execution, releases OS-owned resources, and supplies a status for its parent or supervisor.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A system call asks the kernel to perform an operation that application code cannot perform directly. The kernel checks arguments, permissions and resource ownership. A file descriptor is a process-local handle to an open resource and can be reused after closing. On Unix-like systems, fork creates another process, exec replaces the current program image, and wait collects a child&#039;s exit status. Signals provide a separate notification path; SIGKILL cannot run graceful cleanup.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Networking moves messages between programs and machines. An operating system manages processes, memory, files, devices, and protected access to hardware.</p>
@@ -55,18 +108,13 @@
   <figure class="card mechanism-map" data-lesson-map="0062" data-bespoke-example="0062" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Two descriptors refer to the ends of one pipe</figcaption>
 <p>The fixture creates a pipe, writes the five bytes ready and reads those bytes from the other end.</p>
 <div class="foundation-grid"><div>write_fd<br>Write ready<br>↓<br>Kernel pipe buffer</div><div>read_fd<br>Read up to 5 bytes<br>Fixture receives ready<br>Finally close the reader</div></div>
-<details><summary>Why set write_fd to -1 after explicitly closing it?</summary><p>The cleanup block uses that marker to avoid closing it again. A stale descriptor number could later refer to another resource.</p></details>
-<details><summary>Does this five-byte success establish a general read-exactly helper?</summary><p>No. Larger or interrupted I/O requires explicit handling of partial transfers, errors and message boundaries.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A system call asks the kernel to perform an operation that application code cannot perform directly. The kernel checks arguments, permissions and resource ownership. A file descriptor is a process-local handle to an open resource and can be reused after closing. On Unix-like systems, fork creates another process, exec replaces the current program image, and wait collects a child&#039;s exit status. Signals provide a separate notification path; SIGKILL cannot run graceful cleanup.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Why set write_fd to -1 after explicitly closing it?</summary><p>The cleanup block uses that marker to avoid closing it again. A stale descriptor number could later refer to another resource.</p></details>
+<details open><summary>Does this five-byte success establish a general read-exactly helper?</summary><p>No. Larger or interrupted I/O requires explicit handling of partial transfers, errors and message boundaries.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a process crossing a kernel boundary</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="kernel-resource-path" aria-label="Mechanism trace: User code requests an operation then The kernel validates and coordinates then A CPU, page, file, or device changes then Control and evidence return. Experiment: Constrain or fail one resource and predict the syscall result and kernel evidence.">
         <li class="trace-stage"><span>01 · PROCESS</span><details class="trace-explanation" open><summary>User code requests an operation</summary><p>A thread supplies arguments through a library or runtime boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SYSCALL + KERNEL</span><details class="trace-explanation"><summary>The kernel validates and coordinates</summary><p>Permissions, descriptors, scheduling, memory, and isolation rules apply.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RESOURCE</span><details class="trace-explanation"><summary>A CPU, page, file, or device changes</summary><p>Kernel subsystems perform work while preserving ownership and concurrency invariants.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>Control and evidence return</summary><p>A value, error, signal, trace, metric, or durable state makes the result visible.</p></details></li>
       </ol>
@@ -78,43 +126,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="8">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="System calls">
-        <summary>System calls</summary>
-        <p class="concept-definition">System calls cross from application code into operating-system services with validation and privilege-boundary handling.</p>
-      </details><details class="concept-card" data-subtopic="user mode">
-        <summary>user mode</summary>
-        <p class="concept-definition">User mode restricts application access to privileged instructions and protected resources.</p>
-      </details><details class="concept-card" data-subtopic="kernel mode">
-        <summary>kernel mode</summary>
-        <p class="concept-definition">Kernel mode permits privileged operating-system work; bugs there can affect the whole system.</p>
-      </details><details class="concept-card" data-subtopic="file descriptors">
-        <summary>file descriptors</summary>
-        <p class="concept-definition">A file descriptor is a process-local integer referring to an open kernel-managed I/O resource. Close descriptors when their owning operation ends, including failure paths.</p>
-      </details><details class="concept-card" data-subtopic="process creation">
-        <summary>process creation</summary>
-        <p class="concept-definition">Process creation allocates an execution context and resources; the exact inheritance and startup mechanism depends on the OS.</p>
-      </details><details class="concept-card" data-subtopic="exec">
-        <summary>exec</summary>
-        <p class="concept-definition">On Unix-like systems, exec replaces the current process image with another program while preserving selected process properties.</p>
-      </details><details class="concept-card" data-subtopic="signals">
-        <summary>signals</summary>
-        <p class="concept-definition">A signal notifies a process of an event such as termination. Some can be handled for cleanup; SIGKILL cannot be caught or used for graceful shutdown.</p>
-      </details><details class="concept-card" data-subtopic="exit">
-        <summary>exit</summary>
-        <p class="concept-definition">Process exit ends execution, releases OS-owned resources, and supplies a status for its parent or supervisor.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Trace pipe descriptors through process creation and cleanup, observe signals and exit codes, and prove every descriptor has one owner and close path.</p>
     <p class="lab-scope">Core: run the local Python standard-library fixture under its stated assumptions and explain the evidence and limitation. Network dictionaries/codecs are offline models; pipe, thread, temporary-file and resource probes exercise only the local OS. Packet captures, live TCP behavior, crash durability and Linux container controls are separate authorized-environment extensions, not results established by the snippets. Do not change shared routes, limits or data to rehearse the model.</p>
 
@@ -146,8 +166,10 @@ finally:
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Two descriptors refer to the ends of one pipe</p>
@@ -219,10 +241,16 @@ finally:
       </details>
     </article>
     <p><a href="https://man7.org/linux/man-pages/man2/syscalls.2.html" target="_blank" rel="noreferrer">Review the lesson source: Linux system calls manual</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -236,23 +264,23 @@ finally:
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://man7.org/linux/man-pages/man2/syscalls.2.html" target="_blank" rel="noreferrer">Linux system calls manual ↗</a></div>
-    
-    
+
+
     <a href="../reference/systems-foundations-deep-dive-map.html" target="_blank">Systems foundations coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

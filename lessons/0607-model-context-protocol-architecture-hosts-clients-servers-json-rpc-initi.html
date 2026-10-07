@@ -46,23 +46,80 @@
     <h1>Model Context Protocol architecture, hosts, clients, servers, JSON-RPC, initialization, capabilities, tools, resources, prompts, and lifecycle</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="11">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Model Context Protocol architecture">
+        <summary>Model Context Protocol architecture</summary>
+        <p class="concept-definition">Model Context Protocol architecture connects an AI application host to capability servers through one isolated client connection per server and a shared JSON-RPC-based protocol.</p>
+      </details><details open class="concept-card" data-subtopic="hosts">
+        <summary>hosts</summary>
+        <p class="concept-definition">An MCP host is the user-facing AI application. It creates clients, controls model access and consent, coordinates context, and enforces the product&#039;s security policy.</p>
+      </details><details open class="concept-card" data-subtopic="clients">
+        <summary>clients</summary>
+        <p class="concept-definition">An MCP client is the host-side endpoint for one server connection. It negotiates capabilities, sends requests, receives notifications, and maintains that session.</p>
+      </details><details open class="concept-card" data-subtopic="servers">
+        <summary>servers</summary>
+        <p class="concept-definition">An MCP server exposes bounded context capabilities such as tools, resources, and prompts through local or remote transports. It must validate and authorize every operation.</p>
+      </details><details open class="concept-card" data-subtopic="JSON-RPC">
+        <summary>JSON-RPC</summary>
+        <p class="concept-definition">JSON-RPC is the envelope format MCP uses for requests, responses, errors, and notifications. Request IDs correlate responses; notifications have no response.</p>
+      </details><details open class="concept-card" data-subtopic="initialization">
+        <summary>initialization</summary>
+        <p class="concept-definition">MCP initialization is the first request-response exchange where both sides agree on a protocol version, identify themselves, and advertise supported capabilities.</p>
+      </details><details open class="concept-card" data-subtopic="capabilities">
+        <summary>capabilities</summary>
+        <p class="concept-definition">MCP capabilities declare optional protocol features that a client or server supports. A peer must not assume a feature that was not negotiated.</p>
+      </details><details open class="concept-card" data-subtopic="tools">
+        <summary>tools</summary>
+        <p class="concept-definition">Tools are narrow callable operations with a name, description, input schema, controlled execution, typed errors, and limited output. A model proposal never replaces application authorization.</p>
+      </details><details open class="concept-card" data-subtopic="resources">
+        <summary>resources</summary>
+        <p class="concept-definition">MCP resources are server-addressed context values identified by URIs. Clients discover or read them, while the host decides whether their content enters model context.</p>
+      </details><details open class="concept-card" data-subtopic="prompts">
+        <summary>prompts</summary>
+        <p class="concept-definition">MCP prompts are server-provided reusable message templates with declared arguments. They are user-selectable context, not hidden instructions with automatic authority.</p>
+      </details><details open class="concept-card" data-subtopic="lifecycle">
+        <summary>lifecycle</summary>
+        <p class="concept-definition">The MCP lifecycle covers connection, initialization, normal requests and notifications, cancellation or progress, and orderly transport shutdown.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>An MCP host creates a client for each server connection, negotiates capabilities and exchanges protocol requests. Tools, resources and prompts expose different kinds of capability to the host. The glossary dispatcher demonstrates selected messages but omits lifecycle enforcement and several protocol features. A request ID correlates a response; a business operation needs its own identity when repetition could create effects.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An agent selects actions in a control loop. The application limits tools, state, cost, and stopping conditions.</p>
     <p><a href="../reference/senior-interview-practice.html#agents">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0607" data-bespoke-example="0607" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">List a tool before calling its bounded input contract</figcaption><p>The stdio dispatch fixture advertises explain_term with one string term, at most 80 characters.</p><div class="foundation-grid"><div>tools/list<br>Discover input schema</div><div>tools/call<br>term: idempotency</div><div>Fixture response<br>Return one glossary explanation</div></div><details><summary>May diagnostic messages be printed to stdout beside the protocol?</summary><p>No. Reserve stdout for protocol frames and use stderr for diagnostics.</p></details><details><summary>Is this dispatch lab a complete MCP server?</summary><p>No. Initialization enforcement, negotiation, cancellation and session ownership remain incomplete.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>An MCP host creates a client for each server connection, negotiates capabilities and exchanges protocol requests. Tools, resources and prompts expose different kinds of capability to the host. The glossary dispatcher demonstrates selected messages but omits lifecycle enforcement and several protocol features. A request ID correlates a response; a business operation needs its own identity when repetition could create effects.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0607" data-bespoke-example="0607" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">List a tool before calling its bounded input contract</figcaption><p>The stdio dispatch fixture advertises explain_term with one string term, at most 80 characters.</p><div class="foundation-grid"><div>tools/list<br>Discover input schema</div><div>tools/call<br>term: idempotency</div><div>Fixture response<br>Return one glossary explanation</div></div><details open><summary>May diagnostic messages be printed to stdout beside the protocol?</summary><p>No. Reserve stdout for protocol frames and use stderr for diagnostics.</p></details><details open><summary>Is this dispatch lab a complete MCP server?</summary><p>No. Initialization enforcement, negotiation, cancellation and session ownership remain incomplete.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an MCP session</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="mcp-session" aria-label="Mechanism trace: Host creates one MCP client then Client and server initialize then JSON-RPC carries MCP primitives then Result or failure returns to host. Experiment: Capture every frame for initialize, discovery, one successful call, one unsupported request, cancellation, and shutdown.">
         <li class="trace-stage"><span>01 · CONNECT</span><details class="trace-explanation" open><summary>Host creates one MCP client</summary><p>A local stdio process or remote HTTP endpoint supplies the transport and trust boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · NEGOTIATE</span><details class="trace-explanation"><summary>Client and server initialize</summary><p>Protocol version, identities, and capabilities determine legal later requests.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · OPERATE</span><details class="trace-explanation"><summary>JSON-RPC carries MCP primitives</summary><p>Tools, resources, prompts, notifications, cancellation, authorization, and consent govern work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OBSERVE</span><details class="trace-explanation"><summary>Result or failure returns to host</summary><p>Request IDs, session state, traces, audit events, and shutdown expose the complete lifecycle.</p></details></li>
       </ol>
@@ -74,52 +131,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="11">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Model Context Protocol architecture">
-        <summary>Model Context Protocol architecture</summary>
-        <p class="concept-definition">Model Context Protocol architecture connects an AI application host to capability servers through one isolated client connection per server and a shared JSON-RPC-based protocol.</p>
-      </details><details class="concept-card" data-subtopic="hosts">
-        <summary>hosts</summary>
-        <p class="concept-definition">An MCP host is the user-facing AI application. It creates clients, controls model access and consent, coordinates context, and enforces the product&#039;s security policy.</p>
-      </details><details class="concept-card" data-subtopic="clients">
-        <summary>clients</summary>
-        <p class="concept-definition">An MCP client is the host-side endpoint for one server connection. It negotiates capabilities, sends requests, receives notifications, and maintains that session.</p>
-      </details><details class="concept-card" data-subtopic="servers">
-        <summary>servers</summary>
-        <p class="concept-definition">An MCP server exposes bounded context capabilities such as tools, resources, and prompts through local or remote transports. It must validate and authorize every operation.</p>
-      </details><details class="concept-card" data-subtopic="JSON-RPC">
-        <summary>JSON-RPC</summary>
-        <p class="concept-definition">JSON-RPC is the envelope format MCP uses for requests, responses, errors, and notifications. Request IDs correlate responses; notifications have no response.</p>
-      </details><details class="concept-card" data-subtopic="initialization">
-        <summary>initialization</summary>
-        <p class="concept-definition">MCP initialization is the first request-response exchange where both sides agree on a protocol version, identify themselves, and advertise supported capabilities.</p>
-      </details><details class="concept-card" data-subtopic="capabilities">
-        <summary>capabilities</summary>
-        <p class="concept-definition">MCP capabilities declare optional protocol features that a client or server supports. A peer must not assume a feature that was not negotiated.</p>
-      </details><details class="concept-card" data-subtopic="tools">
-        <summary>tools</summary>
-        <p class="concept-definition">Tools are narrow callable operations with a name, description, input schema, controlled execution, typed errors, and limited output. A model proposal never replaces application authorization.</p>
-      </details><details class="concept-card" data-subtopic="resources">
-        <summary>resources</summary>
-        <p class="concept-definition">MCP resources are server-addressed context values identified by URIs. Clients discover or read them, while the host decides whether their content enters model context.</p>
-      </details><details class="concept-card" data-subtopic="prompts">
-        <summary>prompts</summary>
-        <p class="concept-definition">MCP prompts are server-provided reusable message templates with declared arguments. They are user-selectable context, not hidden instructions with automatic authority.</p>
-      </details><details class="concept-card" data-subtopic="lifecycle">
-        <summary>lifecycle</summary>
-        <p class="concept-definition">The MCP lifecycle covers connection, initialization, normal requests and notifications, cancellation or progress, and orderly transport shutdown.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build a local MCP server and host client over standard input and output, expose one tool, resource, and prompt, inspect every JSON-RPC frame, and verify unsupported capability and error behavior.</p>
     <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
@@ -220,8 +240,10 @@ while True:
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">List a tool before calling its bounded input contract</p><p>The stdio dispatch fixture advertises explain_term with one string term, at most 80 characters.</p><div class="foundation-grid"><div>tools/list<br>Discover input schema</div><div>tools/call<br>term: idempotency</div><div>Fixture response<br>Return one glossary explanation</div></div></div>
@@ -301,10 +323,16 @@ while True:
       </details>
     </article>
     <p><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle" target="_blank" rel="noreferrer">Review the lesson source: Model Context Protocol architecture and lifecycle specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -318,23 +346,23 @@ while True:
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle" target="_blank" rel="noreferrer">Model Context Protocol architecture and lifecycle specification ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

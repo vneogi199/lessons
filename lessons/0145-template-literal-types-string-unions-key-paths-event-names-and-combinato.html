@@ -46,6 +46,50 @@
     <h1>Template literal types, string unions, key paths, event names, and combinatorial growth</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Template literal types">
+        <summary>Template literal types</summary>
+        <p class="concept-definition">Template literal types combine string literal unions and can infer substrings. Their cross products can grow rapidly and slow the checker.</p>
+      </details><details open class="concept-card" data-subtopic="string unions">
+        <summary>string unions</summary>
+        <p class="concept-definition">A string union lists permitted literal strings. It restricts checked assignments but does not validate arbitrary external strings.</p>
+      </details><details open class="concept-card" data-subtopic="key paths">
+        <summary>key paths</summary>
+        <p class="concept-definition">A key path describes access through nested properties. A template literal type can restrict the permitted path strings during checking. It does not read the object or validate an external path at runtime; keep the supported depth explicit.</p>
+      </details><details open class="concept-card" data-subtopic="event names">
+        <summary>event names</summary>
+        <p class="concept-definition">Event-name types encode naming rules such as nameChanged and can associate each name with a corresponding payload type.</p>
+      </details><details open class="concept-card" data-subtopic="combinatorial growth">
+        <summary>combinatorial growth</summary>
+        <p class="concept-definition">Combining several literal unions can multiply the number of alternatives. Prefer a simpler contract or generated declarations when checking becomes costly.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Template literal types build permitted strings from smaller sets of literals. They can describe event names and associate a name with its payload. Combining unions multiplies the possible names: sets of sizes m and n can produce up to m times n combinations. Keep property-path depth deliberate. A shallow contract or generated declaration can be easier to maintain than a large recursive type, and external strings still need parsing.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +99,13 @@
   <figure class="card mechanism-map" data-lesson-map="0145" data-bespoke-example="0145" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Build event names from field names</figcaption>
 <p>Apply EventName to the two field names name and archived.</p>
 <div class="foundation-grid"><div>name<br>Add Changed suffix<br>nameChanged</div><div>archived<br>Add Changed suffix<br>archivedChanged</div><div>Allowed event-name type<br>nameChanged or archivedChanged</div></div>
-<details><summary>Does the resulting type accept nameUpdated?</summary><p>No. That text is outside the constructed union. The suffix is part of the contract.</p></details>
-<details><summary>Does declaring this type register two event handlers?</summary><p>No. Template literal types calculate allowed strings during checking. Runtime registration still needs executable code.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Template literal types build permitted strings from smaller sets of literals. They can describe event names and associate a name with its payload. Combining unions multiplies the possible names: sets of sizes m and n can produce up to m times n combinations. Keep property-path depth deliberate. A shallow contract or generated declaration can be easier to maintain than a large recursive type, and external strings still need parsing.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does the resulting type accept nameUpdated?</summary><p>No. That text is outside the constructed union. The suffix is part of the contract.</p></details>
+<details open><summary>Does declaring this type register two event handlers?</summary><p>No. Template literal types calculate allowed strings during checking. Runtime registration still needs executable code.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-narrowing" aria-label="Mechanism trace: A value begins with a possible type then Control flow tests the runtime value then Checker removes impossible cases then Branch returns or reaches never. Experiment: Add one new discriminated variant and observe every non-exhaustive consumer.">
         <li class="trace-stage"><span>01 · DECLARED</span><details class="trace-explanation" open><summary>A value begins with a possible type</summary><p>Its declaration describes every permitted variant.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVIDENCE</span><details class="trace-explanation"><summary>Control flow tests the runtime value</summary><p>A discriminant, guard, equality, or reachability fact is learned.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NARROW</span><details class="trace-explanation"><summary>Checker removes impossible cases</summary><p>Only operations valid for the remaining variants are allowed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><details class="trace-explanation"><summary>Branch returns or reaches never</summary><p>Diagnostics and type tests expose missing or unsafe paths.</p></details></li>
       </ol>
@@ -78,34 +117,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Template literal types">
-        <summary>Template literal types</summary>
-        <p class="concept-definition">Template literal types combine string literal unions and can infer substrings. Their cross products can grow rapidly and slow the checker.</p>
-      </details><details class="concept-card" data-subtopic="string unions">
-        <summary>string unions</summary>
-        <p class="concept-definition">A string union lists permitted literal strings. It restricts checked assignments but does not validate arbitrary external strings.</p>
-      </details><details class="concept-card" data-subtopic="key paths">
-        <summary>key paths</summary>
-        <p class="concept-definition">A key path describes access through nested properties. A template literal type can restrict the permitted path strings during checking. It does not read the object or validate an external path at runtime; keep the supported depth explicit.</p>
-      </details><details class="concept-card" data-subtopic="event names">
-        <summary>event names</summary>
-        <p class="concept-definition">Event-name types encode naming rules such as nameChanged and can associate each name with a corresponding payload type.</p>
-      </details><details class="concept-card" data-subtopic="combinatorial growth">
-        <summary>combinatorial growth</summary>
-        <p class="concept-definition">Combining several literal unions can multiply the number of alternatives. Prefer a simpler contract or generated declarations when checking becomes costly.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Type an event naming convention and shallow property-path API with an intentional complexity limit.</p>
 
 <p>Shared type mechanism, distinct exercise: construct valid Changed names, reject a typo, and record checker timings when expanding the unions. A type does not parse arbitrary runtime strings.</p>
@@ -141,8 +161,10 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Build event names from field names</p>
@@ -213,10 +235,16 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -230,23 +258,23 @@ type D = Pick&lt;{ id: string; name: string; secret: string }, &quot;id&quot; | 
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

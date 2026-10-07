@@ -46,6 +46,56 @@
     <h1>Fetch, Undici, connection pools, dispatchers, Web APIs, cancellation, and response consumption</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Fetch">
+        <summary>Fetch</summary>
+        <p class="concept-definition">Node fetch provides a Web-standard client implemented on Undici, including streaming bodies and AbortSignal while hiding lower dispatcher and pool details.</p>
+      </details><details open class="concept-card" data-subtopic="Undici">
+        <summary>Undici</summary>
+        <p class="concept-definition">Undici is Node&#039;s HTTP client implementation underlying fetch. Dispatchers and pools manage connection reuse, queuing, and origin capacity.</p>
+      </details><details open class="concept-card" data-subtopic="connection pools">
+        <summary>connection pools</summary>
+        <p class="concept-definition">Connection pools reuse bounded transport connections; limits, queueing, and idle policies affect latency and resource use.</p>
+      </details><details open class="concept-card" data-subtopic="dispatchers">
+        <summary>dispatchers</summary>
+        <p class="concept-definition">Undici dispatchers control outbound request execution, pooling, and related connection policy.</p>
+      </details><details open class="concept-card" data-subtopic="Web APIs">
+        <summary>Web APIs</summary>
+        <p class="concept-definition">Node implements selected Web APIs, but API presence and semantics still depend on the installed Node version.</p>
+      </details><details open class="concept-card" data-subtopic="cancellation">
+        <summary>cancellation</summary>
+        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
+      </details><details open class="concept-card" data-subtopic="response consumption">
+        <summary>response consumption</summary>
+        <p class="concept-definition">A response body must be consumed, cancelled, or otherwise released so its connection and buffers can be reclaimed or safely reused.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A fetch response includes a body that needs consuming or cancellation so resources can be released. Bound received data instead of trusting Content-Length. A chunk already exists before a size check can reject it, and synchronous JSON parsing is not interrupted by a deadline. Preserve the original failure during cleanup. Destination policy and domain schema validation remain responsibilities beyond this transport wrapper.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0236" data-bespoke-example="0236" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Count received bytes rather than trusting the header</figcaption>
 <p>For a small fixture, set maxBytes to 8. The response delivers chunks of 5 and 4 bytes.</p>
 <div class="foundation-grid"><div>First chunk<br>Accumulated: 5<br>Within limit</div><div>Second chunk<br>Accumulated: 9<br>Exceeds 8</div><div>Failure path<br>Reject response<br>Attempt body cancellation</div></div>
-<details><summary>Would a Content-Length header of 5 make the response acceptable?</summary><p>No. The helper counts the bytes actually exposed by the response body.</p></details>
-<details><summary>Does the deadline interrupt JSON.parse while it is running synchronously?</summary><p>No. Cancellation is cooperative. Keep the input bounded and account for synchronous processing cost.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A fetch response includes a body that needs consuming or cancellation so resources can be released. Bound received data instead of trusting Content-Length. A chunk already exists before a size check can reject it, and synchronous JSON parsing is not interrupted by a deadline. Preserve the original failure during cleanup. Destination policy and domain schema validation remain responsibilities beyond this transport wrapper.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Would a Content-Length header of 5 make the response acceptable?</summary><p>No. The helper counts the bytes actually exposed by the response body.</p></details>
+<details open><summary>Does the deadline interrupt JSON.parse while it is running synchronously?</summary><p>No. Cancellation is cooperative. Keep the input bounded and account for synchronous processing cost.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an event-loop operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-network" aria-label="Mechanism trace: Name and transport establish a channel then Protocol bytes become messages then Application performs bounded work then Response or failure closes ownership. Experiment: Slow, abort, or fragment one request and predict which timeout and cleanup path owns it.">
         <li class="trace-stage"><span>01 · CONNECT</span><details class="trace-explanation" open><summary>Name and transport establish a channel</summary><p>Resolution, pooling, TCP, TLS, or an accepted socket creates connectivity.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PARSE</span><details class="trace-explanation"><summary>Protocol bytes become messages</summary><p>Framing, headers, body limits, and stream state define input.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · HANDLE</span><details class="trace-explanation"><summary>Application performs bounded work</summary><p>Validation, cancellation, deadlines, and dependencies shape the outcome.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RELEASE</span><details class="trace-explanation"><summary>Response or failure closes ownership</summary><p>Bodies, sockets, sessions, streams, and pool capacity become reusable or end.</p></details></li>
       </ol>
@@ -78,40 +123,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Fetch">
-        <summary>Fetch</summary>
-        <p class="concept-definition">Node fetch provides a Web-standard client implemented on Undici, including streaming bodies and AbortSignal while hiding lower dispatcher and pool details.</p>
-      </details><details class="concept-card" data-subtopic="Undici">
-        <summary>Undici</summary>
-        <p class="concept-definition">Undici is Node&#039;s HTTP client implementation underlying fetch. Dispatchers and pools manage connection reuse, queuing, and origin capacity.</p>
-      </details><details class="concept-card" data-subtopic="connection pools">
-        <summary>connection pools</summary>
-        <p class="concept-definition">Connection pools reuse bounded transport connections; limits, queueing, and idle policies affect latency and resource use.</p>
-      </details><details class="concept-card" data-subtopic="dispatchers">
-        <summary>dispatchers</summary>
-        <p class="concept-definition">Undici dispatchers control outbound request execution, pooling, and related connection policy.</p>
-      </details><details class="concept-card" data-subtopic="Web APIs">
-        <summary>Web APIs</summary>
-        <p class="concept-definition">Node implements selected Web APIs, but API presence and semantics still depend on the installed Node version.</p>
-      </details><details class="concept-card" data-subtopic="cancellation">
-        <summary>cancellation</summary>
-        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
-      </details><details class="concept-card" data-subtopic="response consumption">
-        <summary>response consumption</summary>
-        <p class="concept-definition">A response body must be consumed, cancelled, or otherwise released so its connection and buffers can be reclaimed or safely reused.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build a deadline-bound JSON client that validates status and payload and always consumes or cancels the body.</p>
     <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
@@ -163,8 +183,10 @@
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Count received bytes rather than trusting the header</p>
@@ -236,10 +258,16 @@
       </details>
     </article>
     <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -253,23 +281,23 @@
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Node.js API documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

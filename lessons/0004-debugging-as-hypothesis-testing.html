@@ -46,6 +46,38 @@
     <h1>Debugging as hypothesis testing</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="1">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Debugging as hypothesis testing">
+        <summary>Debugging as hypothesis testing</summary>
+        <p class="concept-definition">Debugging as hypothesis testing means that you state a possible cause and run a focused test that can disprove it.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Separate the observation (two computations) from its proposed cause (zero treated as absence). First reproduce with controlled inputs. Predict what each competing cause would produce, change one relevant condition, and preserve a regression check that fails under the old behavior. A stack trace shows a call path, not necessarily the originating cause; logs show only what was instrumented. Use a breakpoint for local state and a profiler for where time or allocation is spent. Instrumentation can alter timing, so keep concurrency and production-only hypotheses separate from this deterministic example.</p>
+      <p class="analogy">Treat a bug report like competing explanations for a failed experiment: choose the next measurement that separates the explanations, not the change that merely looks plausible.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Software engineering uses repeatable tools and records to change software safely.</p>
@@ -55,18 +87,13 @@
   <figure class="card mechanism-map" data-lesson-map="0004" data-bespoke-example="0004" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Zero is a cached value</figcaption>
 <p>The computation returns 0. Two calls use the key zero. Compare a truthiness check with a membership check.</p>
 <div class="foundation-grid"><div>Broken check: !cache.get(key)<br>First call: missing → compute 0<br>Second call: !0 is true → compute again<br>Total computations: 2</div><div>Membership check: !cache.has(key)<br>First call: missing → compute 0<br>Second call: key exists → reuse 0<br>Total computations: 1</div></div>
-<details><summary>Call the fixed function with a different, missing key. How many computations have happened in total?</summary><p>2. The original key computed once. The new key also needs one computation. This check catches a supposed fix that simply stops all computation.</p></details>
-<details><summary>Do these results prove that simultaneous asynchronous calls are safe?</summary><p>No. These calls are synchronous. Concurrent misses can start duplicate work before either result reaches the cache. Sharing in-flight work needs a separate design and test.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Separate the observation (two computations) from its proposed cause (zero treated as absence). First reproduce with controlled inputs. Predict what each competing cause would produce, change one relevant condition, and preserve a regression check that fails under the old behavior. A stack trace shows a call path, not necessarily the originating cause; logs show only what was instrumented. Use a breakpoint for local state and a profiler for where time or allocation is spent. Instrumentation can alter timing, so keep concurrency and production-only hypotheses separate from this deterministic example.</p>
-      <p class="analogy">Treat a bug report like competing explanations for a failed experiment: choose the next measurement that separates the explanations, not the change that merely looks plausible.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Call the fixed function with a different, missing key. How many computations have happened in total?</summary><p>2. The original key computed once. The new key also needs one computation. This check catches a supposed fix that simply stops all computation.</p></details>
+<details open><summary>Do these results prove that simultaneous asynchronous calls are safe?</summary><p>No. These calls are synchronous. Concurrent misses can start duplicate work before either result reaches the cache. Sharing in-flight work needs a separate design and test.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a diagnostic experiment</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="debug-cache-zero" aria-label="Mechanism trace: Repeated computation then Truthiness confused with absence then Check membership then Test another key. Experiment: Would this test establish correctness for concurrent async requests?">
         <li class="trace-stage"><span>01 · OBSERVE</span><details class="trace-explanation" open><summary>Repeated computation</summary><p>Two reads of a cached zero still call the computation twice.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · HYPOTHESIZE</span><details class="trace-explanation"><summary>Truthiness confused with absence</summary><p>A falsey stored value does not mean the key is missing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · INTERVENE</span><details class="trace-explanation"><summary>Check membership</summary><p>Map.has answers whether the key exists independently of its value.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FALSIFY</span><details class="trace-explanation"><summary>Test another key</summary><p>An unseen key must still compute; fixing one symptom must preserve misses.</p></details></li>
       </ol>
@@ -78,22 +105,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="1">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Debugging as hypothesis testing">
-        <summary>Debugging as hypothesis testing</summary>
-        <p class="concept-definition">Debugging as hypothesis testing means that you state a possible cause and run a focused test that can disprove it.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Diagnose seeded frontend, backend, database, and AI-pipeline defects from evidence.</p>
     <p class="lab-scope">Core check: execute the synchronous zero-cache reproducer and counterexample below. Extension: apply the same observation/prediction/intervention table to one existing frontend, backend, database or AI defect; no seeded multi-service system is supplied. Record the first observation that would disprove your leading explanation.</p>
 
@@ -133,8 +153,10 @@ assert.equal(calls, 2);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Zero is a cached value</p>
@@ -194,10 +216,16 @@ assert.equal(calls, 2);
       </details>
     </article>
     <p><a href="https://nodejs.org/api/assert.html" target="_blank" rel="noreferrer">Review the lesson source: Node.js: assertions</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -211,23 +239,23 @@ assert.equal(calls, 2);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/api/assert.html" target="_blank" rel="noreferrer">Node.js: assertions ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

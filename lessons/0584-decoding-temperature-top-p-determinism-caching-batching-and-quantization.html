@@ -46,23 +46,68 @@
     <h1>Decoding, temperature, top-p, determinism, caching, batching, and quantization</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Decoding">
+        <summary>Decoding</summary>
+        <p class="concept-definition">Decoding selects output tokens from the probability distribution that the model produces.</p>
+      </details><details open class="concept-card" data-subtopic="temperature">
+        <summary>temperature</summary>
+        <p class="concept-definition">Temperature rescales token logits before sampling. Higher values usually produce a flatter and less predictable distribution.</p>
+      </details><details open class="concept-card" data-subtopic="top-p">
+        <summary>top-p</summary>
+        <p class="concept-definition">Top-p sampling limits selection to the smallest token set whose cumulative probability reaches a threshold.</p>
+      </details><details open class="concept-card" data-subtopic="determinism">
+        <summary>determinism</summary>
+        <p class="concept-definition">Determinism means that the same controlled inputs and system state produce the same output.</p>
+      </details><details open class="concept-card" data-subtopic="caching">
+        <summary>caching</summary>
+        <p class="concept-definition">Model caching reuses prior computation or prior responses to reduce repeated latency and cost.</p>
+      </details><details open class="concept-card" data-subtopic="batching">
+        <summary>batching</summary>
+        <p class="concept-definition">Batching processes multiple model inputs together to use hardware more efficiently.</p>
+      </details><details open class="concept-card" data-subtopic="quantization">
+        <summary>quantization</summary>
+        <p class="concept-definition">Quantization stores or computes model values with lower numerical precision to reduce memory or increase speed.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Decoding turns scores into token choices. Lower positive temperature increases preference for the largest score in the fixture. Zero needs a separate greedy-selection rule because this formula divides by temperature. Top-p, caching, batching and quantization affect other parts of generation and serving. Evaluate their quality and resource effects separately; temperature is not a factuality guarantee.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A large language model processes tokens and estimates a probability for possible next tokens.</p>
     <p><a href="../reference/senior-interview-practice.html#llm-internals">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0584" data-bespoke-example="0584" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Lower temperature concentrates probability on the largest logit</figcaption><p>The logits are [2, 1, 0]. Compare temperatures 0.5 and 2.</p><div class="foundation-grid"><div>Temperature 0.5<br>More probability on first candidate</div><div>Temperature 2<br>Flatter distribution</div><div>Temperature 0<br>Rejected by this division formula</div></div><details><summary>How would greedy zero-temperature selection be implemented?</summary><p>Use a separate argmax rule with a defined tie policy.</p></details><details><summary>Does this probability example measure batching or KV-cache speed?</summary><p>No. Those have separate memory and throughput behavior.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Decoding turns scores into token choices. Lower positive temperature increases preference for the largest score in the fixture. Zero needs a separate greedy-selection rule because this formula divides by temperature. Top-p, caching, batching and quantization affect other parts of generation and serving. Evaluate their quality and resource effects separately; temperature is not a factuality guarantee.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0584" data-bespoke-example="0584" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Lower temperature concentrates probability on the largest logit</figcaption><p>The logits are [2, 1, 0]. Compare temperatures 0.5 and 2.</p><div class="foundation-grid"><div>Temperature 0.5<br>More probability on first candidate</div><div>Temperature 2<br>Flatter distribution</div><div>Temperature 0<br>Rejected by this division formula</div></div><details open><summary>How would greedy zero-temperature selection be implemented?</summary><p>Use a separate argmax rule with a defined tie policy.</p></details><details open><summary>Does this probability example measure batching or KV-cache speed?</summary><p>No. Those have separate memory and throughput behavior.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a token sequence</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="numerical-0584" aria-label="Mechanism trace: Validate inputs then Rescale score gaps then Normalize probabilities. Experiment: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.">
         <li class="trace-stage"><span>01 · TRACE</span><details class="trace-explanation" open><summary>Validate inputs</summary><p>The division formula requires finite logits and positive temperature.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><details class="trace-explanation"><summary>Rescale score gaps</summary><p>Lower temperature increases the relative preference for the largest logit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><details class="trace-explanation"><summary>Normalize probabilities</summary><p>The probabilities sum to one; this example does not sample or measure inference speed.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Decoding">
-        <summary>Decoding</summary>
-        <p class="concept-definition">Decoding selects output tokens from the probability distribution that the model produces.</p>
-      </details><details class="concept-card" data-subtopic="temperature">
-        <summary>temperature</summary>
-        <p class="concept-definition">Temperature rescales token logits before sampling. Higher values usually produce a flatter and less predictable distribution.</p>
-      </details><details class="concept-card" data-subtopic="top-p">
-        <summary>top-p</summary>
-        <p class="concept-definition">Top-p sampling limits selection to the smallest token set whose cumulative probability reaches a threshold.</p>
-      </details><details class="concept-card" data-subtopic="determinism">
-        <summary>determinism</summary>
-        <p class="concept-definition">Determinism means that the same controlled inputs and system state produce the same output.</p>
-      </details><details class="concept-card" data-subtopic="caching">
-        <summary>caching</summary>
-        <p class="concept-definition">Model caching reuses prior computation or prior responses to reduce repeated latency and cost.</p>
-      </details><details class="concept-card" data-subtopic="batching">
-        <summary>batching</summary>
-        <p class="concept-definition">Batching processes multiple model inputs together to use hardware more efficiently.</p>
-      </details><details class="concept-card" data-subtopic="quantization">
-        <summary>quantization</summary>
-        <p class="concept-definition">Quantization stores or computes model values with lower numerical precision to reduce memory or increase speed.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Measure output and latency changes across decoding and serving configurations.</p>
     <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
@@ -144,8 +164,10 @@ else: raise AssertionError(&quot;zero temperature accepted by division formula&q
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Lower temperature concentrates probability on the largest logit</p><p>The logits are [2, 1, 0]. Compare temperatures 0.5 and 2.</p><div class="foundation-grid"><div>Temperature 0.5<br>More probability on first candidate</div><div>Temperature 2<br>Flatter distribution</div><div>Temperature 0<br>Rejected by this division formula</div></div></div>
@@ -213,10 +235,16 @@ else: raise AssertionError(&quot;zero temperature accepted by division formula&q
       </details>
     </article>
     <p><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Review the lesson source: Attention Is All You Need</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -230,23 +258,23 @@ else: raise AssertionError(&quot;zero temperature accepted by division formula&q
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">Attention Is All You Need ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,53 @@
     <h1>Type testing, ts-expect-error, assignability assertions, declaration tests, runtime tests, and contract evidence</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Type testing">
+        <summary>Type testing</summary>
+        <p class="concept-definition">Type testing compiles examples expected to succeed or fail and asserts inferred relationships. It complements but cannot replace runtime behavior tests.</p>
+      </details><details open class="concept-card" data-subtopic="ts-expect-error">
+        <summary>ts-expect-error</summary>
+        <p class="concept-definition">ts-expect-error requires the next line to produce a diagnostic and itself fails when the expected error disappears, making negative type behavior testable.</p>
+      </details><details open class="concept-card" data-subtopic="assignability assertions">
+        <summary>assignability assertions</summary>
+        <p class="concept-definition">Assignability asks whether a source type can safely be used where a target type is expected under TypeScript&#039;s compatibility rules.</p>
+      </details><details open class="concept-card" data-subtopic="declaration tests">
+        <summary>declaration tests</summary>
+        <p class="concept-definition">Declaration tests compile consumer examples against the published .d.ts API to check accepted and rejected usage.</p>
+      </details><details open class="concept-card" data-subtopic="runtime tests">
+        <summary>runtime tests</summary>
+        <p class="concept-definition">Runtime tests execute behavior, including malformed inputs and failures. They cannot alone prove the checker rejects an invalid program.</p>
+      </details><details open class="concept-card" data-subtopic="contract evidence">
+        <summary>contract evidence</summary>
+        <p class="concept-definition">Contract evidence combines accepted programs, rejected programs, runtime assertions, and deployment or consumer checks appropriate to the boundary.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Type tests check accepted and rejected programs. Runtime tests check the behavior of executed code. Both matter at an API boundary. An unused ts-expect-error catches the loss of an expected rejection, but the directive does not identify which error occurred. Keep the negative example narrow so an unrelated diagnostic cannot make it pass. Test published declarations from a consumer as well as local source.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0162" data-bespoke-example="0162" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Test the accepted inputs and the actual result</figcaption>
 <p>The first function receives the readonly pair [1, 2]. Its contract requires at least one item.</p>
 <div class="foundation-grid"><div>Positive type check<br>Result type is 1 or 2</div><div>Negative type check<br>Empty tuple must be rejected</div><div>Runtime check<br>Returned value must equal 1</div></div>
-<details><summary>Could a function returning 2 pass the stated result-type check?</summary><p>Yes. The type permits either literal. The runtime assertion checks the stronger promise that the function returns the first item.</p></details>
-<details><summary>What if a later signature starts accepting empty arrays?</summary><p>The expected-error directive becomes unused and the type check fails. It protects the rejected-input contract.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Type tests check accepted and rejected programs. Runtime tests check the behavior of executed code. Both matter at an API boundary. An unused ts-expect-error catches the loss of an expected rejection, but the directive does not identify which error occurred. Keep the negative example narrow so an unrelated diagnostic cannot make it pass. Test published declarations from a consumer as well as local source.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Could a function returning 2 pass the stated result-type check?</summary><p>Yes. The type permits either literal. The runtime assertion checks the stronger promise that the function returns the first item.</p></details>
+<details open><summary>What if a later signature starts accepting empty arrays?</summary><p>The expected-error directive becomes unused and the type check fails. It protects the rejected-input contract.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-contract-test" aria-label="Mechanism trace: Contract states accepted and rejected use then Compiler evaluates assignability then JavaScript exercises real behavior then A change must satisfy both suites. Experiment: Change the API so one negative type test becomes valid and verify the test suite catches it.">
         <li class="trace-stage"><span>01 · EXPECT</span><details class="trace-explanation" open><summary>Contract states accepted and rejected use</summary><p>Positive and negative examples define the public relationship.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CHECK</span><details class="trace-explanation"><summary>Compiler evaluates assignability</summary><p>Expected errors and type equalities verify static behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUN</span><details class="trace-explanation"><summary>JavaScript exercises real behavior</summary><p>Boundary, success, failure, and cleanup tests verify runtime behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REGRESS</span><details class="trace-explanation"><summary>A change must satisfy both suites</summary><p>Declarations and implementation cannot drift silently.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Type testing">
-        <summary>Type testing</summary>
-        <p class="concept-definition">Type testing compiles examples expected to succeed or fail and asserts inferred relationships. It complements but cannot replace runtime behavior tests.</p>
-      </details><details class="concept-card" data-subtopic="ts-expect-error">
-        <summary>ts-expect-error</summary>
-        <p class="concept-definition">ts-expect-error requires the next line to produce a diagnostic and itself fails when the expected error disappears, making negative type behavior testable.</p>
-      </details><details class="concept-card" data-subtopic="assignability assertions">
-        <summary>assignability assertions</summary>
-        <p class="concept-definition">Assignability asks whether a source type can safely be used where a target type is expected under TypeScript&#039;s compatibility rules.</p>
-      </details><details class="concept-card" data-subtopic="declaration tests">
-        <summary>declaration tests</summary>
-        <p class="concept-definition">Declaration tests compile consumer examples against the published .d.ts API to check accepted and rejected usage.</p>
-      </details><details class="concept-card" data-subtopic="runtime tests">
-        <summary>runtime tests</summary>
-        <p class="concept-definition">Runtime tests execute behavior, including malformed inputs and failures. They cannot alone prove the checker rejects an invalid program.</p>
-      </details><details class="concept-card" data-subtopic="contract evidence">
-        <summary>contract evidence</summary>
-        <p class="concept-definition">Contract evidence combines accepted programs, rejected programs, runtime assertions, and deployment or consumer checks appropriate to the boundary.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Add positive and negative type tests plus runtime boundary tests for one API.</p>
 
 <p>Runnable type-test lab: first has a real implementation, the invalid call is in an uncalled checked function, and a runtime assertion verifies the first element. Compile emitted declarations from a separate consumer next.</p>
@@ -149,8 +169,10 @@ console.log(&quot;Type-test checks passed&quot;);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Test the accepted inputs and the actual result</p>
@@ -221,10 +243,16 @@ console.log(&quot;Type-test checks passed&quot;);
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@ console.log(&quot;Type-test checks passed&quot;);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,23 +46,68 @@
     <h1>PostgreSQL observability, pg_stat_activity, pg_locks, pg_stat_statements, progress views, logs, and wait events</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="PostgreSQL observability">
+        <summary>PostgreSQL observability</summary>
+        <p class="concept-definition">PostgreSQL observability combines activity, locks, waits, plans, logs, and resource measurements to explain database behavior.</p>
+      </details><details open class="concept-card" data-subtopic="pg_stat_activity">
+        <summary>pg_stat_activity</summary>
+        <p class="concept-definition">pg_stat_activity exposes backend activity and wait context, useful for identifying long-running or idle-in-transaction sessions.</p>
+      </details><details open class="concept-card" data-subtopic="pg_locks">
+        <summary>pg_locks</summary>
+        <p class="concept-definition">pg_locks exposes held or awaited lock information for contention analysis.</p>
+      </details><details open class="concept-card" data-subtopic="pg_stat_statements">
+        <summary>pg_stat_statements</summary>
+        <p class="concept-definition">pg_stat_statements groups structurally similar SQL and accumulates calls, time, rows, I/O, WAL, and other evidence so high-impact query families can be ranked.</p>
+      </details><details open class="concept-card" data-subtopic="progress views">
+        <summary>progress views</summary>
+        <p class="concept-definition">Progress views report supported long-running operations&#039; stages and counters rather than assuming elapsed time predicts completion.</p>
+      </details><details open class="concept-card" data-subtopic="logs">
+        <summary>logs</summary>
+        <p class="concept-definition">Logs record individual events with relevant context. Include enough identity and timing to investigate behavior, while excluding secrets and unnecessary personal data.</p>
+      </details><details open class="concept-card" data-subtopic="wait events">
+        <summary>wait events</summary>
+        <p class="concept-definition">Wait events identify what a backend is waiting on, distinguishing lock, I/O, client, and other waits.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Start with the affected workload and time interval. Activity and lock views show current waiting; query statistics summarize accumulated work. Use deltas and account for resets before comparing totals. Mean latency can hide tails, and a wait snapshot is not an incident timeline. Correlate plans with host and application evidence while redacting query text that could reveal sensitive data.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0377" data-bespoke-example="0377" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Total query cost depends on frequency as well as mean time</figcaption><p>Hypothetical statistics: query A averages 2 ms over 10,000 calls; query B averages 100 ms over 10 calls.</p><div class="foundation-grid"><div>Query A<br>Total: 20,000 ms</div><div>Query B<br>Total: 1,000 ms</div><div>Sort by total time<br>A ranks above B</div></div><details><summary>Does the largest mean time always dominate total load?</summary><p>No. Call frequency changes the total contribution.</p></details><details><summary>Do these synthetic numbers constitute measured database results?</summary><p>No. They illustrate the calculation. Collect the actual statistics and workload context before tuning.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Start with the affected workload and time interval. Activity and lock views show current waiting; query statistics summarize accumulated work. Use deltas and account for resets before comparing totals. Mean latency can hide tails, and a wait snapshot is not an incident timeline. Correlate plans with host and application evidence while redacting query text that could reveal sensitive data.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0377" data-bespoke-example="0377" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Total query cost depends on frequency as well as mean time</figcaption><p>Hypothetical statistics: query A averages 2 ms over 10,000 calls; query B averages 100 ms over 10 calls.</p><div class="foundation-grid"><div>Query A<br>Total: 20,000 ms</div><div>Query B<br>Total: 1,000 ms</div><div>Sort by total time<br>A ranks above B</div></div><details open><summary>Does the largest mean time always dominate total load?</summary><p>No. Call frequency changes the total contribution.</p></details><details open><summary>Do these synthetic numbers constitute measured database results?</summary><p>No. They illustrate the calculation. Collect the actual statistics and workload context before tuning.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a diagnostic experiment</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="postgres-diagnostics" aria-label="Mechanism trace: Define the slow or failing workload then Locate waiting and repeated work then Test one bounded intervention then Check improvement and regressions. Experiment: A query is slow while CPU is low: distinguish lock waiting, I/O and client queueing before adding capacity.">
         <li class="trace-stage"><span>01 · SYMPTOM</span><details class="trace-explanation" open><summary>Define the slow or failing workload</summary><p>Record request shape, concurrency, time window and the affected service objective.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MEASURE</span><details class="trace-explanation"><summary>Locate waiting and repeated work</summary><p>Session waits, query statistics, plans and host metrics narrow the hypothesis.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHANGE</span><details class="trace-explanation"><summary>Test one bounded intervention</summary><p>Use representative data and hold workload conditions steady enough for comparison.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><details class="trace-explanation"><summary>Check improvement and regressions</summary><p>Compare correctness, throughput, tail latency and resource use; revert changes that do not help.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="PostgreSQL observability">
-        <summary>PostgreSQL observability</summary>
-        <p class="concept-definition">PostgreSQL observability combines activity, locks, waits, plans, logs, and resource measurements to explain database behavior.</p>
-      </details><details class="concept-card" data-subtopic="pg_stat_activity">
-        <summary>pg_stat_activity</summary>
-        <p class="concept-definition">pg_stat_activity exposes backend activity and wait context, useful for identifying long-running or idle-in-transaction sessions.</p>
-      </details><details class="concept-card" data-subtopic="pg_locks">
-        <summary>pg_locks</summary>
-        <p class="concept-definition">pg_locks exposes held or awaited lock information for contention analysis.</p>
-      </details><details class="concept-card" data-subtopic="pg_stat_statements">
-        <summary>pg_stat_statements</summary>
-        <p class="concept-definition">pg_stat_statements groups structurally similar SQL and accumulates calls, time, rows, I/O, WAL, and other evidence so high-impact query families can be ranked.</p>
-      </details><details class="concept-card" data-subtopic="progress views">
-        <summary>progress views</summary>
-        <p class="concept-definition">Progress views report supported long-running operations&#039; stages and counters rather than assuming elapsed time predicts completion.</p>
-      </details><details class="concept-card" data-subtopic="logs">
-        <summary>logs</summary>
-        <p class="concept-definition">Logs record individual events with relevant context. Include enough identity and timing to investigate behavior, while excluding secrets and unnecessary personal data.</p>
-      </details><details class="concept-card" data-subtopic="wait events">
-        <summary>wait events</summary>
-        <p class="concept-definition">Wait events identify what a backend is waiting on, distinguishing lock, I/O, client, and other waits.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Diagnose one lock incident and one slow-query incident from database views without relying on application guesses.</p>
     <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 <p>Configure the required statistics extension and permissions in a disposable database, then correlate a slow query with waits and locks. Use PostgreSQL-version-appropriate views; cumulative counters need time deltas and reset awareness.</p>
@@ -137,8 +157,10 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Total query cost depends on frequency as well as mean time</p><p>Hypothetical statistics: query A averages 2 ms over 10,000 calls; query B averages 100 ms over 10 calls.</p><div class="foundation-grid"><div>Query A<br>Total: 20,000 ms</div><div>Query B<br>Total: 1,000 ms</div><div>Sort by total time<br>A ranks above B</div></div></div>
@@ -206,10 +228,16 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -223,23 +251,23 @@ SELECT buffers_clean, maxwritten_clean FROM pg_stat_bgwriter;
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">PostgreSQL concurrency control documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,53 @@
     <h1>Enums, const enums, literal unions, runtime objects, reverse mappings, and alternatives</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Enums">
+        <summary>Enums</summary>
+        <p class="concept-definition">An enum creates a named type and normally a runtime object. Numeric enums also emit reverse mappings, while const enums may inline values.</p>
+      </details><details open class="concept-card" data-subtopic="const enums">
+        <summary>const enums</summary>
+        <p class="concept-definition">Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.</p>
+      </details><details open class="concept-card" data-subtopic="literal unions">
+        <summary>literal unions</summary>
+        <p class="concept-definition">A literal union is erased but precisely limits values during checking. Pair it with a runtime as-const object or parser when enumeration is required at runtime.</p>
+      </details><details open class="concept-card" data-subtopic="runtime objects">
+        <summary>runtime objects</summary>
+        <p class="concept-definition">Runtime objects survive emission and can be inspected or called; type aliases and interfaces do not create corresponding objects.</p>
+      </details><details open class="concept-card" data-subtopic="reverse mappings">
+        <summary>reverse mappings</summary>
+        <p class="concept-definition">Numeric enum objects map numbers back to member names as well as names to numbers. String enums do not emit that reverse mapping.</p>
+      </details><details open class="concept-card" data-subtopic="alternatives">
+        <summary>alternatives</summary>
+        <p class="concept-definition">Compare literal unions, lookup objects, and enums by emitted behavior, wire stability, discoverability, and compilation constraints, not syntax preference alone.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>An enum normally produces a runtime object as well as a type. Numeric enums also provide reverse mappings; string enums do not. A literal union is erased, while an as-const lookup object retains values that code can inspect. Const enum inlining can embed dependency values in consumer output. Choose based on runtime use and compatibility, then define stable wire values independently of the chosen syntax.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0151" data-bespoke-example="0151" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Use a runtime catalog to check status text</figcaption>
 <p>The ProjectStatus object has three own keys: draft, active and archived. Their values use the same words.</p>
 <div class="foundation-grid"><div>active<br>String and own key<br>Accept</div><div>deleted<br>String but no own key<br>Reject</div><div>toString<br>Inherited name, not an own key<br>Reject</div></div>
-<details><summary>Why does the parser need an object if a union names the same words?</summary><p>The object exists at runtime for the membership check. The type-only union is erased.</p></details>
-<details><summary>What assumption would break if active's value changed to enabled?</summary><p>The parser checks keys and returns the input as a value type. That is valid here because keys and values match. A changed catalog would need a matching parser change.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>An enum normally produces a runtime object as well as a type. Numeric enums also provide reverse mappings; string enums do not. A literal union is erased, while an as-const lookup object retains values that code can inspect. Const enum inlining can embed dependency values in consumer output. Choose based on runtime use and compatibility, then define stable wire values independently of the chosen syntax.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Why does the parser need an object if a union names the same words?</summary><p>The object exists at runtime for the membership check. The type-only union is erased.</p></details>
+<details open><summary>What assumption would break if active's value changed to enabled?</summary><p>The parser checks keys and returns the input as a value type. That is valid here because keys and values match. A changed catalog would need a matching parser change.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-narrowing" aria-label="Mechanism trace: A value begins with a possible type then Control flow tests the runtime value then Checker removes impossible cases then Branch returns or reaches never. Experiment: Add one new discriminated variant and observe every non-exhaustive consumer.">
         <li class="trace-stage"><span>01 · DECLARED</span><details class="trace-explanation" open><summary>A value begins with a possible type</summary><p>Its declaration describes every permitted variant.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EVIDENCE</span><details class="trace-explanation"><summary>Control flow tests the runtime value</summary><p>A discriminant, guard, equality, or reachability fact is learned.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NARROW</span><details class="trace-explanation"><summary>Checker removes impossible cases</summary><p>Only operations valid for the remaining variants are allowed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE</span><details class="trace-explanation"><summary>Branch returns or reaches never</summary><p>Diagnostics and type tests expose missing or unsafe paths.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Enums">
-        <summary>Enums</summary>
-        <p class="concept-definition">An enum creates a named type and normally a runtime object. Numeric enums also emit reverse mappings, while const enums may inline values.</p>
-      </details><details class="concept-card" data-subtopic="const enums">
-        <summary>const enums</summary>
-        <p class="concept-definition">Const enums restrict members to constant expressions and normally inline their values at use sites rather than emitting a runtime enum object. Compiler settings can change emission; publishing ambient const enums introduces isolated-compilation and dependency-version hazards.</p>
-      </details><details class="concept-card" data-subtopic="literal unions">
-        <summary>literal unions</summary>
-        <p class="concept-definition">A literal union is erased but precisely limits values during checking. Pair it with a runtime as-const object or parser when enumeration is required at runtime.</p>
-      </details><details class="concept-card" data-subtopic="runtime objects">
-        <summary>runtime objects</summary>
-        <p class="concept-definition">Runtime objects survive emission and can be inspected or called; type aliases and interfaces do not create corresponding objects.</p>
-      </details><details class="concept-card" data-subtopic="reverse mappings">
-        <summary>reverse mappings</summary>
-        <p class="concept-definition">Numeric enum objects map numbers back to member names as well as names to numbers. String enums do not emit that reverse mapping.</p>
-      </details><details class="concept-card" data-subtopic="alternatives">
-        <summary>alternatives</summary>
-        <p class="concept-definition">Compare literal unions, lookup objects, and enums by emitted behavior, wire stability, discoverability, and compilation constraints, not syntax preference alone.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Replace an unsafe cross-package const enum with a versionable wire representation and runtime parser.</p>
 
 <p>Standalone parser. Test every allowed status plus null, inherited property names, and a typo. The key-membership parser works here because each key equals its value; do not generalize it to arbitrary lookup objects.</p>
@@ -147,8 +167,10 @@ function parseProjectStatus(input: unknown): ProjectStatus {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Use a runtime catalog to check status text</p>
@@ -219,10 +241,16 @@ function parseProjectStatus(input: unknown): ProjectStatus {
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -236,23 +264,23 @@ function parseProjectStatus(input: unknown): ProjectStatus {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

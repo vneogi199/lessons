@@ -46,6 +46,53 @@
     <h1>Measurement, complexity, benchmarking, warmup, variance, and event-loop responsiveness</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Measurement">
+        <summary>Measurement</summary>
+        <p class="concept-definition">Measurement records behavior at a defined boundary under known inputs and runtime conditions. Repeat runs and include variance before attributing a change to one code edit.</p>
+      </details><details open class="concept-card" data-subtopic="complexity">
+        <summary>complexity</summary>
+        <p class="concept-definition">Complexity describes how resource use grows with input size under a cost model. It does not replace measurement of constants, allocation, or runtime behavior.</p>
+      </details><details open class="concept-card" data-subtopic="benchmarking">
+        <summary>benchmarking</summary>
+        <p class="concept-definition">Benchmarking measures a controlled workload repeatedly. Warmup, variance, input realism, garbage collection, system load, and the chosen boundary affect the conclusion.</p>
+      </details><details open class="concept-card" data-subtopic="warmup">
+        <summary>warmup</summary>
+        <p class="concept-definition">Warmup is the execution period during which caches and engine feedback may change performance. Report cold-start and steady-state measurements separately when both matter.</p>
+      </details><details open class="concept-card" data-subtopic="variance">
+        <summary>variance</summary>
+        <p class="concept-definition">Measurement variance is the spread of repeated observations. Background load, garbage collection, and adaptive optimization can make one timing sample misleading.</p>
+      </details><details open class="concept-card" data-subtopic="event-loop responsiveness">
+        <summary>event-loop responsiveness</summary>
+        <p class="concept-definition">Event-loop responsiveness measures how promptly scheduled work can run. Long synchronous work and starvation can delay timers and input even when asynchronous APIs are used elsewhere.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A benchmark measures a particular workload within a chosen boundary. Warmup, allocation, garbage collection and background load can all affect its timings. Verify the result before measuring speed, repeat runs and report the spread. Separate cold starts from warm execution when both matter. Throughput does not establish responsiveness: measure event-loop delay separately under a representative load.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0120" data-bespoke-example="0120" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A percentile label needs a selection rule</figcaption>
 <p>The benchmark sorts 30 measured durations. No timing values are invented here.</p>
 <div class="foundation-grid"><div>Displayed median<br>Index floor(30 × 0.5) = 15<br>Sixteenth sorted sample</div><div>Displayed p95<br>Index floor(30 × 0.95) = 28<br>Twenty-ninth sorted sample</div></div>
-<details><summary>Is this median the average of the two middle samples?</summary><p>No. It is the upper-middle order statistic. Label the selected convention when comparing reports.</p></details>
-<details><summary>Do thirty warm calls in one process establish production responsiveness?</summary><p>No. Measure representative load and event-loop delay, and report cold-start behavior separately. These samples are not independent production requests or a confidence interval.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A benchmark measures a particular workload within a chosen boundary. Warmup, allocation, garbage collection and background load can all affect its timings. Verify the result before measuring speed, repeat runs and report the spread. Separate cold starts from warm execution when both matter. Throughput does not establish responsiveness: measure event-loop delay separately under a representative load.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Is this median the average of the two middle samples?</summary><p>No. It is the upper-middle order statistic. Label the selected convention when comparing reports.</p></details>
+<details open><summary>Do thirty warm calls in one process establish production responsiveness?</summary><p>No. Measure representative load and event-loop delay, and report cold-start behavior separately. These samples are not independent production requests or a confidence interval.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a diagnostic experiment</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="javascript-engine" aria-label="Mechanism trace: Program creates executable work then Execution records observed behavior then Engine optimizes or collects then Profiles expose the outcome. Experiment: Warm a representative workload, change one object shape or retaining edge, and profile both runs.">
         <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Program creates executable work</summary><p>Parsing and object allocation establish runtime inputs.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FEEDBACK</span><details class="trace-explanation"><summary>Execution records observed behavior</summary><p>Types, shapes, calls, allocations, and timing form evidence.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPT</span><details class="trace-explanation"><summary>Engine optimizes or collects</summary><p>Guards, tiers, deoptimization, and GC respond to reality.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><details class="trace-explanation"><summary>Profiles expose the outcome</summary><p>Latency, CPU, heap, and retaining paths test the explanation.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Measurement">
-        <summary>Measurement</summary>
-        <p class="concept-definition">Measurement records behavior at a defined boundary under known inputs and runtime conditions. Repeat runs and include variance before attributing a change to one code edit.</p>
-      </details><details class="concept-card" data-subtopic="complexity">
-        <summary>complexity</summary>
-        <p class="concept-definition">Complexity describes how resource use grows with input size under a cost model. It does not replace measurement of constants, allocation, or runtime behavior.</p>
-      </details><details class="concept-card" data-subtopic="benchmarking">
-        <summary>benchmarking</summary>
-        <p class="concept-definition">Benchmarking measures a controlled workload repeatedly. Warmup, variance, input realism, garbage collection, system load, and the chosen boundary affect the conclusion.</p>
-      </details><details class="concept-card" data-subtopic="warmup">
-        <summary>warmup</summary>
-        <p class="concept-definition">Warmup is the execution period during which caches and engine feedback may change performance. Report cold-start and steady-state measurements separately when both matter.</p>
-      </details><details class="concept-card" data-subtopic="variance">
-        <summary>variance</summary>
-        <p class="concept-definition">Measurement variance is the spread of repeated observations. Background load, garbage collection, and adaptive optimization can make one timing sample misleading.</p>
-      </details><details class="concept-card" data-subtopic="event-loop responsiveness">
-        <summary>event-loop responsiveness</summary>
-        <p class="concept-definition">Event-loop responsiveness measures how promptly scheduled work can run. Long synchronous work and starvation can delay timers and input even when asynchronous APIs are used elsewhere.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Design a repeatable benchmark with warmup, multiple samples, percentile reporting, and a responsiveness guardrail.</p>
     <p class="lab-scope">Explain the bounded fixture in its stated runtime. Worker, browser, profiler and repository exercises need the additional setup named in the lesson. You can predict the local result before setting up those integrations.</p>
 <p>Focus on benchmark methodology: verify the result, report all sample sizes, separate warmup and measured runs, and vary data size. Add a responsiveness measurement separately; this throughput loop does not measure event-loop delay.</p>
@@ -151,8 +171,10 @@ console.table({
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A percentile label needs a selection rule</p>
@@ -224,10 +246,16 @@ console.table({
       </details>
     </article>
     <p><a href="https://v8.dev/docs" target="_blank" rel="noreferrer">Review the lesson source: V8 documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -241,23 +269,23 @@ console.table({
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://v8.dev/docs" target="_blank" rel="noreferrer">V8 documentation ↗</a></div>
-    
-    
-    
-    
+
+
+
+
     <a href="../reference/javascript-deep-dive-map.html" target="_blank">JavaScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

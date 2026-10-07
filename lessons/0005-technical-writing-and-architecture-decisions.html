@@ -46,6 +46,41 @@
     <h1>Technical writing and architecture decisions</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="2">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Technical writing">
+        <summary>Technical writing</summary>
+        <p class="concept-definition">Technical writing explains a system, decision, or procedure with precise terms, evidence, and a structure that the reader can follow.</p>
+      </details><details open class="concept-card" data-subtopic="architecture decisions">
+        <summary>architecture decisions</summary>
+        <p class="concept-definition">An architecture decision records a significant choice, its context, alternatives, consequences, and the evidence that supports it.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Write for the reader&#039;s next action. A README explains purpose and entry points; a runbook gives symptoms, safe checks, mitigation, verification and escalation; an incident note separates observed timeline from hypotheses; a pull-request description states what changed, why, tests and rollout risk. An ADR records a significant choice with context, alternatives and consequences. Keep assumptions distinguishable from measurements. Under the linked ADR process, accepted decisions are superseded by a new record when circumstances change, rather than silently rewriting their historical rationale.</p>
+      <p class="analogy">A decision record is the reasoning attached to a fork in the road, so the next team knows both why you turned and when a different route would make sense.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Software engineering uses repeatable tools and records to change software safely.</p>
@@ -55,19 +90,14 @@
   <figure class="card mechanism-map" data-lesson-map="0005" data-bespoke-example="0005" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Where a notification can disappear</figcaption>
 <p>An order must produce a notification. Compare two designs when the process crashes after the database commit.</p>
 <div class="foundation-grid"><div>Direct publication<br>1. Commit order<br>2. Crash before publish<br>Result: order exists; notification intent was not saved</div><div>Transactional outbox<br>1. Commit order + notification intent together<br>2. Crash before relay<br>Result: order and intent exist; relay can resume</div></div>
-<details><summary>The relay publishes, then crashes before recording success. Can the notification be sent twice?</summary><p>Yes. On restart, the saved intent still looks unsent. A retry can publish it again. Use stable event identity and an idempotent effect; the outbox alone does not provide exactly-once delivery.</p></details>
-<details><summary>The requirement changes: losing an analytics notification is acceptable. Must the outbox remain?</summary><p>No. Direct publication may now be sufficient. Record the accepted loss risk and compare it with the cost of operating, retrying and cleaning up an outbox.</p></details>
-<p>A decision record should retain the requirement and tradeoff. Do not describe the preferred design as best for every system.</p></figure><div class="grid">
-    <section class="card">
-
-      <p>Write for the reader&#039;s next action. A README explains purpose and entry points; a runbook gives symptoms, safe checks, mitigation, verification and escalation; an incident note separates observed timeline from hypotheses; a pull-request description states what changed, why, tests and rollout risk. An ADR records a significant choice with context, alternatives and consequences. Keep assumptions distinguishable from measurements. Under the linked ADR process, accepted decisions are superseded by a new record when circumstances change, rather than silently rewriting their historical rationale.</p>
-      <p class="analogy">A decision record is the reasoning attached to a fork in the road, so the next team knows both why you turned and when a different route would make sense.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>The relay publishes, then crashes before recording success. Can the notification be sent twice?</summary><p>Yes. On restart, the saved intent still looks unsent. A retry can publish it again. Use stable event identity and an idempotent effect; the outbox alone does not provide exactly-once delivery.</p></details>
+<details open><summary>The requirement changes: losing an analytics notification is acceptable. Must the outbox remain?</summary><p>No. Direct publication may now be sufficient. Record the accepted loss risk and compare it with the cost of operating, retrying and cleaning up an outbox.</p></details>
+<p>A decision record should retain the requirement and tradeoff. Do not describe the preferred design as best for every system.</p></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an engineering change</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="decision-evidence" aria-label="Mechanism trace: Name the loss requirement then Expose the crash gap then Commit order and intent then Test and assign ownership. Experiment: If notification loss becomes acceptable, which complexity can be removed?">
         <li class="trace-stage"><span>01 · CONSTRAIN</span><details class="trace-explanation" open><summary>Name the loss requirement</summary><p>Notification loss after order commit is unacceptable in this scenario.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · COMPARE</span><details class="trace-explanation"><summary>Expose the crash gap</summary><p>Direct post-commit publication leaves committed orders without durable notification intent.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><details class="trace-explanation"><summary>Commit order and intent</summary><p>An outbox shares the database transaction; the relay still permits duplicate publication.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REVISIT</span><details class="trace-explanation"><summary>Test and assign ownership</summary><p>Specify crash tests, lag metrics, retention ownership and a decision review trigger.</p></details></li>
       </ol>
@@ -79,25 +109,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="2">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Technical writing">
-        <summary>Technical writing</summary>
-        <p class="concept-definition">Technical writing explains a system, decision, or procedure with precise terms, evidence, and a structure that the reader can follow.</p>
-      </details><details class="concept-card" data-subtopic="architecture decisions">
-        <summary>architecture decisions</summary>
-        <p class="concept-definition">An architecture decision records a significant choice, its context, alternatives, consequences, and the evidence that supports it.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Write READMEs, runbooks, ADRs, incident notes, and concise pull-request descriptions.</p>
     <p class="lab-scope">Tabletop writing exercise, not runnable shell code or an implemented outbox. Rewrite the proposed decision below after changing notification delivery from required to best effort. Then write a five-line runbook for rising outbox age: symptom, safe diagnosis, mitigation, verification and owner. Do not invent measured latency or a completed failure-injection test.</p>
 
@@ -131,8 +151,10 @@ Owner: Name the team that handles replay, retention, and incidents before approv
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Where a notification can disappear</p>
@@ -193,10 +215,16 @@ Owner: Name the team that handles replay, retention, and incidents before approv
       </details>
     </article>
     <p><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Prescriptive Guidance: architecture decision records</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -210,23 +238,23 @@ Owner: Name the team that handles replay, retention, and incidents before approv
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/architectural-decision-records/adr-process.html" target="_blank" rel="noreferrer">AWS Prescriptive Guidance: architecture decision records ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

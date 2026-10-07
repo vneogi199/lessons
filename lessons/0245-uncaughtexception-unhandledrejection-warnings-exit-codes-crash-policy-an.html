@@ -46,6 +46,53 @@
     <h1>uncaughtException, unhandledRejection, warnings, exit codes, crash policy, and supervisors</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="uncaughtException">
+        <summary>uncaughtException</summary>
+        <p class="concept-definition">uncaughtException is a last-resort process event after an exception reaches the event loop. Perform synchronous emergency cleanup and exit rather than resuming normal service.</p>
+      </details><details open class="concept-card" data-subtopic="unhandledRejection">
+        <summary>unhandledRejection</summary>
+        <p class="concept-definition">unhandledRejection reports a Promise rejected without a handler in time. Treat it as a lost ownership path and make crash policy explicit.</p>
+      </details><details open class="concept-card" data-subtopic="warnings">
+        <summary>warnings</summary>
+        <p class="concept-definition">Warnings surface deprecated or suspicious behavior without necessarily terminating execution; production policy determines response.</p>
+      </details><details open class="concept-card" data-subtopic="exit codes">
+        <summary>exit codes</summary>
+        <p class="concept-definition">An exit code reports process termination status. Zero conventionally means success; a shell pipeline may report only its last command unless the shell is configured otherwise.</p>
+      </details><details open class="concept-card" data-subtopic="crash policy">
+        <summary>crash policy</summary>
+        <p class="concept-definition">Crash policy defines when a process should terminate rather than continue in an unsafe state and how recovery is supervised.</p>
+      </details><details open class="concept-card" data-subtopic="supervisors">
+        <summary>supervisors</summary>
+        <p class="concept-definition">Supervisors manage process lifecycle, restarts, backoff, and exit observation outside the application process.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>An uncaught failure can leave application state unreliable. Last-resort observation should not silently convert that failure into continued service. The example uses explicit strict rejection policy and a monitor that does not suppress default termination. A warning need not be fatal. An external supervisor owns restarts and their bounds; merely setting an exit code can leave existing listeners accepting work.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0245" data-bespoke-example="0245" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Observe a fatal error without swallowing it</figcaption>
 <p>The isolated fixture rethrows a DependencyError. Its uncaughtExceptionMonitor listener only records the failure.</p>
 <div class="foundation-grid"><div>Unhandled failure<br>DependencyError with cause</div><div>Monitor<br>Record error<br>Do not recover application state</div><div>Process outcome<br>Expected nonzero exit<br>Supervisor owns restart policy</div></div>
-<details><summary>Is writing the error to a log a recovery strategy?</summary><p>No. Logging supplies evidence. It does not establish that process state is safe to continue using.</p></details>
-<details><summary>Why not only set exitCode in a swallowing handler?</summary><p>Open servers can keep the process alive. A crash policy must account for live resources and actual termination.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>An uncaught failure can leave application state unreliable. Last-resort observation should not silently convert that failure into continued service. The example uses explicit strict rejection policy and a monitor that does not suppress default termination. A warning need not be fatal. An external supervisor owns restarts and their bounds; merely setting an exit code can leave existing listeners accepting work.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Is writing the error to a log a recovery strategy?</summary><p>No. Logging supplies evidence. It does not establish that process state is safe to continue using.</p></details>
+<details open><summary>Why not only set exitCode in a swallowing handler?</summary><p>Open servers can keep the process alive. A crash policy must account for live resources and actual termination.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an event-loop operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-process" aria-label="Mechanism trace: A ready process accepts work then Runtime coordinates work then Admission stops before cleanup then Supervisor observes termination. Experiment: Send SIGTERM or inject an uncaught failure during a slow operation and observe bounded termination.">
         <li class="trace-stage"><span>01 · ADMIT</span><details class="trace-explanation" open><summary>A ready process accepts work</summary><p>Listeners, connections, jobs, and queues create owned in-flight state.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EXECUTE</span><details class="trace-explanation"><summary>Runtime coordinates work</summary><p>Errors, retries, signals, and health state can change the path.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DRAIN</span><details class="trace-explanation"><summary>Admission stops before cleanup</summary><p>Readiness drops, connections or jobs finish, and deadlines bound waiting.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXIT</span><details class="trace-explanation"><summary>Supervisor observes termination</summary><p>Exit code, report, remaining handles, and restart policy expose the result.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="uncaughtException">
-        <summary>uncaughtException</summary>
-        <p class="concept-definition">uncaughtException is a last-resort process event after an exception reaches the event loop. Perform synchronous emergency cleanup and exit rather than resuming normal service.</p>
-      </details><details class="concept-card" data-subtopic="unhandledRejection">
-        <summary>unhandledRejection</summary>
-        <p class="concept-definition">unhandledRejection reports a Promise rejected without a handler in time. Treat it as a lost ownership path and make crash policy explicit.</p>
-      </details><details class="concept-card" data-subtopic="warnings">
-        <summary>warnings</summary>
-        <p class="concept-definition">Warnings surface deprecated or suspicious behavior without necessarily terminating execution; production policy determines response.</p>
-      </details><details class="concept-card" data-subtopic="exit codes">
-        <summary>exit codes</summary>
-        <p class="concept-definition">An exit code reports process termination status. Zero conventionally means success; a shell pipeline may report only its last command unless the shell is configured otherwise.</p>
-      </details><details class="concept-card" data-subtopic="crash policy">
-        <summary>crash policy</summary>
-        <p class="concept-definition">Crash policy defines when a process should terminate rather than continue in an unsafe state and how recovery is supervised.</p>
-      </details><details class="concept-card" data-subtopic="supervisors">
-        <summary>supervisors</summary>
-        <p class="concept-definition">Supervisors manage process lifecycle, restarts, backoff, and exit observation outside the application process.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Reproduce uncaught and unhandled failures in child processes and verify exit, report, and supervisor behavior.</p>
     <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 <p>Use --unhandled-rejections=strict for the isolated fatal-error fixture and verify nonzero exit. Explain why merely setting exitCode can leave open servers accepting requests; fatal-error monitoring must not silently turn into unsafe recovery.</p>
@@ -146,8 +166,10 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Observe a fatal error without swallowing it</p>
@@ -219,10 +241,16 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
       </details>
     </article>
     <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -236,23 +264,23 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Node.js API documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

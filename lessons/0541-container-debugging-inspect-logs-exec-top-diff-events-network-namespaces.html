@@ -46,23 +46,74 @@
     <h1>Container debugging, inspect, logs, exec, top, diff, events, network namespaces, and minimal images</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="9">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Container debugging">
+        <summary>Container debugging</summary>
+        <p class="concept-definition">Container debugging compares effective configuration, processes, logs, networks, and filesystems against the expected lifecycle.</p>
+      </details><details open class="concept-card" data-subtopic="inspect">
+        <summary>inspect</summary>
+        <p class="concept-definition">docker inspect exposes object configuration and state; protect outputs that include sensitive environment values.</p>
+      </details><details open class="concept-card" data-subtopic="logs">
+        <summary>logs</summary>
+        <p class="concept-definition">Logs record individual events with relevant context. Include enough identity and timing to investigate behavior, while excluding secrets and unnecessary personal data.</p>
+      </details><details open class="concept-card" data-subtopic="exec">
+        <summary>exec</summary>
+        <p class="concept-definition">docker exec starts an additional process inside an existing running container; it does not rebuild the image.</p>
+      </details><details open class="concept-card" data-subtopic="top">
+        <summary>top</summary>
+        <p class="concept-definition">docker top lists container processes as exposed by the runtime and host.</p>
+      </details><details open class="concept-card" data-subtopic="diff">
+        <summary>diff</summary>
+        <p class="concept-definition">docker diff reports filesystem changes in a container&#039;s writable layer relative to its image.</p>
+      </details><details open class="concept-card" data-subtopic="events">
+        <summary>events</summary>
+        <p class="concept-definition">Events report something that occurred. Specify identity, ordering scope, delivery behavior, and payload evolution.</p>
+      </details><details open class="concept-card" data-subtopic="network namespaces">
+        <summary>network namespaces</summary>
+        <p class="concept-definition">A network namespace gives a process its own network interfaces, routes, sockets and local addresses. Container localhost belongs to that namespace unless a shared network mode changes the boundary.</p>
+      </details><details open class="concept-card" data-subtopic="minimal images">
+        <summary>minimal images</summary>
+        <p class="concept-definition">Minimal images retain only required runtime content and selected operational support. Omitting a shell changes debugging options; fewer packages alone do not establish security or lower runtime memory.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Begin container diagnosis with effective configuration, lifecycle state and the failing observation. A missing shell can make exec sh fail even when the application is healthy. An exited container cannot accept exec at all. Inspect output may expose secrets, and filesystem diff omits independent volume contents. Preserve evidence before restarting and choose available tools appropriate to the image.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Docker packages a program and its files in an image. A container runtime starts an isolated process from that image.</p>
     <p><a href="../reference/senior-interview-practice.html#docker">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0541" data-bespoke-example="0541" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">No shell does not mean no application</figcaption><p>A minimal-image workload is running, but an attempt to execute sh fails because the image has no shell.</p><div class="foundation-grid"><div>Shell command fails<br>Missing diagnostic executable</div><div>Inspect workload<br>State, exit history, logs and events</div><div>Next step<br>Use approved host or debug-container evidence</div></div><details><summary>Does the failed shell command prove the application crashed?</summary><p>No. Those are different claims.</p></details><details><summary>Should diagnostic packages be installed into the production container?</summary><p>No. Preserve the artifact and use the approved debugging path.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Begin container diagnosis with effective configuration, lifecycle state and the failing observation. A missing shell can make exec sh fail even when the application is healthy. An exited container cannot accept exec at all. Inspect output may expose secrets, and filesystem diff omits independent volume contents. Preserve evidence before restarting and choose available tools appropriate to the image.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0541" data-bespoke-example="0541" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">No shell does not mean no application</figcaption><p>A minimal-image workload is running, but an attempt to execute sh fails because the image has no shell.</p><div class="foundation-grid"><div>Shell command fails<br>Missing diagnostic executable</div><div>Inspect workload<br>State, exit history, logs and events</div><div>Next step<br>Use approved host or debug-container evidence</div></div><details open><summary>Does the failed shell command prove the application crashed?</summary><p>No. Those are different claims.</p></details><details open><summary>Should diagnostic packages be installed into the production container?</summary><p>No. Preserve the artifact and use the approved debugging path.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a container lifecycle</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="docker-container-run" aria-label="Mechanism trace: Docker resolves runtime intent then Docker creates runtime objects then Runtime starts container PID 1 then State and evidence remain. Experiment: Run once with one incorrect user, signal, or resource limit and diagnose it.">
         <li class="trace-stage"><span>01 · IMAGE + CONFIG</span><details class="trace-explanation" open><summary>Docker resolves runtime intent</summary><p>Digest, command, user, mounts, network, and limits enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DAEMON</span><details class="trace-explanation"><summary>Docker creates runtime objects</summary><p>Filesystem snapshot, namespaces, cgroups, and interfaces form.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROCESS</span><details class="trace-explanation"><summary>Runtime starts container PID 1</summary><p>Kernel isolation and application lifecycle govern execution.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EXIT</span><details class="trace-explanation"><summary>State and evidence remain</summary><p>Logs, health, metrics, exit code, events, and persistent mounts explain outcome.</p></details></li>
       </ol>
@@ -74,46 +125,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="9">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Container debugging">
-        <summary>Container debugging</summary>
-        <p class="concept-definition">Container debugging compares effective configuration, processes, logs, networks, and filesystems against the expected lifecycle.</p>
-      </details><details class="concept-card" data-subtopic="inspect">
-        <summary>inspect</summary>
-        <p class="concept-definition">docker inspect exposes object configuration and state; protect outputs that include sensitive environment values.</p>
-      </details><details class="concept-card" data-subtopic="logs">
-        <summary>logs</summary>
-        <p class="concept-definition">Logs record individual events with relevant context. Include enough identity and timing to investigate behavior, while excluding secrets and unnecessary personal data.</p>
-      </details><details class="concept-card" data-subtopic="exec">
-        <summary>exec</summary>
-        <p class="concept-definition">docker exec starts an additional process inside an existing running container; it does not rebuild the image.</p>
-      </details><details class="concept-card" data-subtopic="top">
-        <summary>top</summary>
-        <p class="concept-definition">docker top lists container processes as exposed by the runtime and host.</p>
-      </details><details class="concept-card" data-subtopic="diff">
-        <summary>diff</summary>
-        <p class="concept-definition">docker diff reports filesystem changes in a container&#039;s writable layer relative to its image.</p>
-      </details><details class="concept-card" data-subtopic="events">
-        <summary>events</summary>
-        <p class="concept-definition">Events report something that occurred. Specify identity, ordering scope, delivery behavior, and payload evolution.</p>
-      </details><details class="concept-card" data-subtopic="network namespaces">
-        <summary>network namespaces</summary>
-        <p class="concept-definition">A network namespace gives a process its own network interfaces, routes, sockets and local addresses. Container localhost belongs to that namespace unless a shared network mode changes the boundary.</p>
-      </details><details class="concept-card" data-subtopic="minimal images">
-        <summary>minimal images</summary>
-        <p class="concept-definition">Minimal images retain only required runtime content and selected operational support. Omitting a shell changes debugging options; fewer packages alone do not establish security or lower runtime memory.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Diagnose a crash loop, missing file, DNS failure, permission error, and distroless image using ephemeral tools.</p>
     <p class="lab-scope">Predict the image or runtime experiment and compare the worked answer. To perform it, use an existing disposable daemon, verified images and bounded fixtures. Record build, isolation, shutdown or restore behavior before claiming that the recipe works in that environment.</p>
 
@@ -140,8 +160,10 @@
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">No shell does not mean no application</p><p>A minimal-image workload is running, but an attempt to execute sh fails because the image has no shell.</p><div class="foundation-grid"><div>Shell command fails<br>Missing diagnostic executable</div><div>Inspect workload<br>State, exit history, logs and events</div><div>Next step<br>Use approved host or debug-container evidence</div></div></div>
@@ -221,10 +243,16 @@
       </details>
     </article>
     <p><a href="https://docs.docker.com/engine/" target="_blank" rel="noreferrer">Review the lesson source: Docker Engine documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.docker.com/engine/" target="_blank" rel="noreferrer">Docker Engine documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/docker-deep-dive-map.html" target="_blank">Docker coverage map ↗</a>
-    
-    
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

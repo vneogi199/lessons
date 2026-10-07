@@ -46,6 +46,53 @@
     <h1>Concurrency, atomic operations, locks, idempotency, contention, and thread-safe design</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Concurrency">
+        <summary>Concurrency</summary>
+        <p class="concept-definition">Concurrency allows tasks to make overlapping progress. Shared state still needs an explicit ordering or ownership rule.</p>
+      </details><details open class="concept-card" data-subtopic="atomic operations">
+        <summary>atomic operations</summary>
+        <p class="concept-definition">An atomic operation is indivisible at its stated observation boundary. Several individually atomic operations do not automatically form one atomic check-and-update sequence.</p>
+      </details><details open class="concept-card" data-subtopic="locks">
+        <summary>locks</summary>
+        <p class="concept-definition">A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</p>
+      </details><details open class="concept-card" data-subtopic="idempotency">
+        <summary>idempotency</summary>
+        <p class="concept-definition">Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
+      </details><details open class="concept-card" data-subtopic="contention">
+        <summary>contention</summary>
+        <p class="concept-definition">Contention occurs when operations compete for a limited resource such as a lock, connection, or CPU. Waiting and retries can dominate the useful work.</p>
+      </details><details open class="concept-card" data-subtopic="thread-safe design">
+        <summary>thread-safe design</summary>
+        <p class="concept-definition">Thread-safe design preserves invariants under permitted concurrent calls, using ownership, synchronization, or immutable data deliberately.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>For a reservation, the availability check and ownership update must happen within one protected operation. A lock can provide that boundary when every caller shares the same instance and follows its rules. It does not coordinate other processes or a database. Repeating a reservation can avoid a duplicate effect while returning a different response. Define result replay separately if callers need the same successful response on retries.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Low-level design assigns behavior and state to small software parts. Machine coding turns that model into a working, tested program under a time limit.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0074" data-bespoke-example="0074" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">One lock protects the check and the claim</figcaption>
 <p>A and B both try to reserve the same Seat instance. The seat begins with owner None.</p>
 <div class="foundation-grid"><div>Whichever caller acquires first<br>Sees None<br>Sets its name<br>Returns True</div><div>Other caller acquires afterward<br>Sees an owner<br>Leaves it unchanged<br>Returns False</div></div>
-<details><summary>Can the test require that A always wins?</summary><p>No. Either caller can acquire first. The invariant is exactly one successful claim for this shared instance.</p></details>
-<details><summary>If the winner retries, does it get True again?</summary><p>No. The current implementation returns False whenever the seat is owned. Repeatable result replay is a different requirement from avoiding duplicate effects.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>For a reservation, the availability check and ownership update must happen within one protected operation. A lock can provide that boundary when every caller shares the same instance and follows its rules. It does not coordinate other processes or a database. Repeating a reservation can avoid a duplicate effect while returning a different response. Define result replay separately if callers need the same successful response on retries.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Can the test require that A always wins?</summary><p>No. Either caller can acquire first. The invariant is exactly one successful claim for this shared instance.</p></details>
+<details open><summary>If the winner retries, does it get True again?</summary><p>No. The current implementation returns False whenever the seat is owned. Repeatable result replay is a different requirement from avoiding duplicate effects.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a machine-coding use case</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="machine-coding-slice" aria-label="Mechanism trace: Prompt becomes executable requirements then Responsibilities and ownership become code then One end-to-end behavior runs then Tests and a changed requirement challenge it. Experiment: Add one realistic requirement after the first working slice and predict the smallest safe change.">
         <li class="trace-stage"><span>01 · CLARIFY</span><details class="trace-explanation" open><summary>Prompt becomes executable requirements</summary><p>Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MODEL</span><details class="trace-explanation"><summary>Responsibilities and ownership become code</summary><p>Entities, values, relationships, interfaces, and state transitions represent the domain.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SLICE</span><details class="trace-explanation"><summary>One end-to-end behavior runs</summary><p>The smallest implementation crosses policy and adapters while keeping state valid.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · PROVE + EVOLVE</span><details class="trace-explanation"><summary>Tests and a changed requirement challenge it</summary><p>Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Concurrency">
-        <summary>Concurrency</summary>
-        <p class="concept-definition">Concurrency allows tasks to make overlapping progress. Shared state still needs an explicit ordering or ownership rule.</p>
-      </details><details class="concept-card" data-subtopic="atomic operations">
-        <summary>atomic operations</summary>
-        <p class="concept-definition">An atomic operation is indivisible at its stated observation boundary. Several individually atomic operations do not automatically form one atomic check-and-update sequence.</p>
-      </details><details class="concept-card" data-subtopic="locks">
-        <summary>locks</summary>
-        <p class="concept-definition">A lock coordinates access to shared state. Protect the whole invariant, define lock ordering, and release the lock on every exit path.</p>
-      </details><details class="concept-card" data-subtopic="idempotency">
-        <summary>idempotency</summary>
-        <p class="concept-definition">Idempotency means repeating the same logical operation has the same intended effect as applying it once. It does not require every response, log, or timestamp to be identical.</p>
-      </details><details class="concept-card" data-subtopic="contention">
-        <summary>contention</summary>
-        <p class="concept-definition">Contention occurs when operations compete for a limited resource such as a lock, connection, or CPU. Waiting and retries can dominate the useful work.</p>
-      </details><details class="concept-card" data-subtopic="thread-safe design">
-        <summary>thread-safe design</summary>
-        <p class="concept-definition">Thread-safe design preserves invariants under permitted concurrent calls, using ownership, synchronization, or immutable data deliberately.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Reproduce double booking under concurrent reservation attempts, repair it with one lock boundary, and verify exactly one winner.</p>
     <p class="lab-scope">Core: execute the small Python standard-library fixture, explain its invariant and failure result, then propose the smallest change for the follow-up constraint. The larger machine-coding requirements are extensions, not completed products. These are local in-memory examples: no real payment, persistent database, distributed lock, ticket service or settlement is performed. State input types, ownership and omitted validation before reusing a sketch as an API.</p>
 
@@ -144,8 +164,10 @@ assert sorted(results) == [False, True] and seat.owner in {&quot;A&quot;, &quot;
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">One lock protects the check and the claim</p>
@@ -217,10 +239,16 @@ assert sorted(results) == [False, True] and seat.owner in {&quot;A&quot;, &quot;
       </details>
     </article>
     <p><a href="https://docs.python.org/3/library/threading.html" target="_blank" rel="noreferrer">Review the lesson source: Python threading documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -234,23 +262,23 @@ assert sorted(results) == [False, True] and seat.owner in {&quot;A&quot;, &quot;
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/library/threading.html" target="_blank" rel="noreferrer">Python threading documentation ↗</a></div>
-    
-    
-    
+
+
+
     <a href="../reference/lld-machine-coding-deep-dive-map.html" target="_blank">LLD and machine coding coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

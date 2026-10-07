@@ -46,23 +46,68 @@
     <h1>Authentication, pg_hba.conf, TLS, roles, privileges, default privileges, and row-level security</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Authentication">
+        <summary>Authentication</summary>
+        <p class="concept-definition">Authentication verifies evidence of a principal&#039;s identity. It does not by itself grant permission to every resource or action.</p>
+      </details><details open class="concept-card" data-subtopic="pg_hba.conf">
+        <summary>pg_hba.conf</summary>
+        <p class="concept-definition">pg_hba.conf controls matching client-authentication rules; rule order and connection attributes determine the applied method.</p>
+      </details><details open class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
+        <p class="concept-definition">TLS protects a connection&#039;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</p>
+      </details><details open class="concept-card" data-subtopic="roles">
+        <summary>roles</summary>
+        <p class="concept-definition">A role is PostgreSQL&#039;s unified identity and privilege object. A role may log in, own objects, inherit memberships, or act as a permission group.</p>
+      </details><details open class="concept-card" data-subtopic="privileges">
+        <summary>privileges</summary>
+        <p class="concept-definition">Permissions authorize specific operations on resources. Grant only what is needed and distinguish identity from allowed actions.</p>
+      </details><details open class="concept-card" data-subtopic="default privileges">
+        <summary>default privileges</summary>
+        <p class="concept-definition">Default privileges govern permissions assigned to future objects created by relevant roles, not retroactively all existing objects.</p>
+      </details><details open class="concept-card" data-subtopic="row-level security">
+        <summary>row-level security</summary>
+        <p class="concept-definition">Row-level security adds table policies that filter which rows a role may read or change. Object owners and privileged roles require special attention because they may bypass policies.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Connection authentication, SQL privileges and row policies protect different boundaries. A matching authentication rule does not grant every operation. Row-level security also has owner and privileged-role bypass rules, so test with the actual restricted role. A tenant setting supplied by trusted application code is not protection against arbitrary SQL access. Require appropriate transport verification alongside grants and explicit read and write policies.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0376" data-bespoke-example="0376" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Apply the tenant policy with a constrained runtime role</figcaption><p>The trusted application sets transaction-local tenant 42 while connected as app_runtime.</p><div class="foundation-grid"><div>Row tenant 42<br>Matches policy<br>Eligible to read</div><div>Row tenant 7<br>Does not match<br>Hidden by policy</div><div>Proposed write tenant 7<br>Fails WITH CHECK</div></div><details><summary>Should this fixture be tested as the table owner?</summary><p>No. Use the intended constrained role, without owner, superuser or BYPASSRLS privileges.</p></details><details><summary>Does the custom setting protect against a client allowed arbitrary SQL?</summary><p>No. Such a client can change it. Trusted identity assignment and SQL-injection prevention remain essential.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Connection authentication, SQL privileges and row policies protect different boundaries. A matching authentication rule does not grant every operation. Row-level security also has owner and privileged-role bypass rules, so test with the actual restricted role. A tenant setting supplied by trusted application code is not protection against arbitrary SQL access. Require appropriate transport verification alongside grants and explicit read and write policies.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0376" data-bespoke-example="0376" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Apply the tenant policy with a constrained runtime role</figcaption><p>The trusted application sets transaction-local tenant 42 while connected as app_runtime.</p><div class="foundation-grid"><div>Row tenant 42<br>Matches policy<br>Eligible to read</div><div>Row tenant 7<br>Does not match<br>Hidden by policy</div><div>Proposed write tenant 7<br>Fails WITH CHECK</div></div><details open><summary>Should this fixture be tested as the table owner?</summary><p>No. Use the intended constrained role, without owner, superuser or BYPASSRLS privileges.</p></details><details open><summary>Does the custom setting protect against a client allowed arbitrary SQL?</summary><p>No. Such a client can change it. Trusted identity assignment and SQL-injection prevention remain essential.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace untrusted input crossing a boundary</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="postgres-access" aria-label="Mechanism trace: Client establishes a protected connection then Server applies the matching connection rule then Role and object privileges restrict SQL then Applicable row policies constrain access. Experiment: Test the same request as runtime role and owner, then change tenant context and attempt a forbidden write.">
         <li class="trace-stage"><span>01 · CONNECT</span><details class="trace-explanation" open><summary>Client establishes a protected connection</summary><p>TLS configuration and client certificate verification are distinct from password authentication.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · AUTHENTICATE</span><details class="trace-explanation"><summary>Server applies the matching connection rule</summary><p>pg_hba.conf selects an authentication method; success does not grant every SQL operation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · AUTHORIZE</span><details class="trace-explanation"><summary>Role and object privileges restrict SQL</summary><p>Database connection, schema access, table privileges and ownership have separate effects.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FILTER</span><details class="trace-explanation"><summary>Applicable row policies constrain access</summary><p>RLS evaluates row visibility and writes, subject to owner and privileged-role bypass rules.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Authentication">
-        <summary>Authentication</summary>
-        <p class="concept-definition">Authentication verifies evidence of a principal&#039;s identity. It does not by itself grant permission to every resource or action.</p>
-      </details><details class="concept-card" data-subtopic="pg_hba.conf">
-        <summary>pg_hba.conf</summary>
-        <p class="concept-definition">pg_hba.conf controls matching client-authentication rules; rule order and connection attributes determine the applied method.</p>
-      </details><details class="concept-card" data-subtopic="TLS">
-        <summary>TLS</summary>
-        <p class="concept-definition">TLS protects a connection&#039;s confidentiality and integrity and authenticates peers according to its configuration. It does not replace application-level authorization.</p>
-      </details><details class="concept-card" data-subtopic="roles">
-        <summary>roles</summary>
-        <p class="concept-definition">A role is PostgreSQL&#039;s unified identity and privilege object. A role may log in, own objects, inherit memberships, or act as a permission group.</p>
-      </details><details class="concept-card" data-subtopic="privileges">
-        <summary>privileges</summary>
-        <p class="concept-definition">Permissions authorize specific operations on resources. Grant only what is needed and distinguish identity from allowed actions.</p>
-      </details><details class="concept-card" data-subtopic="default privileges">
-        <summary>default privileges</summary>
-        <p class="concept-definition">Default privileges govern permissions assigned to future objects created by relevant roles, not retroactively all existing objects.</p>
-      </details><details class="concept-card" data-subtopic="row-level security">
-        <summary>row-level security</summary>
-        <p class="concept-definition">Row-level security adds table policies that filter which rows a role may read or change. Object owners and privileged roles require special attention because they may bypass policies.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build least-privilege app and migration roles, require TLS, isolate tenants with RLS, and test bypass and object-creation paths.</p>
     <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
@@ -149,8 +169,10 @@ ROLLBACK;
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Apply the tenant policy with a constrained runtime role</p><p>The trusted application sets transaction-local tenant 42 while connected as app_runtime.</p><div class="foundation-grid"><div>Row tenant 42<br>Matches policy<br>Eligible to read</div><div>Row tenant 7<br>Does not match<br>Hidden by policy</div><div>Proposed write tenant 7<br>Fails WITH CHECK</div></div></div>
@@ -218,10 +240,16 @@ ROLLBACK;
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/admin.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL server administration documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -235,23 +263,23 @@ ROLLBACK;
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/admin.html" target="_blank" rel="noreferrer">PostgreSQL server administration documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

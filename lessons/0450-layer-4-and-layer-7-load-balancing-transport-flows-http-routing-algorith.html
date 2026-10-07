@@ -46,23 +46,77 @@
     <h1>Layer 4 and Layer 7 load balancing, transport flows, HTTP routing, algorithms, health checks, affinity, TLS, proxies, and failure modes</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="10">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Layer 4">
+        <summary>Layer 4</summary>
+        <p class="concept-definition">Layer-4 balancing operates primarily on transport connections rather than application request semantics.</p>
+      </details><details open class="concept-card" data-subtopic="Layer 7 load balancing">
+        <summary>Layer 7 load balancing</summary>
+        <p class="concept-definition">Layer-7 balancing uses application information such as HTTP routes, with protocol parsing and policy costs.</p>
+      </details><details open class="concept-card" data-subtopic="transport flows">
+        <summary>transport flows</summary>
+        <p class="concept-definition">A transport flow is a connection identified by network and transport addresses whose packets must reach a consistent backend while that connection is active.</p>
+      </details><details open class="concept-card" data-subtopic="HTTP routing">
+        <summary>HTTP routing</summary>
+        <p class="concept-definition">HTTP routing selects a backend from application data such as host, path, method, header, or cookie after TLS is terminated where inspection is required.</p>
+      </details><details open class="concept-card" data-subtopic="algorithms">
+        <summary>algorithms</summary>
+        <p class="concept-definition">A load-balancing algorithm selects an eligible target using rules such as round robin, least outstanding work, hashing, or weighted capacity.</p>
+      </details><details open class="concept-card" data-subtopic="health checks">
+        <summary>health checks</summary>
+        <p class="concept-definition">A health check tests whether a target should receive new traffic. It must represent readiness without causing synchronized overload or hiding dependency failure.</p>
+      </details><details open class="concept-card" data-subtopic="affinity">
+        <summary>affinity</summary>
+        <p class="concept-definition">Affinity attempts to keep related connections or requests on the same target, which can help local session state but creates uneven load and failover limits.</p>
+      </details><details open class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
+        <p class="concept-definition">TLS placement decides where traffic is decrypted, which identity is authenticated, which routing data becomes visible, and whether encryption continues to the backend.</p>
+      </details><details open class="concept-card" data-subtopic="proxies">
+        <summary>proxies</summary>
+        <p class="concept-definition">A proxy handles traffic on behalf of another endpoint. Its routing, timeout, buffering, trust, and header behavior can change the end-to-end result.</p>
+      </details><details open class="concept-card" data-subtopic="failure modes">
+        <summary>failure modes</summary>
+        <p class="concept-definition">Load-balancer failure modes include unhealthy targets, stale health, overload, connection resets, retry amplification, uneven hashing, proxy timeout mismatch, and loss of a balancing tier.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A transport balancer selects a target for a connection. An HTTP balancer can inspect requests and route by host or path after the required TLS termination. Connection lifetime, retries and health checks affect both designs. The example classifies routes and prefers healthy local targets. Its path match is not host authorization, and its selector does not implement a running proxy.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0450" data-bespoke-example="0450" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Route the request, then choose a healthy target</figcaption><p>In the example, an API host or a path starting with /api/ selects the API route. Within the local zone, healthy targets A and B have eight and two outstanding requests.</p><div class="foundation-grid"><div>HTTP route<br>Host or path selects API</div><div>Target selection<br>A: healthy, 8<br>B: healthy, 2<br>Choose B</div><div>Remote C: unhealthy, 0<br>Excluded despite low count</div></div><details><summary>Can an ordinary layer-4 selector inspect the HTTP path to make this choice?</summary><p>No. Path-based routing needs HTTP-aware layer-7 handling.</p></details><details><summary>What happens when no healthy local target remains?</summary><p>The supplied selector considers healthy targets in other zones. It does not make unhealthy C eligible.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A transport balancer selects a target for a connection. An HTTP balancer can inspect requests and route by host or path after the required TLS termination. Connection lifetime, retries and health checks affect both designs. The example classifies routes and prefers healthy local targets. Its path match is not host authorization, and its selector does not implement a running proxy.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0450" data-bespoke-example="0450" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Route the request, then choose a healthy target</figcaption><p>In the example, an API host or a path starting with /api/ selects the API route. Within the local zone, healthy targets A and B have eight and two outstanding requests.</p><div class="foundation-grid"><div>HTTP route<br>Host or path selects API</div><div>Target selection<br>A: healthy, 8<br>B: healthy, 2<br>Choose B</div><div>Remote C: unhealthy, 0<br>Excluded despite low count</div></div><details open><summary>Can an ordinary layer-4 selector inspect the HTTP path to make this choice?</summary><p>No. Path-based routing needs HTTP-aware layer-7 handling.</p></details><details open><summary>What happens when no healthy local target remains?</summary><p>The supplied selector considers healthy targets in other zones. It does not make unhealthy C eligible.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a load-balanced connection and request</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="load-balancer-path" aria-label="Mechanism trace: Client opens a transport connection then Balancer chooses Layer 4 or Layer 7 data then Policy chooses a healthy target then Target response returns through the path. Experiment: Hold one connection open, drain its target, fail a health check, and compare packet and HTTP evidence through L4 and L7 balancers.">
         <li class="trace-stage"><span>01 · FLOW</span><details class="trace-explanation" open><summary>Client opens a transport connection</summary><p>Source and destination addresses, ports, protocol, TLS intent, and connection lifetime enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CLASSIFY</span><details class="trace-explanation"><summary>Balancer chooses Layer 4 or Layer 7 data</summary><p>A transport balancer maps flows; an HTTP balancer terminates and parses requests for content routing.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SELECT</span><details class="trace-explanation"><summary>Policy chooses a healthy target</summary><p>Round robin, least work, hashing, locality, affinity, capacity, and draining constrain selection.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · FORWARD</span><details class="trace-explanation"><summary>Target response returns through the path</summary><p>Connection reuse, headers, retries, source identity, logs, metrics, and failures expose behavior.</p></details></li>
       </ol>
@@ -74,49 +128,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="10">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Layer 4">
-        <summary>Layer 4</summary>
-        <p class="concept-definition">Layer-4 balancing operates primarily on transport connections rather than application request semantics.</p>
-      </details><details class="concept-card" data-subtopic="Layer 7 load balancing">
-        <summary>Layer 7 load balancing</summary>
-        <p class="concept-definition">Layer-7 balancing uses application information such as HTTP routes, with protocol parsing and policy costs.</p>
-      </details><details class="concept-card" data-subtopic="transport flows">
-        <summary>transport flows</summary>
-        <p class="concept-definition">A transport flow is a connection identified by network and transport addresses whose packets must reach a consistent backend while that connection is active.</p>
-      </details><details class="concept-card" data-subtopic="HTTP routing">
-        <summary>HTTP routing</summary>
-        <p class="concept-definition">HTTP routing selects a backend from application data such as host, path, method, header, or cookie after TLS is terminated where inspection is required.</p>
-      </details><details class="concept-card" data-subtopic="algorithms">
-        <summary>algorithms</summary>
-        <p class="concept-definition">A load-balancing algorithm selects an eligible target using rules such as round robin, least outstanding work, hashing, or weighted capacity.</p>
-      </details><details class="concept-card" data-subtopic="health checks">
-        <summary>health checks</summary>
-        <p class="concept-definition">A health check tests whether a target should receive new traffic. It must represent readiness without causing synchronized overload or hiding dependency failure.</p>
-      </details><details class="concept-card" data-subtopic="affinity">
-        <summary>affinity</summary>
-        <p class="concept-definition">Affinity attempts to keep related connections or requests on the same target, which can help local session state but creates uneven load and failover limits.</p>
-      </details><details class="concept-card" data-subtopic="TLS">
-        <summary>TLS</summary>
-        <p class="concept-definition">TLS placement decides where traffic is decrypted, which identity is authenticated, which routing data becomes visible, and whether encryption continues to the backend.</p>
-      </details><details class="concept-card" data-subtopic="proxies">
-        <summary>proxies</summary>
-        <p class="concept-definition">A proxy handles traffic on behalf of another endpoint. Its routing, timeout, buffering, trust, and header behavior can change the end-to-end result.</p>
-      </details><details class="concept-card" data-subtopic="failure modes">
-        <summary>failure modes</summary>
-        <p class="concept-definition">Load-balancer failure modes include unhealthy targets, stale health, overload, connection resets, retry amplification, uneven hashing, proxy timeout mismatch, and loss of a balancing tier.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Route TCP and HTTP workloads through separate balancers, test round-robin and least-outstanding selection, drain a target, break health checks, hold long-lived connections, and inspect packets, headers, logs, and latency distribution.</p>
     <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
@@ -159,8 +179,10 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Route the request, then choose a healthy target</p><p>In the example, an API host or a path starting with /api/ selects the API route. Within the local zone, healthy targets A and B have eight and two outstanding requests.</p><div class="foundation-grid"><div>HTTP route<br>Host or path selects API</div><div>Target selection<br>A: healthy, 8<br>B: healthy, 2<br>Choose B</div><div>Remote C: unhealthy, 0<br>Excluded despite low count</div></div></div>
@@ -240,10 +262,16 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
       </details>
     </article>
     <p><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html" target="_blank" rel="noreferrer">Review the lesson source: AWS Elastic Load Balancing documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -257,23 +285,23 @@ console.assert(leastOutstanding(targets, &quot;az-1&quot;).id === &quot;b&quot;)
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html" target="_blank" rel="noreferrer">AWS Elastic Load Balancing documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

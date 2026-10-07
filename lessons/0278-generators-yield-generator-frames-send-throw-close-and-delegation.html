@@ -46,23 +46,68 @@
     <h1>Generators, yield, generator frames, send, throw, close, and delegation</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A generator can hand you one item, pause, then continue when you ask for another. Its paused work keeps the local state needed to continue.</p><p>yield marks that pause. This lets you avoid building all results at once, but the suspended generator can still retain objects and resources. Resource cleanup needs a deliberate owner.</p><details><summary>Does yielding discard all local variables?</summary><p>No. The generator retains the state needed to resume.</p></details></section>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
 
-  <figure class="card mechanism-map" data-lesson-map="0278" data-bespoke-example="0278" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Pause flattening at a yielded value</figcaption>
-<p>The groups are [a, b] and [c]. The caller requests one item and then closes the generator.</p>
-<div class="foundation-grid"><div>First next<br>Enter first group<br>Yield a</div><div>Suspended position<br>b and c not yet yielded</div><div>close<br>Inject GeneratorExit<br>Stop traversal</div></div>
-<details><summary>Does creating the generator eagerly build a flat list?</summary><p>No. Values are produced as the caller advances it.</p></details>
-<details><summary>How does managed_lines release its file after an early close?</summary><p>Its finally block closes the handle when execution unwinds. The caller must still manage the generator's lifecycle rather than relying on delayed collection.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Generators">
+        <summary>Generators</summary>
+        <p class="concept-definition">A generator is an iterator backed by a suspended Python frame. Each next resumes execution until yield, return, or an exception.</p>
+      </details><details open class="concept-card" data-subtopic="yield">
+        <summary>yield</summary>
+        <p class="concept-definition">yield emits a value and suspends the generator while preserving its local state and instruction position. Calling the generator function creates the generator without running its body.</p>
+      </details><details open class="concept-card" data-subtopic="generator frames">
+        <summary>generator frames</summary>
+        <p class="concept-definition">A frame is the runtime record for one executing code block. It connects bytecode, local and global namespaces, the instruction position, and the caller frame.</p>
+      </details><details open class="concept-card" data-subtopic="send">
+        <summary>send</summary>
+        <p class="concept-definition">Generator send resumes execution while supplying the value of the suspended yield expression.</p>
+      </details><details open class="concept-card" data-subtopic="throw">
+        <summary>throw</summary>
+        <p class="concept-definition">Generator throw raises an exception at the suspension point, allowing the generator&#039;s handlers or cleanup to respond.</p>
+      </details><details open class="concept-card" data-subtopic="close">
+        <summary>close</summary>
+        <p class="concept-definition">Generator close requests termination and cleanup through GeneratorExit; it is not a normal request for another item.</p>
+      </details><details open class="concept-card" data-subtopic="delegation">
+        <summary>delegation</summary>
+        <p class="concept-definition">yield from delegates iteration and parts of the generator protocol to another iterable or generator.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>Calling a generator function creates a generator without running its body. Advancing it runs the body until yield pauses execution and returns a value. The suspended frame retains local state. send and throw resume it with a value or exception, while close requests cleanup. yield from delegates this behavior to another iterator. If the generator owns a file, give it an explicit lifetime; leaving a loop does not automatically close an externally retained generator.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A generator can hand you one item, pause, then continue when you ask for another. Its paused work keeps the local state needed to continue.</p><p>yield marks that pause. This lets you avoid building all results at once, but the suspended generator can still retain objects and resources. Resource cleanup needs a deliberate owner.</p><details open><summary>Does yielding discard all local variables?</summary><p>No. The generator retains the state needed to resume.</p></details></section>
+
+  <figure class="card mechanism-map" data-lesson-map="0278" data-bespoke-example="0278" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Pause flattening at a yielded value</figcaption>
+<p>The groups are [a, b] and [c]. The caller requests one item and then closes the generator.</p>
+<div class="foundation-grid"><div>First next<br>Enter first group<br>Yield a</div><div>Suspended position<br>b and c not yet yielded</div><div>close<br>Inject GeneratorExit<br>Stop traversal</div></div>
+<details open><summary>Does creating the generator eagerly build a flat list?</summary><p>No. Values are produced as the caller advances it.</p></details>
+<details open><summary>How does managed_lines release its file after an early close?</summary><p>Its finally block closes the handle when execution unwinds. The caller must still manage the generator's lifecycle rather than relying on delayed collection.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an iteration step</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="python-iteration" aria-label="Mechanism trace: A source can produce traversal then State tracks the current position then One value crosses at a time then Traversal ends explicitly. Experiment: Consume only three values from a very large source, then close it early.">
         <li class="trace-stage"><span>01 · ITERABLE</span><details class="trace-explanation" open><summary>A source can produce traversal</summary><p>Calling iter asks for an iterator.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ITERATOR</span><details class="trace-explanation"><summary>State tracks the current position</summary><p>The iterator is normally single-use.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · NEXT / YIELD</span><details class="trace-explanation"><summary>One value crosses at a time</summary><p>A generator frame suspends after yielding.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · STOP</span><details class="trace-explanation"><summary>Traversal ends explicitly</summary><p>StopIteration, close, or an exception completes the flow.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Generators">
-        <summary>Generators</summary>
-        <p class="concept-definition">A generator is an iterator backed by a suspended Python frame. Each next resumes execution until yield, return, or an exception.</p>
-      </details><details class="concept-card" data-subtopic="yield">
-        <summary>yield</summary>
-        <p class="concept-definition">yield emits a value and suspends the generator while preserving its local state and instruction position. Calling the generator function creates the generator without running its body.</p>
-      </details><details class="concept-card" data-subtopic="generator frames">
-        <summary>generator frames</summary>
-        <p class="concept-definition">A frame is the runtime record for one executing code block. It connects bytecode, local and global namespaces, the instruction position, and the caller frame.</p>
-      </details><details class="concept-card" data-subtopic="send">
-        <summary>send</summary>
-        <p class="concept-definition">Generator send resumes execution while supplying the value of the suspended yield expression.</p>
-      </details><details class="concept-card" data-subtopic="throw">
-        <summary>throw</summary>
-        <p class="concept-definition">Generator throw raises an exception at the suspension point, allowing the generator&#039;s handlers or cleanup to respond.</p>
-      </details><details class="concept-card" data-subtopic="close">
-        <summary>close</summary>
-        <p class="concept-definition">Generator close requests termination and cleanup through GeneratorExit; it is not a normal request for another item.</p>
-      </details><details class="concept-card" data-subtopic="delegation">
-        <summary>delegation</summary>
-        <p class="concept-definition">yield from delegates iteration and parts of the generator protocol to another iterable or generator.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build a streaming parser with generator cleanup and a delegated pipeline that propagates errors correctly.</p>
     <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
@@ -143,8 +163,10 @@ generator.close()  # injects GeneratorExit at suspension</code></pre>
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Pause flattening at a yielded value</p>
@@ -216,10 +238,16 @@ generator.close()  # injects GeneratorExit at suspension</code></pre>
       </details>
     </article>
     <p><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: Python Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -233,23 +261,23 @@ generator.close()  # injects GeneratorExit at suspension</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Python Tutorial ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/python-deep-dive-map.html" target="_blank">Python coverage map ↗</a>
-    
-    
-    
-    
-    
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

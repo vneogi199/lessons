@@ -46,23 +46,74 @@
     <h1>Application file storage, direct uploads, presigned URLs, multipart transfer, validation, malware scanning, metadata, lifecycle, and delivery</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="9">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Application file storage">
+        <summary>Application file storage</summary>
+        <p class="concept-definition">Application file storage keeps user-supplied bytes in an object store and stores ownership, state, policy, and display metadata separately in a database.</p>
+      </details><details open class="concept-card" data-subtopic="direct uploads">
+        <summary>direct uploads</summary>
+        <p class="concept-definition">A direct upload sends file bytes from the client to object storage using a narrowly scoped temporary grant, so the application server does not relay the large body.</p>
+      </details><details open class="concept-card" data-subtopic="presigned URLs">
+        <summary>presigned URLs</summary>
+        <p class="concept-definition">A presigned URL is a bearer capability for a specific storage request, not a single-use token. S3 also checks credential validity and access policy, so it can fail before its stated expiry. An accepted download may continue after expiry.</p>
+      </details><details open class="concept-card" data-subtopic="multipart transfer">
+        <summary>multipart transfer</summary>
+        <p class="concept-definition">Multipart transfer divides a large object into independently retriable parts and completes them as one object. Abandoned part sets require lifecycle cleanup.</p>
+      </details><details open class="concept-card" data-subtopic="validation">
+        <summary>validation</summary>
+        <p class="concept-definition">File validation checks declared size and type, actual magic bytes, parser limits, checksums, ownership, and policy before the application trusts or serves content.</p>
+      </details><details open class="concept-card" data-subtopic="malware scanning">
+        <summary>malware scanning</summary>
+        <p class="concept-definition">Malware scanning examines quarantined bytes with current detection tools before promotion. A clean result reduces risk but does not replace safe parsing and isolation.</p>
+      </details><details open class="concept-card" data-subtopic="metadata">
+        <summary>metadata</summary>
+        <p class="concept-definition">File metadata records the stable object key, owner, original display name, media type, size, checksum, state, and retention dates without putting file bytes in normal relational rows.</p>
+      </details><details open class="concept-card" data-subtopic="lifecycle">
+        <summary>lifecycle</summary>
+        <p class="concept-definition">A file lifecycle defines pending upload, quarantine, clean or rejected state, versions, retention, archival, expiration, and complete deletion of bytes and metadata.</p>
+      </details><details open class="concept-card" data-subtopic="delivery">
+        <summary>delivery</summary>
+        <p class="concept-definition">File delivery authorizes every read and returns a short-lived private URL or controlled response with safe content type, disposition, caching, and range behavior.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A direct upload grants the client limited access to object storage. Keep uploaded bytes in quarantine until the server verifies their size, content and policy. Bind scanning and promotion to an immutable accepted version because a reusable grant can replace a key. The example uses a presigned POST. Multipart completion, abandoned uploads and rejected versions need their own cleanup path.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Quality checks expected behavior. Security controls access. SaaS operations move files, events, jobs, and privileged changes through durable and observable workflows.</p>
     <p><a href="../reference/senior-interview-practice.html#quality-security">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0471" data-bespoke-example="0471" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Scan the accepted version, not whatever is newest</figcaption><p>Practice fixture: completion accepts version V1 of an uploaded PDF. The reusable upload URL later writes V2 at the same key.</p><div class="foundation-grid"><div>Accepted record<br>Key plus V1</div><div>Later upload<br>Latest key now V2</div><div>Scan and publish<br>Use exact V1<br>Do not switch to V2</div></div><details><summary>Does a matching content-type header prove the PDF is safe?</summary><p>No. The scanner must inspect the actual content and enforce document limits.</p></details><details><summary>Why store the scan job with the acceptance transaction?</summary><p>It keeps accepted version metadata and the durable work request together.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A direct upload grants the client limited access to object storage. Keep uploaded bytes in quarantine until the server verifies their size, content and policy. Bind scanning and promotion to an immutable accepted version because a reusable grant can replace a key. The example uses a presigned POST. Multipart completion, abandoned uploads and rejected versions need their own cleanup path.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0471" data-bespoke-example="0471" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Scan the accepted version, not whatever is newest</figcaption><p>Practice fixture: completion accepts version V1 of an uploaded PDF. The reusable upload URL later writes V2 at the same key.</p><div class="foundation-grid"><div>Accepted record<br>Key plus V1</div><div>Later upload<br>Latest key now V2</div><div>Scan and publish<br>Use exact V1<br>Do not switch to V2</div></div><details open><summary>Does a matching content-type header prove the PDF is safe?</summary><p>No. The scanner must inspect the actual content and enforce document limits.</p></details><details open><summary>Why store the scan job with the acceptance transaction?</summary><p>It keeps accepted version metadata and the durable work request together.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a file upload lifecycle</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="file-lifecycle" aria-label="Mechanism trace: Server creates a narrow upload grant then Client sends bytes to storage then Server validates stored content then Authorized lifecycle continues. Experiment: Upload a valid file, a mislabeled executable, an oversized multipart file, and an abandoned upload; then revoke download access.">
         <li class="trace-stage"><span>01 · AUTHORIZE</span><details class="trace-explanation" open><summary>Server creates a narrow upload grant</summary><p>Owner, object key, byte limit, media policy, checksum, and short expiry constrain capability.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFER</span><details class="trace-explanation"><summary>Client sends bytes to storage</summary><p>Multipart parts, retry, checksum, encryption, and private access avoid proxying large files through the app.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUARANTINE</span><details class="trace-explanation"><summary>Server validates stored content</summary><p>Size, magic bytes, parser limits, malware scan, and metadata determine promotion or rejection.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SERVE / DELETE</span><details class="trace-explanation"><summary>Authorized lifecycle continues</summary><p>Safe download headers, versions, retention, cleanup, and audit evidence govern every later operation.</p></details></li>
       </ol>
@@ -74,46 +125,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="9">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Application file storage">
-        <summary>Application file storage</summary>
-        <p class="concept-definition">Application file storage keeps user-supplied bytes in an object store and stores ownership, state, policy, and display metadata separately in a database.</p>
-      </details><details class="concept-card" data-subtopic="direct uploads">
-        <summary>direct uploads</summary>
-        <p class="concept-definition">A direct upload sends file bytes from the client to object storage using a narrowly scoped temporary grant, so the application server does not relay the large body.</p>
-      </details><details class="concept-card" data-subtopic="presigned URLs">
-        <summary>presigned URLs</summary>
-        <p class="concept-definition">A presigned URL is a bearer capability for a specific storage request, not a single-use token. S3 also checks credential validity and access policy, so it can fail before its stated expiry. An accepted download may continue after expiry.</p>
-      </details><details class="concept-card" data-subtopic="multipart transfer">
-        <summary>multipart transfer</summary>
-        <p class="concept-definition">Multipart transfer divides a large object into independently retriable parts and completes them as one object. Abandoned part sets require lifecycle cleanup.</p>
-      </details><details class="concept-card" data-subtopic="validation">
-        <summary>validation</summary>
-        <p class="concept-definition">File validation checks declared size and type, actual magic bytes, parser limits, checksums, ownership, and policy before the application trusts or serves content.</p>
-      </details><details class="concept-card" data-subtopic="malware scanning">
-        <summary>malware scanning</summary>
-        <p class="concept-definition">Malware scanning examines quarantined bytes with current detection tools before promotion. A clean result reduces risk but does not replace safe parsing and isolation.</p>
-      </details><details class="concept-card" data-subtopic="metadata">
-        <summary>metadata</summary>
-        <p class="concept-definition">File metadata records the stable object key, owner, original display name, media type, size, checksum, state, and retention dates without putting file bytes in normal relational rows.</p>
-      </details><details class="concept-card" data-subtopic="lifecycle">
-        <summary>lifecycle</summary>
-        <p class="concept-definition">A file lifecycle defines pending upload, quarantine, clean or rejected state, versions, retention, archival, expiration, and complete deletion of bytes and metadata.</p>
-      </details><details class="concept-card" data-subtopic="delivery">
-        <summary>delivery</summary>
-        <p class="concept-definition">File delivery authorizes every read and returns a short-lived private URL or controlled response with safe content type, disposition, caching, and range behavior.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Implement a direct-to-object-storage upload flow with short-lived authorization, size and type limits, checksum verification, quarantine scanning, durable metadata, private delivery, and deletion cleanup.</p>
     <p class="lab-scope">Predict replay, stale-ownership and altered-input outcomes at the shown boundary. SDK, framework, storage and database adapters must be supplied where named. Use synthetic data and an authorized isolated environment to check those integrations.</p>
 
@@ -176,8 +196,10 @@ def complete_upload(user, upload_id, s3, db, jobs):
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Scan the accepted version, not whatever is newest</p><p>Practice fixture: completion accepts version V1 of an uploaded PDF. The reusable upload URL later writes V2 at the same key.</p><div class="foundation-grid"><div>Accepted record<br>Key plus V1</div><div>Later upload<br>Latest key now V2</div><div>Scan and publish<br>Use exact V1<br>Do not switch to V2</div></div></div>
@@ -257,10 +279,16 @@ def complete_upload(user, upload_id, s3, db, jobs):
       </details>
     </article>
     <p><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" target="_blank" rel="noreferrer">Review the lesson source: Amazon S3 presigned upload documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -274,23 +302,23 @@ def complete_upload(user, upload_id, s3, db, jobs):
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/PresignedUrlUploadObject.html" target="_blank" rel="noreferrer">Amazon S3 presigned upload documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

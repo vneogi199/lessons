@@ -46,23 +46,65 @@
     <h1>Consensus, replicated state machines, Raft terms, elections, log replication, and safety</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Consensus">
+        <summary>Consensus</summary>
+        <p class="concept-definition">Consensus lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</p>
+      </details><details open class="concept-card" data-subtopic="replicated state machines">
+        <summary>replicated state machines</summary>
+        <p class="concept-definition">Replicated state machines apply an agreed command sequence to deterministic state transitions across replicas.</p>
+      </details><details open class="concept-card" data-subtopic="Raft terms">
+        <summary>Raft terms</summary>
+        <p class="concept-definition">Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</p>
+      </details><details open class="concept-card" data-subtopic="elections">
+        <summary>elections</summary>
+        <p class="concept-definition">Elections select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</p>
+      </details><details open class="concept-card" data-subtopic="log replication">
+        <summary>log replication</summary>
+        <p class="concept-definition">Log replication distributes ordered records and establishes commitment under a consensus or replication protocol.</p>
+      </details><details open class="concept-card" data-subtopic="safety">
+        <summary>safety</summary>
+        <p class="concept-definition">Distributed-systems safety means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break safety, but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#039;s guarantees.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Raft elects at most one leader per term. Trace log replication, the current-term commitment rule and safe membership changes under a network partition.</p>
+      <p class="analogy">A committed log gives each replica the same command order. A deterministic state machine applies those commands with the same result. External effects need their own replay and authority controls.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Consensus lets replicas agree on an ordered log of commands despite crashes and delayed messages. A term is an election epoch. A quorum is the required set of voters; in a fixed Raft cluster it is a majority. A log prefix is the sequence of entries up to a given position.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0447" data-bespoke-example="0447" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A newer term does not prove a matching log</figcaption><p>The candidate has term 3 and a term-3 entry at index 1. AppendEntries arrives with term 4 but claims that index 1 has term 2.</p><div class="foundation-grid"><div>Persist hard state<br>Term 4<br>Clear previous vote</div><div>Step down<br>Become follower</div><div>Compare log prefix<br>Local term 3 differs from 2<br>Reject prefix</div></div><details><summary>Should the node keep term 3 because the prefix failed?</summary><p>No. It has already learned and persisted the higher term.</p></details><details><summary>Does a matching prefix mean replication has succeeded?</summary><p>No. This starter only marks the request ready for log processing. Durable entries and commit rules still need implementation.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Raft elects at most one leader per term. Trace log replication, the current-term commitment rule and safe membership changes under a network partition.</p>
-      <p class="analogy">A committed log gives each replica the same command order. A deterministic state machine applies those commands with the same result. External effects need their own replay and authority controls.</p>
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0447" data-bespoke-example="0447" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A newer term does not prove a matching log</figcaption><p>The candidate has term 3 and a term-3 entry at index 1. AppendEntries arrives with term 4 but claims that index 1 has term 2.</p><div class="foundation-grid"><div>Persist hard state<br>Term 4<br>Clear previous vote</div><div>Step down<br>Become follower</div><div>Compare log prefix<br>Local term 3 differs from 2<br>Reject prefix</div></div><details open><summary>Should the node keep term 3 because the prefix failed?</summary><p>No. It has already learned and persisted the higher term.</p></details><details open><summary>Does a matching prefix mean replication has succeeded?</summary><p>No. This starter only marks the request ready for log processing. Durable entries and commit rules still need implementation.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a distributed request or message</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="raft-log-safety" aria-label="Mechanism trace: A candidate needs a majority then Followers check the preceding entry then Count replicas for a current-term entry then Replicas apply committed commands in order. Experiment: Partition five replicas into groups of two and three, then heal the partition.">
         <li class="trace-stage"><span>01 · ELECT</span><details class="trace-explanation" open><summary>A candidate needs a majority</summary><p>Persist term and vote. Check log freshness. A term can end without a leader.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · REPLICATE</span><details class="trace-explanation"><summary>Followers check the preceding entry</summary><p>Matching index and term anchor the prefix before durable append or conflict repair.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><details class="trace-explanation"><summary>Count replicas for a current-term entry</summary><p>A majority storing it allows commitment of it and the preceding log.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · APPLY</span><details class="trace-explanation"><summary>Replicas apply committed commands in order</summary><p>A higher observed term ends old leadership. External effects need separate replay controls.</p></details></li>
       </ol>
@@ -74,30 +116,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Consensus">
-        <summary>Consensus</summary>
-        <p class="concept-definition">Consensus lets fault-tolerant nodes choose one ordered history or value without two successful groups deciding conflicting results.</p>
-      </details><details class="concept-card" data-subtopic="replicated state machines">
-        <summary>replicated state machines</summary>
-        <p class="concept-definition">Replicated state machines apply an agreed command sequence to deterministic state transitions across replicas.</p>
-      </details><details class="concept-card" data-subtopic="Raft terms">
-        <summary>Raft terms</summary>
-        <p class="concept-definition">Raft terms are increasing election epochs. Nodes persist the current term and vote. A node steps down when it learns of a higher term; disconnected nodes can learn this later. A term can have no elected leader. A term number alone does not establish commitment.</p>
-      </details><details class="concept-card" data-subtopic="elections">
-        <summary>elections</summary>
-        <p class="concept-definition">Elections select a leader under protocol rules; leadership must be tied to safety against stale or competing owners.</p>
-      </details><details class="concept-card" data-subtopic="log replication">
-        <summary>log replication</summary>
-        <p class="concept-definition">Log replication distributes ordered records and establishes commitment under a consensus or replication protocol.</p>
-      </details><details class="concept-card" data-subtopic="safety">
-        <summary>safety</summary>
-        <p class="concept-definition">Distributed-systems safety means a forbidden outcome never occurs in executions allowed by the stated fault model. Arbitrary timing need not break safety, but stronger faults such as Byzantine behavior or lost durable state cannot be silently added to a crash-fault protocol&#039;s guarantees.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>Raft elects at most one leader per term. Split votes can leave a term without a leader. Each server persists its current term and vote before relying on them after a crash. A server that learns of a higher term updates its term and becomes a follower. A disconnected old leader may not yet know that a new term exists.</p>
 <p>Consider five servers A, B, C, D and E with matching logs. Three votes form a majority. A leads term 4. A partition separates A and B from C, D and E. C can win term 5 with C, D and E. A may still believe it leads, but A and B cannot form a majority to commit new commands. A must step down when it receives a valid higher-term message.</p>
@@ -108,10 +127,11 @@
 <p>Safety means that conflicting commands do not become committed at the same log position under the protocol's crash-fault assumptions. Progress also needs a communicating majority and sufficiently stable timing for an election. A minority partition loses write availability. These tests provide evidence for particular cases; they are not a proof of the full protocol.</p>
 <p>A fencing token is an application mechanism for rejecting a stale actor at an external resource. Raft does not make that resource enforce tokens automatically. A term is not a commit receipt. Define token issuance and stale-token rejection separately. A lease also introduces time assumptions that are not part of basic Raft log commitment.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Implement a small Raft state-transition simulator for election and log commit and test stale leaders, split votes, and node recovery.</p>
     <p class="lab-scope">First trace the five-node scenario below. The JavaScript starter checks only the AppendEntries term and prefix preconditions with a persistence adapter. It does not implement a consensus cluster. Membership and recovery exercises are tabletop reasoning tasks.</p>
 
@@ -166,8 +186,10 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Replication confused with commitment</h3><p>An older-term entry can exist on a majority and still be unsafe to commit by replica counting alone. Explain the current-term rule before acknowledging a client.</p></article><article><h3>Consensus confused with exactly-once effects</h3><p>A client can retry after losing a reply. Applying the same request twice is an application concern. Persist request identity and results where replay must be safe.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A newer term does not prove a matching log</p><p>The candidate has term 3 and a term-3 entry at index 1. AppendEntries arrives with term 4 but claims that index 1 has term 2.</p><div class="foundation-grid"><div>Persist hard state<br>Term 4<br>Clear previous vote</div><div>Step down<br>Become follower</div><div>Compare log prefix<br>Local term 3 differs from 2<br>Reject prefix</div></div></div>
@@ -247,10 +269,16 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
       </details>
     </article>
     <p><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Review the lesson source: Raft paper: elections, safety and membership</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -264,23 +292,23 @@ await assert.rejects(onAppendEntries(node, { term: 5 }, async () =&gt; { throw n
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://raft.github.io/raft.pdf" target="_blank" rel="noreferrer">Raft paper: elections, safety and membership ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

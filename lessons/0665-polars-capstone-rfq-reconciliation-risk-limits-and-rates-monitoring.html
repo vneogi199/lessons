@@ -46,20 +46,50 @@
     <h1>Polars capstone, RFQ reconciliation, risk limits, and rates monitoring</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Order A changes from 10 to 12. Order B has quantity 8. The current total is 20 because the older version of A is no longer counted.</p><p>Compare the total with the configured desk limit. A missing limit means unknown. This batch report does not coordinate simultaneous trade reservations; an authoritative system must enforce those.</p><details><summary>Does a passing report guarantee two concurrent trades are safe?</summary><p>No. Concurrent reservations require an authoritative coordination mechanism.</p></details></section>
-<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="2">
 
-  <figure class="card mechanism-map" data-lesson-map="0665" data-bespoke-example="0665" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Deduplicate RFQs before comparing desk totals with limits</figcaption><p>RFQ a changes from quantity 10 to 12. RFQs b and c have quantities 8 and 5. Only desk A has a known limit of 18.</p><div class="foundation-grid"><div>Latest RFQs<br>a:12, b:8, c:5</div><div>Desk A<br>12 + 8 = 20<br>20 exceeds 18: breach</div><div>Desk B<br>5, missing limit<br>Unknown</div></div><details><summary>Should the earlier quantity 10 for a also be summed?</summary><p>No. That would double-count superseded state.</p></details><details><summary>Does a missing limit mean desk B is within its limit?</summary><p>No. The result is unknown. The total quantity remains 25 after grouping.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="reconciliation">
+        <summary>reconciliation</summary>
+        <p class="concept-definition">Checking that source and output counts or totals agree under the transformation&#039;s documented rules.</p>
+      </details><details open class="concept-card" data-subtopic="unresolved_state">
+        <summary>unresolved_state</summary>
+        <p class="concept-definition">An explicit result indicating that required evidence is missing or invalid.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>Build a reproducible analytical projection with explicit accepted, rejected and unresolved states.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Order A changes from 10 to 12. Order B has quantity 8. The current total is 20 because the older version of A is no longer counted.</p><p>Compare the total with the configured desk limit. A missing limit means unknown. This batch report does not coordinate simultaneous trade reservations; an authoritative system must enforce those.</p><details open><summary>Does a passing report guarantee two concurrent trades are safe?</summary><p>No. Concurrent reservations require an authoritative coordination mechanism.</p></details></section>
+<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
+
+  <figure class="card mechanism-map" data-lesson-map="0665" data-bespoke-example="0665" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Deduplicate RFQs before comparing desk totals with limits</figcaption><p>RFQ a changes from quantity 10 to 12. RFQs b and c have quantities 8 and 5. Only desk A has a known limit of 18.</p><div class="foundation-grid"><div>Latest RFQs<br>a:12, b:8, c:5</div><div>Desk A<br>12 + 8 = 20<br>20 exceeds 18: breach</div><div>Desk B<br>5, missing limit<br>Unknown</div></div><details open><summary>Should the earlier quantity 10 for a also be summed?</summary><p>No. That would double-count superseded state.</p></details><details open><summary>Does a missing limit mean desk B is within its limit?</summary><p>No. The result is unknown. The total quantity remains 25 after grouping.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a typed analytical transformation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="polars-0665" aria-label="Mechanism trace: Define the input and row grain then Apply the stated operation then Compare values and failure behavior. Experiment: Add duplicate limits, conflicting sequence values, a stale quote and a late RFQ correction. Write expected rejection or correction behavior for each. Present a five-minute design review with the consistency boundary and one failure trace.">
         <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Define the input and row grain</summary><p>A capstone combines the earlier mechanisms under one business contract. This synthetic report has one latest RFQ per ID and one risk limit per desk. It reports breaches; it does not authorize trades, price instruments or reserve risk capacity.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><details class="trace-explanation"><summary>Apply the stated operation</summary><p>Build a reproducible analytical projection with explicit accepted, rejected and unresolved states.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><details class="trace-explanation"><summary>Compare values and failure behavior</summary><p>Latest-state quantities total 25. Desk A has 20 against limit 18 and breaches. Desk B has no limit and remains unknown. Summing all event versions would incorrectly total 35.</p></details></li>
       </ol>
@@ -71,18 +101,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="2">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="reconciliation">
-        <summary>reconciliation</summary>
-        <p class="concept-definition">Checking that source and output counts or totals agree under the transformation&#039;s documented rules.</p>
-      </details><details class="concept-card" data-subtopic="unresolved_state">
-        <summary>unresolved_state</summary>
-        <p class="concept-definition">An explicit result indicating that required evidence is missing or invalid.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>Define the inputs before writing expressions: event identity, desk, event time, producer sequence, nonnegative quantity, amount units and source snapshot. Require a deterministic winner for repeated RFQs. Quarantine conflicting identities instead of silently treating them as retries.</p>
 <p>The core fixture deduplicates updates, totals desk quantities and validates the many-to-one limit join. A missing limit becomes unknown. Quantity equal to the limit is within under this teaching contract; change the comparison if the business rule differs.</p>
@@ -90,10 +109,11 @@
 <p>Separate analytical reporting from concurrent risk enforcement. Two traders can both read the same remaining capacity. A report computed by Polars cannot prevent that race; the authoritative reservation needs a transactional or otherwise serialized boundary.</p>
 <p>For delivery, record input snapshot IDs, schema and grammar versions, Polars version, output checksums, rejected counts and reconciliation totals. Stage outputs before publishing them. Test retry behavior and maintain a prior completed report for rollback. Never describe this synthetic exercise as personal production experience.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Add duplicate limits, conflicting sequence values, a stale quote and a late RFQ correction. Write expected rejection or correction behavior for each. Present a five-minute design review with the consistency boundary and one failure trace.</p>
     <p class="lab-scope">Self-contained synthetic Python fixture requiring Polars already installed. File examples use unique temporary directories. Cloud, database, service and optional-library work is an extension, not a supplied deployment.</p>
 
@@ -127,8 +147,10 @@ assert latest[&quot;qty&quot;].sum() == report[&quot;qty&quot;].sum() == 25</cod
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Check this case</h3><p>Treating missing limits as zero or infinity changes an unknown control state into an invented risk decision.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Deduplicate RFQs before comparing desk totals with limits</p><p>RFQ a changes from quantity 10 to 12. RFQs b and c have quantities 8 and 5. Only desk A has a known limit of 18.</p><div class="foundation-grid"><div>Latest RFQs<br>a:12, b:8, c:5</div><div>Desk A<br>12 + 8 = 20<br>20 exceeds 18: breach</div><div>Desk B<br>5, missing limit<br>Unknown</div></div></div>
@@ -196,10 +218,16 @@ assert latest[&quot;qty&quot;].sum() == report[&quot;qty&quot;].sum() == 25</cod
       </details>
     </article>
     <p><a href="https://docs.pola.rs/user-guide/transformations/joins/" target="_blank" rel="noreferrer">Review the lesson source: Polars official documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -213,23 +241,23 @@ assert latest[&quot;qty&quot;].sum() == report[&quot;qty&quot;].sum() == 25</cod
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.pola.rs/user-guide/transformations/joins/" target="_blank" rel="noreferrer">Polars official documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
