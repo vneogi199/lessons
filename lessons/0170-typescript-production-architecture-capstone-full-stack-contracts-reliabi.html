@@ -162,12 +162,19 @@ export function createProjectService(deps: {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Trace compile time, runtime success, malformed input, cancellation, dependency failure, schema evolution, and deployment.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A completed write can still have a failed response</p>
+<p>Consider the service when the repository completes a write, but telemetry.observe throws in finally.</p>
+<div class="foundation-grid"><div>Repository<br>Write completes<br>Project returned</div><div>Service prepares success<br>ok: true</div><div>Telemetry throws<br>Finally exits with an error<br>Service promise rejects</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does the surrounding catch convert this telemetry failure into Result?</h3><details><summary>Answer checkpoints</summary><p>No. A throw from finally overrides the pending return and escapes this try/catch structure. The caller may see failure after the write succeeded.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What must a production design decide before retrying?</h3><details><summary>Answer checkpoints</summary><p>Define how telemetry failures affect the request and how repeated create attempts are deduplicated. An idempotency-key field alone does not implement durable deduplication.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind TypeScript production architecture capstone, full-stack contracts, reliability, security, observability, and evolution.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>External value crosses into code.</strong> HTTP, environment, database, file, queue, or model output is untrusted.</li><li><strong>Runtime logic validates structure.</strong> Types, limits, formats, versions, and policy produce errors or data.</li><li><strong>Trusted representation is created.</strong> Checked code can now rely on explicit invariants.</li><li><strong>Use and serialization stay controlled.</strong> Tests and runtime evidence prove the contract beyond type erasure.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Pass malformed but cast-compatible input and verify it fails before domain logic.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Pass malformed but cast-compatible input and verify it fails before domain logic.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Parser result, validation errors, inferred trusted type, test, serialized output, and audit evidence.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

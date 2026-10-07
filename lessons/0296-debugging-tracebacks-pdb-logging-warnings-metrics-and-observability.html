@@ -152,12 +152,19 @@ warnings.warn(&quot;legacy configuration&quot;, DeprecationWarning, stacklevel=2
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Walk through evidence-first debugging and explain logging hierarchy, exception information, and high-cardinality risks.</li>
-      <li>Explain how a diagnostic experiment works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Log a failed job without swallowing its exception</p>
+<p>Suppose execute runs job J with request ID r1 and process raises.</p>
+<div class="foundation-grid"><div>Start log<br>job_started<br>request_id r1</div><div>Exception log<br>job_failed<br>request_id r1<br>Traceback context</div><div>Caller outcome<br>Original exception re-raised</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. What request ID appears on worker_started outside an adapter?</h3><details><summary>Answer checkpoints</summary><p>The formatter default supplies a dash, so the record can still format.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a recorded traceback mean the failure was recovered?</h3><details><summary>Answer checkpoints</summary><p>No. Logging adds diagnostic evidence. This function rethrows for its caller to handle.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Debugging, tracebacks, pdb, logging, warnings, metrics, and observability.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Python syntax enters a code block.</strong> The compiler determines names and produces executable code.</li><li><strong>A runtime namespace is created.</strong> Names bind to objects while instructions execute.</li><li><strong>Objects perform the operation.</strong> Type-defined behavior controls conversion and dispatch.</li><li><strong>State, value, or exception emerges.</strong> Tests and inspection make the behavior observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one binding, type, or mutable object and predict the resulting behavior.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one binding, type, or mutable object and predict the resulting behavior.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Object identity, type, frame locals, return value, exception, and timing.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a diagnostic experiment. Name a failure mode. Explain the evidence you would inspect."></textarea>

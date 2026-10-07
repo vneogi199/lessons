@@ -171,12 +171,19 @@ console.assert(registry.size === 0);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Define a closure, trace one captured binding, and discuss both useful encapsulation and memory cost.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Two factories create two captured counters</p>
+<p>Call createCounter twice. Each returned read and increment pair shares its own call's value binding.</p>
+<div class="foundation-grid"><div>left.read and left.increment<br>→ binding A, initially 0<br>Two increments: 0 → 1 → 2</div><div>right.read and right.increment<br>→ binding B, initially 0<br>No increments: stays 0</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why can a deferred callback read count 1 but message "Count: 0"?</h3><details><summary>Answer checkpoints</summary><p>The callback reads the current count binding. message is a string built earlier, when count was 0. Updating count does not rebuild that string.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does deleting the registry entry prove the payload was collected immediately?</h3><details><summary>Answer checkpoints</summary><p>No. It removes that retaining path. Other references and collection timing need separate evidence.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Closures, captured bindings, factories, privacy, stale state, and retention.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A call creates a local binding.</strong> createCounter starts value at zero for this call.</li><li><strong>Functions retain access.</strong> read and increment share this call&#39;s value binding.</li><li><strong>A later call changes value.</strong> increment writes the binding; read observes the new number.</li><li><strong>Owners release references.</strong> Remove registry or listener references when no longer needed; other paths can still retain data.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Compare two counters, then predict live count and old message in the deferred callback.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Compare two counters, then predict live count and old message in the deferred callback.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Independent values, callback outputs and registry size; heap paths are a separate retention check.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

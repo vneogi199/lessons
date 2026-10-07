@@ -198,12 +198,19 @@ console.log(&quot;State-machine checks passed&quot;);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Can two individually well-typed states form an illegal transition? Explain stale successes and failures, unique attempt IDs, runtime validation, cancellation versus ignoring results, and how to introduce a new state without silently defaulting old consumers.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Ignore the response from the older request</p>
+<p>Request r1 starts first. Request r2 starts before r1 finishes. The reducer uses a latest-start-wins policy.</p>
+<div class="foundation-grid"><div>Start r1<br>loading, requestId r1</div><div>Start r2<br>loading, requestId r2</div><div>Resolve r1 with old<br>Keep loading r2</div><div>Resolve r2 with new<br>success, data new</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why does the old response leave the state unchanged?</h3><details><summary>Answer checkpoints</summary><p>Its request ID does not match the active loading state. Checking only for loading would allow the older response to replace newer work.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does ignoring r1 cancel its network request?</h3><details><summary>Answer checkpoints</summary><p>No. The reducer controls local state. Cancellation needs a separate mechanism, and remote work may already have occurred.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Discriminated unions, state machines, exhaustiveness, never, and illegal states.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Loading r1.</strong> The loading shape requires an attempt identifier.</li><li><strong>Loading r2.</strong> A newer start becomes the only active attempt under this policy.</li><li><strong>Completion for r1 arrives.</strong> Its shape is valid, but its ID is stale. Keep loading r2.</li><li><strong>Success for r2.</strong> Matching completion supplies data. The exhaustive renderer handles the resulting variant.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Would removing request-ID checks cause a type error? Explain why runtime transition tests are needed even with an exhaustive switch.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: State-machine checks passed; stale success and failure preserve state. Adding a cancelled variant breaks the renderer&#39;s never check until its behavior is explicitly implemented.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -129,12 +129,19 @@
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Select the least disruptive effect timing and explain the performance cost of synchronous layout work.</li>
-      <li>Explain how an external synchronization cycle works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Measure the tooltip before positioning it above the anchor</p>
+<p>Suppose the anchor top is 100 pixels and the measured tooltip height is 20 pixels.</p>
+<div class="foundation-grid"><div>Initial height state<br>0<br>Calculated top: 100</div><div>Layout measurement<br>Height: 20</div><div>Updated position<br>100 − 20<br>Top: 80</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why does this measurement use a layout effect?</h3><details><summary>Answer checkpoints</summary><p>The measurement and resulting update need to happen before the browser paints the tooltip position.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the shown dependency list handle every possible later size change?</h3><details><summary>Answer checkpoints</summary><p>No. It reruns when children changes. Other size changes need a deliberate observation strategy if the component must track them.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind useLayoutEffect and useInsertionEffect timing.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Compute the element description.</strong> Do not read layout or insert external styles during render.</li><li><strong>Library styles become available.</strong> Insertion Effects precede Layout Effects; do not assume refs or a particular DOM mutation order here.</li><li><strong>Measure committed DOM.</strong> Layout Effects can measure and queue corrections before paint, blocking paint while they run.</li><li><strong>The browser can display the result.</strong> Later resizing, font loading or anchor movement requires its own synchronization.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change the tooltip content and compare a layout correction with passive measurement.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change the tooltip content and compare a layout correction with passive measurement.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Measured bounds, computed positioning, cleanup, paint timing and target-browser observation.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an external synchronization cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>

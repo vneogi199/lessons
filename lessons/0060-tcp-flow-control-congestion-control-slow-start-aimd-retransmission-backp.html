@@ -159,12 +159,20 @@ assert new_data_allowance == 3
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Separate flow control, congestion control, retransmission, backpressure, and admission control.</li>
-      <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A window limit is not all new capacity</p>
+<p>The toy trace reaches congestion window 9. The receiver advertises 6, and 3 units are already in flight.</p>
+<div class="foundation-grid"><div>Outstanding-data limit<br>min(9, 6) = 6</div><div>New-data allowance<br>6 − 3 already in flight = 3</div></div>
+
+
+<p>These are toy units and RTT rounds, not measurements from a live TCP implementation.</p></div>
+    <article class="senior-practice" data-interview-question><h3>1. Can the sender add 6 new units immediately?</h3><details><summary>Answer checkpoints</summary><p>No. That would raise outstanding data to 9 and exceed the limit of 6. Subtract in-flight data first.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does limiting socket data keep an upstream job queue bounded?</h3><details><summary>Answer checkpoints</summary><p>No. Jobs can accumulate before reaching the socket. Application admission and backpressure must also bound queued work.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind TCP flow control, congestion control, slow start, AIMD, retransmission, backpressure, and overload.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Window starts at one.</strong> The fixture advances in synthetic RTT-sized rounds, not individual ACKs.</li><li><strong>Double, then add.</strong> Below threshold the toy window doubles; above it, each round adds one.</li><li><strong>Reset and lower threshold.</strong> Round five models timeout loss, not duplicate-ACK fast recovery.</li><li><strong>Receiver can be tighter.</strong> The usable window is bounded by both congestion and receiver windows.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Why would doubling on every ACK overstate slow-start growth?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Why would doubling on every ACK overstate slow-start growth?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Trace 1,2,4,8,9; distinguish round-level model from measured TCP behavior.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>

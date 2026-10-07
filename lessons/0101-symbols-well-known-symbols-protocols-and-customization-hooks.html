@@ -142,12 +142,19 @@ console.assert(revokedReadFailed);</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what Symbols solve and why they are not private fields.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A symbol description is not its identity</p>
+<p>The proxy recognizes one particular Symbol('inspect') stored in the inspect binding.</p>
+<div class="foundation-grid"><div>inspect binding<br>→ symbol A, description inspect<br>proxy[A] returns the custom hook</div><div>Another Symbol('inspect')<br>→ symbol B, same description<br>B is not A</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does accessing the proxy with symbol B select that same custom hook?</h3><details><summary>Answer checkpoints</summary><p>No. The trap compares the actual symbol identity, not its description.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do symbol keys provide private properties?</h3><details><summary>Answer checkpoints</summary><p>No. Reflect.ownKeys can reveal actual symbol properties. This custom hook is not a privacy boundary.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Symbols, well-known symbols, protocols, and customization hooks.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>An operation produces a property key.</strong> Names become strings or symbols before lookup.</li><li><strong>Own descriptors are inspected.</strong> Data, accessor, and configuration flags constrain behavior.</li><li><strong>The prototype or trap participates.</strong> Lookup continues, invokes an accessor, or crosses a Proxy.</li><li><strong>Value or invariant failure returns.</strong> Ownership, receiver, and mutation become observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Shadow one inherited property and then repeat through a forwarding Proxy.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Shadow one inherited property and then repeat through a forwarding Proxy.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Descriptors, prototype chain, trap log, receiver identity, value, and TypeError.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

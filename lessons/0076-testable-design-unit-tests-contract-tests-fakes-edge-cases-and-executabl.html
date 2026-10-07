@@ -143,12 +143,19 @@ store_contract(MemoryStore)</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Demonstrate correctness continuously and explain why the chosen tests permit safe refactoring.</li>
-      <li>Explain how a machine-coding use case works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Test the public store contract</p>
+<p>Start with a new MemoryStore and interact only through put and get.</p>
+<div class="foundation-grid"><div>Missing key<br>get missing → None</div><div>Overwrite<br>put a = one<br>put a = two<br>get a → two</div><div>Invalid key<br>put empty key<br>Raises ValueError</div><div>Boundary<br>Observed through public methods<br>No private dictionary assertions</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would replacing the internal dictionary necessarily require changing these tests?</h3><details><summary>Answer checkpoints</summary><p>No. A different implementation can preserve the public behavior. Tests of private storage details would make that harder.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do these passing fake-store checks establish another adapter's durability?</h3><details><summary>Answer checkpoints</summary><p>No. Run the applicable contract against that adapter and add integration-specific failure, consistency and persistence checks.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Testable design, unit tests, contract tests, fakes, edge cases, and executable acceptance criteria.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Prompt becomes executable requirements.</strong> Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</li><li><strong>Responsibilities and ownership become code.</strong> Entities, values, relationships, interfaces, and state transitions represent the domain.</li><li><strong>One end-to-end behavior runs.</strong> The smallest implementation crosses policy and adapters while keeping state valid.</li><li><strong>Tests and a changed requirement challenge it.</strong> Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Add one realistic requirement after the first working slice and predict the smallest safe change.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Add one realistic requirement after the first working slice and predict the smallest safe change.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a machine-coding use case. Name a failure mode. Explain the evidence you would inspect."></textarea>

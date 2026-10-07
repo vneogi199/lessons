@@ -150,12 +150,19 @@ async function gzipFile(source, target, signal) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why pipeline is safer than manually chaining pipe calls.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Publish compressed output only after the pipeline succeeds</p>
+<p>gzipFile writes into its own staging directory beside the target.</p>
+<div class="foundation-grid"><div>Pipeline running<br>Source → gzip → staged output</div><div>Pipeline succeeds<br>Rename staged output to target</div><div>Pipeline fails<br>Do not publish staged output<br>Remove owned staging directory</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Can a failed pipeline leave a partially compressed replacement at the target through this rename path?</h3><details><summary>Answer checkpoints</summary><p>The rename occurs only after pipeline resolves successfully. A pipeline failure skips that publication step.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does successful rename prove survival across power loss?</h3><details><summary>Answer checkpoints</summary><p>No. Crash durability depends on synchronization and filesystem behavior beyond this example.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Transform streams, pipeline, finished, error propagation, cancellation, and composition.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Bytes arrive in chunks.</strong> A file, socket, or producer controls chunk timing.</li><li><strong>Readable state holds data.</strong> High-water marks signal when to stop requesting or writing more; they are thresholds, not hard memory caps.</li><li><strong>Transform or destination pulls.</strong> Backpressure pauses upstream when writes cannot keep up.</li><li><strong>Pipeline completes or destroys.</strong> Pipeline coordinates its streams; external resources and committed side effects need separate ownership.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Slow the destination and confirm memory stays bounded.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Slow the destination and confirm memory stays bounded.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Chunk sizes, writable return values, drain events, RSS, and close/error order.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

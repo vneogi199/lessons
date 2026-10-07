@@ -144,12 +144,19 @@ for invalid in (Decimal(&quot;NaN&quot;), Decimal(&quot;Infinity&quot;), Decimal
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain the data model, rounding policy, concurrency boundary, and why simplified debts are a projection rather than the ledger.</li>
-      <li>Explain how a machine-coding use case works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">The payer is owed the other participants' shares</p>
+<p>A pays an expense with shares of 30.00 each for A, B and C. Use one agreed currency.</p>
+<div class="foundation-grid"><div>A's posting<br>Paid 90.00; owes own share 30.00<br>Net: +60.00</div><div>B and C<br>B: −30.00<br>C: −30.00</div><div>Balance check<br>60.00 − 30.00 − 30.00 = 0</div><div>Meaning<br>Positive: is owed<br>Negative: owes</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does a zero total prove the intended people and shares were correct?</h3><details><summary>Answer checkpoints</summary><p>No. A wrong set of balanced postings can still sum to zero. Check the participants and input shares too.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Has the function settled any debt?</h3><details><summary>Answer checkpoints</summary><p>No. It returns a proposed posting. Stored history and actual settlement are separate work, with explicit decimal precision and rounding policies.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Splitwise expense-sharing case study, exact arithmetic, balances, settlement, and simplification.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Prompt becomes executable requirements.</strong> Actors, use cases, constraints, invariants, assumptions, and omissions bound the work.</li><li><strong>Responsibilities and ownership become code.</strong> Entities, values, relationships, interfaces, and state transitions represent the domain.</li><li><strong>One end-to-end behavior runs.</strong> The smallest implementation crosses policy and adapters while keeping state valid.</li><li><strong>Tests and a changed requirement challenge it.</strong> Acceptance evidence, edge cases, complexity, and a real extension expose design quality.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Add one realistic requirement after the first working slice and predict the smallest safe change.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Add one realistic requirement after the first working slice and predict the smallest safe change.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Passing assertions, invariant state, public call trace, changed files or methods, failure behavior, and stated omissions.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a machine-coding use case. Name a failure mode. Explain the evidence you would inspect."></textarea>

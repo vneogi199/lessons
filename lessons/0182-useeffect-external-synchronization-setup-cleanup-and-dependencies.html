@@ -151,12 +151,19 @@ function RoomMessages({ roomId }) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Identify when an effect is necessary and explain its lifecycle independently of mount and update folklore.</li>
-      <li>Explain how an external synchronization cycle works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Reject a message from the room you left</p>
+<p>Open room A, then switch to room B. A late callback from A arrives after its cleanup.</p>
+<div class="foundation-grid"><div>Room A setup<br>active: true<br>Connect A</div><div>Leave A<br>active: false<br>Abort and disconnect</div><div>Room B<br>New keyed message state</div><div>Late A callback<br>active is false<br>Ignore message</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why use both the key and the active guard?</h3><details><summary>Answer checkpoints</summary><p>The key resets displayed message state for the new room. The guard rejects callbacks after the old effect's cleanup.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. How many messages remain after appending to a full 100-message list?</h3><details><summary>Answer checkpoints</summary><p>100. The update keeps the last 99, then appends one. Transport buffering still needs its own bound.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind useEffect, external synchronization, setup, cleanup, and dependencies.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>New UI state is committed.</strong> The DOM now represents the latest render.</li><li><strong>Previous synchronization stops.</strong> Release the old timer, listener, or connection.</li><li><strong>Effect synchronizes again.</strong> Use the committed dependency values.</li><li><strong>Outside system changes.</strong> The browser or service exposes the result.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one dependency and verify cleanup happens before the new setup.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one dependency and verify cleanup happens before the new setup.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Effect log order, active handles, DOM state, and Strict Mode replay.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an external synchronization cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>

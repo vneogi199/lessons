@@ -147,12 +147,19 @@ histogram.disable();</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why CPU percentage alone cannot diagnose Node responsiveness.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Measure a wait without calling it a capacity test</p>
+<p>The fixture marks the start, awaits a timeout requested for 60 ms, then marks the end.</p>
+<div class="foundation-grid"><div>Start mark<br>Record work:start</div><div>Idle-wait fixture<br>Await timeout<br>No representative request load</div><div>End evidence<br>Measured duration<br>Loop utilization and delay</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Must the measured duration equal exactly 60 ms?</h3><details><summary>Answer checkpoints</summary><p>No. Scheduling can delay completion beyond the requested threshold.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does low utilization during this wait prove the service can handle production traffic?</h3><details><summary>Answer checkpoints</summary><p>No. Use representative load and request-level measurements to establish capacity.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind perf_hooks, eventLoopUtilization, monitorEventLoopDelay, marks, measures, and capacity evidence.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Production signal crosses a threshold.</strong> Latency, errors, loop delay, memory, or throughput indicates a problem.</li><li><strong>Context connects related operations.</strong> Logs, metrics, traces, async context, and deployment identity narrow scope.</li><li><strong>Runtime evidence tests the cause.</strong> CPU samples, heap paths, traces, reports, and handles expose actual work.</li><li><strong>One change alters the measured signal.</strong> Representative load and before-after evidence confirm or reject the hypothesis.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Inject one block or leak, capture the smallest profile, fix its cause, and repeat the same load.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Inject one block or leak, capture the smallest profile, fix its cause, and repeat the same load.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: latency percentiles, loop utilization and delay, CPU stacks, heap retaining path, RSS, handles, trace, and report.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

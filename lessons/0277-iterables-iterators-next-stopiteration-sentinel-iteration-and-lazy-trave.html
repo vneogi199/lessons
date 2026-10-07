@@ -150,12 +150,19 @@ values = iter(lambda: input(&quot;value (blank ends): &quot;), &quot;&quot;)
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Distinguish iterable and iterator and explain how a for loop consumes both.</li>
-      <li>Explain how an iteration step works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Consume one iterator, then start a fresh traversal</p>
+<p>Create an iterator from Countdown 3 and read one value.</p>
+<div class="foundation-grid"><div>First next<br>Returns 3</div><div>Remaining same iterator<br>2, 1</div><div>Fresh Countdown traversal<br>3, 2, 1</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does calling iter on the existing iterator restart it?</h3><details><summary>Answer checkpoints</summary><p>No. It returns that same iterator with its current position.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why reject a negative starting value?</h3><details><summary>Answer checkpoints</summary><p>The loop decrements while current is truthy. A negative value would keep moving away from zero and would not terminate naturally.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Iterables, iterators, next, StopIteration, sentinel iteration, and lazy traversal.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A source can produce traversal.</strong> Calling iter asks for an iterator.</li><li><strong>State tracks the current position.</strong> The iterator is normally single-use.</li><li><strong>One value crosses at a time.</strong> A generator frame suspends after yielding.</li><li><strong>Traversal ends explicitly.</strong> StopIteration, close, or an exception completes the flow.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Consume only three values from a very large source, then close it early.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Consume only three values from a very large source, then close it early.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: next calls, yielded values, generator state, cleanup log, and peak memory.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an iteration step. Name a failure mode. Explain the evidence you would inspect."></textarea>

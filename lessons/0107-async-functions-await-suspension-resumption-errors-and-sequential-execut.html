@@ -147,12 +147,19 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain async and await without claiming they create threads or make CPU work non-blocking.</li>
-      <li>Explain how a JavaScript evaluation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">An async function starts before it suspends</p>
+<p>operation records async:start, awaits zero, then records async:resume.</p>
+<div class="foundation-grid"><div>Current synchronous work<br>Call operation<br>Record async:start<br>Suspend at await<br>Caller records script:end</div><div>Later continuation<br>Record async:resume<br>Return 42<br>Resolve pending result</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does awaiting the plain value zero resume immediately in the same call?</h3><details><summary>Answer checkpoints</summary><p>No. The continuation runs later even though zero requires no external I/O.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Has the CPU work moved to another thread?</h3><details><summary>Answer checkpoints</summary><p>No. Async suspension is not CPU offloading. Shared state can also change before continuation resumes.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Async functions, await, suspension, resumption, errors, and sequential execution.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>The async function starts running.</strong> Its body executes synchronously until an await or completion.</li><li><strong>Await suspends this function.</strong> The call returns a Promise; the caller can continue without waiting here.</li><li><strong>The awaited result becomes available.</strong> Fulfillment resumes with a value; rejection resumes by throwing at the await.</li><li><strong>A Promise job continues the function.</strong> Later statements run, and return or throw settles the async function&#39;s Promise.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Log before calling, inside the function before and after await, and after calling; predict the order with an already-fulfilled Promise.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Log before calling, inside the function before and after await, and after calling; predict the order with an already-fulfilled Promise.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: The before-await log precedes the caller&#39;s after-call log; the after-await log runs later. Check the returned Promise and rejection path.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a JavaScript evaluation. Name a failure mode. Explain the evidence you would inspect."></textarea>

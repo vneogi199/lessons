@@ -129,12 +129,19 @@ try {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Distinguish authentication state, origin policy, and common attack paths.</li>
-      <li>Explain how untrusted input crossing a boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Restore the value that existed before a storage probe</p>
+<p>The example writes only the synthetic lesson-storage-probe key on a disposable page.</p>
+<div class="foundation-grid"><div>Key initially absent<br>Write synthetic value<br>Read it back<br>Finally: remove the key</div><div>Key initially present<br>Save its old value<br>Write synthetic value<br>Finally: restore the old value</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Can another tab write the key between the save and restore steps?</h3><details><summary>Answer checkpoints</summary><p>Yes. Restoration is not atomic across tabs and could overwrite that change. Use an isolated fixture with no competing writer.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a successful storage check establish secure authentication?</h3><details><summary>Answer checkpoints</summary><p>No. It checks storage mechanics. XSS, CSRF, authorization and session lifetime still require separate design.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Browser security and storage.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Choose an origin.</strong> The fixture uses one disposable page and a synthetic storage key.</li><li><strong>Read and restore.</strong> The original value is preserved and restored after the check.</li><li><strong>Review the threat model.</strong> Origin storage, cookie flags, CORS and server authorization protect different boundaries.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change the stated fixture condition and compare the observable result.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change the stated fixture condition and compare the observable result.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Use the required browser fixture; retain DOM, accessibility, timing or storage evidence as appropriate. These browser experiments have not been executed by the local Node audit.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace untrusted input crossing a boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

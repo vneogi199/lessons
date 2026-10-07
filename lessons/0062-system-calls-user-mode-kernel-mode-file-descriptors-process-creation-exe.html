@@ -148,12 +148,19 @@ finally:
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what a system call changes and distinguish a process, program, executable, thread, descriptor, and kernel object.</li>
-      <li>Explain how a process crossing a kernel boundary works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Two descriptors refer to the ends of one pipe</p>
+<p>The fixture creates a pipe, writes the five bytes ready and reads those bytes from the other end.</p>
+<div class="foundation-grid"><div>write_fd<br>Write ready<br>↓<br>Kernel pipe buffer</div><div>read_fd<br>Read up to 5 bytes<br>Fixture receives ready<br>Finally close the reader</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why set write_fd to -1 after explicitly closing it?</h3><details><summary>Answer checkpoints</summary><p>The cleanup block uses that marker to avoid closing it again. A stale descriptor number could later refer to another resource.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does this five-byte success establish a general read-exactly helper?</h3><details><summary>Answer checkpoints</summary><p>No. Larger or interrupted I/O requires explicit handling of partial transfers, errors and message boundaries.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind System calls, user mode, kernel mode, file descriptors, process creation, exec, signals, and exit.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>User code requests an operation.</strong> A thread supplies arguments through a library or runtime boundary.</li><li><strong>The kernel validates and coordinates.</strong> Permissions, descriptors, scheduling, memory, and isolation rules apply.</li><li><strong>A CPU, page, file, or device changes.</strong> Kernel subsystems perform work while preserving ownership and concurrency invariants.</li><li><strong>Control and evidence return.</strong> A value, error, signal, trace, metric, or durable state makes the result visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Constrain or fail one resource and predict the syscall result and kernel evidence.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Constrain or fail one resource and predict the syscall result and kernel evidence.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Return values, errno, process state, scheduler events, memory counters, file metadata, and resource limits.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a process crossing a kernel boundary. Name a failure mode. Explain the evidence you would inspect."></textarea>

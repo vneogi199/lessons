@@ -145,12 +145,19 @@ console.assert(lifecycle.listenerCount(&quot;ready&quot;) === 0);</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain how EventEmitter differs from the event loop and why missing error listeners can terminate a process.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Register before emitting closed</p>
+<p>The example registers a one-time closed listener and creates a Promise with once before emitting closed.</p>
+<div class="foundation-grid"><div>Before emission<br>One-time log listener ready<br>Promise listener ready</div><div>Emit closed<br>Synchronous listener dispatch<br>Log once and resolve waiter</div><div>After emission<br>Await can complete</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would creating the waiter after emission observe the old event?</h3><details><summary>Answer checkpoints</summary><p>No. EventEmitter does not replay that past emission to a new listener.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why pass the same onReady function to off?</h3><details><summary>Answer checkpoints</summary><p>Removal identifies the registered function. A newly created function with the same body is a different listener.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind EventEmitter, listeners, synchronous dispatch, once, errors, captureRejections, and leaks.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Input reaches the Node process.</strong> A request, timer, signal, or message creates work.</li><li><strong>Handler coordinates the operation.</strong> Promises and callbacks describe continuation.</li><li><strong>Runtime performs external work.</strong> Sockets, files, workers, or child processes progress.</li><li><strong>Result returns to JavaScript.</strong> Response, log, exit state, or error becomes visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Trace one operation with async hooks and inject a timeout or shutdown.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Trace one operation with async hooks and inject a timeout or shutdown.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -154,12 +154,19 @@ for (const test of cases) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Describe a safe refactoring sequence for untested production code and the evidence that behavior stayed stable.</li>
-      <li>Explain how a requirement-driven code change works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Keep outputs fixed while changing structure</p>
+<p>The old function and its replacement calculate the same two fixture orders. Shipping is added after the discount.</p>
+<div class="foundation-grid"><div>Standard order<br>Subtotal 100 + shipping 5<br>Old: 105<br>New: 105</div><div>Member order<br>100 × 0.9 + shipping 5<br>Old: 95<br>New: 95</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. The new member result is 94.5. Is that a behavior-preserving refactor?</h3><details><summary>Answer checkpoints</summary><p>No. That result discounts shipping too: 105 × 0.9 = 94.5. The member characterization case should fail.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Do these two matching results cover all behavior?</h3><details><summary>Answer checkpoints</summary><p>No. Check relevant boundaries, invalid inputs and side effects. Separate an intentional behavior correction from restructuring.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Code smells, characterization tests, refactoring, seams, small steps, behavior preservation, and review evidence.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Current behavior is captured.</strong> Characterization tests and runtime evidence define what must remain unchanged.</li><li><strong>One dependency becomes controllable.</strong> A small extraction or parameter creates a place to test and change safely.</li><li><strong>One refactoring changes structure.</strong> A named small step keeps the program executable and avoids mixing new behavior.</li><li><strong>Behavior and design are compared.</strong> Tests, diff, complexity, dependencies, and reader explanation confirm or reject improvement.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Refactor one smell through separate executable commits and deliberately break a characterization test between two steps.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Refactor one smell through separate executable commits and deliberately break a characterization test between two steps.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Baseline outputs, test result per commit, diff, complexity, dependency count, runtime profile, and review explanation.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a requirement-driven code change. Name a failure mode. Explain the evidence you would inspect."></textarea>

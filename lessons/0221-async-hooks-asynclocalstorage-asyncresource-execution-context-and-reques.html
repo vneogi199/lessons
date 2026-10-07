@@ -143,12 +143,19 @@ resource.emitDestroy();</code></pre>
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why global variables cannot safely hold per-request context and where async context can break.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Carry a request ID through asynchronous work</p>
+<p>Call the generated request ID R for this illustration. handle awaits a Promise and a timer before logging.</p>
+<div class="foundation-grid"><div>context.run<br>Store requestId R</div><div>Async continuation<br>Promise and timer work created in scope</div><div>handled log<br>Read requestId R</div><div>Explicit custom scope<br>Read requestId custom</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does log need a requestId argument on every call?</h3><details><summary>Answer checkpoints</summary><p>Not in this example. It reads the active async context.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a correlation ID establish who is authorized?</h3><details><summary>Answer checkpoints</summary><p>No. It helps connect observations. Authentication and authorization need their own trusted inputs and checks.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind async_hooks, AsyncLocalStorage, AsyncResource, execution context, and request correlation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Input reaches the Node process.</strong> A request, timer, signal, or message creates work.</li><li><strong>Handler coordinates the operation.</strong> Promises and callbacks describe continuation.</li><li><strong>Runtime performs external work.</strong> Sockets, files, workers, or child processes progress.</li><li><strong>Result returns to JavaScript.</strong> Response, log, exit state, or error becomes visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Trace one operation with async hooks and inject a timeout or shutdown.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Trace one operation with async hooks and inject a timeout or shutdown.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

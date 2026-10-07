@@ -137,12 +137,19 @@
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Distinguish event handlers from effects and explain why state does not change inside an existing render snapshot.</li>
-      <li>Explain how a state update works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">One click queues two increments</p>
+<p>The displayed count starts at 0. The button handler queues two functional updates.</p>
+<div class="foundation-grid"><div>Capture phase<br>Toolbar audit runs</div><div>Button handler<br>Queue +1<br>Queue +1<br>Log snapshot 0</div><div>Processed updates<br>0 → 1 → 2<br>Next displayed count: 2</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does stopPropagation undo the toolbar's capture audit?</h3><details><summary>Answer checkpoints</summary><p>No. The ancestor capture handler already ran before the button handler.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Why does the handler log 0 after queuing the updates?</h3><details><summary>Answer checkpoints</summary><p>The handler reads the count from its render snapshot. Queuing updates does not replace that captured value.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Events, propagation, event handlers, update priority, and batching.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>User or server supplies intent.</strong> A click, action, response, or queued update begins.</li><li><strong>React records the update.</strong> Priority and update order determine pending work.</li><li><strong>React computes a new tree.</strong> Components read one state snapshot and reconcile.</li><li><strong>Visible UI changes atomically.</strong> DOM mutations and layout work become observable.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Queue two related updates and predict which state snapshot each callback reads.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Queue two related updates and predict which state snapshot each callback reads.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Rendered values, Profiler events, commit count, and interaction responsiveness.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a state update. Name a failure mode. Explain the evidence you would inspect."></textarea>

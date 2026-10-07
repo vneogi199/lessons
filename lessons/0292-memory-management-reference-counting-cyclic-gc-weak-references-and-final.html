@@ -138,12 +138,19 @@ print({&quot;cyclic_objects_collected&quot;: collected, &quot;thresholds&quot;: 
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain reference counting versus cyclic GC and why code must not depend on immediate finalization.</li>
-      <li>Explain how an object&#039;s lifetime works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Collect a cycle with no strong application reference</p>
+<p>left points to right and right points to left. observed is a weak reference to left.</p>
+<div class="foundation-grid"><div>Before deletion<br>Names reach both nodes<br>Nodes point to each other</div><div>Delete both names<br>Cycle remains internally<br>Weak reference does not keep it alive</div><div>Explicit collection<br>Cycle reclaimed<br>observed returns None</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Must the total collected count equal exactly two?</h3><details><summary>Answer checkpoints</summary><p>No. Collection may find other eligible objects. The assertion checks that this observed node is gone.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Should a file or socket wait for this collection pattern to close?</h3><details><summary>Answer checkpoints</summary><p>No. External resources need explicit lifecycle management, such as a context manager.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Memory management, reference counting, cyclic GC, weak references, and finalization.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Objects and references appear.</strong> Names and containers form an object graph.</li><li><strong>Aliases preserve reachability.</strong> Shallow copies may still point to the same children.</li><li><strong>Strong references disappear.</strong> CPython uses reference counting and cycle detection; collection timing is not a portable Python language promise.</li><li><strong>Object remains or is reclaimed.</strong> Weak references and memory traces expose the outcome.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Create an alias or cycle, delete roots, and predict which objects remain reachable.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Create an alias or cycle, delete roots, and predict which objects remain reachable.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Object IDs, weak references, GC statistics, allocation trace, and cleanup events.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an object&#039;s lifetime. Name a failure mode. Explain the evidence you would inspect."></textarea>

@@ -138,12 +138,19 @@
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Choose controlled versus uncontrolled fields and diagnose input warnings or cursor problems.</li>
-      <li>Explain how a render and commit cycle works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Read text state and a selected file from different places</p>
+<p>The user types Ada and chooses avatar.png before submitting.</p>
+<div class="foundation-grid"><div>Name input<br>onChange updates state<br>name: Ada</div><div>File input<br>Browser holds selected file<br>FormData supplies avatar</div><div>Submission<br>saveProfile receives name and avatar</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does changing the name state select a file?</h3><details><summary>Answer checkpoints</summary><p>No. The file input is uncontrolled. Its selection comes from the browser's file control.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does accept image/* prove an upload is a safe image?</h3><details><summary>Answer checkpoints</summary><p>No. It guides file selection. The upload boundary still needs content, size and security checks.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Controlled and uncontrolled inputs, forms, validation, and file fields.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Choose where the current value lives.</strong> Controlled text inputs receive a string value from React; uncontrolled inputs keep their current value in the DOM.</li><li><strong>User changes the input.</strong> A controlled input&#39;s onChange updates its owning state synchronously; defaultValue initializes an uncontrolled input.</li><li><strong>The chosen owner supplies the displayed value.</strong> Keep controlled/uncontrolled mode stable through the input&#39;s lifetime.</li><li><strong>Read and validate the intended fields.</strong> Use labels and names, show usable errors and validate again at the server boundary.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Type into each fixture, change its initial/default value and compare with a controlled-state update.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Type into each fixture, change its initial/default value and compare with a controlled-state update.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: DOM value, state value, submitted FormData, accessible name and behavior after reset; inspect file selection separately.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a render and commit cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>

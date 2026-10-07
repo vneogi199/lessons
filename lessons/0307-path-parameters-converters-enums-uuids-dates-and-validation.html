@@ -144,12 +144,19 @@ async def read_project(
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain the boundary between router-level matching and Pydantic-level validation.</li>
-      <li>Explain how an HTTP request works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Validate path identity separately from query choices</p>
+<p>For a request with a valid tenant UUID, project ID 7 and kind team, the handler receives parsed values.</p>
+<div class="foundation-grid"><div>Path tenant_id<br>UUID</div><div>Path project_id<br>Integer 7<br>Within positive bound</div><div>Query kind<br>team enum member</div><div>Query as_of omitted<br>None</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would project ID 0 reach the service through this validated path?</h3><details><summary>Answer checkpoints</summary><p>No. The positive-value constraint rejects it.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does a valid tenant UUID prove the caller belongs to that tenant?</h3><details><summary>Answer checkpoints</summary><p>No. Parsing and bounds do not authorize access. The service needs a trusted tenant-access policy.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Path parameters, converters, enums, UUIDs, dates, and validation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Untrusted HTTP values arrive.</strong> Path, query, headers, cookies, or body carry text and bytes.</li><li><strong>Protocol representation is decoded.</strong> Content type and parameter source determine parsing.</li><li><strong>Pydantic applies the schema.</strong> Conversion, constraints, and validators produce data or errors.</li><li><strong>Endpoint receives a typed value.</strong> Invalid input instead becomes a structured 422 response.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Send one valid payload and three malformed boundary cases.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Send one valid payload and three malformed boundary cases.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Parsed types, validation error locations, status code, and generated schema.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an HTTP request. Name a failure mode. Explain the evidence you would inspect."></textarea>

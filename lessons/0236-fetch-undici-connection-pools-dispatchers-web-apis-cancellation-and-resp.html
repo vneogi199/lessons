@@ -165,12 +165,19 @@
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why a timed-out Promise must cancel underlying network work and how pooling affects latency.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Count received bytes rather than trusting the header</p>
+<p>For a small fixture, set maxBytes to 8. The response delivers chunks of 5 and 4 bytes.</p>
+<div class="foundation-grid"><div>First chunk<br>Accumulated: 5<br>Within limit</div><div>Second chunk<br>Accumulated: 9<br>Exceeds 8</div><div>Failure path<br>Reject response<br>Attempt body cancellation</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Would a Content-Length header of 5 make the response acceptable?</h3><details><summary>Answer checkpoints</summary><p>No. The helper counts the bytes actually exposed by the response body.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the deadline interrupt JSON.parse while it is running synchronously?</h3><details><summary>Answer checkpoints</summary><p>No. Cancellation is cooperative. Keep the input bounded and account for synchronous processing cost.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Fetch, Undici, connection pools, dispatchers, Web APIs, cancellation, and response consumption.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Name and transport establish a channel.</strong> Resolution, pooling, TCP, TLS, or an accepted socket creates connectivity.</li><li><strong>Protocol bytes become messages.</strong> Framing, headers, body limits, and stream state define input.</li><li><strong>Application performs bounded work.</strong> Validation, cancellation, deadlines, and dependencies shape the outcome.</li><li><strong>Response or failure closes ownership.</strong> Bodies, sockets, sessions, streams, and pool capacity become reusable or end.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Slow, abort, or fragment one request and predict which timeout and cleanup path owns it.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Slow, abort, or fragment one request and predict which timeout and cleanup path owns it.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: DNS result, socket state, TLS parameters, headers, body bytes, pool state, response, and close event.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

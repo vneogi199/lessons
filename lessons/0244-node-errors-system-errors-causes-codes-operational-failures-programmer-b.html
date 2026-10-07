@@ -151,12 +151,19 @@ catch (cause) { throw new DependencyError(&quot;payments&quot;, { cause }); }
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Decide when to retry, reject a request, restart a process, or alert an operator.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Keep the original failure inside a service-level error</p>
+<p>The dependency fixture throws controlled fixture failure. The catch wraps it as a payments DependencyError.</p>
+<div class="foundation-grid"><div>Original error<br>controlled fixture failure</div><div>Wrapper<br>dependency unavailable<br>Code: DEPENDENCY_UNAVAILABLE<br>Service: payments</div><div>Cause link<br>Original error retained</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does replacing the message have to discard the original failure?</h3><details><summary>Answer checkpoints</summary><p>No. Passing cause preserves the lower-level error for diagnosis.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does the code retry the payment dependency?</h3><details><summary>Answer checkpoints</summary><p>No. It throws the wrapper. Retry policy needs a separate decision about safety and failure classification.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Node errors, system errors, causes, codes, operational failures, programmer bugs, and recovery.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Input reaches the Node process.</strong> A request, timer, signal, or message creates work.</li><li><strong>Handler coordinates the operation.</strong> Promises and callbacks describe continuation.</li><li><strong>Runtime performs external work.</strong> Sockets, files, workers, or child processes progress.</li><li><strong>Result returns to JavaScript.</strong> Response, log, exit state, or error becomes visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Trace one operation with async hooks and inject a timeout or shutdown.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Trace one operation with async hooks and inject a timeout or shutdown.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Async IDs, handle count, event-loop delay, response, and exit sequence.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

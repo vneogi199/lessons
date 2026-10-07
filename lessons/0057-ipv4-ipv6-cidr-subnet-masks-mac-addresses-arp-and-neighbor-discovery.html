@@ -147,12 +147,19 @@ assert neighbor_cache[next_hop].endswith(&quot;:01&quot;)
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why IP and MAC addresses both exist, how CIDR controls routing, and where ARP or IPv6 neighbor discovery applies.</li>
-      <li>Explain how a request from application to wire works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Resolve the gateway for an off-link destination</p>
+<p>The local prefix is 192.0.2.0/27. The fixture uses gateway 192.0.2.1.</p>
+<div class="foundation-grid"><div>192.0.2.18<br>Inside the local prefix<br>Local membership: yes</div><div>198.51.100.8<br>Outside the local prefix<br>Next hop: 192.0.2.1<br>Use the gateway's cached MAC</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does this host use ARP to find the remote destination's MAC directly?</h3><details><summary>Answer checkpoints</summary><p>No. In the fixture it resolves the on-link gateway. The remote address is outside the local prefix.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does membership in this 32-address prefix mean every address is an assignable host address?</h3><details><summary>Answer checkpoints</summary><p>No. The prefix-membership calculation alone does not establish host assignment rules. IPv6 uses Neighbor Discovery rather than ARP.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind IPv4, IPv6, CIDR, subnet masks, MAC addresses, ARP, and neighbor discovery.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Application creates a message.</strong> A URL, payload, and protocol semantics define the intended exchange.</li><li><strong>Names and peers become addresses.</strong> DNS, routes, neighbors, sockets, and security establish a reachable endpoint.</li><li><strong>Bytes cross layered networks.</strong> TCP or UDP, IP forwarding, link frames, and congestion controls move bounded units.</li><li><strong>The destination observes the request.</strong> Acknowledgments, responses, packet captures, and errors expose the outcome.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one address, route, MTU, or loss condition and predict where the exchange changes.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one address, route, MTU, or loss condition and predict where the exchange changes.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Socket state, route and neighbor tables, packet capture fields, latency, retransmissions, and response status.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a request from application to wire. Name a failure mode. Explain the evidence you would inspect."></textarea>

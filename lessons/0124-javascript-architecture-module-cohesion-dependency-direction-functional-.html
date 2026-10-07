@@ -150,12 +150,19 @@ export function createProcessor({ repository, validateCommand }) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain architectural choices through change cost, testability, failure isolation, and explicit tradeoffs.</li>
-      <li>Explain how a validated command works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">The processor awaits one commit before starting the next</p>
+<p>Consider a batch containing commands A and B. The injected repository owns the atomic business operation.</p>
+<div class="foundation-grid"><div>Command A<br>Check abort<br>Validate synchronously<br>Await commitOnceWithOutbox<br>Save result</div><div>Then command B<br>Check abort<br>Validate synchronously<br>Await commitOnceWithOutbox<br>Save result</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does making validateCommand async preserve this processor's validation boundary?</h3><details><summary>Answer checkpoints</summary><p>No. The call is not awaited. An async validator needs an explicit awaited contract before persistence can depend on its result.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Is this processor a pure function because its dependencies are injected?</h3><details><summary>Answer checkpoints</summary><p>No. It orchestrates repository effects. Injection makes dependencies explicit without removing those effects or proving atomicity.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind JavaScript architecture, module cohesion, dependency direction, functional core, object boundaries, and contracts.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>The processor accepts a command.</strong> Cancellation and validation gate the next operation.</li><li><strong>The repository owns atomic effects.</strong> Business state, stable result, intent identity and outbox must share a transaction.</li><li><strong>Committed events are delivered.</strong> A separate relay may retry; consumers own duplicate-safe effects.</li><li><strong>Outcomes reveal the boundary.</strong> Partial batches, uncertain commits and replay require explicit recovery evidence.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Inject a failure after one committed command and explain what may already be durable.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Inject a failure after one committed command and explain what may already be durable.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Accepted commands, repository calls, stable replay result and integration crash evidence; the starter supplies only orchestration.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a validated command. Name a failure mode. Explain the evidence you would inspect."></textarea>

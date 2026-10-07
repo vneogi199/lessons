@@ -151,12 +151,19 @@ console.log(import.meta.url, import.meta.dirname, config);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why clearing require.cache is not a general hot-reload design.</li>
-      <li>Explain how an event-loop operation works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A cycle can read an export before initialization finishes</p>
+<p>Hypothetical CommonJS fixture: A requires B, and B requires A while A is still evaluating.</p>
+<div class="foundation-grid"><div>A starts<br>Enters require cache<br>Begins evaluation</div><div>A loads B<br>B requires A</div><div>B observes A<br>May see partial exports<br>A has not finished</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does the cache prove A has completed initialization?</h3><details><summary>Answer checkpoints</summary><p>No. CommonJS caches the module before evaluation finishes, which allows cycles to observe partial exports.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. How does a module replace the object returned to require callers?</h3><details><summary>Answer checkpoints</summary><p>Assign module.exports. Reassigning the local exports alias does not replace that exported object.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind CommonJS, wrapper function, require resolution, module cache, exports, cycles, and initialization.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Code requests one module.</strong> Syntax, package type, URL, and conditions choose the loader model.</li><li><strong>Node selects an exact resource.</strong> Extensions, exports, imports, URLs, or CommonJS search rules produce identity.</li><li><strong>Format is parsed and evaluated.</strong> Cache insertion, linking, interop, cycles, and type stripping affect initialization.</li><li><strong>Consumer observes the public surface.</strong> Namespace shape, shared state, errors, and packed artifacts prove behavior.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Load one packed entry from ESM and CommonJS consumers and compare resolved files and state identity.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: import.meta URL, require.resolve, cache entries, evaluation log, exports, package contents, and runtime error.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an event-loop operation. Name a failure mode. Explain the evidence you would inspect."></textarea>

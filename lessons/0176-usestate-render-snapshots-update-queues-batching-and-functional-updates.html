@@ -145,12 +145,19 @@
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain stale state, functional updaters, immutability, and when state is preserved.</li>
-      <li>Explain how a state update works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Add three without passing the quantity limit</p>
+<p>Start quantity at 98. Each queued updater adds one but caps the result at 99.</p>
+<div class="foundation-grid"><div>Starting state<br>98</div><div>First updater<br>min(99, 99)<br>99</div><div>Second updater<br>min(99, 100)<br>99</div><div>Third updater<br>min(99, 100)<br>99</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. What if quantity starts at 1 instead?</h3><details><summary>Answer checkpoints</summary><p>The queue produces 2, then 3, then 4. Each updater receives the preceding result.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does addTag mutate the existing tags array?</h3><details><summary>Answer checkpoints</summary><p>No. It constructs a new tags array and a new draft object while retaining the other draft fields.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind useState, render snapshots, update queues, batching, and functional updates.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A handler reads its render&#39;s state.</strong> With quantity 1, quantity + 1 evaluates to 2.</li><li><strong>Setters queue values or calculations.</strong> Replacement 2 differs from an updater that adds one to pending state.</li><li><strong>React calculates the next UI.</strong> Queued updaters compose in order; component code reads the resulting snapshot.</li><li><strong>React applies required DOM changes.</strong> The browser paints afterward. Equal state can allow React to skip work.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Predict three replacements, three updaters and a mixed queue from state 1.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Predict three replacements, three updaters and a mixed queue from state 1.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Final state 2, 4 and 2 for the stated queues; mutation and reset behavior in a React environment.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a state update. Name a failure mode. Explain the evidence you would inspect."></textarea>

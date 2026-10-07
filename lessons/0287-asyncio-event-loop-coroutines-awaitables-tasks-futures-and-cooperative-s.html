@@ -138,12 +138,19 @@ asyncio.run(main())
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain the event loop, coroutine versus task versus future, and why async is concurrency rather than automatic parallelism.</li>
-      <li>Explain how a concurrent task works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Suspend each task while its timer waits</p>
+<p>The program creates five fetch tasks, each of which awaits asyncio.sleep.</p>
+<div class="foundation-grid"><div>Task starts<br>Record start time</div><div>Await sleep<br>Suspend this task<br>Loop can run other tasks</div><div>Gather result<br>item-0 through item-4<br>Input task order</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does this create five Python threads?</h3><details><summary>Answer checkpoints</summary><p>No. These are cooperatively scheduled tasks on the event loop.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. What changes if fetch uses time.sleep?</h3><details><summary>Answer checkpoints</summary><p>It blocks the loop's thread during the sleep, preventing the intended overlap of other task progress.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Asyncio event loop, coroutines, awaitables, tasks, futures, and cooperative scheduling.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>A callable or coroutine is created.</strong> Its wait pattern and CPU cost determine a boundary.</li><li><strong>Loop, thread, or process owns it.</strong> The scheduler decides when execution can progress.</li><li><strong>Work waits or consumes CPU.</strong> Cancellation and synchronization shape interleaving.</li><li><strong>Result, error, or cancellation returns.</strong> The owner waits for cleanup before continuing.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Run the workload once normally and once with blocking, cancellation, or worker failure.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Run the workload once normally and once with blocking, cancellation, or worker failure.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Timeline, task/thread/process identity, queue depth, exception, and elapsed time.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a concurrent task. Name a failure mode. Explain the evidence you would inspect."></textarea>

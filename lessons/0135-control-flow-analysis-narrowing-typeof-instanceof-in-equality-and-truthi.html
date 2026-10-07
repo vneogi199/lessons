@@ -176,12 +176,19 @@ console.log(&quot;Narrowing checks passed&quot;);
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Why can a string-or-number variable become number after assignment without changing its declared type? Explain where narrowing stops being reliable evidence at an external boundary, across mutation, or when instanceof is applied to deserialized objects.</li>
-      <li>Explain how a type-checking decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Follow the branch for an empty value</p>
+<p>The describe function accepts strings, numbers, Date objects and null.</p>
+<div class="foundation-grid"><div>null<br>Null branch<br>missing</div><div>Empty string<br>String branch<br>text:</div><div>0<br>Number branch<br>number:0</div><div>Date in 2026<br>Date branch<br>date:2026</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Why not treat every falsy input as missing?</h3><details><summary>Answer checkpoints</summary><p>That would discard the valid empty string and zero. The explicit null check keeps their meanings separate.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Does finding name with the in operator prove it is an own string property?</h3><details><summary>Answer checkpoints</summary><p>No. The property may be inherited, and its value may be a number. Check ownership and the value type when the input contract requires both.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Control-flow analysis, narrowing, typeof, instanceof, in, equality, and truthiness.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Several possible value categories.</strong> The declared input permits string, number, Date, or null.</li><li><strong>Eliminate null on later paths.</strong> The null branch returns; reaching the next statement proves that case did not apply.</li><li><strong>Check category before use.</strong> typeof permits string or number operations; instanceof identifies the Date branch.</li><li><strong>Keep only surviving evidence.</strong> A check inside a non-returning branch does not remove null after that branch. Reassignment changes the current flow type.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Does in prove an own property or a string value? Use the inherited-name and numeric-name cases to justify your answer.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Does in prove an own property or a string value? Use the inherited-name and numeric-name cases to justify your answer.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: Narrowing checks passed; empty string and zero survive, invalid name types are rejected by the value check, and the compiler catches operations outside their proven branch.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a type-checking decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

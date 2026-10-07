@@ -146,12 +146,19 @@ console.assert(fileURLToPath(import.meta.url).endsWith(&quot;.mjs&quot;));
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain why string concatenation and prefix checks are unsafe path controls.</li>
-      <li>Explain how a filesystem access decision works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">Resolve a name against the upload root</p>
+<p>The root is /srv/uploads. Compare a nested filename with a parent-directory escape.</p>
+<div class="foundation-grid"><div>tenant/file.txt<br>Inside /srv/uploads<br>Accepted lexically</div><div>../secret.txt<br>Outside /srv/uploads<br>Rejected</div><div>Root itself<br>Empty relative path<br>Rejected</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does an accepted path prove the opened file stays inside the root?</h3><details><summary>Answer checkpoints</summary><p>No. A symlink or concurrent directory change can alter where the filesystem resolves it.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Would this check accept an ordinary filename beginning with two dots?</h3><details><summary>Answer checkpoints</summary><p>No. The startsWith check rejects it conservatively, even when it is not a parent-directory component. The policy is stricter than lexical escape detection alone.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Paths, file URLs, import.meta, cross-platform behavior, traversal, and filesystem boundaries.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>External text or authority enters.</strong> HTTP, environment, path, URL, command, package, or file input is unproven.</li><li><strong>Parser establishes a narrow contract.</strong> Format, size, destination, permissions, and policy reject unsafe cases.</li><li><strong>Least-authority API performs work.</strong> Argument arrays, direct opens, AbortSignal, and permission controls constrain impact.</li><li><strong>Safe output or denial is recorded.</strong> Redacted evidence proves both allowed and adversarial paths.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Send one traversal, private URL, or shell metacharacter and verify denial before the privileged API.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: parsed value, resolved path or address, permission decision, spawned argv, error, audit record, and changed resources.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a filesystem access decision. Name a failure mode. Explain the evidence you would inspect."></textarea>

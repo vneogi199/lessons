@@ -136,12 +136,19 @@ function Search({ items, query }) {
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain when memoization helps, when it cannot help, and why unstable objects defeat it.</li>
-      <li>Explain how a render and commit cycle works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">A new array reference can invalidate the cache</p>
+<p>Search receives items and query. The ranking cache depends on both.</p>
+<div class="foundation-grid"><div>Same items reference<br>Same query<br>Cached ranking can be reused</div><div>New array, same contents<br>Changed items reference<br>Ranking recalculated</div><div>Changed query<br>Ranking recalculated</div></div>
+
+</div>
+    <article class="senior-practice" data-interview-question><h3>1. Does memo compare every item deeply by default?</h3><details><summary>Answer checkpoints</summary><p>No. New prop references can prevent the intended bailout even when their contents look equal.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Should the UI become incorrect if React recalculates the memo?</h3><details><summary>Answer checkpoints</summary><p>No. Memoization is a performance optimization. Keep ranking correct and pure, then use profiling evidence to decide whether the cache helps.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind memo, useMemo, useCallback, referential equality, and cache invalidation.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Props, state, and context.</strong> Treat each render&#39;s inputs as immutable snapshots; React does not recursively freeze every object you supply.</li><li><strong>Components return elements.</strong> Pure functions describe the next interface tree.</li><li><strong>Fiber work compares trees.</strong> Type, position, and key decide preservation.</li><li><strong>React updates the host UI.</strong> DOM changes, refs, and commit effects become visible.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: Change one input or key and predict which component state is preserved.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: Change one input or key and predict which component state is preserved.</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: React DevTools, render count, DOM mutations, focus, and displayed state.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace a render and commit cycle. Name a failure mode. Explain the evidence you would inspect."></textarea>

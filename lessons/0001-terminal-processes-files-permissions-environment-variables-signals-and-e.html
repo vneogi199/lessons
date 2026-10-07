@@ -148,12 +148,20 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
 
   <section class="card interview">
     <h2>Interview practice</h2>
-    <ol class="interview-questions">
-      <li>Explain what happens between entering a command and seeing its output.</li>
-      <li>Explain how an engineering change works, starting with the input and following it through to the result.</li>
-      <li>Explain your approach to the practice exercise. What would you check to show that it works?</li>
-      <li>What could go wrong? Explain what you would check first and what your fix would cost or make harder.</li>
-    </ol>
+    <div class="lesson-interview-bank" data-interview-count="4">
+    <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
+    <div class="interview-case"><p class="interview-case-title">One pipeline, two exit statuses</p>
+<p>The producer exits with status 7. The consumer, tee, finishes with status 0. Bash must choose one status for the whole pipeline.</p>
+<div class="foundation-grid"><div>Producer<br>exit 7<br>↓<br>Consumer<br>exit 0</div><div>Default Bash policy<br>take the last status<br>↓<br>Pipeline status: 0</div></div>
+
+
+<p>Capture the statuses immediately. Another command can overwrite them. Even status 0 does not prove that the intended output is complete.</p></div>
+    <article class="senior-practice" data-interview-question><h3>1. Enable pipefail. What status does Bash report?</h3><details><summary>Answer checkpoints</summary><p>7. With pipefail, Bash reports the rightmost nonzero status. The consumer's successful exit does not erase the producer's failure.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+<article class="senior-practice" data-interview-question><h3>2. Now the consumer also fails, with status 3. What changes?</h3><details><summary>Answer checkpoints</summary><p>The pipeline reports 3 with either policy. By default, 3 is the last status. With pipefail, it is the rightmost nonzero status. The single result does not tell you that both commands failed.</p><p>Follow-up: Change one input or assumption in this case. Predict the outcome, then check it against the explanation or a safe local experiment. State which boundary your change tests.</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>3. Explain the mechanism behind Terminal, processes, files, permissions, environment variables, signals, and exit codes.</h3><details><summary>Answer checkpoints</summary><ol><li><strong>Exit with status 7.</strong> The producer fails even though it sends no bytes.</li><li><strong>tee succeeds.</strong> The final process can return zero while the producer failed.</li><li><strong>Apply pipeline policy.</strong> Default Bash reports the last status; pipefail reports the rightmost nonzero status.</li><li><strong>Capture immediately.</strong> Save $? before any other command overwrites it, then check the required outcome.</li></ol><p>This is the lesson's teaching sequence. Distinguish it from actual runtime ordering, especially when work is concurrent.</p><p>Follow-up: What happens if both processes fail?</p></details></article>
+    <article class="senior-practice" data-interview-question><h3>4. How would you test this claim: What happens if both processes fail?</h3><details><summary>Answer checkpoints</summary><p>Evidence to inspect: The example reports 0 without pipefail and 7 with it; that alone does not prove business success.</p><p>Write the initial state, one changed condition and the expected observation before running the check. Use the worked case above to justify the expectation. Distinguish what your fixture proves from what requires a real integration.</p><p>Follow-up: Give a counterexample to an overbroad conclusion from your test. Explain one cost or constraint that would change your approach.</p></details></article>
+    <p>Self-check: can you explain the mechanism, defend the result and handle the changed condition? Rehearse missed questions tomorrow without notes. Ask your teacher to review any result you cannot justify.</p>
+  </div>
     <div class="answer-frame" aria-label="Suggested interview answer structure"><span>1 · define</span><span>2 · trace</span><span>3 · trade off</span><span>4 · verify</span></div>
     <label for="teachback"><strong>Your 90-second teach-back</strong></label>
     <textarea id="teachback" placeholder="Define the boundary. Trace an engineering change. Name a failure mode. Explain the evidence you would inspect."></textarea>
