@@ -46,7 +46,57 @@
     <h1>Lists, tuples, ranges, slicing, unpacking, copying, and sequence costs</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Put two labels on one basket of apples. Adding an apple changes what you see through either label. That is like assigning a list to another name: there is still only one basket.</p><p>Now copy a shopping list that points to two baskets. You have two pieces of paper, but both point to the same baskets. This is like a shallow copy of a nested list. Changing a shared basket affects both views; changing which basket one paper points to affects only that paper.</p><details><summary>Does copying the outer list also copy every basket?</summary><p>No. A shallow copy keeps the references to the same inner objects. The Python examples below show the difference.</p></details></section>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Lists">
+        <summary>Lists</summary>
+        <p class="concept-definition">A list is a mutable sequence commonly implemented by CPython as a resizable array of object references. Appending is usually cheap, while front insertion shifts existing references.</p>
+      </details><details open class="concept-card" data-subtopic="tuples">
+        <summary>tuples</summary>
+        <p class="concept-definition">A tuple is an immutable sequence of object references. The tuple cannot replace its direct references, though a referenced mutable object can still change.</p>
+      </details><details open class="concept-card" data-subtopic="ranges">
+        <summary>ranges</summary>
+        <p class="concept-definition">range represents an integer progression compactly rather than allocating every element eagerly.</p>
+      </details><details open class="concept-card" data-subtopic="slicing">
+        <summary>slicing</summary>
+        <p class="concept-definition">Slicing selects a range using start, stop, and step. For built-in sequences it normally creates a new outer container, not a recursive copy of nested values.</p>
+      </details><details open class="concept-card" data-subtopic="unpacking">
+        <summary>unpacking</summary>
+        <p class="concept-definition">Unpacking assigns or passes elements into separate positions, with arity and starred-capture rules.</p>
+      </details><details open class="concept-card" data-subtopic="copying">
+        <summary>copying</summary>
+        <p class="concept-definition">A shallow copy creates a new outer object while retaining references to nested objects. A deep copy recursively recreates much of an object graph and needs explicit semantic justification.</p>
+      </details><details open class="concept-card" data-subtopic="sequence costs">
+        <summary>sequence costs</summary>
+        <p class="concept-definition">Sequence costs depend on representation: list append is amortized constant time, while insertion near the front shifts elements.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Lists, tuples and ranges keep values in order, but they store and update them differently. CPython lists use a resizable array of references. Tuples keep their direct references fixed. A range describes an integer progression without storing every item. Slicing and unpacking depend on those representations, so copying a list and slicing a range have different allocation costs.</p>
+      <p class="analogy">When two lists share a nested list, changing that nested list affects both. Replacing an item in one outer list affects only that outer list. The difference is which object you change.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Put two labels on one basket of apples. Adding an apple changes what you see through either label. That is like assigning a list to another name: there is still only one basket.</p><p>Now copy a shopping list that points to two baskets. You have two pieces of paper, but both point to the same baskets. This is like a shallow copy of a nested list. Changing a shared basket affects both views; changing which basket one paper points to affects only that paper.</p><details open><summary>Does copying the outer list also copy every basket?</summary><p>No. A shallow copy keeps the references to the same inner objects. The Python examples below show the difference.</p></details></section>
 
   <section class="card mechanism-walkthrough"><h2>Reading and updating a list</h2>
 <p>A list keeps items in order. In quantities = [10, 20, 30], the first item is 10. Its index, or position number, is 0. So quantities[0] gives 10. A negative index counts from the end: quantities[-1] gives 30.</p>
@@ -74,8 +124,8 @@ print(outer_copy[0])  # 99</code></pre>
 <figcaption id="copy-map-caption">Two outer lists at the top. Two shared inner lists at the bottom. An arrow means “refers to”. Both index-0 items refer to A. Both index-1 items refer to B.</figcaption>
 </figure>
 <p>Predict each change before opening its answer. Follow the steps in order.</p>
-<details data-copy-prediction="mutate"><summary>1. Append 99 to shallow[0]. What does legs[0] contain?</summary><p>It contains [10, 20, 99]. Both arrows at index 0 still lead to the same inner list. Appending changes that shared list.</p></details>
-<details data-copy-prediction="replace"><summary>2. Set shallow[1] to [70]. Does legs[1] change?</summary><p>No. legs[1] still contains [30]. The arrow from shallow[1] now leads to a new list, [70]. The arrow from legs[1] still leads to B, which contains [30].</p><p>After both steps, legs is [[10, 20, 99], [30]]. shallow is [[10, 20, 99], [70]].</p></details>
+<details open data-copy-prediction="mutate"><summary>1. Append 99 to shallow[0]. What does legs[0] contain?</summary><p>It contains [10, 20, 99]. Both arrows at index 0 still lead to the same inner list. Appending changes that shared list.</p></details>
+<details open data-copy-prediction="replace"><summary>2. Set shallow[1] to [70]. Does legs[1] change?</summary><p>No. legs[1] still contains [30]. The arrow from shallow[1] now leads to a new list, [70]. The arrow from legs[1] still leads to B, which contains [30].</p><p>After both steps, legs is [[10, 20, 99], [30]]. shallow is [[10, 20, 99], [70]].</p></details>
 <p>Compare your predictions with the code:</p>
 <pre><code>legs = [[10, 20], [30]]
 shallow = legs.copy()
@@ -99,17 +149,12 @@ print(shallow[1])  # [70]</code></pre>
 <p>CPython stores a list's references in a resizable array. An index identifies a position directly. Appending is usually cheap, but occasionally the array must grow and copy its references. Spread over many appends, that extra work gives an amortized constant cost per append. Individual appends can still take different amounts of time.</p>
 <p>Inserting at the front requires shifting the existing references. The longer the list, the more work that takes. A slice of k items also copies k references into new outer storage, so its time and space costs grow with the slice size.</p>
 <p>For a FIFO job queue, removing the first list item over and over pays that shifting cost repeatedly. deque supports efficient operations at both ends: append adds a job and popleft removes the oldest. A list is still useful when you need direct indexed access. These operation costs help you choose a container; you would need measurements to establish latency in your own application. See <a href="https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-queues">the queue example</a>.</p></section>
-  <div class="grid">
-    <section class="card">
-
-      <p>Lists, tuples and ranges keep values in order, but they store and update them differently. CPython lists use a resizable array of references. Tuples keep their direct references fixed. A range describes an integer progression without storing every item. Slicing and unpacking depend on those representations, so copying a list and slicing a range have different allocation costs.</p>
-      <p class="analogy">When two lists share a nested list, changing that nested list affects both. Replacing an item in one outer list affects only that outer list. The difference is which object you change.</p>
-    </section>
-
-    <aside class="card blackboard">
+  </section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a sequence operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="python-sequence" aria-label="Mechanism trace: Select a sequence for its operations then Index, slice or unpack then Track references across copies then Account for the operation&#039;s cost. Experiment: Slice a list containing another list, mutate the shared child and then replace an outer element; predict both originals and copies.">
         <li class="trace-stage"><span>01 · CHOOSE</span><details class="trace-explanation" open><summary>Select a sequence for its operations</summary><p>Lists are mutable, tuples are immutable containers and range represents an arithmetic sequence compactly.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ACCESS</span><details class="trace-explanation"><summary>Index, slice or unpack</summary><p>Bounds, slice steps and unpacking arity determine the values or exceptions produced.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SHARE</span><details class="trace-explanation"><summary>Track references across copies</summary><p>A list slice creates a shallow outer copy; nested mutable objects remain shared. Tuple immutability does not freeze its children.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><details class="trace-explanation"><summary>Account for the operation&#039;s cost</summary><p>Copying a list slice costs space and time proportional to its result; constructing a range does not materialize every element.</p></details></li>
       </ol>
@@ -121,40 +166,15 @@ print(shallow[1])  # [70]</code></pre>
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Lists">
-        <summary>Lists</summary>
-        <p class="concept-definition">A list is a mutable sequence commonly implemented by CPython as a resizable array of object references. Appending is usually cheap, while front insertion shifts existing references.</p>
-      </details><details class="concept-card" data-subtopic="tuples">
-        <summary>tuples</summary>
-        <p class="concept-definition">A tuple is an immutable sequence of object references. The tuple cannot replace its direct references, though a referenced mutable object can still change.</p>
-      </details><details class="concept-card" data-subtopic="ranges">
-        <summary>ranges</summary>
-        <p class="concept-definition">range represents an integer progression compactly rather than allocating every element eagerly.</p>
-      </details><details class="concept-card" data-subtopic="slicing">
-        <summary>slicing</summary>
-        <p class="concept-definition">Slicing selects a range using start, stop, and step. For built-in sequences it normally creates a new outer container, not a recursive copy of nested values.</p>
-      </details><details class="concept-card" data-subtopic="unpacking">
-        <summary>unpacking</summary>
-        <p class="concept-definition">Unpacking assigns or passes elements into separate positions, with arity and starred-capture rules.</p>
-      </details><details class="concept-card" data-subtopic="copying">
-        <summary>copying</summary>
-        <p class="concept-definition">A shallow copy creates a new outer object while retaining references to nested objects. A deep copy recursively recreates much of an object graph and needs explicit semantic justification.</p>
-      </details><details class="concept-card" data-subtopic="sequence costs">
-        <summary>sequence costs</summary>
-        <p class="concept-definition">Sequence costs depend on representation: list append is amortized constant time, while insertion near the front shifts elements.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Benchmark append, front insertion, slicing, and deque alternatives while fixing a nested shallow-copy bug.</p>
     <p class="lab-scope">This example uses only the Python standard library. Predict whether each assertion will pass before running it. It checks the behavior described here; it does not measure performance.</p>
 
@@ -211,8 +231,10 @@ assert queue.popleft() == &quot;a&quot;</code></pre>
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>A report changes its source</h3><p>A shallow copy still shares nested legs. Copy the mutable part that the calculation owns, or avoid mutating source data. Verify both source and result after the calculation.</p></article><article><h3>Repeated rows share storage</h3><p>[[0] * 3] * 3 repeats references to one row. Changing one cell appears in every row. [[0] * 3 for _ in range(3)] creates a separate row each time.</p></article><article><h3>Copying becomes the bottleneck</h3><p>Repeated slices in a loop allocate new lists. Pass index bounds when the algorithm does not need independent storage; do not change ownership semantics merely to remove allocations.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p>Consider rows = [[0]] * 2. Then execute rows[0][0] = 7.</p></div>
@@ -280,10 +302,16 @@ assert queue.popleft() == &quot;a&quot;</code></pre>
       </details>
     </article>
     <p><a href="https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range" target="_blank" rel="noreferrer">Review the lesson source: Python: sequence types and operations</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -297,23 +325,23 @@ assert queue.popleft() == &quot;a&quot;</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range" target="_blank" rel="noreferrer">Python: sequence types and operations ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/python-deep-dive-map.html" target="_blank">Python coverage map ↗</a>
-    
-    
-    
-    
-    
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

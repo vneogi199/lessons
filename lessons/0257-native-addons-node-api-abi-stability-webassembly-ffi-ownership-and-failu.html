@@ -46,6 +46,56 @@
     <h1>Native addons, Node-API, ABI stability, WebAssembly, FFI, ownership, and failure boundaries</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Native addons">
+        <summary>Native addons</summary>
+        <p class="concept-definition">A native addon loads compiled code into the Node process, gaining performance or system access while adding memory-safety, ABI, blocking, and crash risk.</p>
+      </details><details open class="concept-card" data-subtopic="Node-API">
+        <summary>Node-API</summary>
+        <p class="concept-definition">Node-API is an ABI-stable C interface for addons that avoids direct dependency on changing V8 APIs across supported Node versions.</p>
+      </details><details open class="concept-card" data-subtopic="ABI stability">
+        <summary>ABI stability</summary>
+        <p class="concept-definition">ABI stability concerns binary compatibility across runtime versions, distinct from source-level API compatibility.</p>
+      </details><details open class="concept-card" data-subtopic="WebAssembly">
+        <summary>WebAssembly</summary>
+        <p class="concept-definition">WebAssembly executes validated portable bytecode in a managed instance with explicit imports and linear memory, but host calls and resource limits still require design.</p>
+      </details><details open class="concept-card" data-subtopic="FFI">
+        <summary>FFI</summary>
+        <p class="concept-definition">A foreign-function interface calls native code with explicit data layout, lifetime, and failure-boundary obligations.</p>
+      </details><details open class="concept-card" data-subtopic="ownership">
+        <summary>ownership</summary>
+        <p class="concept-definition">Ownership assigns responsibility for creating, changing, and releasing state or resources. Clear ownership explains who closes a connection or resolves a conflicting update.</p>
+      </details><details open class="concept-card" data-subtopic="failure boundaries">
+        <summary>failure boundaries</summary>
+        <p class="concept-definition">Failure boundaries determine whether a fault affects one operation, worker, process, or the entire service.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Native code changes the service&#039;s memory, deployment and failure boundaries. Node-API supplies binary compatibility across supported runtime versions, but not universal OS portability or memory safety. Synchronous native or WebAssembly work still blocks its calling thread. Define data conversion, ownership and resource limits at the boundary. The separate C and JavaScript sketches are incomplete examples, not a compiled addon.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0257" data-bespoke-example="0257" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Separate a native-interface sketch from an implemented addition</figcaption>
 <p>The Node-API Add body contains comments only. The WebAssembly example expects an exported add function.</p>
 <div class="foundation-grid"><div>Node-API sketch<br>Validation and conversion still required<br>No completed Add implementation</div><div>WebAssembly call<br>Inputs: 20 and 22<br>Expected result: 42</div></div>
-<details><summary>Does the shown C function already implement safe addition?</summary><p>No. It is an outline. Argument checks, computation, result creation and error handling remain to be written.</p></details>
-<details><summary>Does moving CPU work into native code automatically stop it blocking the main thread?</summary><p>No. Long synchronous native work can still block it. Choose an appropriate async or worker boundary.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Native code changes the service&#039;s memory, deployment and failure boundaries. Node-API supplies binary compatibility across supported runtime versions, but not universal OS portability or memory safety. Synchronous native or WebAssembly work still blocks its calling thread. Define data conversion, ownership and resource limits at the boundary. The separate C and JavaScript sketches are incomplete examples, not a compiled addon.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does the shown C function already implement safe addition?</summary><p>No. It is an outline. Argument checks, computation, result creation and error handling remain to be written.</p></details>
+<details open><summary>Does moving CPU work into native code automatically stop it blocking the main thread?</summary><p>No. Long synchronous native work can still block it. Choose an appropriate async or worker boundary.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an event-loop operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-parallel" aria-label="Mechanism trace: Main thread packages CPU work then Choose where computation runs then Message, value, or failure crosses back then Bounded capacity handles the next item. Experiment: Compare inline CPU work with one reused worker while measuring transfer and loop delay separately.">
         <li class="trace-stage"><span>01 · SUBMIT</span><details class="trace-explanation" open><summary>Main thread packages CPU work</summary><p>Input size, clone, transfer, or shared memory defines handoff cost.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · EXECUTE</span><details class="trace-explanation"><summary>Choose where computation runs</summary><p>A worker can move CPU work off the main loop; synchronous native or WebAssembly calls still block their calling thread.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RETURN</span><details class="trace-explanation"><summary>Message, value, or failure crosses back</summary><p>Serialization, ownership, ABI, and cancellation shape the result.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · REUSE</span><details class="trace-explanation"><summary>Bounded capacity handles the next item</summary><p>Worker lifetime, queue depth, crashes, and responsiveness remain observable.</p></details></li>
       </ol>
@@ -78,40 +123,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Native addons">
-        <summary>Native addons</summary>
-        <p class="concept-definition">A native addon loads compiled code into the Node process, gaining performance or system access while adding memory-safety, ABI, blocking, and crash risk.</p>
-      </details><details class="concept-card" data-subtopic="Node-API">
-        <summary>Node-API</summary>
-        <p class="concept-definition">Node-API is an ABI-stable C interface for addons that avoids direct dependency on changing V8 APIs across supported Node versions.</p>
-      </details><details class="concept-card" data-subtopic="ABI stability">
-        <summary>ABI stability</summary>
-        <p class="concept-definition">ABI stability concerns binary compatibility across runtime versions, distinct from source-level API compatibility.</p>
-      </details><details class="concept-card" data-subtopic="WebAssembly">
-        <summary>WebAssembly</summary>
-        <p class="concept-definition">WebAssembly executes validated portable bytecode in a managed instance with explicit imports and linear memory, but host calls and resource limits still require design.</p>
-      </details><details class="concept-card" data-subtopic="FFI">
-        <summary>FFI</summary>
-        <p class="concept-definition">A foreign-function interface calls native code with explicit data layout, lifetime, and failure-boundary obligations.</p>
-      </details><details class="concept-card" data-subtopic="ownership">
-        <summary>ownership</summary>
-        <p class="concept-definition">Ownership assigns responsibility for creating, changing, and releasing state or resources. Clear ownership explains who closes a connection or resolves a conflicting update.</p>
-      </details><details class="concept-card" data-subtopic="failure boundaries">
-        <summary>failure boundaries</summary>
-        <p class="concept-definition">Failure boundaries determine whether a fault affects one operation, worker, process, or the entire service.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Compare a WebAssembly function and a Node-API boundary and document memory and error ownership.</p>
     <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
@@ -142,8 +162,10 @@ console.assert(result === 42);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Separate a native-interface sketch from an implemented addition</p>
@@ -215,10 +237,16 @@ console.assert(result === 42);
       </details>
     </article>
     <p><a href="https://nodejs.org/api/n-api.html" target="_blank" rel="noreferrer">Review the lesson source: Node-API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -232,23 +260,23 @@ console.assert(result === 42);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/api/n-api.html" target="_blank" rel="noreferrer">Node-API documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

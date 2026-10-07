@@ -46,23 +46,65 @@
     <h1>Asyncio event loop, coroutines, awaitables, tasks, futures, and cooperative scheduling</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>One person can start a kettle and do another task while the water heats. Similarly, an async task can give up its turn while waiting for I/O, letting the event loop run another task.</p><p>An await must actually suspend for other work to get a turn. A long CPU loop or blocking call inside an async function can hold up the event-loop thread.</p><details><summary>Does writing async before a function make its CPU work run in parallel?</summary><p>No. Async scheduling alone does not provide CPU parallelism.</p></details></section>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
 
-  <figure class="card mechanism-map" data-lesson-map="0287" data-bespoke-example="0287" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Suspend each task while its timer waits</figcaption>
-<p>The program creates five fetch tasks, each of which awaits asyncio.sleep.</p>
-<div class="foundation-grid"><div>Task starts<br>Record start time</div><div>Await sleep<br>Suspend this task<br>Loop can run other tasks</div><div>Gather result<br>item-0 through item-4<br>Input task order</div></div>
-<details><summary>Does this create five Python threads?</summary><p>No. These are cooperatively scheduled tasks on the event loop.</p></details>
-<details><summary>What changes if fetch uses time.sleep?</summary><p>It blocks the loop's thread during the sleep, preventing the intended overlap of other task progress.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Asyncio event loop">
+        <summary>Asyncio event loop</summary>
+        <p class="concept-definition">An event loop waits for I/O readiness and timers, then resumes ready callbacks and tasks on its thread. Cooperative code must suspend promptly at await points.</p>
+      </details><details open class="concept-card" data-subtopic="coroutines">
+        <summary>coroutines</summary>
+        <p class="concept-definition">Calling an async function produces a coroutine object. Its body runs only when an event loop or another coroutine drives it by awaiting or scheduling it.</p>
+      </details><details open class="concept-card" data-subtopic="awaitables">
+        <summary>awaitables</summary>
+        <p class="concept-definition">Awaitables support awaiting eventual completion; creating a coroutine does not by itself schedule it to run.</p>
+      </details><details open class="concept-card" data-subtopic="tasks">
+        <summary>tasks</summary>
+        <p class="concept-definition">A Task schedules one coroutine on an event loop and stores its eventual result, exception, or cancellation state.</p>
+      </details><details open class="concept-card" data-subtopic="futures">
+        <summary>futures</summary>
+        <p class="concept-definition">A Future is a low-level placeholder for a result that will arrive later. Tasks are specialized futures that drive coroutine execution.</p>
+      </details><details open class="concept-card" data-subtopic="cooperative scheduling">
+        <summary>cooperative scheduling</summary>
+        <p class="concept-definition">Cooperative scheduling switches tasks at suspension points, so blocking or CPU-heavy work can stall unrelated async tasks.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>Calling an async function creates a coroutine. Scheduling it as a task gives the event loop responsibility for driving it. When an await suspends, the loop can run other ready work while waiting for a timer or I/O readiness. It later resumes the task and stores its result or exception. A blocking call or long CPU calculation on the loop prevents that cooperation, even inside an async function.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>One person can start a kettle and do another task while the water heats. Similarly, an async task can give up its turn while waiting for I/O, letting the event loop run another task.</p><p>An await must actually suspend for other work to get a turn. A long CPU loop or blocking call inside an async function can hold up the event-loop thread.</p><details open><summary>Does writing async before a function make its CPU work run in parallel?</summary><p>No. Async scheduling alone does not provide CPU parallelism.</p></details></section>
+
+  <figure class="card mechanism-map" data-lesson-map="0287" data-bespoke-example="0287" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Suspend each task while its timer waits</figcaption>
+<p>The program creates five fetch tasks, each of which awaits asyncio.sleep.</p>
+<div class="foundation-grid"><div>Task starts<br>Record start time</div><div>Await sleep<br>Suspend this task<br>Loop can run other tasks</div><div>Gather result<br>item-0 through item-4<br>Input task order</div></div>
+<details open><summary>Does this create five Python threads?</summary><p>No. These are cooperatively scheduled tasks on the event loop.</p></details>
+<details open><summary>What changes if fetch uses time.sleep?</summary><p>It blocks the loop's thread during the sleep, preventing the intended overlap of other task progress.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a concurrent task</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="python-concurrency" aria-label="Mechanism trace: A callable or coroutine is created then Loop, thread, or process owns it then Work waits or consumes CPU then Result, error, or cancellation returns. Experiment: Run the workload once normally and once with blocking, cancellation, or worker failure.">
         <li class="trace-stage"><span>01 · WORK</span><details class="trace-explanation" open><summary>A callable or coroutine is created</summary><p>Its wait pattern and CPU cost determine a boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Loop, thread, or process owns it</summary><p>The scheduler decides when execution can progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><details class="trace-explanation"><summary>Work waits or consumes CPU</summary><p>Cancellation and synchronization shape interleaving.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><details class="trace-explanation"><summary>Result, error, or cancellation returns</summary><p>The owner waits for cleanup before continuing.</p></details></li>
       </ol>
@@ -74,37 +116,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Asyncio event loop">
-        <summary>Asyncio event loop</summary>
-        <p class="concept-definition">An event loop waits for I/O readiness and timers, then resumes ready callbacks and tasks on its thread. Cooperative code must suspend promptly at await points.</p>
-      </details><details class="concept-card" data-subtopic="coroutines">
-        <summary>coroutines</summary>
-        <p class="concept-definition">Calling an async function produces a coroutine object. Its body runs only when an event loop or another coroutine drives it by awaiting or scheduling it.</p>
-      </details><details class="concept-card" data-subtopic="awaitables">
-        <summary>awaitables</summary>
-        <p class="concept-definition">Awaitables support awaiting eventual completion; creating a coroutine does not by itself schedule it to run.</p>
-      </details><details class="concept-card" data-subtopic="tasks">
-        <summary>tasks</summary>
-        <p class="concept-definition">A Task schedules one coroutine on an event loop and stores its eventual result, exception, or cancellation state.</p>
-      </details><details class="concept-card" data-subtopic="futures">
-        <summary>futures</summary>
-        <p class="concept-definition">A Future is a low-level placeholder for a result that will arrive later. Tasks are specialized futures that drive coroutine execution.</p>
-      </details><details class="concept-card" data-subtopic="cooperative scheduling">
-        <summary>cooperative scheduling</summary>
-        <p class="concept-definition">Cooperative scheduling switches tasks at suspension points, so blocking or CPU-heavy work can stall unrelated async tasks.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build an instrumented concurrent fetch simulator and prove that one blocking call stalls every task on the loop.</p>
     <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
@@ -136,8 +156,10 @@ asyncio.run(main())
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Suspend each task while its timer waits</p>
@@ -209,10 +231,16 @@ asyncio.run(main())
       </details>
     </article>
     <p><a href="https://docs.python.org/3/library/asyncio.html" target="_blank" rel="noreferrer">Review the lesson source: Python asyncio reference</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -226,23 +254,23 @@ asyncio.run(main())
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/library/asyncio.html" target="_blank" rel="noreferrer">Python asyncio reference ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/python-deep-dive-map.html" target="_blank">Python coverage map ↗</a>
-    
-    
-    
-    
-    
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

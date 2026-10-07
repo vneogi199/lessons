@@ -46,23 +46,68 @@
     <h1>Planner statistics, cardinality estimation, selectivity, histograms, MCVs, correlation, and extended statistics</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Planner statistics">
+        <summary>Planner statistics</summary>
+        <p class="concept-definition">Planner statistics are sampled summaries of value distribution and relationships. The optimizer uses them to estimate rows and compare candidate plans.</p>
+      </details><details open class="concept-card" data-subtopic="cardinality estimation">
+        <summary>cardinality estimation</summary>
+        <p class="concept-definition">Cardinality estimation predicts row counts that drive plan cost comparisons.</p>
+      </details><details open class="concept-card" data-subtopic="selectivity">
+        <summary>selectivity</summary>
+        <p class="concept-definition">Selectivity estimates the fraction of rows satisfying a predicate.</p>
+      </details><details open class="concept-card" data-subtopic="histograms">
+        <summary>histograms</summary>
+        <p class="concept-definition">Histograms summarize value distributions for selectivity estimates without retaining every value.</p>
+      </details><details open class="concept-card" data-subtopic="MCVs">
+        <summary>MCVs</summary>
+        <p class="concept-definition">Most-common-value statistics record frequent values and frequencies that uniform estimates would misrepresent.</p>
+      </details><details open class="concept-card" data-subtopic="correlation">
+        <summary>correlation</summary>
+        <p class="concept-definition">Planner correlation statistics describe how column order relates to physical row order, affecting access-cost estimates.</p>
+      </details><details open class="concept-card" data-subtopic="extended statistics">
+        <summary>extended statistics</summary>
+        <p class="concept-definition">Extended statistics capture selected relationships among columns that independent estimates can miss.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>The planner estimates row counts from sampled statistics. Skew and related columns can make an independence assumption inaccurate, affecting scans and joins farther up the plan. Extended statistics describe supported relationships within a table, not every join correlation. A higher target costs more sampling and storage and may not help. Compare estimates with actual rows under a consistent schema and workload.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0365" data-bespoke-example="0365" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Teach the planner that tenant and state may be related</figcaption><p>Practice fixture: one tenant owns mostly ready jobs while another owns mostly done jobs.</p><div class="foundation-grid"><div>Single-column view<br>Overall tenant frequencies<br>Overall state frequencies</div><div>Joint information<br>Tenant/state combinations<br>Dependencies and common values</div><div>ANALYZE<br>Refresh collected statistics</div></div><details><summary>Why can independent estimates misjudge the combined filter?</summary><p>Knowing the tenant changes how likely a state is. Multiplying unrelated overall frequencies can miss that relationship.</p></details><details><summary>Does creating statistics rewrite the table's business data?</summary><p>No. It provides planning information. Verify estimate quality against observed rows in representative plans.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>The planner estimates row counts from sampled statistics. Skew and related columns can make an independence assumption inaccurate, affecting scans and joins farther up the plan. Extended statistics describe supported relationships within a table, not every join correlation. A higher target costs more sampling and storage and may not help. Compare estimates with actual rows under a consistent schema and workload.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0365" data-bespoke-example="0365" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Teach the planner that tenant and state may be related</figcaption><p>Practice fixture: one tenant owns mostly ready jobs while another owns mostly done jobs.</p><div class="foundation-grid"><div>Single-column view<br>Overall tenant frequencies<br>Overall state frequencies</div><div>Joint information<br>Tenant/state combinations<br>Dependencies and common values</div><div>ANALYZE<br>Refresh collected statistics</div></div><details open><summary>Why can independent estimates misjudge the combined filter?</summary><p>Knowing the tenant changes how likely a state is. Multiplying unrelated overall frequencies can miss that relationship.</p></details><details open><summary>Does creating statistics rewrite the table's business data?</summary><p>No. It provides planning information. Verify estimate quality against observed rows in representative plans.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a database query</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="database-query" aria-label="Mechanism trace: Application submits a query then Optimizer chooses operations then Engine reads and transforms rows then Rows and metrics return. Experiment: Change one index or predicate and compare estimated versus actual work.">
         <li class="trace-stage"><span>01 · SQL</span><details class="trace-explanation" open><summary>Application submits a query</summary><p>Parameters and transaction context define the request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><details class="trace-explanation"><summary>Optimizer chooses operations</summary><p>Statistics and indexes shape scans, joins, and order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Engine reads and transforms rows</summary><p>Buffers, locks, and I/O determine actual cost.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><details class="trace-explanation"><summary>Rows and metrics return</summary><p>The plan and timing reveal whether the model was correct.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Planner statistics">
-        <summary>Planner statistics</summary>
-        <p class="concept-definition">Planner statistics are sampled summaries of value distribution and relationships. The optimizer uses them to estimate rows and compare candidate plans.</p>
-      </details><details class="concept-card" data-subtopic="cardinality estimation">
-        <summary>cardinality estimation</summary>
-        <p class="concept-definition">Cardinality estimation predicts row counts that drive plan cost comparisons.</p>
-      </details><details class="concept-card" data-subtopic="selectivity">
-        <summary>selectivity</summary>
-        <p class="concept-definition">Selectivity estimates the fraction of rows satisfying a predicate.</p>
-      </details><details class="concept-card" data-subtopic="histograms">
-        <summary>histograms</summary>
-        <p class="concept-definition">Histograms summarize value distributions for selectivity estimates without retaining every value.</p>
-      </details><details class="concept-card" data-subtopic="MCVs">
-        <summary>MCVs</summary>
-        <p class="concept-definition">Most-common-value statistics record frequent values and frequencies that uniform estimates would misrepresent.</p>
-      </details><details class="concept-card" data-subtopic="correlation">
-        <summary>correlation</summary>
-        <p class="concept-definition">Planner correlation statistics describe how column order relates to physical row order, affecting access-cost estimates.</p>
-      </details><details class="concept-card" data-subtopic="extended statistics">
-        <summary>extended statistics</summary>
-        <p class="concept-definition">Extended statistics capture selected relationships among columns that independent estimates can miss.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Create skew and correlation, observe a misestimate, improve statistics, and verify the changed plan and runtime.</p>
     <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
@@ -136,8 +156,10 @@ WHERE schemaname = current_schema() AND tablename = &#039;jobs&#039;;</code></pr
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Teach the planner that tenant and state may be related</p><p>Practice fixture: one tenant owns mostly ready jobs while another owns mostly done jobs.</p><div class="foundation-grid"><div>Single-column view<br>Overall tenant frequencies<br>Overall state frequencies</div><div>Joint information<br>Tenant/state combinations<br>Dependencies and common values</div><div>ANALYZE<br>Refresh collected statistics</div></div></div>
@@ -205,10 +227,16 @@ WHERE schemaname = current_schema() AND tablename = &#039;jobs&#039;;</code></pr
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/performance-tips.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL query planning documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -222,23 +250,23 @@ WHERE schemaname = current_schema() AND tablename = &#039;jobs&#039;;</code></pr
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/performance-tips.html" target="_blank" rel="noreferrer">PostgreSQL query planning documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

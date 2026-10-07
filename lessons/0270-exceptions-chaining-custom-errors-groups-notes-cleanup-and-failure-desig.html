@@ -46,23 +46,68 @@
     <h1>Exceptions, chaining, custom errors, groups, notes, cleanup, and failure design</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You ask for a file, but it is missing. The operation cannot return the file contents, so it raises an exception. A caller can catch that specific failure and decide what to do.</p><p>Catching every exception and returning an empty value can hide a bug. Keep the original cause when translating an error, and use cleanup code for resources that must be released on failure as well as success.</p><details><summary>Is an empty result always a safe replacement for an error?</summary><p>No. The caller may mistake failure for a successful empty result.</p></details></section>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
 
-  <figure class="card mechanism-map" data-lesson-map="0270" data-bespoke-example="0270" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Split grouped failures by their types</figcaption>
-<p>The group contains a profile TimeoutError and a malformed-project ValueError.</p>
-<div class="foundation-grid"><div>ExceptionGroup<br>Two different failures</div><div>Timeout subgroup<br>Handled by except* TimeoutError</div><div>Invalid-data subgroup<br>Handled by except* ValueError</div></div>
-<details><summary>Does handling the timeout mean the malformed project should be retried?</summary><p>No. Each failure needs an operation-specific policy. A type-based subgroup separates handling; it does not decide retry safety.</p></details>
-<details><summary>What does raising ProjectUnavailable from RepositoryError preserve?</summary><p>It records the repository exception as the cause while adding the service-level project message.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Exceptions">
+        <summary>Exceptions</summary>
+        <p class="concept-definition">An exception is an object that transfers control up the call stack until a matching handler is found. Catch only where code can add context, recover, translate, or clean up.</p>
+      </details><details open class="concept-card" data-subtopic="chaining">
+        <summary>chaining</summary>
+        <p class="concept-definition">Exception chaining preserves the relationship between a low-level cause and a higher-level error. raise new_error from cause makes that relationship explicit.</p>
+      </details><details open class="concept-card" data-subtopic="custom errors">
+        <summary>custom errors</summary>
+        <p class="concept-definition">Custom exception classes identify domain-specific failures while preserving normal exception handling and chaining.</p>
+      </details><details open class="concept-card" data-subtopic="groups">
+        <summary>groups</summary>
+        <p class="concept-definition">Exception groups represent multiple failures together, with except* handling matching subsets.</p>
+      </details><details open class="concept-card" data-subtopic="notes">
+        <summary>notes</summary>
+        <p class="concept-definition">Exception notes attach explanatory context without replacing the original exception type or traceback.</p>
+      </details><details open class="concept-card" data-subtopic="cleanup">
+        <summary>cleanup</summary>
+        <p class="concept-definition">Cleanup releases owned resources on success, failure, and cancellation. Ownership must be clear for cleanup to be reliable.</p>
+      </details><details open class="concept-card" data-subtopic="failure design">
+        <summary>failure design</summary>
+        <p class="concept-definition">Failure design defines expected exceptions, recovery ownership, cleanup, and safe external error information.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>An exception leaves the current operation and searches for a matching handler. Cleanup belongs on paths that run whether the operation succeeds or fails. When translating an error, preserve its cause so the failure can still be diagnosed. Exception groups hold several failures; except* handles matching subgroups. A timeout reports a missing result, so retry decisions must also consider whether an external effect already happened.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>You ask for a file, but it is missing. The operation cannot return the file contents, so it raises an exception. A caller can catch that specific failure and decide what to do.</p><p>Catching every exception and returning an empty value can hide a bug. Keep the original cause when translating an error, and use cleanup code for resources that must be released on failure as well as success.</p><details open><summary>Is an empty result always a safe replacement for an error?</summary><p>No. The caller may mistake failure for a successful empty result.</p></details></section>
+
+  <figure class="card mechanism-map" data-lesson-map="0270" data-bespoke-example="0270" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Split grouped failures by their types</figcaption>
+<p>The group contains a profile TimeoutError and a malformed-project ValueError.</p>
+<div class="foundation-grid"><div>ExceptionGroup<br>Two different failures</div><div>Timeout subgroup<br>Handled by except* TimeoutError</div><div>Invalid-data subgroup<br>Handled by except* ValueError</div></div>
+<details open><summary>Does handling the timeout mean the malformed project should be retried?</summary><p>No. Each failure needs an operation-specific policy. A type-based subgroup separates handling; it does not decide retry safety.</p></details>
+<details open><summary>What does raising ProjectUnavailable from RepositoryError preserve?</summary><p>It records the repository exception as the cause while adding the service-level project message.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a Python operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="python-execution" aria-label="Mechanism trace: Python syntax enters a code block then A runtime namespace is created then Objects perform the operation then State, value, or exception emerges. Experiment: Change one binding, type, or mutable object and predict the resulting behavior.">
         <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Python syntax enters a code block</summary><p>The compiler determines names and produces executable code.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FRAME</span><details class="trace-explanation"><summary>A runtime namespace is created</summary><p>Names bind to objects while instructions execute.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · PROTOCOL</span><details class="trace-explanation"><summary>Objects perform the operation</summary><p>Type-defined behavior controls conversion and dispatch.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><details class="trace-explanation"><summary>State, value, or exception emerges</summary><p>Tests and inspection make the behavior observable.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Exceptions">
-        <summary>Exceptions</summary>
-        <p class="concept-definition">An exception is an object that transfers control up the call stack until a matching handler is found. Catch only where code can add context, recover, translate, or clean up.</p>
-      </details><details class="concept-card" data-subtopic="chaining">
-        <summary>chaining</summary>
-        <p class="concept-definition">Exception chaining preserves the relationship between a low-level cause and a higher-level error. raise new_error from cause makes that relationship explicit.</p>
-      </details><details class="concept-card" data-subtopic="custom errors">
-        <summary>custom errors</summary>
-        <p class="concept-definition">Custom exception classes identify domain-specific failures while preserving normal exception handling and chaining.</p>
-      </details><details class="concept-card" data-subtopic="groups">
-        <summary>groups</summary>
-        <p class="concept-definition">Exception groups represent multiple failures together, with except* handling matching subsets.</p>
-      </details><details class="concept-card" data-subtopic="notes">
-        <summary>notes</summary>
-        <p class="concept-definition">Exception notes attach explanatory context without replacing the original exception type or traceback.</p>
-      </details><details class="concept-card" data-subtopic="cleanup">
-        <summary>cleanup</summary>
-        <p class="concept-definition">Cleanup releases owned resources on success, failure, and cancellation. Ownership must be clear for cleanup to be reliable.</p>
-      </details><details class="concept-card" data-subtopic="failure design">
-        <summary>failure design</summary>
-        <p class="concept-definition">Failure design defines expected exceptions, recovery ownership, cleanup, and safe external error information.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Design a domain error hierarchy, preserve root causes, handle concurrent failures, and expose safe error messages.</p>
     <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
@@ -146,8 +166,10 @@ except* ValueError as invalid:
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Split grouped failures by their types</p>
@@ -219,10 +241,16 @@ except* ValueError as invalid:
       </details>
     </article>
     <p><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: Python Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -236,23 +264,23 @@ except* ValueError as invalid:
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/tutorial/" target="_blank" rel="noreferrer">Python Tutorial ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/python-deep-dive-map.html" target="_blank">Python coverage map ↗</a>
-    
-    
-    
-    
-    
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

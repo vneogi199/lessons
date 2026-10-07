@@ -46,23 +46,62 @@
     <h1>Callable dependencies, classes, factories, router dependencies, and overrides</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Callable dependencies">
+        <summary>Callable dependencies</summary>
+        <p class="concept-definition">A callable dependency is a function or object that FastAPI calls to produce a value for another dependency or endpoint.</p>
+      </details><details open class="concept-card" data-subtopic="classes">
+        <summary>classes</summary>
+        <p class="concept-definition">A dependency class stores configuration or state and uses its constructor or call method as part of dependency resolution.</p>
+      </details><details open class="concept-card" data-subtopic="factories">
+        <summary>factories</summary>
+        <p class="concept-definition">A dependency factory creates and returns a configured dependency callable.</p>
+      </details><details open class="concept-card" data-subtopic="router dependencies">
+        <summary>router dependencies</summary>
+        <p class="concept-definition">Router dependencies apply shared dependency checks or side effects to every operation included in a router.</p>
+      </details><details open class="concept-card" data-subtopic="overrides">
+        <summary>overrides</summary>
+        <p class="concept-definition">A dependency override replaces a registered dependency with another callable, usually for tests or controlled application composition.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A configured callable can carry dependency policy, such as a required scope, without storing mutable request identity. Decorator dependencies run checks even when the endpoint does not receive their return value. Test overrides use the original callable as a key. Creating an equivalent-looking callable may create a different key, and overrides must be restored afterward. Choose placement so shared behavior remains visible to maintainers.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
     <p><a href="../reference/senior-interview-practice.html#fastapi">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0317" data-bespoke-example="0317" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reuse a configured write-scope check</figcaption><p>can_write stores the required scope projects:write.</p><div class="foundation-grid"><div>Principal has projects:read only<br>Missing write scope<br>403</div><div>Principal has projects:write<br>Return principal<br>Continue dependency resolution</div></div><details><summary>Does creating RequiresScope authenticate anyone?</summary><p>No. It configures a callable. PrincipalDep supplies the authenticated principal when the dependency runs.</p></details><details><summary>Should a fake-principal override remain after a test?</summary><p>No. Restore overrides so later tests do not accidentally bypass real dependencies.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A configured callable can carry dependency policy, such as a required scope, without storing mutable request identity. Decorator dependencies run checks even when the endpoint does not receive their return value. Test overrides use the original callable as a key. Creating an equivalent-looking callable may create a different key, and overrides must be restored afterward. Choose placement so shared behavior remains visible to maintainers.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0317" data-bespoke-example="0317" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reuse a configured write-scope check</figcaption><p>can_write stores the required scope projects:write.</p><div class="foundation-grid"><div>Principal has projects:read only<br>Missing write scope<br>403</div><div>Principal has projects:write<br>Return principal<br>Continue dependency resolution</div></div><details open><summary>Does creating RequiresScope authenticate anyone?</summary><p>No. It configures a callable. PrincipalDep supplies the authenticated principal when the dependency runs.</p></details><details open><summary>Should a fake-principal override remain after a test?</summary><p>No. Restore overrides so later tests do not accidentally bypass real dependencies.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a dependency lifetime</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="fastapi-dependencies" aria-label="Mechanism trace: Endpoint declares requirements then FastAPI solves prerequisites then Values are acquired and cached then Yield resources close in reverse. Experiment: Nest two yield dependencies, raise inside the endpoint, and predict cleanup order.">
         <li class="trace-stage"><span>01 · SIGNATURE</span><details class="trace-explanation" open><summary>Endpoint declares requirements</summary><p>Annotated parameters identify dependency callables.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · GRAPH</span><details class="trace-explanation"><summary>FastAPI solves prerequisites</summary><p>Sub-dependencies are ordered before their consumers.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · REQUEST SCOPE</span><details class="trace-explanation"><summary>Values are acquired and cached</summary><p>Each node normally runs once for this request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · UNWIND</span><details class="trace-explanation"><summary>Yield resources close in reverse</summary><p>Cleanup timing depends on dependency scope: function scope closes before response sending; request scope closes afterward.</p></details></li>
       </ol>
@@ -74,34 +113,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Callable dependencies">
-        <summary>Callable dependencies</summary>
-        <p class="concept-definition">A callable dependency is a function or object that FastAPI calls to produce a value for another dependency or endpoint.</p>
-      </details><details class="concept-card" data-subtopic="classes">
-        <summary>classes</summary>
-        <p class="concept-definition">A dependency class stores configuration or state and uses its constructor or call method as part of dependency resolution.</p>
-      </details><details class="concept-card" data-subtopic="factories">
-        <summary>factories</summary>
-        <p class="concept-definition">A dependency factory creates and returns a configured dependency callable.</p>
-      </details><details class="concept-card" data-subtopic="router dependencies">
-        <summary>router dependencies</summary>
-        <p class="concept-definition">Router dependencies apply shared dependency checks or side effects to every operation included in a router.</p>
-      </details><details class="concept-card" data-subtopic="overrides">
-        <summary>overrides</summary>
-        <p class="concept-definition">A dependency override replaces a registered dependency with another callable, usually for tests or controlled application composition.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build reusable authorization and feature-flag dependencies at application, router, and operation scopes with isolated overrides.</p>
     <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
@@ -137,8 +157,10 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Reuse a configured write-scope check</p><p>can_write stores the required scope projects:write.</p><div class="foundation-grid"><div>Principal has projects:read only<br>Missing write scope<br>403</div><div>Principal has projects:write<br>Return principal<br>Continue dependency resolution</div></div></div>
@@ -206,10 +228,16 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
       </details>
     </article>
     <p><a href="https://fastapi.tiangolo.com/tutorial/dependencies/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Dependencies guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -223,23 +251,23 @@ async def create(command: ProjectCreate, service: ServiceDep): ...
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://fastapi.tiangolo.com/tutorial/dependencies/" target="_blank" rel="noreferrer">FastAPI Dependencies guide ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/fastapi-deep-dive-map.html" target="_blank">FastAPI coverage map ↗</a>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

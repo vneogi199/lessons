@@ -46,6 +46,56 @@
     <h1>Async typing, Promise, Awaited, async iterables, generators, cancellation, and error channels</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Async typing">
+        <summary>Async typing</summary>
+        <p class="concept-definition">Async typing models eventual and streamed values through Promise, AsyncIterable, and AsyncGenerator contracts. It does not model event-loop scheduling or guarantee cancellation.</p>
+      </details><details open class="concept-card" data-subtopic="Promise">
+        <summary>Promise</summary>
+        <p class="concept-definition">Promise&lt;T&gt; describes eventual fulfillment with T. It does not encode a rejection type, deadline, cancellation, or concurrency limit.</p>
+      </details><details open class="concept-card" data-subtopic="Awaited">
+        <summary>Awaited</summary>
+        <p class="concept-definition">Awaited recursively models how await unwraps promises and thenables and distributes through null or undefined according to the built-in utility definition.</p>
+      </details><details open class="concept-card" data-subtopic="async iterables">
+        <summary>async iterables</summary>
+        <p class="concept-definition">An async iterable supplies values through asynchronously resolved iterator results. Consumers must still handle errors, cleanup, and bounded work.</p>
+      </details><details open class="concept-card" data-subtopic="generators">
+        <summary>generators</summary>
+        <p class="concept-definition">Generator types describe yielded, returned, and received values. Async generators wrap protocol results in asynchronous delivery.</p>
+      </details><details open class="concept-card" data-subtopic="cancellation">
+        <summary>cancellation</summary>
+        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
+      </details><details open class="concept-card" data-subtopic="error channels">
+        <summary>error channels</summary>
+        <p class="concept-definition">Errors can be thrown, rejected, or returned as explicit result variants. Choose a consistent boundary contract and preserve useful causes.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Promise&lt;T&gt; describes the fulfilled value, not the rejection type or the operation&#039;s deadline. Async iterable and generator types describe streamed protocol values without limiting total work. Cancellation still requires cooperation and cleanup. In the pagination exercise, check HTTP errors and malformed pages as well as early consumer exit. Cursor loops, page limits and URL policy need explicit controls before the generator becomes a service component.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0159" data-bespoke-example="0159" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Yield two items, then return the count</figcaption>
 <p>Suppose the parser returns one page with items A and B and no next cursor.</p>
 <div class="foundation-grid"><div>First yield<br>Item A<br>Count: 1</div><div>Second yield<br>Item B<br>Count: 2</div><div>Generator completion<br>Return value: 2<br>No next page</div></div>
-<details><summary>Is the final count a third yielded item?</summary><p>No. The generator return value and yielded values occupy different protocol slots.</p></details>
-<details><summary>What if nextCursor points to another origin?</summary><p>The explicit origin check throws before that next fetch. The generic item type does not enforce this security rule.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Promise&lt;T&gt; describes the fulfilled value, not the rejection type or the operation&#039;s deadline. Async iterable and generator types describe streamed protocol values without limiting total work. Cancellation still requires cooperation and cleanup. In the pagination exercise, check HTTP errors and malformed pages as well as early consumer exit. Cursor loops, page limits and URL policy need explicit controls before the generator becomes a service component.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Is the final count a third yielded item?</summary><p>No. The generator return value and yielded values occupy different protocol slots.</p></details>
+<details open><summary>What if nextCursor points to another origin?</summary><p>The explicit origin check throws before that next fetch. The generic item type does not enforce this security rule.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-integration" aria-label="Mechanism trace: Domain types describe intent then Framework or host values are translated then JavaScript performs the operation then Types and operation agree. Experiment: Inject one malformed input, cancellation, or dependency failure and trace both static and runtime evidence.">
         <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Domain types describe intent</summary><p>Commands, states, results, and ports exclude known-invalid combinations.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ADAPTER</span><details class="trace-explanation"><summary>Framework or host values are translated</summary><p>React, Node, async, storage, and model details stay at boundaries.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · RUNTIME</span><details class="trace-explanation"><summary>JavaScript performs the operation</summary><p>Scheduling, I/O, cancellation, and errors remain real behavior.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><details class="trace-explanation"><summary>Types and operation agree</summary><p>Type tests, runtime tests, telemetry, and failure paths verify the design.</p></details></li>
       </ol>
@@ -78,40 +123,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Async typing">
-        <summary>Async typing</summary>
-        <p class="concept-definition">Async typing models eventual and streamed values through Promise, AsyncIterable, and AsyncGenerator contracts. It does not model event-loop scheduling or guarantee cancellation.</p>
-      </details><details class="concept-card" data-subtopic="Promise">
-        <summary>Promise</summary>
-        <p class="concept-definition">Promise&lt;T&gt; describes eventual fulfillment with T. It does not encode a rejection type, deadline, cancellation, or concurrency limit.</p>
-      </details><details class="concept-card" data-subtopic="Awaited">
-        <summary>Awaited</summary>
-        <p class="concept-definition">Awaited recursively models how await unwraps promises and thenables and distributes through null or undefined according to the built-in utility definition.</p>
-      </details><details class="concept-card" data-subtopic="async iterables">
-        <summary>async iterables</summary>
-        <p class="concept-definition">An async iterable supplies values through asynchronously resolved iterator results. Consumers must still handle errors, cleanup, and bounded work.</p>
-      </details><details class="concept-card" data-subtopic="generators">
-        <summary>generators</summary>
-        <p class="concept-definition">Generator types describe yielded, returned, and received values. Async generators wrap protocol results in asynchronous delivery.</p>
-      </details><details class="concept-card" data-subtopic="cancellation">
-        <summary>cancellation</summary>
-        <p class="concept-definition">Cancellation requests that work stop. Each participating API must cooperate, and cleanup still needs an owner; cancelling a wait may leave an external operation running.</p>
-      </details><details class="concept-card" data-subtopic="error channels">
-        <summary>error channels</summary>
-        <p class="concept-definition">Errors can be thrown, rejected, or returned as explicit result variants. Choose a consistent boundary contract and preserve useful causes.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Type a cancellable paginated async generator and consume it with bounded work and complete cleanup.</p>
 
 <p>Network integration sketch: inject or stub fetch and test non-2xx responses, malformed pages, cancellation between yielded items, consumer break, and cursor loops. Bound total work before production use.</p>
@@ -160,8 +180,10 @@ async function* pages&lt;T&gt;(
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Yield two items, then return the count</p>
@@ -232,10 +254,16 @@ async function* pages&lt;T&gt;(
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript Handbook</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -249,23 +277,23 @@ async function* pages&lt;T&gt;(
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/intro.html" target="_blank" rel="noreferrer">TypeScript Handbook ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

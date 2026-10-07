@@ -46,6 +46,53 @@
     <h1>ASGI scope, receive, send, Uvicorn, Starlette, and request lifecycle</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="ASGI scope">
+        <summary>ASGI scope</summary>
+        <p class="concept-definition">An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</p>
+      </details><details open class="concept-card" data-subtopic="receive">
+        <summary>receive</summary>
+        <p class="concept-definition">receive is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection.</p>
+      </details><details open class="concept-card" data-subtopic="send">
+        <summary>send</summary>
+        <p class="concept-definition">send is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract.</p>
+      </details><details open class="concept-card" data-subtopic="Uvicorn">
+        <summary>Uvicorn</summary>
+        <p class="concept-definition">Uvicorn is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application.</p>
+      </details><details open class="concept-card" data-subtopic="Starlette">
+        <summary>Starlette</summary>
+        <p class="concept-definition">Starlette supplies the ASGI web layer beneath FastAPI: routing, requests, responses, middleware, WebSockets, static files, and test infrastructure.</p>
+      </details><details open class="concept-card" data-subtopic="request lifecycle">
+        <summary>request lifecycle</summary>
+        <p class="concept-definition">The request lifecycle is the ordered path from accepted network data through routing, validation, dependencies, endpoint work, response sending, and cleanup.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>ASGI connects an application to protocol events through scope, receive and send. An HTTP scope belongs to one request, even when its connection serves more requests. Send response-start before body events. The raw example reads one event and ignores the body; it does not implement lifespan or WebSockets. A successful send establishes progress at that boundary, not that the remote client consumed the response.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0304" data-bespoke-example="0304" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Send response headers before the body event</figcaption>
 <p>The HTTP-only ASGI experiment receives one request event before responding.</p>
 <div class="foundation-grid"><div>Receive http.request<br>Continue response path</div><div>Send http.response.start<br>Status 200<br>JSON content type</div><div>Send http.response.body<br>Status-ok JSON bytes</div></div>
-<details><summary>What happens if the received event is http.disconnect?</summary><p>The function returns without sending a response.</p></details>
-<details><summary>Does reading one event parse a complete chunked request body?</summary><p>No. This experiment supplies no body parser or multi-event request-body loop. It also does not implement lifespan or WebSocket handling.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>ASGI connects an application to protocol events through scope, receive and send. An HTTP scope belongs to one request, even when its connection serves more requests. Send response-start before body events. The raw example reads one event and ignores the body; it does not implement lifespan or WebSockets. A successful send establishes progress at that boundary, not that the remote client consumed the response.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>What happens if the received event is http.disconnect?</summary><p>The function returns without sending a response.</p></details>
+<details open><summary>Does reading one event parse a complete chunked request body?</summary><p>No. This experiment supplies no body parser or multi-event request-body loop. It also does not implement lifespan or WebSocket handling.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an HTTP request</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="fastapi-request" aria-label="Mechanism trace: HTTP bytes reach Uvicorn then Events enter the application then Dependencies and business logic run then ASGI send emits wire events. Experiment: Trace one valid request and one failure while recording every ASGI event.">
         <li class="trace-stage"><span>01 · SOCKET</span><details class="trace-explanation" open><summary>HTTP bytes reach Uvicorn</summary><p>The server parses protocol data and creates an ASGI scope.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><details class="trace-explanation"><summary>Events enter the application</summary><p>Middleware wraps receive, routing, and endpoint handling.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><details class="trace-explanation"><summary>Dependencies and business logic run</summary><p>Typed inputs become a return value or exception.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><details class="trace-explanation"><summary>ASGI send emits wire events</summary><p>Status, headers, and body become observable to the client.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="ASGI scope">
-        <summary>ASGI scope</summary>
-        <p class="concept-definition">An ASGI scope is a metadata dictionary whose lifetime depends on the protocol. An HTTP scope covers one request, even on a reused or multiplexed connection; a WebSocket scope lasts for that socket. Middleware must handle changes without leaking state between requests.</p>
-      </details><details class="concept-card" data-subtopic="receive">
-        <summary>receive</summary>
-        <p class="concept-definition">receive is the ASGI callable an application awaits for incoming body, WebSocket, lifespan, or disconnect events. It makes the protocol event-driven instead of hiding the connection.</p>
-      </details><details class="concept-card" data-subtopic="send">
-        <summary>send</summary>
-        <p class="concept-definition">send is the ASGI callable used to emit response-start, response-body, WebSocket, and lifespan events. Correct event order is part of the protocol contract.</p>
-      </details><details class="concept-card" data-subtopic="Uvicorn">
-        <summary>Uvicorn</summary>
-        <p class="concept-definition">Uvicorn is the ASGI server process that owns sockets, parses protocol traffic, creates scopes and events, and calls the FastAPI application.</p>
-      </details><details class="concept-card" data-subtopic="Starlette">
-        <summary>Starlette</summary>
-        <p class="concept-definition">Starlette supplies the ASGI web layer beneath FastAPI: routing, requests, responses, middleware, WebSockets, static files, and test infrastructure.</p>
-      </details><details class="concept-card" data-subtopic="request lifecycle">
-        <summary>request lifecycle</summary>
-        <p class="concept-definition">The request lifecycle is the ordered path from accepted network data through routing, validation, dependencies, endpoint work, response sending, and cleanup.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Write a tiny raw ASGI application and middleware, then compare its event trace with the same request handled by FastAPI.</p>
     <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
@@ -142,8 +162,10 @@ async def app(scope, receive, send):
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Send response headers before the body event</p>
@@ -215,10 +237,16 @@ async def app(scope, receive, send):
       </details>
     </article>
     <p><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI concurrency guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -232,23 +260,23 @@ async def app(scope, receive, send):
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noreferrer">FastAPI concurrency guide ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/fastapi-deep-dive-map.html" target="_blank">FastAPI coverage map ↗</a>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

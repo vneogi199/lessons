@@ -46,6 +46,53 @@
     <h1>Node.js service architecture, dependency direction, concurrency budgets, overload, resilience, and operations</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Node.js service architecture">
+        <summary>Node.js service architecture</summary>
+        <p class="concept-definition">Node service architecture keeps domain policy independent while adapters own HTTP, storage, queues, telemetry, configuration, and process lifecycle.</p>
+      </details><details open class="concept-card" data-subtopic="dependency direction">
+        <summary>dependency direction</summary>
+        <p class="concept-definition">Dependency direction keeps application decisions from unnecessarily depending on transport or vendor details.</p>
+      </details><details open class="concept-card" data-subtopic="concurrency budgets">
+        <summary>concurrency budgets</summary>
+        <p class="concept-definition">A concurrency budget caps in-flight work for each constrained dependency or execution boundary, turning overload into bounded waiting or rejection.</p>
+      </details><details open class="concept-card" data-subtopic="overload">
+        <summary>overload</summary>
+        <p class="concept-definition">Overload occurs when admitted work exceeds sustainable capacity. Queue growth increases latency until memory, timeouts, or dependencies fail unless the service sheds load.</p>
+      </details><details open class="concept-card" data-subtopic="resilience">
+        <summary>resilience</summary>
+        <p class="concept-definition">Resilience preserves or restores useful behavior under failures using bounded work, isolation, recovery, and tested policies.</p>
+      </details><details open class="concept-card" data-subtopic="operations">
+        <summary>operations</summary>
+        <p class="concept-definition">Operations covers running, observing, changing, and recovering a service, with named owners and tested procedures.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A service needs capacity and ownership rules at each constrained boundary. Validation, persistence and total admission remain adapters and policies to supply in this sketch. Pipeline completion cannot undo rows already committed, so decide between partial imports and staged atomic publication. Optional telemetry should preserve the outcome; required audit storage needs an explicit failure contract. Size concurrency from measured capacity rather than an unused worker setting.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0258" data-bespoke-example="0258" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Bound each import resource separately</figcaption>
 <p>The ingestion sketch gives the validation transform a 64 KiB line limit and the persistence sink a concurrency setting of 8.</p>
 <div class="foundation-grid"><div>One line<br>Limit: 64 KiB</div><div>Active persistence work<br>Configured concurrency: 8</div><div>Whole request<br>Total byte bound still required</div><div>Pending work<br>Admission and queue policy still required</div></div>
-<details><summary>Do small individual lines guarantee a small import?</summary><p>No. A request can contain many small lines. The total body needs its own bound.</p></details>
-<details><summary>Does passing concurrency 8 prove the unsupplied sink enforces it?</summary><p>No. Implement and test the adapter contract. This sketch specifies a requested limit, not verified behavior.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A service needs capacity and ownership rules at each constrained boundary. Validation, persistence and total admission remain adapters and policies to supply in this sketch. Pipeline completion cannot undo rows already committed, so decide between partial imports and staged atomic publication. Optional telemetry should preserve the outcome; required audit storage needs an explicit failure contract. Size concurrency from measured capacity rather than an unused worker setting.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Do small individual lines guarantee a small import?</summary><p>No. A request can contain many small lines. The total body needs its own bound.</p></details>
+<details open><summary>Does passing concurrency 8 prove the unsupplied sink enforces it?</summary><p>No. Implement and test the adapter contract. This sketch specifies a requested limit, not verified behavior.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a concurrent task</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-request" aria-label="Mechanism trace: Input reaches the Node process then Handler coordinates the operation then Runtime performs external work then Result returns to JavaScript. Experiment: Trace one operation with async hooks and inject a timeout or shutdown.">
         <li class="trace-stage"><span>01 · EVENT</span><details class="trace-explanation" open><summary>Input reaches the Node process</summary><p>A request, timer, signal, or message creates work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · JAVASCRIPT</span><details class="trace-explanation"><summary>Handler coordinates the operation</summary><p>Promises and callbacks describe continuation.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SYSTEM</span><details class="trace-explanation"><summary>Runtime performs external work</summary><p>Sockets, files, workers, or child processes progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPLETION</span><details class="trace-explanation"><summary>Result returns to JavaScript</summary><p>Response, log, exit state, or error becomes visible.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Node.js service architecture">
-        <summary>Node.js service architecture</summary>
-        <p class="concept-definition">Node service architecture keeps domain policy independent while adapters own HTTP, storage, queues, telemetry, configuration, and process lifecycle.</p>
-      </details><details class="concept-card" data-subtopic="dependency direction">
-        <summary>dependency direction</summary>
-        <p class="concept-definition">Dependency direction keeps application decisions from unnecessarily depending on transport or vendor details.</p>
-      </details><details class="concept-card" data-subtopic="concurrency budgets">
-        <summary>concurrency budgets</summary>
-        <p class="concept-definition">A concurrency budget caps in-flight work for each constrained dependency or execution boundary, turning overload into bounded waiting or rejection.</p>
-      </details><details class="concept-card" data-subtopic="overload">
-        <summary>overload</summary>
-        <p class="concept-definition">Overload occurs when admitted work exceeds sustainable capacity. Queue growth increases latency until memory, timeouts, or dependencies fail unless the service sheds load.</p>
-      </details><details class="concept-card" data-subtopic="resilience">
-        <summary>resilience</summary>
-        <p class="concept-definition">Resilience preserves or restores useful behavior under failures using bounded work, isolation, recovery, and tested policies.</p>
-      </details><details class="concept-card" data-subtopic="operations">
-        <summary>operations</summary>
-        <p class="concept-definition">Operations covers running, observing, changing, and recovering a service, with named owners and tested procedures.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Refactor a service into a small functional core with HTTP, storage, queue, telemetry, and clock adapters.</p>
     <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 <p>Treat createService as an integration sketch. Supply validated stream adapters, identity/tenant checks and a repository; inject a source error and prove that the full pipeline propagates cancellation and cleans up each stage.</p>
@@ -155,8 +175,10 @@ export function createService({ repository, workers, telemetry, now }) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Bound each import resource separately</p>
@@ -228,10 +250,16 @@ export function createService({ repository, workers, telemetry, now }) {
       </details>
     </article>
     <p><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Review the lesson source: Node.js API documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -245,23 +273,23 @@ export function createService({ repository, workers, telemetry, now }) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/api/" target="_blank" rel="noreferrer">Node.js API documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

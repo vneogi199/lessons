@@ -46,23 +46,68 @@
     <h1>Commands, domain events, integration events, transactional outbox, idempotent consumers, eventual consistency, and process managers</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Commands">
+        <summary>Commands</summary>
+        <p class="concept-definition">A command asks an identified owner to perform a state-changing action and can be accepted or rejected.</p>
+      </details><details open class="concept-card" data-subtopic="domain events">
+        <summary>domain events</summary>
+        <p class="concept-definition">A domain event records a business fact that already occurred inside one bounded context.</p>
+      </details><details open class="concept-card" data-subtopic="integration events">
+        <summary>integration events</summary>
+        <p class="concept-definition">An integration event is a stable published contract that informs other contexts about a completed change.</p>
+      </details><details open class="concept-card" data-subtopic="transactional outbox">
+        <summary>transactional outbox</summary>
+        <p class="concept-definition">A transactional outbox stores the business change and an event record in the same local database transaction.</p>
+      </details><details open class="concept-card" data-subtopic="idempotent consumers">
+        <summary>idempotent consumers</summary>
+        <p class="concept-definition">An idempotent consumer prevents repeated delivery from duplicating an effect. Deduplication and a local state change need one atomic boundary; external effects need their own idempotency or reconciliation contract.</p>
+      </details><details open class="concept-card" data-subtopic="eventual consistency">
+        <summary>eventual consistency</summary>
+        <p class="concept-definition">Eventual consistency allows observers to temporarily see older state while delivery and processing converge under stated conditions.</p>
+      </details><details open class="concept-card" data-subtopic="process managers">
+        <summary>process managers</summary>
+        <p class="concept-definition">A process manager keeps durable state for a multi-step business process and sends the next command after each event.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A command asks an owner to change state. An accepted change can produce a domain event, then a stable integration event for other contexts. Store outgoing intent with the change and make consumer effects safe under repeated delivery. Command identity and aggregate version checks address different races. A durable process manager must also preserve its next step and timers across restart.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>These approaches divide business responsibilities, define ownership, and move changes between components through explicit contracts and events.</p>
     <p><a href="../reference/senior-interview-practice.html#service-architecture-events">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0459" data-bespoke-example="0459" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep the order and its publication intent together</figcaption><p>Command C places order A-42. The outbox relay may deliver its event more than once.</p><div class="foundation-grid"><div>Transaction one<br>Claim C<br>Save order and outbox event</div><div>Relay<br>Send event E<br>Possible repeat</div><div>Consumer transaction<br>Claim E and create fulfillment</div></div><details><summary>What if two different command IDs try to change the same order?</summary><p>Command deduplication alone does not serialize them. The order still needs version checking or locking.</p></details><details><summary>May the consumer commit its inbox claim before its local effect?</summary><p>No. They must commit together, or a replay could skip an effect that never happened.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A command asks an owner to change state. An accepted change can produce a domain event, then a stable integration event for other contexts. Store outgoing intent with the change and make consumer effects safe under repeated delivery. Command identity and aggregate version checks address different races. A durable process manager must also preserve its next step and timers across restart.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0459" data-bespoke-example="0459" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep the order and its publication intent together</figcaption><p>Command C places order A-42. The outbox relay may deliver its event more than once.</p><div class="foundation-grid"><div>Transaction one<br>Claim C<br>Save order and outbox event</div><div>Relay<br>Send event E<br>Possible repeat</div><div>Consumer transaction<br>Claim E and create fulfillment</div></div><details open><summary>What if two different command IDs try to change the same order?</summary><p>Command deduplication alone does not serialize them. The order still needs version checking or locking.</p></details><details open><summary>May the consumer commit its inbox claim before its local effect?</summary><p>No. They must commit together, or a replay could skip an effect that never happened.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a domain command and event</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="domain-boundary" aria-label="Mechanism trace: Business capability defines meaning then Bounded context protects one model then Use case changes authoritative state then Versioned contract crosses boundaries. Experiment: Change the meaning of one shared business term and prove only its owning context plus explicit integrations need modification.">
         <li class="trace-stage"><span>01 · LANGUAGE</span><details class="trace-explanation" open><summary>Business capability defines meaning</summary><p>Domain experts and engineers name the subdomain, rules, actors, and ambiguous terms.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · MODEL</span><details class="trace-explanation"><summary>Bounded context protects one model</summary><p>Entities, values, aggregates, invariants, services, and owned data express local policy.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COMMIT</span><details class="trace-explanation"><summary>Use case changes authoritative state</summary><p>Application orchestration and one transaction persist domain state plus outgoing intent.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · INTEGRATE</span><details class="trace-explanation"><summary>Versioned contract crosses boundaries</summary><p>API or events carry limited meaning through translation, idempotency, observability, and team ownership.</p></details></li>
       </ol>
@@ -74,40 +119,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Commands">
-        <summary>Commands</summary>
-        <p class="concept-definition">A command asks an identified owner to perform a state-changing action and can be accepted or rejected.</p>
-      </details><details class="concept-card" data-subtopic="domain events">
-        <summary>domain events</summary>
-        <p class="concept-definition">A domain event records a business fact that already occurred inside one bounded context.</p>
-      </details><details class="concept-card" data-subtopic="integration events">
-        <summary>integration events</summary>
-        <p class="concept-definition">An integration event is a stable published contract that informs other contexts about a completed change.</p>
-      </details><details class="concept-card" data-subtopic="transactional outbox">
-        <summary>transactional outbox</summary>
-        <p class="concept-definition">A transactional outbox stores the business change and an event record in the same local database transaction.</p>
-      </details><details class="concept-card" data-subtopic="idempotent consumers">
-        <summary>idempotent consumers</summary>
-        <p class="concept-definition">An idempotent consumer prevents repeated delivery from duplicating an effect. Deduplication and a local state change need one atomic boundary; external effects need their own idempotency or reconciliation contract.</p>
-      </details><details class="concept-card" data-subtopic="eventual consistency">
-        <summary>eventual consistency</summary>
-        <p class="concept-definition">Eventual consistency allows observers to temporarily see older state while delivery and processing converge under stated conditions.</p>
-      </details><details class="concept-card" data-subtopic="process managers">
-        <summary>process managers</summary>
-        <p class="concept-definition">A process manager keeps durable state for a multi-step business process and sends the next command after each event.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Place an order, commit its outbox event atomically, publish it twice, process one integration event idempotently, and advance a durable fulfillment process manager through timeout and recovery.</p>
     <p class="lab-scope">Predict the example or complete the design worksheet, including a counterexample. Supply the named runtime, persistence and deployment adapters for a working integration. Check compatibility, failure and a changed constraint before extending the claim beyond the local example.</p>
 
@@ -152,8 +172,10 @@ async function consumeOnce(event, database) {
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Keep the order and its publication intent together</p><p>Command C places order A-42. The outbox relay may deliver its event more than once.</p><div class="foundation-grid"><div>Transaction one<br>Claim C<br>Save order and outbox event</div><div>Relay<br>Send event E<br>Possible repeat</div><div>Consumer transaction<br>Claim E and create fulfillment</div></div></div>
@@ -221,10 +243,16 @@ async function consumeOnce(event, database) {
       </details>
     </article>
     <p><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven" target="_blank" rel="noreferrer">Review the lesson source: Microsoft event-driven architecture guidance</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@ async function consumeOnce(event, database) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/event-driven" target="_blank" rel="noreferrer">Microsoft event-driven architecture guidance ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <a href="../reference/service-architecture-events-deep-dive-map.html" target="_blank">Service architecture and events coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

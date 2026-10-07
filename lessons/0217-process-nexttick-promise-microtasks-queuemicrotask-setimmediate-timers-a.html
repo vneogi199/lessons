@@ -46,6 +46,53 @@
     <h1>process.nextTick, Promise microtasks, queueMicrotask, setImmediate, timers, and starvation</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="process.nextTick">
+        <summary>process.nextTick</summary>
+        <p class="concept-definition">process.nextTick queues work for Node&#039;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p>
+      </details><details open class="concept-card" data-subtopic="Promise microtasks">
+        <summary>Promise microtasks</summary>
+        <p class="concept-definition">Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p>
+      </details><details open class="concept-card" data-subtopic="queueMicrotask">
+        <summary>queueMicrotask</summary>
+        <p class="concept-definition">queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p>
+      </details><details open class="concept-card" data-subtopic="setImmediate">
+        <summary>setImmediate</summary>
+        <p class="concept-definition">setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
+      </details><details open class="concept-card" data-subtopic="timers">
+        <summary>timers</summary>
+        <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
+      </details><details open class="concept-card" data-subtopic="starvation">
+        <summary>starvation</summary>
+        <p class="concept-definition">Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Next-tick callbacks, Promise microtasks and loop callbacks use different scheduling boundaries. ES-module evaluation already runs through microtasks, so a CommonJS top-level ordering rule may not apply. Repeatedly refilling one queue can delay I/O. The bounded chain demonstrates that starvation; yielding with setImmediate gives other work an opportunity, but does not make CPU work run in parallel.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node.js runs JavaScript outside a browser. It connects JavaScript to files, networks, processes, and operating-system services.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0217" data-bespoke-example="0217" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A nextTick chain can keep yielding back to itself</figcaption>
 <p>unsafeLoop starts with ticks 0. Each call increments the count and schedules another nextTick while the count is below 100,000.</p>
 <div class="foundation-grid"><div>Initial call<br>ticks: 1<br>Schedule nextTick</div><div>Repeated callbacks<br>Keep adding nextTick work</div><div>Final call<br>ticks: 100,000<br>No further callback queued</div><div>Cost<br>I/O can be delayed while the chain drains</div></div>
-<details><summary>Does making each callback short remove starvation risk?</summary><p>No. An unbroken sequence of short callbacks can still delay other work.</p></details>
-<details><summary>What should replace this scheduling pattern for a large job?</summary><p>Process a bounded amount of work, then yield through an appropriate scheduler such as setImmediate. Do not assume every microtask or nextTick yield gives I/O a turn.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Next-tick callbacks, Promise microtasks and loop callbacks use different scheduling boundaries. ES-module evaluation already runs through microtasks, so a CommonJS top-level ordering rule may not apply. Repeatedly refilling one queue can delay I/O. The bounded chain demonstrates that starvation; yielding with setImmediate gives other work an opportunity, but does not make CPU work run in parallel.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does making each callback short remove starvation risk?</summary><p>No. An unbroken sequence of short callbacks can still delay other work.</p></details>
+<details open><summary>What should replace this scheduling pattern for a large job?</summary><p>Process a bounded amount of work, then yield through an appropriate scheduler such as setImmediate. Do not assume every microtask or nextTick yield gives I/O a turn.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an event-loop operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-runtime" aria-label="Mechanism trace: JavaScript schedules work then Node delegates eligible work then Completion becomes ready then Main thread handles completion. Experiment: Add one blocking CPU loop and compare callback timing before and after.">
         <li class="trace-stage"><span>01 · CALLBACK</span><details class="trace-explanation" open><summary>JavaScript schedules work</summary><p>The main thread initiates I/O, timers, or CPU work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUNTIME</span><details class="trace-explanation"><summary>Node delegates eligible work</summary><p>OS readiness, libuv, workers, or another process executes it.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUEUE</span><details class="trace-explanation"><summary>Completion becomes ready</summary><p>Loop phases and microtasks determine callback order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JS</span><details class="trace-explanation"><summary>Main thread handles completion</summary><p>Latency and event-loop delay become observable.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="process.nextTick">
-        <summary>process.nextTick</summary>
-        <p class="concept-definition">process.nextTick queues work for Node&#039;s next-tick queue, which runs before the event loop continues and can starve I/O when recursively refilled.</p>
-      </details><details class="concept-card" data-subtopic="Promise microtasks">
-        <summary>Promise microtasks</summary>
-        <p class="concept-definition">Promise reactions use V8 microtasks at Node-defined checkpoints. Next-tick versus microtask order depends on context: ES-module evaluation already runs through microtasks, unlike ordinary CommonJS top-level execution.</p>
-      </details><details class="concept-card" data-subtopic="queueMicrotask">
-        <summary>queueMicrotask</summary>
-        <p class="concept-definition">queueMicrotask schedules a microtask without creating a Promise. Repeated self-scheduling can delay tasks and I/O just like Promise reactions.</p>
-      </details><details class="concept-card" data-subtopic="setImmediate">
-        <summary>setImmediate</summary>
-        <p class="concept-definition">setImmediate schedules a callback for the check phase. From an I/O callback it normally runs before a newly scheduled zero-delay timer.</p>
-      </details><details class="concept-card" data-subtopic="timers">
-        <summary>timers</summary>
-        <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
-      </details><details class="concept-card" data-subtopic="starvation">
-        <summary>starvation</summary>
-        <p class="concept-definition">Starvation occurs when one queue or synchronous computation continually prevents other ready work from progressing, increasing latency despite nominal concurrency.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build an ordering matrix and reproduce then repair nextTick or microtask starvation.</p>
     <p class="lab-scope">Predict the fixture&#039;s result or inspect the labelled integration recipe. Use the stated module format and synthetic data. Supply any required network, TLS certificates, packages, profiler targets or service adapters separately. A local fake checks its own behavior, not those integrations.</p>
 
@@ -140,8 +160,10 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A nextTick chain can keep yielding back to itself</p>
@@ -213,10 +235,16 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
       </details>
     </article>
     <p><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Review the lesson source: Node.js event loop guide</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -230,23 +258,23 @@ unsafeLoop(); // delays I/O; replace recursion with bounded work plus setImmedia
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Node.js event loop guide ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,23 +46,65 @@
     <h1>Schema migrations, DDL locks, transactional DDL, expand-contract, backfills, and zero-downtime change</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Schema migrations">
+        <summary>Schema migrations</summary>
+        <p class="concept-definition">A schema migration is a controlled transition between compatible data contracts. Safe production changes account for locks, rewrites, application versions, backfills, validation, and rollback.</p>
+      </details><details open class="concept-card" data-subtopic="DDL locks">
+        <summary>DDL locks</summary>
+        <p class="concept-definition">A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
+      </details><details open class="concept-card" data-subtopic="transactional DDL">
+        <summary>transactional DDL</summary>
+        <p class="concept-definition">Many PostgreSQL schema changes participate in transactions, but command-specific exceptions and locking behavior still matter.</p>
+      </details><details open class="concept-card" data-subtopic="expand-contract">
+        <summary>expand-contract</summary>
+        <p class="concept-definition">Expand-contract first adds a compatible new shape, lets old and new code coexist, migrates data and traffic, and removes the old shape only after evidence says it is unused.</p>
+      </details><details open class="concept-card" data-subtopic="backfills">
+        <summary>backfills</summary>
+        <p class="concept-definition">A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</p>
+      </details><details open class="concept-card" data-subtopic="zero-downtime change">
+        <summary>zero-downtime change</summary>
+        <p class="concept-definition">Zero-downtime schema change uses compatible staged changes and bounded locks rather than assuming DDL is operationally free.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A migration changes a contract shared by stored data and deployed code. Add a compatible shape first, move data in restartable batches and verify old writers before enforcing or removing fields. Batches need separate commits and bounded work, not merely small key ranges. Validation can reduce later scanning without removing every lock. Measure the lock budget and business impact before describing a change as zero downtime.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0352" data-bespoke-example="0352" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep old and new readers compatible during a backfill</figcaption><p>The migration adds display_name while existing rows may still have null values.</p><div class="foundation-grid"><div>Expand<br>Add nullable column</div><div>Compatible application<br>Read old rows safely<br>Write new shape</div><div>Backfill<br>Bounded committed ID ranges</div><div>Validate and contract<br>Prove non-null before requiring it</div></div><details><summary>Does NOT VALID mean new writes may ignore the added check?</summary><p>No. It defers checking existing rows. Plan writes and backfill before adding the constraint.</p></details><details><summary>Does a two-second lock timeout eliminate DDL locks?</summary><p>No. It limits waiting to obtain them. The migration still needs a safe rollout and retry policy.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A migration changes a contract shared by stored data and deployed code. Add a compatible shape first, move data in restartable batches and verify old writers before enforcing or removing fields. Batches need separate commits and bounded work, not merely small key ranges. Validation can reduce later scanning without removing every lock. Measure the lock budget and business impact before describing a change as zero downtime.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0352" data-bespoke-example="0352" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep old and new readers compatible during a backfill</figcaption><p>The migration adds display_name while existing rows may still have null values.</p><div class="foundation-grid"><div>Expand<br>Add nullable column</div><div>Compatible application<br>Read old rows safely<br>Write new shape</div><div>Backfill<br>Bounded committed ID ranges</div><div>Validate and contract<br>Prove non-null before requiring it</div></div><details open><summary>Does NOT VALID mean new writes may ignore the added check?</summary><p>No. It defers checking existing rows. Plan writes and backfill before adding the constraint.</p></details><details open><summary>Does a two-second lock timeout eliminate DDL locks?</summary><p>No. It limits waiting to obtain them. The migration still needs a safe rollout and retry policy.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a database transaction</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="database-invariant" aria-label="Mechanism trace: Business rule becomes a data model then Schema records the invariant then Concurrent writes challenge the rule then Old and new code share the data. Experiment: Submit two individually valid writes that violate the invariant only when combined.">
         <li class="trace-stage"><span>01 · FACT</span><details class="trace-explanation" open><summary>Business rule becomes a data model</summary><p>Entities, keys, types, cardinality, and lifecycle state the meaning.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ENCODE</span><details class="trace-explanation"><summary>Schema records the invariant</summary><p>Columns, constraints, relations, indexes, and compatible migrations make it executable.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTEND</span><details class="trace-explanation"><summary>Concurrent writes challenge the rule</summary><p>Database enforcement decides which outcomes may commit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVOLVE</span><details class="trace-explanation"><summary>Old and new code share the data</summary><p>Lock time, validation, backfill progress, rejected cases, and final shape prove safety.</p></details></li>
       </ol>
@@ -74,37 +116,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Schema migrations">
-        <summary>Schema migrations</summary>
-        <p class="concept-definition">A schema migration is a controlled transition between compatible data contracts. Safe production changes account for locks, rewrites, application versions, backfills, validation, and rollback.</p>
-      </details><details class="concept-card" data-subtopic="DDL locks">
-        <summary>DDL locks</summary>
-        <p class="concept-definition">A lock coordinates incompatible operations on a named resource. Its mode, owner, scope, acquisition order, and wait policy determine blocking and deadlock behavior.</p>
-      </details><details class="concept-card" data-subtopic="transactional DDL">
-        <summary>transactional DDL</summary>
-        <p class="concept-definition">Many PostgreSQL schema changes participate in transactions, but command-specific exceptions and locking behavior still matter.</p>
-      </details><details class="concept-card" data-subtopic="expand-contract">
-        <summary>expand-contract</summary>
-        <p class="concept-definition">Expand-contract first adds a compatible new shape, lets old and new code coexist, migrates data and traffic, and removes the old shape only after evidence says it is unused.</p>
-      </details><details class="concept-card" data-subtopic="backfills">
-        <summary>backfills</summary>
-        <p class="concept-definition">A backfill populates or repairs existing records after a model change. Use bounded batches, restartable progress, validation, and load controls so live traffic remains safe.</p>
-      </details><details class="concept-card" data-subtopic="zero-downtime change">
-        <summary>zero-downtime change</summary>
-        <p class="concept-definition">Zero-downtime schema change uses compatible staged changes and bounded locks rather than assuming DDL is operationally free.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Execute an expand-contract migration with batched backfill, dual compatibility, validation, and a measured lock budget.</p>
     <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 
@@ -136,8 +156,10 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Keep old and new readers compatible during a backfill</p><p>The migration adds display_name while existing rows may still have null values.</p><div class="foundation-grid"><div>Expand<br>Add nullable column</div><div>Compatible application<br>Read old rows safely<br>Write new shape</div><div>Backfill<br>Bounded committed ID ranges</div><div>Validate and contract<br>Prove non-null before requiring it</div></div></div>
@@ -205,10 +227,16 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL concurrency control documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -222,23 +250,23 @@ ALTER TABLE accounts ALTER COLUMN display_name SET NOT NULL;</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/mvcc.html" target="_blank" rel="noreferrer">PostgreSQL concurrency control documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

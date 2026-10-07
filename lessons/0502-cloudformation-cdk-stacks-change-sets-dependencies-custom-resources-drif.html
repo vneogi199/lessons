@@ -46,23 +46,71 @@
     <h1>CloudFormation, CDK, stacks, change sets, dependencies, custom resources, drift, and infrastructure testing</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="8">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="CloudFormation">
+        <summary>CloudFormation</summary>
+        <p class="concept-definition">CloudFormation turns a template into ordered AWS API changes and records stack state. A failed update may roll back, while replacements can destroy and recreate resources.</p>
+      </details><details open class="concept-card" data-subtopic="CDK">
+        <summary>CDK</summary>
+        <p class="concept-definition">AWS CDK expresses infrastructure in supported programming languages and synthesizes CloudFormation templates. Generated resources still need review for permissions, replacement and deployment behavior.</p>
+      </details><details open class="concept-card" data-subtopic="stacks">
+        <summary>stacks</summary>
+        <p class="concept-definition">A CloudFormation stack groups resources managed through one template and lifecycle. Cross-stack references and shared data can constrain independent updates or deletion.</p>
+      </details><details open class="concept-card" data-subtopic="change sets">
+        <summary>change sets</summary>
+        <p class="concept-definition">CloudFormation change sets preview supported resource changes before execution. They can expose replacements but do not guarantee successful deployment or safe application data migration.</p>
+      </details><details open class="concept-card" data-subtopic="dependencies">
+        <summary>dependencies</summary>
+        <p class="concept-definition">Dependencies are components required for behavior or builds. Their versions, failure modes, and trust become part of the system&#039;s obligations.</p>
+      </details><details open class="concept-card" data-subtopic="custom resources">
+        <summary>custom resources</summary>
+        <p class="concept-definition">CloudFormation custom resources delegate lifecycle actions to a supplied provider. That provider must report completion and handle retries, updates, deletion and stable physical identity correctly.</p>
+      </details><details open class="concept-card" data-subtopic="drift">
+        <summary>drift</summary>
+        <p class="concept-definition">Configuration drift is a difference between the intended configuration and the observed system. Detect the difference and decide whether to reconcile or deliberately change the declared intent.</p>
+      </details><details open class="concept-card" data-subtopic="infrastructure testing">
+        <summary>infrastructure testing</summary>
+        <p class="concept-definition">Infrastructure testing checks template shape, policy intent, planned changes and actual deployed behavior at appropriate boundaries. Static validation alone cannot verify live routing or restore capability.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Infrastructure code becomes a dependency graph of API changes. A change set previews supported changes, including possible replacements, before execution. Wait for its completion before reading the result. Rollback and drift detection have defined limits, especially around external data and custom resources. Review stable resource identity and recovery behavior along with the generated template.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Cloud services provide computing resources through network APIs. AWS groups these resources by account, Region, and service.</p>
     <p><a href="../reference/senior-interview-practice.html#cloud-aws">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0502" data-bespoke-example="0502" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Review a proposed infrastructure change before applying it</figcaption><p>The commands create and describe change set release-2026-09-01 for evidence-prod, then request drift detection.</p><div class="foundation-grid"><div>Create change set<br>Proposed update</div><div>Describe change set<br>Review replacements and effects</div><div>Detect drift<br>Inspect differences from declared state</div></div><details><summary>Does creating the change set apply the update?</summary><p>No. These commands do not execute it.</p></details><details><summary>Does a drift-detection request prove there is no drift?</summary><p>No. Inspect its completed findings and understand which resources and properties were checked.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Infrastructure code becomes a dependency graph of API changes. A change set previews supported changes, including possible replacements, before execution. Wait for its completion before reading the result. Rollback and drift detection have defined limits, especially around external data and custom resources. Review stable resource identity and recovery behavior along with the generated template.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0502" data-bespoke-example="0502" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Review a proposed infrastructure change before applying it</figcaption><p>The commands create and describe change set release-2026-09-01 for evidence-prod, then request drift detection.</p><div class="foundation-grid"><div>Create change set<br>Proposed update</div><div>Describe change set<br>Review replacements and effects</div><div>Detect drift<br>Inspect differences from declared state</div></div><details open><summary>Does creating the change set apply the update?</summary><p>No. These commands do not execute it.</p></details><details open><summary>Does a drift-detection request prove there is no drift?</summary><p>No. Inspect its completed findings and understand which resources and properties were checked.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an AWS architecture decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="aws-architecture-change" aria-label="Mechanism trace: Workload constraint becomes design then IaC forms a dependency graph then AWS APIs change real resources then Telemetry and cost test the design. Experiment: Review a destructive or failing change and verify recovery without console drift.">
         <li class="trace-stage"><span>01 · REQUIREMENT</span><details class="trace-explanation" open><summary>Workload constraint becomes design</summary><p>Security, reliability, performance, cost, and operations are stated.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><details class="trace-explanation"><summary>IaC forms a dependency graph</summary><p>Accounts, Regions, services, quotas, and replacement risk become explicit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · APPLY</span><details class="trace-explanation"><summary>AWS APIs change real resources</summary><p>Partial failure and rollback behavior must be observed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · OPERATE</span><details class="trace-explanation"><summary>Telemetry and cost test the design</summary><p>Review, game days, drift, and incidents drive the next change.</p></details></li>
       </ol>
@@ -74,43 +122,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="8">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="CloudFormation">
-        <summary>CloudFormation</summary>
-        <p class="concept-definition">CloudFormation turns a template into ordered AWS API changes and records stack state. A failed update may roll back, while replacements can destroy and recreate resources.</p>
-      </details><details class="concept-card" data-subtopic="CDK">
-        <summary>CDK</summary>
-        <p class="concept-definition">AWS CDK expresses infrastructure in supported programming languages and synthesizes CloudFormation templates. Generated resources still need review for permissions, replacement and deployment behavior.</p>
-      </details><details class="concept-card" data-subtopic="stacks">
-        <summary>stacks</summary>
-        <p class="concept-definition">A CloudFormation stack groups resources managed through one template and lifecycle. Cross-stack references and shared data can constrain independent updates or deletion.</p>
-      </details><details class="concept-card" data-subtopic="change sets">
-        <summary>change sets</summary>
-        <p class="concept-definition">CloudFormation change sets preview supported resource changes before execution. They can expose replacements but do not guarantee successful deployment or safe application data migration.</p>
-      </details><details class="concept-card" data-subtopic="dependencies">
-        <summary>dependencies</summary>
-        <p class="concept-definition">Dependencies are components required for behavior or builds. Their versions, failure modes, and trust become part of the system&#039;s obligations.</p>
-      </details><details class="concept-card" data-subtopic="custom resources">
-        <summary>custom resources</summary>
-        <p class="concept-definition">CloudFormation custom resources delegate lifecycle actions to a supplied provider. That provider must report completion and handle retries, updates, deletion and stable physical identity correctly.</p>
-      </details><details class="concept-card" data-subtopic="drift">
-        <summary>drift</summary>
-        <p class="concept-definition">Configuration drift is a difference between the intended configuration and the observed system. Detect the difference and decide whether to reconcile or deliberately change the declared intent.</p>
-      </details><details class="concept-card" data-subtopic="infrastructure testing">
-        <summary>infrastructure testing</summary>
-        <p class="concept-definition">Infrastructure testing checks template shape, policy intent, planned changes and actual deployed behavior at appropriate boundaries. Static validation alone cannot verify live routing or restore capability.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Define a multi-stack application, inspect the change set, test policies, simulate failure, and recover without console edits.</p>
     <p class="lab-scope">Predict the local fixture or complete the design calculation, then compare the answer. Cloud experiments need the missing infrastructure and adapters in an authorized isolated account. Set cost and cleanup limits and record actual failure, recovery and evaluation results.</p>
 
@@ -131,8 +151,10 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Review a proposed infrastructure change before applying it</p><p>The commands create and describe change set release-2026-09-01 for evidence-prod, then request drift detection.</p><div class="foundation-grid"><div>Create change set<br>Proposed update</div><div>Describe change set<br>Review replacements and effects</div><div>Detect drift<br>Inspect differences from declared state</div></div></div>
@@ -200,10 +222,16 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
       </details>
     </article>
     <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -217,23 +245,23 @@ aws cloudformation detect-stack-drift --stack-name evidence-prod</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">AWS Documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/cloud-aws-deep-dive-map.html" target="_blank">Cloud &amp; AWS coverage map ↗</a>
-    
-    
-    
-    
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

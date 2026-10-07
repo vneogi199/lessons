@@ -46,23 +46,68 @@
     <h1>MVCC, transaction IDs, snapshots, xmin, xmax, tuple versions, and visibility</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="MVCC">
+        <summary>MVCC</summary>
+        <p class="concept-definition">MVCC keeps multiple row versions and lets each statement or transaction read a snapshot. Ordinary readers and writers therefore need not block each other, but old versions need cleanup.</p>
+      </details><details open class="concept-card" data-subtopic="transaction IDs">
+        <summary>transaction IDs</summary>
+        <p class="concept-definition">Transaction IDs participate in visibility and maintenance; their finite representation requires wraparound management.</p>
+      </details><details open class="concept-card" data-subtopic="snapshots">
+        <summary>snapshots</summary>
+        <p class="concept-definition">A snapshot records which transaction effects are visible to a query. The isolation level decides when PostgreSQL obtains and reuses that snapshot.</p>
+      </details><details open class="concept-card" data-subtopic="xmin">
+        <summary>xmin</summary>
+        <p class="concept-definition">A PostgreSQL tuple&#039;s xmin identifies its inserting transaction. Visibility depends on the snapshot and transaction status, not on comparing xmin as an ordinary timestamp.</p>
+      </details><details open class="concept-card" data-subtopic="xmax">
+        <summary>xmax</summary>
+        <p class="concept-definition">A tuple&#039;s xmax records deletion or locking transaction information. A nonzero xmax alone does not prove the tuple is invisible; transaction state and locking cases matter.</p>
+      </details><details open class="concept-card" data-subtopic="tuple versions">
+        <summary>tuple versions</summary>
+        <p class="concept-definition">MVCC stores row versions so transactions can observe data according to snapshot visibility.</p>
+      </details><details open class="concept-card" data-subtopic="visibility">
+        <summary>visibility</summary>
+        <p class="concept-definition">Visibility determines which row versions a transaction can observe under its snapshot and isolation rules.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Trace how writers create tuple versions and how snapshot rules decide visibility without making ordinary readers block writers.</p>
+      <p class="analogy">Two connections can read different versions of the same account row. Their snapshot rules select the version; the row&#039;s physical location is not its business identity.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A tuple is a stored row version. An update can create a new version while an older one remains available. A snapshot records which transaction effects a reader can see. MVCC uses these versions so ordinary reads need not wait for a writer&#039;s row change.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0358" data-bespoke-example="0358" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep the old balance visible to an older snapshot</figcaption><p>Session A establishes a Repeatable Read snapshot at balance 100. Session B updates the balance to 101 and commits.</p><div class="foundation-grid"><div>A's existing snapshot<br>Reads 100</div><div>B's committed update<br>New balance 101</div><div>A reads again before commit<br>Still 100</div><div>A commits, then reads<br>Sees 101</div></div><details><summary>Can vacuum remove the old version while A still needs it?</summary><p>No. Cleanup must respect active snapshots that can still see that version.</p></details><details><summary>Should tuple identifiers be treated as permanent business IDs?</summary><p>No. Physical tuple versions can change. Use the declared logical key for business identity.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Trace how writers create tuple versions and how snapshot rules decide visibility without making ordinary readers block writers.</p>
-      <p class="analogy">Two connections can read different versions of the same account row. Their snapshot rules select the version; the row&#039;s physical location is not its business identity.</p>
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0358" data-bespoke-example="0358" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Keep the old balance visible to an older snapshot</figcaption><p>Session A establishes a Repeatable Read snapshot at balance 100. Session B updates the balance to 101 and commits.</p><div class="foundation-grid"><div>A's existing snapshot<br>Reads 100</div><div>B's committed update<br>New balance 101</div><div>A reads again before commit<br>Still 100</div><div>A commits, then reads<br>Sees 101</div></div><details open><summary>Can vacuum remove the old version while A still needs it?</summary><p>No. Cleanup must respect active snapshots that can still see that version.</p></details><details open><summary>Should tuple identifiers be treated as permanent business IDs?</summary><p>No. Physical tuple versions can change. Use the declared logical key for business identity.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a database transaction</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="database-transaction" aria-label="Mechanism trace: Choose the isolation boundary then Statements acquire versions or locks then Constraints and conflicts resolve then Publish one atomic outcome. Experiment: Run two conflicting transactions and predict the wait, error, or visible value.">
         <li class="trace-stage"><span>01 · BEGIN</span><details class="trace-explanation" open><summary>Choose the isolation boundary</summary><p>Read Committed takes a snapshot per statement; Repeatable Read fixes its snapshot at the first non-control statement, not simply BEGIN.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · READ / WRITE</span><details class="trace-explanation"><summary>Statements acquire versions or locks</summary><p>Concurrent transactions may conflict.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · DECIDE</span><details class="trace-explanation"><summary>Constraints and conflicts resolve</summary><p>The engine can wait, abort, commit, or require retry.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMMIT</span><details class="trace-explanation"><summary>Publish one atomic outcome</summary><p>Visibility follows the reader&#039;s snapshot. Crash durability also depends on WAL flush and replication settings.</p></details></li>
       </ol>
@@ -74,33 +119,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="MVCC">
-        <summary>MVCC</summary>
-        <p class="concept-definition">MVCC keeps multiple row versions and lets each statement or transaction read a snapshot. Ordinary readers and writers therefore need not block each other, but old versions need cleanup.</p>
-      </details><details class="concept-card" data-subtopic="transaction IDs">
-        <summary>transaction IDs</summary>
-        <p class="concept-definition">Transaction IDs participate in visibility and maintenance; their finite representation requires wraparound management.</p>
-      </details><details class="concept-card" data-subtopic="snapshots">
-        <summary>snapshots</summary>
-        <p class="concept-definition">A snapshot records which transaction effects are visible to a query. The isolation level decides when PostgreSQL obtains and reuses that snapshot.</p>
-      </details><details class="concept-card" data-subtopic="xmin">
-        <summary>xmin</summary>
-        <p class="concept-definition">A PostgreSQL tuple&#039;s xmin identifies its inserting transaction. Visibility depends on the snapshot and transaction status, not on comparing xmin as an ordinary timestamp.</p>
-      </details><details class="concept-card" data-subtopic="xmax">
-        <summary>xmax</summary>
-        <p class="concept-definition">A tuple&#039;s xmax records deletion or locking transaction information. A nonzero xmax alone does not prove the tuple is invisible; transaction state and locking cases matter.</p>
-      </details><details class="concept-card" data-subtopic="tuple versions">
-        <summary>tuple versions</summary>
-        <p class="concept-definition">MVCC stores row versions so transactions can observe data according to snapshot visibility.</p>
-      </details><details class="concept-card" data-subtopic="visibility">
-        <summary>visibility</summary>
-        <p class="concept-definition">Visibility determines which row versions a transaction can observe under its snapshot and isolation rules.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>The fixture begins with balance_cents = 100. Session A starts Repeatable Read and reads 100. That read establishes its snapshot. Session B updates the balance to 101 and commits. A still reads 100. After A commits, its next statement reads 101.</p>
 <p>Repeat the exercise with Read Committed after resetting the balance while both sessions are idle. A's second SELECT now reads 101 because each statement takes a fresh snapshot. Repeatable Read provides a stable transaction view, but concurrent writes can require a transaction retry. Read Committed permits fresher results between statements; it does not guarantee a stable view across a report's separate queries.</p>
@@ -110,10 +129,11 @@
 <p>MVCC does not remove locks. Two writers changing the same row can wait or fail under the isolation rules. Ordinary SELECT also takes a table-level lock that can conflict with exclusive DDL. Distinguish row-version visibility from write coordination.</p>
 <p><a href="https://www.postgresql.org/docs/current/routine-vacuuming.html">Vacuum and old versions</a>; <a href="https://www.postgresql.org/docs/current/ddl-system-columns.html">system column meanings</a>.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Use two psql sessions and page or transaction metadata to observe old and new versions before and after commit and vacuum.</p>
     <p class="lab-scope">Use two connections to the same existing disposable PostgreSQL database. Run the numbered blocks in order. The setup creates a dedicated table and intentionally fails if that name already exists. Do not reuse a production accounts table. VACUUM must run outside a transaction block.</p>
 
@@ -159,8 +179,10 @@ VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Both sessions use one connection</h3><p>The reader can see its own writes. That does not demonstrate a concurrent transaction&#039;s visibility. Use two connections and pause at the indicated boundaries.</p></article><article><h3>More vacuum solves every backlog</h3><p>Vacuum cannot remove a version that an active snapshot still needs. Investigate the long transaction and its owner before changing cleanup settings.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Keep the old balance visible to an older snapshot</p><p>Session A establishes a Repeatable Read snapshot at balance 100. Session B updates the balance to 101 and commits.</p><div class="foundation-grid"><div>A's existing snapshot<br>Reads 100</div><div>B's committed update<br>New balance 101</div><div>A reads again before commit<br>Still 100</div><div>A commits, then reads<br>Sees 101</div></div></div>
@@ -240,10 +262,16 @@ VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/transaction-iso.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL: transaction isolation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -257,23 +285,23 @@ VACUUM (VERBOSE, ANALYZE) lesson_mvcc_accounts;
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/transaction-iso.html" target="_blank" rel="noreferrer">PostgreSQL: transaction isolation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

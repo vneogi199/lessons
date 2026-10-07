@@ -46,6 +46,53 @@
     <h1>Function types, call signatures, construct signatures, parameters, callbacks, and overloads</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Function types">
+        <summary>Function types</summary>
+        <p class="concept-definition">A function type describes parameters, this context, return value, and possibly call or construction behavior. Parameter compatibility depends on variance and compiler options.</p>
+      </details><details open class="concept-card" data-subtopic="call signatures">
+        <summary>call signatures</summary>
+        <p class="concept-definition">A call signature describes using a value like a function. Inside an object type, (value: string): string can coexist with properties such as description. It promises call behavior, not construction with new.</p>
+      </details><details open class="concept-card" data-subtopic="construct signatures">
+        <summary>construct signatures</summary>
+        <p class="concept-definition">A construct signature such as new (id: string) =&gt; Project describes creating an instance through new. An ordinary arrow function can be callable without being constructible.</p>
+      </details><details open class="concept-card" data-subtopic="parameters">
+        <summary>parameters</summary>
+        <p class="concept-definition">Parameters describe the inputs a function accepts. Optional parameters permit omission; rest parameters collect additional arguments. This is distinct from the capitalized Parameters&lt;F&gt; utility, which extracts parameter types into a tuple.</p>
+      </details><details open class="concept-card" data-subtopic="callbacks">
+        <summary>callbacks</summary>
+        <p class="concept-definition">A callback is a function supplied for another function to invoke. Type its parameters according to what the invoker supplies. A callback can ignore supplied arguments; marking one optional instead permits the invoker to omit it. A void callback contract does not ensure async work is awaited.</p>
+      </details><details open class="concept-card" data-subtopic="overloads">
+        <summary>overloads</summary>
+        <p class="concept-definition">Overloads expose several caller-visible signatures above one implementation. The implementation must handle all of them but is not itself an extra public overload.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Call signatures describe invocation; construct signatures describe new. Overloads advertise input/output relationships, but callers cannot use the broader implementation signature directly. Optional parameters allow omission; a callback may ignore a supplied index without making that index optional. All signatures are erased, so runtime tests must verify the implementation&#039;s promises.</p>
+      <p class="analogy">A public menu lists the orders customers may place. The kitchen&#039;s broader internal procedure is not an extra menu item; each advertised order still needs the correct result.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>TypeScript checks information about JavaScript code before the JavaScript program runs.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0137" data-bespoke-example="0137" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">One function body, two return contracts</figcaption>
 <p>The get overloads accept either one ID or an array of IDs.</p>
 <div class="foundation-grid"><div>Input p1<br>String overload<br>Returns p1</div><div>Input [p1, p2]<br>Array overload<br>Returns a new [p1, p2] array</div><div>Append p3 to result<br>Result length: 3<br>Source length: 2</div></div>
-<details><summary>Can an unresolved string-or-array argument use either overload automatically?</summary><p>No. Neither visible overload accepts that whole union. Narrow the argument first or provide an appropriate public signature.</p></details>
-<details><summary>Must a callback declare the index if visit always supplies it?</summary><p>No. It may ignore a supplied argument. Marking the index optional would instead promise that callers may omit it, which changes the contract.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Call signatures describe invocation; construct signatures describe new. Overloads advertise input/output relationships, but callers cannot use the broader implementation signature directly. Optional parameters allow omission; a callback may ignore a supplied index without making that index optional. All signatures are erased, so runtime tests must verify the implementation&#039;s promises.</p>
-      <p class="analogy">A public menu lists the orders customers may place. The kitchen&#039;s broader internal procedure is not an extra menu item; each advertised order still needs the correct result.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Can an unresolved string-or-array argument use either overload automatically?</summary><p>No. Neither visible overload accepts that whole union. Narrow the argument first or provide an appropriate public signature.</p></details>
+<details open><summary>Must a callback declare the index if visit always supplies it?</summary><p>No. It may ignore a supplied argument. Marking the index optional would instead promise that callers may omit it, which changes the contract.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="typescript-function-contract" aria-label="Mechanism trace: Declare public signatures then Match a caller to an overload then Run one implementation then Test the advertised relationship. Experiment: If every accepted input has the same return type, what does overloading buy over a union parameter? Contrast count with get.">
         <li class="trace-stage"><span>01 · ADVERTISE</span><details class="trace-explanation" open><summary>Declare public signatures</summary><p>get accepts a string returning a string, or an array returning an array.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RESOLVE</span><details class="trace-explanation"><summary>Match a caller to an overload</summary><p>An unresolved union matches neither public signature; the implementation signature is not a third overload.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Run one implementation</summary><p>A runtime typeof branch selects the string path or copies the array.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><details class="trace-explanation"><summary>Test the advertised relationship</summary><p>Static checks confirm return types; runtime assertions verify values and copy behavior.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Function types">
-        <summary>Function types</summary>
-        <p class="concept-definition">A function type describes parameters, this context, return value, and possibly call or construction behavior. Parameter compatibility depends on variance and compiler options.</p>
-      </details><details class="concept-card" data-subtopic="call signatures">
-        <summary>call signatures</summary>
-        <p class="concept-definition">A call signature describes using a value like a function. Inside an object type, (value: string): string can coexist with properties such as description. It promises call behavior, not construction with new.</p>
-      </details><details class="concept-card" data-subtopic="construct signatures">
-        <summary>construct signatures</summary>
-        <p class="concept-definition">A construct signature such as new (id: string) =&gt; Project describes creating an instance through new. An ordinary arrow function can be callable without being constructible.</p>
-      </details><details class="concept-card" data-subtopic="parameters">
-        <summary>parameters</summary>
-        <p class="concept-definition">Parameters describe the inputs a function accepts. Optional parameters permit omission; rest parameters collect additional arguments. This is distinct from the capitalized Parameters&lt;F&gt; utility, which extracts parameter types into a tuple.</p>
-      </details><details class="concept-card" data-subtopic="callbacks">
-        <summary>callbacks</summary>
-        <p class="concept-definition">A callback is a function supplied for another function to invoke. Type its parameters according to what the invoker supplies. A callback can ignore supplied arguments; marking one optional instead permits the invoker to omit it. A void callback contract does not ensure async work is awaited.</p>
-      </details><details class="concept-card" data-subtopic="overloads">
-        <summary>overloads</summary>
-        <p class="concept-definition">Overloads expose several caller-visible signatures above one implementation. The implementation must handle all of them but is not itself an extra public overload.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Predict three compiler errors, then run the lab and expect Function-contract checks passed. Compare shape-dependent get overloads with a single union-based count signature. Verify the returned array is a copy. Tomorrow, explain why ignoring a callback parameter differs from declaring it optional.</p>
 
 <p>Standalone lab with compiler-negative and runtime assertions. Run node scripts/check-typescript-lessons.mjs from the workspace. Predict the result before reading the checks; reconstruct the key distinction tomorrow.</p>
@@ -184,8 +204,10 @@ console.log(&quot;Function-contract checks passed&quot;);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">One function body, two return contracts</p>
@@ -256,10 +278,16 @@ console.log(&quot;Function-contract checks passed&quot;);
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript: function signatures and overloads</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -273,23 +301,23 @@ console.log(&quot;Function-contract checks passed&quot;);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/functions.html" target="_blank" rel="noreferrer">TypeScript: function signatures and overloads ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

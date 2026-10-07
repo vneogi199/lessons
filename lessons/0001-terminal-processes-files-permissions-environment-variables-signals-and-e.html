@@ -46,6 +46,56 @@
     <h1>Terminal, processes, files, permissions, environment variables, signals, and exit codes</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Terminal">
+        <summary>Terminal</summary>
+        <p class="concept-definition">A terminal is a text interface that sends commands to a shell and shows the output from programs.</p>
+      </details><details open class="concept-card" data-subtopic="processes">
+        <summary>processes</summary>
+        <p class="concept-definition">A process is a running instance of a program. The operating system gives each process memory, resources, and an identifier.</p>
+      </details><details open class="concept-card" data-subtopic="files">
+        <summary>files</summary>
+        <p class="concept-definition">A file is a named sequence of bytes stored by a file system. Programs use paths and file descriptors to access files.</p>
+      </details><details open class="concept-card" data-subtopic="permissions">
+        <summary>permissions</summary>
+        <p class="concept-definition">Permissions are rules that state which users and processes can read, change, or execute a file or resource.</p>
+      </details><details open class="concept-card" data-subtopic="environment variables">
+        <summary>environment variables</summary>
+        <p class="concept-definition">Environment variables are named text values that a parent process gives to a child process at startup.</p>
+      </details><details open class="concept-card" data-subtopic="signals">
+        <summary>signals</summary>
+        <p class="concept-definition">A signal is an operating-system notification that asks a process to handle an event such as termination or interruption.</p>
+      </details><details open class="concept-card" data-subtopic="exit codes">
+        <summary>exit codes</summary>
+        <p class="concept-definition">An exit code is an integer that a process returns when it ends. Zero usually means success, and other values identify failures.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>The shell parses quoting and expansions, selects a builtin or resolves an executable (often through PATH), connects standard input/output/error, and starts the command. A child inherits exported environment values; changing them in the child does not update its parent. Check executable identity, working directory, permissions and stderr before changing application code. On Unix, directory execute permission means search/traversal, not running the directory. Signals are a separate control channel: SIGTERM permits handling and cleanup; SIGKILL cannot be caught. A shell exit status summarizes termination, not whether the intended business work happened.</p>
+      <p class="analogy">A pipeline is a relay of bytes, not a relay of success: the receiver can finish normally even when the sender failed.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Software engineering uses repeatable tools and records to change software safely.</p>
@@ -55,19 +105,14 @@
   <figure class="card mechanism-map" data-lesson-map="0001" data-bespoke-example="0001" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">One pipeline, two exit statuses</figcaption>
 <p>The producer exits with status 7. The consumer, tee, finishes with status 0. Bash must choose one status for the whole pipeline.</p>
 <div class="foundation-grid"><div>Producer<br>exit 7<br>↓<br>Consumer<br>exit 0</div><div>Default Bash policy<br>take the last status<br>↓<br>Pipeline status: 0</div></div>
-<details><summary>Enable pipefail. What status does Bash report?</summary><p>7. With pipefail, Bash reports the rightmost nonzero status. The consumer's successful exit does not erase the producer's failure.</p></details>
-<details><summary>Now the consumer also fails, with status 3. What changes?</summary><p>The pipeline reports 3 with either policy. By default, 3 is the last status. With pipefail, it is the rightmost nonzero status. The single result does not tell you that both commands failed.</p></details>
-<p>Capture the statuses immediately. Another command can overwrite them. Even status 0 does not prove that the intended output is complete.</p></figure><div class="grid">
-    <section class="card">
-
-      <p>The shell parses quoting and expansions, selects a builtin or resolves an executable (often through PATH), connects standard input/output/error, and starts the command. A child inherits exported environment values; changing them in the child does not update its parent. Check executable identity, working directory, permissions and stderr before changing application code. On Unix, directory execute permission means search/traversal, not running the directory. Signals are a separate control channel: SIGTERM permits handling and cleanup; SIGKILL cannot be caught. A shell exit status summarizes termination, not whether the intended business work happened.</p>
-      <p class="analogy">A pipeline is a relay of bytes, not a relay of success: the receiver can finish normally even when the sender failed.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Enable pipefail. What status does Bash report?</summary><p>7. With pipefail, Bash reports the rightmost nonzero status. The consumer's successful exit does not erase the producer's failure.</p></details>
+<details open><summary>Now the consumer also fails, with status 3. What changes?</summary><p>The pipeline reports 3 with either policy. By default, 3 is the last status. With pipefail, it is the rightmost nonzero status. The single result does not tell you that both commands failed.</p></details>
+<p>Capture the statuses immediately. Another command can overwrite them. Even status 0 does not prove that the intended output is complete.</p></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an engineering change</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="pipeline-exit" aria-label="Mechanism trace: Exit with status 7 then tee succeeds then Apply pipeline policy then Capture immediately. Experiment: What happens if both processes fail?">
         <li class="trace-stage"><span>01 · PRODUCE</span><details class="trace-explanation" open><summary>Exit with status 7</summary><p>The producer fails even though it sends no bytes.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · CONSUME</span><details class="trace-explanation"><summary>tee succeeds</summary><p>The final process can return zero while the producer failed.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · COLLECT</span><details class="trace-explanation"><summary>Apply pipeline policy</summary><p>Default Bash reports the last status; pipefail reports the rightmost nonzero status.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · VERIFY</span><details class="trace-explanation"><summary>Capture immediately</summary><p>Save $? before any other command overwrites it, then check the required outcome.</p></details></li>
       </ol>
@@ -79,41 +124,16 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Terminal">
-        <summary>Terminal</summary>
-        <p class="concept-definition">A terminal is a text interface that sends commands to a shell and shows the output from programs.</p>
-      </details><details class="concept-card" data-subtopic="processes">
-        <summary>processes</summary>
-        <p class="concept-definition">A process is a running instance of a program. The operating system gives each process memory, resources, and an identifier.</p>
-      </details><details class="concept-card" data-subtopic="files">
-        <summary>files</summary>
-        <p class="concept-definition">A file is a named sequence of bytes stored by a file system. Programs use paths and file descriptors to access files.</p>
-      </details><details class="concept-card" data-subtopic="permissions">
-        <summary>permissions</summary>
-        <p class="concept-definition">Permissions are rules that state which users and processes can read, change, or execute a file or resource.</p>
-      </details><details class="concept-card" data-subtopic="environment variables">
-        <summary>environment variables</summary>
-        <p class="concept-definition">Environment variables are named text values that a parent process gives to a child process at startup.</p>
-      </details><details class="concept-card" data-subtopic="signals">
-        <summary>signals</summary>
-        <p class="concept-definition">A signal is an operating-system notification that asks a process to handle an event such as termination or interruption.</p>
-      </details><details class="concept-card" data-subtopic="exit codes">
-        <summary>exit codes</summary>
-        <p class="concept-definition">An exit code is an integer that a process returns when it ends. Zero usually means success, and other values identify failures.</p>
-      </details>
-    </div>
-  </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/data-preparation-and-terminal.html#terminal">Linux terminal basics: navigation, files, pipes and safe commands</a></li></ul></section>
 
 
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build diagnostic shell workflows and troubleshoot a broken local service.</p>
     <p class="lab-scope">Core check: run the read-only pipeline below in a separate Bash process so its shell options do not alter your session. Extension: diagnose a disposable service using its command path, working directory, required environment names (not secret values), stderr and exit status. No service fixture is supplied here.</p>
 
@@ -146,8 +166,10 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">One pipeline, two exit statuses</p>
@@ -220,10 +242,16 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
       </details>
     </article>
     <p><a href="https://www.gnu.org/software/bash/manual/bash.html#Pipelines" target="_blank" rel="noreferrer">Review the lesson source: Bash manual: pipelines and exit status</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -237,23 +265,23 @@ printf &#039;without pipefail=%s; with pipefail=%s\n&#039; &quot;$without_pipefa
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.gnu.org/software/bash/manual/bash.html#Pipelines" target="_blank" rel="noreferrer">Bash manual: pipelines and exit status ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

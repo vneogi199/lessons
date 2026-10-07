@@ -46,23 +46,74 @@
     <h1>EventBridge buses, rules, schemas, archives, replay, Scheduler, Step Functions, retries, and compensation</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="9">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="EventBridge buses">
+        <summary>EventBridge buses</summary>
+        <p class="concept-definition">EventBridge matches events to targets using rules. It decouples publishers from subscribers but requires schema, retry, archive, and authorization design.</p>
+      </details><details open class="concept-card" data-subtopic="rules">
+        <summary>rules</summary>
+        <p class="concept-definition">EventBridge rules match event patterns and select configured targets. Pattern matching does not validate every business schema field or guarantee successful target processing.</p>
+      </details><details open class="concept-card" data-subtopic="schemas">
+        <summary>schemas</summary>
+        <p class="concept-definition">A schema describes allowed data structure and constraints. It helps validate representation but does not automatically prove authorization or business correctness.</p>
+      </details><details open class="concept-card" data-subtopic="archives">
+        <summary>archives</summary>
+        <p class="concept-definition">EventBridge archives retain selected events for later replay under configured retention. They do not rewind external state or automatically make replayed side effects safe.</p>
+      </details><details open class="concept-card" data-subtopic="replay">
+        <summary>replay</summary>
+        <p class="concept-definition">Replay redelivers retained historical input through a selected processing path. Preserve stable identity and define changed-handler, authorization and external-effect behavior before repeating it.</p>
+      </details><details open class="concept-card" data-subtopic="Scheduler">
+        <summary>Scheduler</summary>
+        <p class="concept-definition">EventBridge Scheduler invokes supported targets on one-time or recurring schedules with configured execution role, retry and failure handling. Scheduled time is distinct from successful business completion.</p>
+      </details><details open class="concept-card" data-subtopic="Step Functions">
+        <summary>Step Functions</summary>
+        <p class="concept-definition">AWS Step Functions coordinates state-machine executions through configured tasks, transitions and error handling. Standard and Express workflow types have different durability and execution semantics; side-effect identity remains important.</p>
+      </details><details open class="concept-card" data-subtopic="retries">
+        <summary>retries</summary>
+        <p class="concept-definition">A retry makes another attempt after failure or uncertainty. Bound attempts and elapsed time, and repeat side effects only when their contract supports safe retries.</p>
+      </details><details open class="concept-card" data-subtopic="compensation">
+        <summary>compensation</summary>
+        <p class="concept-definition">Compensation is a new business action intended to counteract an earlier effect. It can fail or be incomplete, so durable state and repair ownership must preserve the unresolved outcome.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>EventBridge routes matching events, while Step Functions records a workflow&#039;s transitions and error handling. Replaying an archived event sends old input through the current system; it does not reverse an earlier effect. Bind each step to durable identity and define compensation ownership. A human approval step also needs a stored correlation, permission check and expiry rule.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Cloud services provide computing resources through network APIs. AWS groups these resources by account, Region, and service.</p>
     <p><a href="../reference/senior-interview-practice.html#cloud-aws">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0498" data-bespoke-example="0498" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Replaying a workflow must recognize its earlier charge</figcaption><p>Practice workflow: charge C succeeds, reservation fails, and the triggering event is replayed.</p><div class="foundation-grid"><div>Original run<br>Charge C committed</div><div>Reservation failed<br>Persist recovery decision</div><div>Replay<br>Recognize C<br>Do not blindly charge again</div></div><details><summary>Is compensation an automatic rollback of the original charge?</summary><p>No. It is a new operation that can also fail and needs an owner and identity.</p></details><details><summary>Does replay restore the world to the event's original time?</summary><p>No. It processes history against current systems and must handle prior effects.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>EventBridge routes matching events, while Step Functions records a workflow&#039;s transitions and error handling. Replaying an archived event sends old input through the current system; it does not reverse an earlier effect. Bind each step to durable identity and define compensation ownership. A human approval step also needs a stored correlation, permission check and expiry rule.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0498" data-bespoke-example="0498" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Replaying a workflow must recognize its earlier charge</figcaption><p>Practice workflow: charge C succeeds, reservation fails, and the triggering event is replayed.</p><div class="foundation-grid"><div>Original run<br>Charge C committed</div><div>Reservation failed<br>Persist recovery decision</div><div>Replay<br>Recognize C<br>Do not blindly charge again</div></div><details open><summary>Is compensation an automatic rollback of the original charge?</summary><p>No. It is a new operation that can also fail and needs an owner and identity.</p></details><details open><summary>Does replay restore the world to the event's original time?</summary><p>No. It processes history against current systems and must handle prior effects.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an AWS service request</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="aws-event-delivery" aria-label="Mechanism trace: Producer emits a command or event then Managed service stores or matches then Worker handles a delivery then Acknowledge, retry, or dead-letter. Experiment: Fail a consumer after its side effect and verify redelivery does not duplicate the outcome.">
         <li class="trace-stage"><span>01 · PUBLISH</span><details class="trace-explanation" open><summary>Producer emits a command or event</summary><p>Schema, partition or group key, identity, and trace context enter.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · BUFFER / ROUTE</span><details class="trace-explanation"><summary>Managed service stores or matches</summary><p>Durability, ordering, retention, and rules define the path.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSUME</span><details class="trace-explanation"><summary>Worker handles a delivery</summary><p>Visibility, checkpoints, retries, and idempotency control progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · SETTLE</span><details class="trace-explanation"><summary>Acknowledge, retry, or dead-letter</summary><p>Lag, duplicate effects, and failure state become evidence.</p></details></li>
       </ol>
@@ -74,46 +125,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="9">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="EventBridge buses">
-        <summary>EventBridge buses</summary>
-        <p class="concept-definition">EventBridge matches events to targets using rules. It decouples publishers from subscribers but requires schema, retry, archive, and authorization design.</p>
-      </details><details class="concept-card" data-subtopic="rules">
-        <summary>rules</summary>
-        <p class="concept-definition">EventBridge rules match event patterns and select configured targets. Pattern matching does not validate every business schema field or guarantee successful target processing.</p>
-      </details><details class="concept-card" data-subtopic="schemas">
-        <summary>schemas</summary>
-        <p class="concept-definition">A schema describes allowed data structure and constraints. It helps validate representation but does not automatically prove authorization or business correctness.</p>
-      </details><details class="concept-card" data-subtopic="archives">
-        <summary>archives</summary>
-        <p class="concept-definition">EventBridge archives retain selected events for later replay under configured retention. They do not rewind external state or automatically make replayed side effects safe.</p>
-      </details><details class="concept-card" data-subtopic="replay">
-        <summary>replay</summary>
-        <p class="concept-definition">Replay redelivers retained historical input through a selected processing path. Preserve stable identity and define changed-handler, authorization and external-effect behavior before repeating it.</p>
-      </details><details class="concept-card" data-subtopic="Scheduler">
-        <summary>Scheduler</summary>
-        <p class="concept-definition">EventBridge Scheduler invokes supported targets on one-time or recurring schedules with configured execution role, retry and failure handling. Scheduled time is distinct from successful business completion.</p>
-      </details><details class="concept-card" data-subtopic="Step Functions">
-        <summary>Step Functions</summary>
-        <p class="concept-definition">AWS Step Functions coordinates state-machine executions through configured tasks, transitions and error handling. Standard and Express workflow types have different durability and execution semantics; side-effect identity remains important.</p>
-      </details><details class="concept-card" data-subtopic="retries">
-        <summary>retries</summary>
-        <p class="concept-definition">A retry makes another attempt after failure or uncertainty. Bound attempts and elapsed time, and repeat side effects only when their contract supports safe retries.</p>
-      </details><details class="concept-card" data-subtopic="compensation">
-        <summary>compensation</summary>
-        <p class="concept-definition">Compensation is a new business action intended to counteract an earlier effect. It can fail or be incomplete, so durable state and repair ownership must preserve the unresolved outcome.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Orchestrate an AI document workflow with timeouts, human approval, archive replay, and compensating cleanup.</p>
     <p class="lab-scope">Predict the local fixture or complete the design calculation, then compare the answer. Cloud experiments need the missing infrastructure and adapters in an authorized isolated account. Set cost and cleanup limits and record actual failure, recovery and evaluation results.</p>
 
@@ -140,8 +160,10 @@
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Replaying a workflow must recognize its earlier charge</p><p>Practice workflow: charge C succeeds, reservation fails, and the triggering event is replayed.</p><div class="foundation-grid"><div>Original run<br>Charge C committed</div><div>Reservation failed<br>Persist recovery decision</div><div>Replay<br>Recognize C<br>Do not blindly charge again</div></div></div>
@@ -221,10 +243,16 @@
       </details>
     </article>
     <p><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">Review the lesson source: AWS Documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.aws.amazon.com/" target="_blank" rel="noreferrer">AWS Documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/cloud-aws-deep-dive-map.html" target="_blank">Cloud &amp; AWS coverage map ↗</a>
-    
-    
-    
-    
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

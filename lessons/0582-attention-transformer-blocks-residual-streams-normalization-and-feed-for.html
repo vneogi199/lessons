@@ -46,23 +46,62 @@
     <h1>Attention, transformer blocks, residual streams, normalization, and feed-forward layers</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Attention">
+        <summary>Attention</summary>
+        <p class="concept-definition">Attention computes weighted combinations of token representations based on learned query, key, and value relationships.</p>
+      </details><details open class="concept-card" data-subtopic="transformer blocks">
+        <summary>transformer blocks</summary>
+        <p class="concept-definition">A transformer block applies attention, feed-forward transformations, normalization, and residual connections in repeated layers.</p>
+      </details><details open class="concept-card" data-subtopic="residual streams">
+        <summary>residual streams</summary>
+        <p class="concept-definition">A residual stream carries the evolving token representation through model layers while each sublayer adds an update.</p>
+      </details><details open class="concept-card" data-subtopic="normalization">
+        <summary>normalization</summary>
+        <p class="concept-definition">Normalization rescales activations to keep model computation stable and trainable.</p>
+      </details><details open class="concept-card" data-subtopic="feed-forward layers">
+        <summary>feed-forward layers</summary>
+        <p class="concept-definition">A feed-forward layer applies learned nonlinear transformations independently to each token position.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Calculate a small attention result, then trace matrix shapes through one head and a pre-normalization transformer block.</p>
+      <p class="analogy">A query describes what a position is looking for. Keys are compared with that query to produce scores. Values supply the information that the scores will combine. These are learned vectors, not literal database queries or keys.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A token representation is a list of numbers. A tensor is an array with one or more dimensions; its shape gives the length of each dimension. Attention combines token representations. A transformer block combines attention with per-token transformations and residual additions.</p>
     <p><a href="../reference/senior-interview-practice.html#llm-internals">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0582" data-bespoke-example="0582" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">The causal mask hides the later value</figcaption><p>The scalar head has values 10 and 20. Position zero can attend only to itself.</p><div class="foundation-grid"><div>Position 0<br>Only value 10 visible<br>Output 10</div><div>Position 1<br>Scores 0 and 1<br>Weighted average favors 20</div><div>Change future value to 999<br>Position 0 still outputs 10</div></div><details><summary>Why would removing the mask be wrong for next-token training?</summary><p>The earlier position could use future information that is unavailable during generation.</p></details><details><summary>Is this scalar head a full transformer block?</summary><p>No. Real blocks also include projections, multiple heads, residual paths, normalization and a feed-forward network.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Calculate a small attention result, then trace matrix shapes through one head and a pre-normalization transformer block.</p>
-      <p class="analogy">A query describes what a position is looking for. Keys are compared with that query to produce scores. Values supply the information that the scores will combine. These are learned vectors, not literal database queries or keys.</p>
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0582" data-bespoke-example="0582" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">The causal mask hides the later value</figcaption><p>The scalar head has values 10 and 20. Position zero can attend only to itself.</p><div class="foundation-grid"><div>Position 0<br>Only value 10 visible<br>Output 10</div><div>Position 1<br>Scores 0 and 1<br>Weighted average favors 20</div><div>Change future value to 999<br>Position 0 still outputs 10</div></div><details open><summary>Why would removing the mask be wrong for next-token training?</summary><p>The earlier position could use future information that is unavailable during generation.</p></details><details open><summary>Is this scalar head a full transformer block?</summary><p>No. Real blocks also include projections, multiple heads, residual paths, normalization and a feed-forward network.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a token sequence</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="numerical-0582" aria-label="Mechanism trace: Mask future positions then Normalize visible scores then Mix values. Experiment: Predict the assertions, change one fixture input, and explain whether the original expectation should still hold.">
         <li class="trace-stage"><span>01 · TRACE</span><details class="trace-explanation" open><summary>Mask future positions</summary><p>Position zero can only attend to the first value.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><details class="trace-explanation"><summary>Normalize visible scores</summary><p>Exponentials turn the visible scores into weights summing to one.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><details class="trace-explanation"><summary>Mix values</summary><p>The later position is a weighted average; changing a future value leaves the earlier output unchanged.</p></details></li>
       </ol>
@@ -74,27 +113,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Attention">
-        <summary>Attention</summary>
-        <p class="concept-definition">Attention computes weighted combinations of token representations based on learned query, key, and value relationships.</p>
-      </details><details class="concept-card" data-subtopic="transformer blocks">
-        <summary>transformer blocks</summary>
-        <p class="concept-definition">A transformer block applies attention, feed-forward transformations, normalization, and residual connections in repeated layers.</p>
-      </details><details class="concept-card" data-subtopic="residual streams">
-        <summary>residual streams</summary>
-        <p class="concept-definition">A residual stream carries the evolving token representation through model layers while each sublayer adds an update.</p>
-      </details><details class="concept-card" data-subtopic="normalization">
-        <summary>normalization</summary>
-        <p class="concept-definition">Normalization rescales activations to keep model computation stable and trainable.</p>
-      </details><details class="concept-card" data-subtopic="feed-forward layers">
-        <summary>feed-forward layers</summary>
-        <p class="concept-definition">A feed-forward layer applies learned nonlinear transformations independently to each token position.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>First trace the scalar example. At position zero, only value 10 is visible, so its weight is 1 and the output is 10. At position one, scores are 0 and 1. Softmax gives weights 1/(1 + e) and e/(1 + e). The weighted value is about 17.31. Changing the future value does not change position zero's output.</p>
 <p>Now use one head, three tokens and two numbers per query and key. Q and K each have shape 3 × 2. QKᵀ has shape 3 × 3. Each row scores one query against the three keys. Divide by √2. Set future-position scores to negative infinity before applying softmax across each row. If V has shape 3 × 4, the result has shape 3 × 4.</p>
@@ -111,10 +130,11 @@ FFN output: n × d_model</code></pre>
 <p>Dense attention computes n² query-key pairs for a full sequence. Doubling n quadruples the pair count, but does not imply that total model latency quadruples. Projections, the feed-forward network, memory access and kernels also cost time. During autoregressive decoding, a KV cache reuses prior keys and values. A new token attends to the stored prefix, while the cache consumes memory that grows with context length. Caching does not remove attention over the prefix.</p>
 <p><a href="https://arxiv.org/abs/2002.04745">Pre-normalization and post-normalization analysis</a>; <a href="https://huggingface.co/docs/transformers/cache_explanation">KV cache explanation</a>.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Implement and visualize scaled dot-product attention on a tiny example.</p>
     <p class="lab-scope">The Python starter computes scalar causal attention and checks two outputs. The shape trace extends it to one matrix attention head and a named pre-normalization block. The block equations are an explanation, not a supplied trained model or performance benchmark.</p>
 
@@ -147,8 +167,10 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Wrong softmax axis</h3><p>Normalize scores across the keys visible to one query. Mask before softmax so forbidden positions receive zero weight.</p></article><article><h3>Toy mistaken for a full block</h3><p>The scalar starter has no learned projections, multi-head combination, residual addition or feed-forward network. Use the shape trace to explain these omitted parts.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">The causal mask hides the later value</p><p>The scalar head has values 10 and 20. Position zero can attend only to itself.</p><div class="foundation-grid"><div>Position 0<br>Only value 10 visible<br>Output 10</div><div>Position 1<br>Scores 0 and 1<br>Weighted average favors 20</div><div>Change future value to 999<br>Position 0 still outputs 10</div></div></div>
@@ -228,10 +250,16 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
       </details>
     </article>
     <p><a href="https://arxiv.org/html/1706.03762v7" target="_blank" rel="noreferrer">Review the lesson source: Attention Is All You Need: architecture</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -245,23 +273,23 @@ assert attend(0, [10, 999]) == 10 # Future value cannot change position zero.
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://arxiv.org/html/1706.03762v7" target="_blank" rel="noreferrer">Attention Is All You Need: architecture ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,53 @@
     <h1>Liskov Substitution Principle, Interface Segregation Principle, Dependency Inversion Principle, contracts, substitutability, and capability interfaces</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Liskov Substitution Principle">
+        <summary>Liskov Substitution Principle</summary>
+        <p class="concept-definition">The Liskov Substitution Principle requires every implementation of a contract to preserve behavior that callers rely on, including valid inputs, results, invariants, and failures.</p>
+      </details><details open class="concept-card" data-subtopic="Interface Segregation Principle">
+        <summary>Interface Segregation Principle</summary>
+        <p class="concept-definition">The Interface Segregation Principle gives each consumer a small capability contract so it does not depend on operations it never uses.</p>
+      </details><details open class="concept-card" data-subtopic="Dependency Inversion Principle">
+        <summary>Dependency Inversion Principle</summary>
+        <p class="concept-definition">The Dependency Inversion Principle makes high-level policy own and depend on abstractions while low-level details implement those abstractions.</p>
+      </details><details open class="concept-card" data-subtopic="contracts">
+        <summary>contracts</summary>
+        <p class="concept-definition">A contract defines accepted inputs, returned outputs, state changes, invariants, failures, timing, and other caller-visible guarantees.</p>
+      </details><details open class="concept-card" data-subtopic="substitutability">
+        <summary>substitutability</summary>
+        <p class="concept-definition">Substitutability means one implementation can replace another without breaking the reasonable expectations encoded in the shared contract.</p>
+      </details><details open class="concept-card" data-subtopic="capability interfaces">
+        <summary>capability interfaces</summary>
+        <p class="concept-definition">A capability interface describes the smallest operation a consumer needs, such as reading a clock or saving an order, without exposing an entire service.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Two implementations are interchangeable only when callers can rely on the same behavior. If a missing order returns undefined in one implementation and throws in another, matching method signatures do not resolve the difference. Give a reader only the reading capability it needs. Let business policy define that contract and let storage implement it. Passing the storage object into a function supplies the dependency; the import and ownership rules determine whether the dependency is inverted.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Software design arranges code, state, and dependencies so correct behavior is clear and future changes remain safe and reasonably small.</p>
@@ -55,19 +102,14 @@
   <figure class="card mechanism-map" data-lesson-map="0010" data-bespoke-example="0010" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A replacement must keep the missing-order contract</figcaption>
 <p>The caller asks for an order that does not exist. OrderReader promises an order or undefined.</p>
 <div class="foundation-grid"><div>Memory reader<br>find missing ID<br>↓<br>undefined → caller handles absence</div><div>Replacement reader<br>find missing ID<br>↓<br>throws → different failure path</div></div>
-<details><summary>Is matching the method signature enough for substitution?</summary><p>No. The replacement must also preserve the agreed behavior for a valid missing-ID lookup. An unexpected exception can break the caller.</p></details>
-<details><summary>Does a read-only report need the save method?</summary><p>No. Give it OrderReader. Separating reader and writer capabilities avoids requiring an operation the report does not use.</p></details>
-<p>The memory adapter retains object references. Readonly types do not freeze those objects at runtime.</p></figure><div class="grid">
-    <section class="card">
-
-      <p>Two implementations are interchangeable only when callers can rely on the same behavior. If a missing order returns undefined in one implementation and throws in another, matching method signatures do not resolve the difference. Give a reader only the reading capability it needs. Let business policy define that contract and let storage implement it. Passing the storage object into a function supplies the dependency; the import and ownership rules determine whether the dependency is inverted.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Is matching the method signature enough for substitution?</summary><p>No. The replacement must also preserve the agreed behavior for a valid missing-ID lookup. An unexpected exception can break the caller.</p></details>
+<details open><summary>Does a read-only report need the save method?</summary><p>No. Give it OrderReader. Separating reader and writer capabilities avoids requiring an operation the report does not use.</p></details>
+<p>The memory adapter retains object references. Readonly types do not freeze those objects at runtime.</p></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a requirement-driven code change</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="design-change" aria-label="Mechanism trace: A concrete requirement creates pressure then Code ownership and dependencies are traced then The smallest clear design changes then Evidence measures the result. Experiment: Apply one realistic change before and after the refactor and compare how much unrelated code must be understood or edited.">
         <li class="trace-stage"><span>01 · CHANGE</span><details class="trace-explanation" open><summary>A concrete requirement creates pressure</summary><p>The requested behavior and likely reasons to change identify the real design problem.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · LOCATE</span><details class="trace-explanation"><summary>Code ownership and dependencies are traced</summary><p>Names, cohesion, coupling, state, contracts, and boundaries reveal the affected area.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · MODIFY</span><details class="trace-explanation"><summary>The smallest clear design changes</summary><p>Simple control flow, narrow capabilities, composition, tests, and explicit tradeoffs contain impact.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · COMPARE</span><details class="trace-explanation"><summary>Evidence measures the result</summary><p>Behavior, files changed, dependency direction, complexity, readability, and failure handling test the claim.</p></details></li>
       </ol>
@@ -79,37 +121,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Liskov Substitution Principle">
-        <summary>Liskov Substitution Principle</summary>
-        <p class="concept-definition">The Liskov Substitution Principle requires every implementation of a contract to preserve behavior that callers rely on, including valid inputs, results, invariants, and failures.</p>
-      </details><details class="concept-card" data-subtopic="Interface Segregation Principle">
-        <summary>Interface Segregation Principle</summary>
-        <p class="concept-definition">The Interface Segregation Principle gives each consumer a small capability contract so it does not depend on operations it never uses.</p>
-      </details><details class="concept-card" data-subtopic="Dependency Inversion Principle">
-        <summary>Dependency Inversion Principle</summary>
-        <p class="concept-definition">The Dependency Inversion Principle makes high-level policy own and depend on abstractions while low-level details implement those abstractions.</p>
-      </details><details class="concept-card" data-subtopic="contracts">
-        <summary>contracts</summary>
-        <p class="concept-definition">A contract defines accepted inputs, returned outputs, state changes, invariants, failures, timing, and other caller-visible guarantees.</p>
-      </details><details class="concept-card" data-subtopic="substitutability">
-        <summary>substitutability</summary>
-        <p class="concept-definition">Substitutability means one implementation can replace another without breaking the reasonable expectations encoded in the shared contract.</p>
-      </details><details class="concept-card" data-subtopic="capability interfaces">
-        <summary>capability interfaces</summary>
-        <p class="concept-definition">A capability interface describes the smallest operation a consumer needs, such as reading a clock or saving an order, without exposing an entire service.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Repair a subtype that strengthens a precondition, split a broad interface by consumer need, and inject a narrow clock or storage capability into domain policy.</p>
     <p class="lab-scope">Core: trace the supplied TypeScript example, predict its result and one failure, then verify using the already available compiler/runtime or a written walkthrough. The broader lab is an extension requiring your own before/after fixture. Ambient provider declarations and repository interfaces are integration boundaries, not supplied services. Explain one named pattern deeply; the other definitions form a comparison map, not implemented versions of every pattern.</p>
 
@@ -147,8 +167,10 @@ await readerContract(() =&gt; new MemoryOrders());</code></pre>
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A replacement must keep the missing-order contract</p>
@@ -221,10 +243,16 @@ await readerContract(() =&gt; new MemoryOrders());</code></pre>
       </details>
     </article>
     <p><a href="https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/" target="_blank" rel="noreferrer">Review the lesson source: Microsoft object-oriented design principles</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -238,23 +266,23 @@ await readerContract(() =&gt; new MemoryOrders());</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/" target="_blank" rel="noreferrer">Microsoft object-oriented design principles ↗</a></div>
-    
+
     <a href="../reference/software-design-deep-dive-map.html" target="_blank">Software design coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

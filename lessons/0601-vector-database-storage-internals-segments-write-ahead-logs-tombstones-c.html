@@ -46,23 +46,74 @@
     <h1>Vector database storage internals, segments, write-ahead logs, tombstones, compaction, filtering plans, sharding, replication, and recovery</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="9">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Vector database storage internals">
+        <summary>Vector database storage internals</summary>
+        <p class="concept-definition">Vector database storage internals turn accepted mutations into recoverable vector, payload, ID, and index state while reads and background maintenance continue.</p>
+      </details><details open class="concept-card" data-subtopic="segments">
+        <summary>segments</summary>
+        <p class="concept-definition">A segment is a bounded group of vector data, payload data, ID mappings, and indexes that can be searched independently and later merged or rebuilt.</p>
+      </details><details open class="concept-card" data-subtopic="write-ahead logs">
+        <summary>write-ahead logs</summary>
+        <p class="concept-definition">A write-ahead log records ordered changes durably before mutable data structures apply them, allowing recovery to replay acknowledged operations after a crash.</p>
+      </details><details open class="concept-card" data-subtopic="tombstones">
+        <summary>tombstones</summary>
+        <p class="concept-definition">A tombstone marks a deleted point so searches ignore it before background maintenance physically removes its stored entries.</p>
+      </details><details open class="concept-card" data-subtopic="compaction">
+        <summary>compaction</summary>
+        <p class="concept-definition">Compaction rewrites segments to remove obsolete versions and tombstones, merge small files, and rebuild efficient indexes at the cost of background I/O and write amplification.</p>
+      </details><details open class="concept-card" data-subtopic="filtering plans">
+        <summary>filtering plans</summary>
+        <p class="concept-definition">A filtering plan chooses whether metadata constraints run before, during, or after approximate candidate search according to selectivity and index support.</p>
+      </details><details open class="concept-card" data-subtopic="sharding">
+        <summary>sharding</summary>
+        <p class="concept-definition">Sharding assigns points and queries to partitions by a routing rule so data and load can spread across machines.</p>
+      </details><details open class="concept-card" data-subtopic="replication">
+        <summary>replication</summary>
+        <p class="concept-definition">Replication stores shard copies on separate failure domains and defines how many acknowledgements a write or read needs before returning.</p>
+      </details><details open class="concept-card" data-subtopic="recovery">
+        <summary>recovery</summary>
+        <p class="concept-definition">Vector database recovery replays durable logs or restores snapshots, rejoins replicas, rebuilds indexes if needed, and verifies point versions, deletions, and query results.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A vector store must recover point versions, payloads and deletions as well as its search index. Logs record changes, segments organize data, and compaction removes obsolete entries while consuming background resources. Replication settings need actual independent replicas to demonstrate failure tolerance. The commands specify storage operations; churn, crash recovery and restored query results need their own observed evidence.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A retrieval system finds relevant information. A RAG system gives that information to a language model.</p>
     <p><a href="../reference/senior-interview-practice.html#retrieval-rag">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0601" data-bespoke-example="0601" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A restore must preserve deletion as well as live data</figcaption><p>The fixture inserts point 1 for tenant a and point 2 for tenant b, then deletes point 2.</p><div class="foundation-grid"><div>Before deletion<br>Points 1 and 2</div><div>After deletion<br>Point 2 must be absent</div><div>Snapshot restore check<br>Keep deletion and tenant filtering intact</div></div><details><summary>Is a snapshot listing enough to establish recovery?</summary><p>No. Restore and verify data, deleted-point absence and retrieval behavior.</p></details><details><summary>Can a tenant-a query return tenant-b payloads after maintenance?</summary><p>Not under the required isolation contract. Test the filtered path explicitly.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A vector store must recover point versions, payloads and deletions as well as its search index. Logs record changes, segments organize data, and compaction removes obsolete entries while consuming background resources. Replication settings need actual independent replicas to demonstrate failure tolerance. The commands specify storage operations; churn, crash recovery and restored query results need their own observed evidence.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0601" data-bespoke-example="0601" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A restore must preserve deletion as well as live data</figcaption><p>The fixture inserts point 1 for tenant a and point 2 for tenant b, then deletes point 2.</p><div class="foundation-grid"><div>Before deletion<br>Points 1 and 2</div><div>After deletion<br>Point 2 must be absent</div><div>Snapshot restore check<br>Keep deletion and tenant filtering intact</div></div><details open><summary>Is a snapshot listing enough to establish recovery?</summary><p>No. Restore and verify data, deleted-point absence and retrieval behavior.</p></details><details open><summary>Can a tenant-a query return tenant-b payloads after maintenance?</summary><p>Not under the required isolation contract. Test the filtered path explicitly.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a vector write and query</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="vector-storage" aria-label="Mechanism trace: Mutation enters the durability path then Mutable storage applies the version then Tombstones and segments are rebuilt then Shards and replicas preserve service. Experiment: Create update/delete churn, interrupt a writer, compact, and restore a snapshot while checking the same tenant-scoped queries.">
         <li class="trace-stage"><span>01 · LOG</span><details class="trace-explanation" open><summary>Mutation enters the durability path</summary><p>A sequence number orders records; recovery of acknowledged changes depends on the engine&#039;s flush and replication policy.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SEGMENT</span><details class="trace-explanation"><summary>Mutable storage applies the version</summary><p>Vector, payload, ID mapping, and indexes expose the newest point state.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · MAINTAIN</span><details class="trace-explanation"><summary>Tombstones and segments are rebuilt</summary><p>Compaction and indexing reclaim or reorganize storage; measure interference with reads and writes rather than assuming it is free.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · DISTRIBUTE</span><details class="trace-explanation"><summary>Shards and replicas preserve service</summary><p>Routing, acknowledgements, snapshots, and restore tests define failure behavior.</p></details></li>
       </ol>
@@ -74,46 +125,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="9">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Vector database storage internals">
-        <summary>Vector database storage internals</summary>
-        <p class="concept-definition">Vector database storage internals turn accepted mutations into recoverable vector, payload, ID, and index state while reads and background maintenance continue.</p>
-      </details><details class="concept-card" data-subtopic="segments">
-        <summary>segments</summary>
-        <p class="concept-definition">A segment is a bounded group of vector data, payload data, ID mappings, and indexes that can be searched independently and later merged or rebuilt.</p>
-      </details><details class="concept-card" data-subtopic="write-ahead logs">
-        <summary>write-ahead logs</summary>
-        <p class="concept-definition">A write-ahead log records ordered changes durably before mutable data structures apply them, allowing recovery to replay acknowledged operations after a crash.</p>
-      </details><details class="concept-card" data-subtopic="tombstones">
-        <summary>tombstones</summary>
-        <p class="concept-definition">A tombstone marks a deleted point so searches ignore it before background maintenance physically removes its stored entries.</p>
-      </details><details class="concept-card" data-subtopic="compaction">
-        <summary>compaction</summary>
-        <p class="concept-definition">Compaction rewrites segments to remove obsolete versions and tombstones, merge small files, and rebuild efficient indexes at the cost of background I/O and write amplification.</p>
-      </details><details class="concept-card" data-subtopic="filtering plans">
-        <summary>filtering plans</summary>
-        <p class="concept-definition">A filtering plan chooses whether metadata constraints run before, during, or after approximate candidate search according to selectivity and index support.</p>
-      </details><details class="concept-card" data-subtopic="sharding">
-        <summary>sharding</summary>
-        <p class="concept-definition">Sharding assigns points and queries to partitions by a routing rule so data and load can spread across machines.</p>
-      </details><details class="concept-card" data-subtopic="replication">
-        <summary>replication</summary>
-        <p class="concept-definition">Replication stores shard copies on separate failure domains and defines how many acknowledgements a write or read needs before returning.</p>
-      </details><details class="concept-card" data-subtopic="recovery">
-        <summary>recovery</summary>
-        <p class="concept-definition">Vector database recovery replays durable logs or restores snapshots, rejoins replicas, rebuilds indexes if needed, and verifies point versions, deletions, and query results.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Generate insert-update-delete churn, inspect segments and filter selectivity, force maintenance, compare recall and tail latency before and after compaction, then restore a snapshot and verify tenant isolation.</p>
     <p class="lab-scope">Predict the local example or complete the design worksheet, then compare the worked answer. Measuring product behavior requires the named application, labelled data and integrations in an appropriate existing environment. A small example establishes only the behavior and assumptions it exercises.</p>
 
@@ -152,8 +172,10 @@ curl -fsS &quot;$base/collections/$collection/snapshots&quot;
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A restore must preserve deletion as well as live data</p><p>The fixture inserts point 1 for tenant a and point 2 for tenant b, then deletes point 2.</p><div class="foundation-grid"><div>Before deletion<br>Points 1 and 2</div><div>After deletion<br>Point 2 must be absent</div><div>Snapshot restore check<br>Keep deletion and tenant filtering intact</div></div></div>
@@ -233,10 +255,16 @@ curl -fsS &quot;$base/collections/$collection/snapshots&quot;
       </details>
     </article>
     <p><a href="https://qdrant.tech/documentation/manage-data/storage/" target="_blank" rel="noreferrer">Review the lesson source: Qdrant storage internals documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -250,23 +278,23 @@ curl -fsS &quot;$base/collections/$collection/snapshots&quot;
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://qdrant.tech/documentation/manage-data/storage/" target="_blank" rel="noreferrer">Qdrant storage internals documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

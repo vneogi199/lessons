@@ -46,20 +46,50 @@
     <h1>Polars as-of joins, quote freshness, and point-in-time correctness</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A request arrives at time 12. Quotes exist at 10 and 14. The latest quote at or before the request is the one at 10.</p><p>A backward as-of join applies this rule. A tolerance can reject stale quotes. For historical decisions, also check when each quote became available.</p><details><summary>Can the time-14 quote be used for this backward match?</summary><p>No. It is later than the request.</p></details></section>
-<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="2">
 
-  <figure class="card mechanism-map" data-lesson-map="0654" data-bespoke-example="0654" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Use a prior quote only while it is fresh enough</figcaption><p>Quotes for x occur at times 10 and 14 with rates 100 and 104. Backward tolerance is 5 time units.</p><div class="foundation-grid"><div>Request at 12<br>Prior quote 10<br>Age 2 → rate 100</div><div>Request at 20<br>Prior quote 14<br>Age 6 → no match</div></div><details><summary>Why not use quote 14 for the request at 12?</summary><p>It is a future quote and would violate the backward point-in-time rule.</p></details><details><summary>Does no match mean the rate is zero?</summary><p>No. It is missing. Apply an explicit stale or missing-data policy.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="backward_match">
+        <summary>backward_match</summary>
+        <p class="concept-definition">The latest permitted right-side key at or before the left-side key.</p>
+      </details><details open class="concept-card" data-subtopic="tolerance">
+        <summary>tolerance</summary>
+        <p class="concept-definition">The maximum allowed distance between matched keys.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>A backward as-of join selects a preceding quote within the same instrument and freshness limit.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>A request arrives at time 12. Quotes exist at 10 and 14. The latest quote at or before the request is the one at 10.</p><p>A backward as-of join applies this rule. A tolerance can reject stale quotes. For historical decisions, also check when each quote became available.</p><details open><summary>Can the time-14 quote be used for this backward match?</summary><p>No. It is later than the request.</p></details></section>
+<p><a href="../reference/polars-deep-dive-map.html">Polars track map</a> · <a href="../reference/polars-quick-reference.html">Practice guide and quick reference</a></p>
+
+  <figure class="card mechanism-map" data-lesson-map="0654" data-bespoke-example="0654" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Use a prior quote only while it is fresh enough</figcaption><p>Quotes for x occur at times 10 and 14 with rates 100 and 104. Backward tolerance is 5 time units.</p><div class="foundation-grid"><div>Request at 12<br>Prior quote 10<br>Age 2 → rate 100</div><div>Request at 20<br>Prior quote 14<br>Age 6 → no match</div></div><details open><summary>Why not use quote 14 for the request at 12?</summary><p>It is a future quote and would violate the backward point-in-time rule.</p></details><details open><summary>Does no match mean the rate is zero?</summary><p>No. It is missing. Apply an explicit stale or missing-data policy.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a typed analytical transformation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="polars-0654" aria-label="Mechanism trace: Define the input and row grain then Apply the stated operation then Compare values and failure behavior. Experiment: Mark the time-10 quote as arriving at time 13. Explain why it must be excluded from a decision made at 12 despite passing the event-time comparison.">
         <li class="trace-stage"><span>01 · CONTRACT</span><details class="trace-explanation" open><summary>Define the input and row grain</summary><p>An as-of join matches ordered keys by relative position instead of exact equality. Backward selects a right key no later than the left key. A tolerance limits how far away that match may be. Both inputs must meet the sortedness requirements.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRANSFORM</span><details class="trace-explanation"><summary>Apply the stated operation</summary><p>A backward as-of join selects a preceding quote within the same instrument and freshness limit.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECK</span><details class="trace-explanation"><summary>Compare values and failure behavior</summary><p>Time 12 matches rate 100 at time 10. Time 20 has no fresh match because time 14 is six ticks old.</p></details></li>
       </ol>
@@ -71,28 +101,18 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="2">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="backward_match">
-        <summary>backward_match</summary>
-        <p class="concept-definition">The latest permitted right-side key at or before the left-side key.</p>
-      </details><details class="concept-card" data-subtopic="tolerance">
-        <summary>tolerance</summary>
-        <p class="concept-definition">The maximum allowed distance between matched keys.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>For an RFQ at time 12, a backward join can select the quote at time 10. A quote at time 14 is in the future and is unsuitable for a historical decision. Nearest is a different policy and can select future data.</p>
 <p>Group the match by instrument. Otherwise, the closest preceding time could belong to a different product. When using by groups, verify sorting within each group rather than relying only on a warning or a metadata flag.</p>
 <p>Tolerance makes stale matches explicit. The example uses integer ticks: time 20 has no preceding quote within five ticks. For temporal columns, choose a duration and consistent timezone. Decide whether exact-time matches are allowed.</p>
 <p>Event time alone is insufficient when reconstructing what a trader actually knew. A quote timestamped 10 but first received at 13 was unavailable at decision time 12. Preserve arrival time and enforce the information-availability contract before the as-of match. Resolve duplicate quote times with a documented tie rule.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Mark the time-10 quote as arriving at time 13. Explain why it must be excluded from a decision made at 12 despite passing the event-time comparison.</p>
     <p class="lab-scope">Self-contained synthetic Python fixture requiring Polars already installed. File examples use unique temporary directories. Cloud, database, service and optional-library work is an extension, not a supplied deployment.</p>
 
@@ -118,8 +138,10 @@ assert out.height == requests.height</code></pre>
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Check this case</h3><p>A nearest or forward match can leak future market information into a backtest.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Use a prior quote only while it is fresh enough</p><p>Quotes for x occur at times 10 and 14 with rates 100 and 104. Backward tolerance is 5 time units.</p><div class="foundation-grid"><div>Request at 12<br>Prior quote 10<br>Age 2 → rate 100</div><div>Request at 20<br>Prior quote 14<br>Age 6 → no match</div></div></div>
@@ -187,10 +209,16 @@ assert out.height == requests.height</code></pre>
       </details>
     </article>
     <p><a href="https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.join_asof.html" target="_blank" rel="noreferrer">Review the lesson source: Polars official documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -204,23 +232,23 @@ assert out.height == requests.height</code></pre>
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.join_asof.html" target="_blank" rel="noreferrer">Polars official documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

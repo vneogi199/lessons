@@ -46,23 +46,65 @@
     <h1>Multiprocessing, process pools, IPC, shared memory, start methods, and pickling</h1>
   </header>
 
-  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Two separate processes are like workers with separate notebooks. Changing a normal Python list in one process does not automatically change the other process&#039;s list.</p><p>They must exchange data or use explicit shared memory. Sending objects can require serialization, which costs time and can fail for unsupported objects. How a process starts also affects what it inherits.</p><details><summary>Does a child process automatically share every ordinary mutable object with its parent?</summary><p>No. Use an explicit communication or shared-memory design.</p></details></section>
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
 
-  <figure class="card mechanism-map" data-lesson-map="0290" data-bespoke-example="0290" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A result timeout does not stop a running process job</figcaption>
-<p>Suppose the first submitted prime-counting job is still running when future.result reaches its timeout.</p>
-<div class="foundation-grid"><div>Waiter<br>Timeout raises</div><div>Exception handler<br>Request cancellation of futures</div><div>Already running job<br>May continue</div><div>Pool context exits<br>Waits for running jobs</div></div>
-<details><summary>Does the ten-second result timeout guarantee the program exits within ten seconds?</summary><p>No. Running work and executor shutdown can outlast that wait.</p></details>
-<details><summary>Why use a real module and the main guard with spawn?</summary><p>Workers import the main module. The guard prevents that import from recursively creating another pool.</p></details></figure><div class="grid">
-    <section class="card">
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Multiprocessing">
+        <summary>Multiprocessing</summary>
+        <p class="concept-definition">Multiprocessing uses separate processes for isolation and CPU parallelism. Inputs and results normally cross serialization and inter-process communication boundaries.</p>
+      </details><details open class="concept-card" data-subtopic="process pools">
+        <summary>process pools</summary>
+        <p class="concept-definition">A process pool reuses worker processes for submitted callables. Startup, serialization, data copying, failure recovery, and shutdown can outweigh small tasks.</p>
+      </details><details open class="concept-card" data-subtopic="IPC">
+        <summary>IPC</summary>
+        <p class="concept-definition">Inter-process communication transfers data or coordination between processes, using mechanisms such as pipes, sockets, or shared memory. Each mechanism has ownership and synchronization costs.</p>
+      </details><details open class="concept-card" data-subtopic="shared memory">
+        <summary>shared memory</summary>
+        <p class="concept-definition">Shared memory allows participants to access the same storage. It reduces copying but requires synchronization and explicit ownership.</p>
+      </details><details open class="concept-card" data-subtopic="start methods">
+        <summary>start methods</summary>
+        <p class="concept-definition">Multiprocessing start methods control how a child process begins: spawn starts a fresh interpreter, fork copies the parent process state, and forkserver asks a server process to fork. Availability and defaults depend on platform and Python version; choose an explicit compatible context.</p>
+      </details><details open class="concept-card" data-subtopic="pickling">
+        <summary>pickling</summary>
+        <p class="concept-definition">Pickle serializes Python-specific objects and can execute code during loading. Never treat untrusted pickle data as safe input.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
 
       <p>A worker process has separate execution state. Sending work to it normally involves serialization and communication, which can outweigh the benefit for small jobs. A process pool reuses workers to reduce startup work. Shared memory can reduce copying but needs explicit ownership and synchronization. Start methods determine how workers begin and what they inherit; choose a supported method rather than assuming the same default on every platform.</p>
 
     </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
 
-    <aside class="card blackboard">
+
+
+  <section class="card simple-example" data-writing-standard="ASD-STE100-core-principles" aria-labelledby="simple-example-title"><h2 id="simple-example-title">ELI5 example</h2><p>Two separate processes are like workers with separate notebooks. Changing a normal Python list in one process does not automatically change the other process&#039;s list.</p><p>They must exchange data or use explicit shared memory. Sending objects can require serialization, which costs time and can fail for unsupported objects. How a process starts also affects what it inherits.</p><details open><summary>Does a child process automatically share every ordinary mutable object with its parent?</summary><p>No. Use an explicit communication or shared-memory design.</p></details></section>
+
+  <figure class="card mechanism-map" data-lesson-map="0290" data-bespoke-example="0290" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">A result timeout does not stop a running process job</figcaption>
+<p>Suppose the first submitted prime-counting job is still running when future.result reaches its timeout.</p>
+<div class="foundation-grid"><div>Waiter<br>Timeout raises</div><div>Exception handler<br>Request cancellation of futures</div><div>Already running job<br>May continue</div><div>Pool context exits<br>Waits for running jobs</div></div>
+<details open><summary>Does the ten-second result timeout guarantee the program exits within ten seconds?</summary><p>No. Running work and executor shutdown can outlast that wait.</p></details>
+<details open><summary>Why use a real module and the main guard with spawn?</summary><p>Workers import the main module. The guard prevents that import from recursively creating another pool.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a concurrent task</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="python-concurrency" aria-label="Mechanism trace: A callable or coroutine is created then Loop, thread, or process owns it then Work waits or consumes CPU then Result, error, or cancellation returns. Experiment: Run the workload once normally and once with blocking, cancellation, or worker failure.">
         <li class="trace-stage"><span>01 · WORK</span><details class="trace-explanation" open><summary>A callable or coroutine is created</summary><p>Its wait pattern and CPU cost determine a boundary.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Loop, thread, or process owns it</summary><p>The scheduler decides when execution can progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · SUSPEND / RUN</span><details class="trace-explanation"><summary>Work waits or consumes CPU</summary><p>Cancellation and synchronization shape interleaving.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JOIN</span><details class="trace-explanation"><summary>Result, error, or cancellation returns</summary><p>The owner waits for cleanup before continuing.</p></details></li>
       </ol>
@@ -74,37 +116,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Multiprocessing">
-        <summary>Multiprocessing</summary>
-        <p class="concept-definition">Multiprocessing uses separate processes for isolation and CPU parallelism. Inputs and results normally cross serialization and inter-process communication boundaries.</p>
-      </details><details class="concept-card" data-subtopic="process pools">
-        <summary>process pools</summary>
-        <p class="concept-definition">A process pool reuses worker processes for submitted callables. Startup, serialization, data copying, failure recovery, and shutdown can outweigh small tasks.</p>
-      </details><details class="concept-card" data-subtopic="IPC">
-        <summary>IPC</summary>
-        <p class="concept-definition">Inter-process communication transfers data or coordination between processes, using mechanisms such as pipes, sockets, or shared memory. Each mechanism has ownership and synchronization costs.</p>
-      </details><details class="concept-card" data-subtopic="shared memory">
-        <summary>shared memory</summary>
-        <p class="concept-definition">Shared memory allows participants to access the same storage. It reduces copying but requires synchronization and explicit ownership.</p>
-      </details><details class="concept-card" data-subtopic="start methods">
-        <summary>start methods</summary>
-        <p class="concept-definition">Multiprocessing start methods control how a child process begins: spawn starts a fresh interpreter, fork copies the parent process state, and forkserver asks a server process to fork. Availability and defaults depend on platform and Python version; choose an explicit compatible context.</p>
-      </details><details class="concept-card" data-subtopic="pickling">
-        <summary>pickling</summary>
-        <p class="concept-definition">Pickle serializes Python-specific objects and can execute code during loading. Never treat untrusted pickle data as safe input.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Parallelize a CPU-bound task, measure serialization overhead, and shut the pool down after a worker failure.</p>
     <p class="lab-scope">Read the example and predict one result and one failure before checking the answer. Self-contained standard-library examples need a compatible interpreter. Some exercises require files or adapters that you must supply. Type-checking, concurrency, packaging and integration claims need their own checks; passing a syntax check or using a fake is not enough. You can review the code without installing anything.</p>
 
@@ -144,8 +164,10 @@ if __name__ == &quot;__main__&quot;:
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">A result timeout does not stop a running process job</p>
@@ -217,10 +239,16 @@ if __name__ == &quot;__main__&quot;:
       </details>
     </article>
     <p><a href="https://docs.python.org/3/library/multiprocessing.html" target="_blank" rel="noreferrer">Review the lesson source: Python multiprocessing reference</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -234,23 +262,23 @@ if __name__ == &quot;__main__&quot;:
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://docs.python.org/3/library/multiprocessing.html" target="_blank" rel="noreferrer">Python multiprocessing reference ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/python-deep-dive-map.html" target="_blank">Python coverage map ↗</a>
-    
-    
-    
-    
-    
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,56 @@
     <h1>Engine pipeline, parsing, AST, bytecode, interpreter, JIT, and deoptimization</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Engine pipeline">
+        <summary>Engine pipeline</summary>
+        <p class="concept-definition">A JavaScript engine parses source and executes it through implementation-specific interpreter and compiler tiers. Optimization is adaptive and must preserve ECMAScript behavior.</p>
+      </details><details open class="concept-card" data-subtopic="parsing">
+        <summary>parsing</summary>
+        <p class="concept-definition">Parsing checks source syntax and constructs an internal representation. An engine&#039;s parser may defer work, but all optimizations must preserve observable language semantics.</p>
+      </details><details open class="concept-card" data-subtopic="AST">
+        <summary>AST</summary>
+        <p class="concept-definition">An abstract syntax tree represents the syntactic structure of a program. It is an implementation/tooling representation, not a trace of actual runtime calls.</p>
+      </details><details open class="concept-card" data-subtopic="bytecode">
+        <summary>bytecode</summary>
+        <p class="concept-definition">Bytecode is an engine-specific instruction representation used by some execution tiers. Its format is not a portable JavaScript API.</p>
+      </details><details open class="concept-card" data-subtopic="interpreter">
+        <summary>interpreter</summary>
+        <p class="concept-definition">An interpreter executes an internal representation without requiring every path to be optimized machine code first. Modern engines can combine interpretation and compilation tiers.</p>
+      </details><details open class="concept-card" data-subtopic="JIT">
+        <summary>JIT</summary>
+        <p class="concept-definition">Just-in-time compilation generates machine code during execution, often using observed behavior to specialize hot paths. Its benefits and warmup costs depend on the workload and engine.</p>
+      </details><details open class="concept-card" data-subtopic="deoptimization">
+        <summary>deoptimization</summary>
+        <p class="concept-definition">Deoptimization moves execution out of specialized code when its assumptions no longer hold. Correct engines preserve the same language result despite changing execution strategy.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>An engine parses source and executes an internal representation. It can use observed behavior to compile specialized code for frequently used paths. Guards check the assumptions behind that code; deoptimization supplies a fallback when they no longer hold. These execution choices must preserve the language result. Use engine diagnostics to establish which path ran, since timing alone cannot identify a compiler tier.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0118" data-bespoke-example="0118" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Verify the workload before explaining its speed</figcaption>
 <p>The array contains 100,000 points. Point i has x = i and y = 1.</p>
 <div class="foundation-grid"><div>Sum x values<br>0 + … + 99,999<br>4,999,950,000</div><div>Sum y values<br>100,000 × 1<br>100,000</div><div>Expected total<br>5,000,050,000</div><div>Then measure<br>20 warmup calls<br>30 timed calls</div></div>
-<details><summary>Does a fast timing prove which compiler tier executed the function?</summary><p>No. Record the engine version and relevant engine traces before attributing the behavior to a particular tier.</p></details>
-<details><summary>Are those internal tiers a portable JavaScript contract?</summary><p>No. Implementations can change their pipeline while preserving observable language behavior.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>An engine parses source and executes an internal representation. It can use observed behavior to compile specialized code for frequently used paths. Guards check the assumptions behind that code; deoptimization supplies a fallback when they no longer hold. These execution choices must preserve the language result. Use engine diagnostics to establish which path ran, since timing alone cannot identify a compiler tier.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does a fast timing prove which compiler tier executed the function?</summary><p>No. Record the engine version and relevant engine traces before attributing the behavior to a particular tier.</p></details>
+<details open><summary>Are those internal tiers a portable JavaScript contract?</summary><p>No. Implementations can change their pipeline while preserving observable language behavior.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a JavaScript evaluation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="javascript-engine" aria-label="Mechanism trace: Program creates executable work then Execution records observed behavior then Engine optimizes or collects then Profiles expose the outcome. Experiment: Warm a representative workload, change one object shape or retaining edge, and profile both runs.">
         <li class="trace-stage"><span>01 · SOURCE</span><details class="trace-explanation" open><summary>Program creates executable work</summary><p>Parsing and object allocation establish runtime inputs.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · FEEDBACK</span><details class="trace-explanation"><summary>Execution records observed behavior</summary><p>Types, shapes, calls, allocations, and timing form evidence.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ADAPT</span><details class="trace-explanation"><summary>Engine optimizes or collects</summary><p>Guards, tiers, deoptimization, and GC respond to reality.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · MEASURE</span><details class="trace-explanation"><summary>Profiles expose the outcome</summary><p>Latency, CPU, heap, and retaining paths test the explanation.</p></details></li>
       </ol>
@@ -78,40 +123,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Engine pipeline">
-        <summary>Engine pipeline</summary>
-        <p class="concept-definition">A JavaScript engine parses source and executes it through implementation-specific interpreter and compiler tiers. Optimization is adaptive and must preserve ECMAScript behavior.</p>
-      </details><details class="concept-card" data-subtopic="parsing">
-        <summary>parsing</summary>
-        <p class="concept-definition">Parsing checks source syntax and constructs an internal representation. An engine&#039;s parser may defer work, but all optimizations must preserve observable language semantics.</p>
-      </details><details class="concept-card" data-subtopic="AST">
-        <summary>AST</summary>
-        <p class="concept-definition">An abstract syntax tree represents the syntactic structure of a program. It is an implementation/tooling representation, not a trace of actual runtime calls.</p>
-      </details><details class="concept-card" data-subtopic="bytecode">
-        <summary>bytecode</summary>
-        <p class="concept-definition">Bytecode is an engine-specific instruction representation used by some execution tiers. Its format is not a portable JavaScript API.</p>
-      </details><details class="concept-card" data-subtopic="interpreter">
-        <summary>interpreter</summary>
-        <p class="concept-definition">An interpreter executes an internal representation without requiring every path to be optimized machine code first. Modern engines can combine interpretation and compilation tiers.</p>
-      </details><details class="concept-card" data-subtopic="JIT">
-        <summary>JIT</summary>
-        <p class="concept-definition">Just-in-time compilation generates machine code during execution, often using observed behavior to specialize hot paths. Its benefits and warmup costs depend on the workload and engine.</p>
-      </details><details class="concept-card" data-subtopic="deoptimization">
-        <summary>deoptimization</summary>
-        <p class="concept-definition">Deoptimization moves execution out of specialized code when its assumptions no longer hold. Correct engines preserve the same language result despite changing execution strategy.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Inspect generated bytecode and optimization traces for a focused function while separating portable semantics from V8 details.</p>
     <p class="lab-scope">Explain the bounded fixture in its stated runtime. Worker, browser, profiler and repository exercises need the additional setup named in the lesson. You can predict the local result before setting up those integrations.</p>
 <p>Run the benchmark as a Node ES module, then inspect optional engine diagnostics on a pinned runtime. Distinguish parsing, interpretation and optimized execution without treating flags or bytecode as standardized APIs.</p>
@@ -154,8 +174,10 @@ console.table({
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Verify the workload before explaining its speed</p>
@@ -227,10 +249,16 @@ console.table({
       </details>
     </article>
     <p><a href="https://v8.dev/docs" target="_blank" rel="noreferrer">Review the lesson source: V8 documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -244,23 +272,23 @@ console.table({
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://v8.dev/docs" target="_blank" rel="noreferrer">V8 documentation ↗</a></div>
-    
-    
-    
-    
+
+
+
+
     <a href="../reference/javascript-deep-dive-map.html" target="_blank">JavaScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

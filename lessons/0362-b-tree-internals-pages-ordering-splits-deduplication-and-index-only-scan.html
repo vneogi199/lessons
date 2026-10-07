@@ -46,23 +46,65 @@
     <h1>B-tree internals, pages, ordering, splits, deduplication, and index-only scans</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="B-tree internals">
+        <summary>B-tree internals</summary>
+        <p class="concept-definition">A B-tree keeps ordered keys in a balanced page hierarchy. It supports equality, range, prefix ordering, and ordered scans with logarithmic navigation plus matching leaf work.</p>
+      </details><details open class="concept-card" data-subtopic="pages">
+        <summary>pages</summary>
+        <p class="concept-definition">A page is PostgreSQL&#039;s fixed-size unit of table and index storage and I/O. It contains headers, item pointers, tuples or index entries, and free space.</p>
+      </details><details open class="concept-card" data-subtopic="ordering">
+        <summary>ordering</summary>
+        <p class="concept-definition">B-tree ordering follows its operator class, collation, direction and null placement. An index may provide a requested order, but rows are not contractually ordered unless the query specifies ORDER BY.</p>
+      </details><details open class="concept-card" data-subtopic="splits">
+        <summary>splits</summary>
+        <p class="concept-definition">Index-page splits redistribute entries when a page cannot accommodate an insertion, adding write and maintenance cost.</p>
+      </details><details open class="concept-card" data-subtopic="deduplication">
+        <summary>deduplication</summary>
+        <p class="concept-definition">B-tree deduplication compactly represents eligible duplicate index keys with a posting list of tuple locations. It saves index space; it does not deduplicate business requests or enforce uniqueness, and indexes with INCLUDE columns do not use it.</p>
+      </details><details open class="concept-card" data-subtopic="index-only scans">
+        <summary>index-only scans</summary>
+        <p class="concept-definition">An index-only scan can return needed values from an index, but PostgreSQL may still visit the heap to check visibility when the visibility map cannot establish it.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A B-tree navigates ordered pages to reach matching entries. Inserts and splits add maintenance work, while included values can help cover a query. An index-only plan still needs heap visibility evidence, so INCLUDE does not guarantee zero heap visits. Large payloads also enlarge entries. Index deduplication saves eligible duplicate-key storage; it is unrelated to deduplicating business requests and does not apply to INCLUDE indexes.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A data system stores information and returns correct information when programs read or change that information.</p>
     <p><a href="../reference/senior-interview-practice.html#data-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0362" data-bespoke-example="0362" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Read ready jobs in the index's tenant and time order</figcaption><p>The query asks for tenant 42's ready jobs ordered by creation time and ID.</p><div class="foundation-grid"><div>Partial index contents<br>Ready jobs only</div><div>Leading key<br>tenant_id 42</div><div>Following keys<br>created_at, id<br>Match requested ordering</div><div>Included payload<br>Available in index entries</div></div><details><summary>Does INCLUDE guarantee zero heap visits?</summary><p>No. Index-only scans also depend on visibility information. Inspect heap fetches and the plan.</p></details><details><summary>Does the index guarantee the planner selects it?</summary><p>No. The planner compares estimated alternatives for the actual query and data.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A B-tree navigates ordered pages to reach matching entries. Inserts and splits add maintenance work, while included values can help cover a query. An index-only plan still needs heap visibility evidence, so INCLUDE does not guarantee zero heap visits. Large payloads also enlarge entries. Index deduplication saves eligible duplicate-key storage; it is unrelated to deduplicating business requests and does not apply to INCLUDE indexes.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0362" data-bespoke-example="0362" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Read ready jobs in the index's tenant and time order</figcaption><p>The query asks for tenant 42's ready jobs ordered by creation time and ID.</p><div class="foundation-grid"><div>Partial index contents<br>Ready jobs only</div><div>Leading key<br>tenant_id 42</div><div>Following keys<br>created_at, id<br>Match requested ordering</div><div>Included payload<br>Available in index entries</div></div><details open><summary>Does INCLUDE guarantee zero heap visits?</summary><p>No. Index-only scans also depend on visibility information. Inspect heap fetches and the plan.</p></details><details open><summary>Does the index guarantee the planner selects it?</summary><p>No. The planner compares estimated alternatives for the actual query and data.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a database query</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="database-query" aria-label="Mechanism trace: Application submits a query then Optimizer chooses operations then Engine reads and transforms rows then Rows and metrics return. Experiment: Change one index or predicate and compare estimated versus actual work.">
         <li class="trace-stage"><span>01 · SQL</span><details class="trace-explanation" open><summary>Application submits a query</summary><p>Parameters and transaction context define the request.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · PLAN</span><details class="trace-explanation"><summary>Optimizer chooses operations</summary><p>Statistics and indexes shape scans, joins, and order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · EXECUTE</span><details class="trace-explanation"><summary>Engine reads and transforms rows</summary><p>Buffers, locks, and I/O determine actual cost.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESULT</span><details class="trace-explanation"><summary>Rows and metrics return</summary><p>The plan and timing reveal whether the model was correct.</p></details></li>
       </ol>
@@ -74,37 +116,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="B-tree internals">
-        <summary>B-tree internals</summary>
-        <p class="concept-definition">A B-tree keeps ordered keys in a balanced page hierarchy. It supports equality, range, prefix ordering, and ordered scans with logarithmic navigation plus matching leaf work.</p>
-      </details><details class="concept-card" data-subtopic="pages">
-        <summary>pages</summary>
-        <p class="concept-definition">A page is PostgreSQL&#039;s fixed-size unit of table and index storage and I/O. It contains headers, item pointers, tuples or index entries, and free space.</p>
-      </details><details class="concept-card" data-subtopic="ordering">
-        <summary>ordering</summary>
-        <p class="concept-definition">B-tree ordering follows its operator class, collation, direction and null placement. An index may provide a requested order, but rows are not contractually ordered unless the query specifies ORDER BY.</p>
-      </details><details class="concept-card" data-subtopic="splits">
-        <summary>splits</summary>
-        <p class="concept-definition">Index-page splits redistribute entries when a page cannot accommodate an insertion, adding write and maintenance cost.</p>
-      </details><details class="concept-card" data-subtopic="deduplication">
-        <summary>deduplication</summary>
-        <p class="concept-definition">B-tree deduplication compactly represents eligible duplicate index keys with a posting list of tuple locations. It saves index space; it does not deduplicate business requests or enforce uniqueness, and indexes with INCLUDE columns do not use it.</p>
-      </details><details class="concept-card" data-subtopic="index-only scans">
-        <summary>index-only scans</summary>
-        <p class="concept-definition">An index-only scan can return needed values from an index, but PostgreSQL may still visit the heap to check visibility when the visibility map cannot establish it.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build a B-tree for a real access path, inspect size and plan behavior, and demonstrate when an index-only scan still reads the heap.</p>
     <p class="lab-scope">Trace this independent database fixture and predict its rows, rejection or failure schedule. Supply its schema and bind parameters with the stated client. The lessons do not form one sequential migration. Concurrency, query plans and recovery need an existing disposable PostgreSQL environment; local adapters establish only the control flow they exercise.</p>
 <p>In a disposable PostgreSQL database, focus the index fixture on B-tree order and index-only scans. Compare heap fetches before/after visibility changes; an INCLUDE column alone does not guarantee a heap-free plan. The sample does not expose page splits directly.</p>
@@ -136,8 +156,10 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Read ready jobs in the index's tenant and time order</p><p>The query asks for tenant 42's ready jobs ordered by creation time and ID.</p><div class="foundation-grid"><div>Partial index contents<br>Ready jobs only</div><div>Leading key<br>tenant_id 42</div><div>Following keys<br>created_at, id<br>Match requested ordering</div><div>Included payload<br>Available in index entries</div></div></div>
@@ -205,10 +227,16 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
       </details>
     </article>
     <p><a href="https://www.postgresql.org/docs/current/indexes.html" target="_blank" rel="noreferrer">Review the lesson source: PostgreSQL indexes documentation</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -222,23 +250,23 @@ WHERE tenant_id = 42 AND state = &#039;ready&#039; ORDER BY created_at, id LIMIT
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.postgresql.org/docs/current/indexes.html" target="_blank" rel="noreferrer">PostgreSQL indexes documentation ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     <a href="../reference/data-systems-deep-dive-map.html" target="_blank">Data systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

@@ -46,6 +46,56 @@
     <h1>Event loop phases, timers, pending callbacks, poll, check, close callbacks, and iteration</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Event loop phases">
+        <summary>Event loop phases</summary>
+        <p class="concept-definition">A libuv loop iteration processes categories of ready callbacks, including timers, polling, check work, and close callbacks. Exact ordering depends on scheduling context.</p>
+      </details><details open class="concept-card" data-subtopic="timers">
+        <summary>timers</summary>
+        <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
+      </details><details open class="concept-card" data-subtopic="pending callbacks">
+        <summary>pending callbacks</summary>
+        <p class="concept-definition">The pending-callback phase runs selected callbacks deferred from earlier event-loop work.</p>
+      </details><details open class="concept-card" data-subtopic="poll">
+        <summary>poll</summary>
+        <p class="concept-definition">The poll phase processes eligible I/O callbacks and may wait for new events when no earlier constraint requires immediate progress.</p>
+      </details><details open class="concept-card" data-subtopic="check">
+        <summary>check</summary>
+        <p class="concept-definition">The check phase is where setImmediate callbacks run after polling in the same loop iteration.</p>
+      </details><details open class="concept-card" data-subtopic="close callbacks">
+        <summary>close callbacks</summary>
+        <p class="concept-definition">Close callbacks report completion of supported handle shutdown paths; closing a resource and receiving its close notification are distinct.</p>
+      </details><details open class="concept-card" data-subtopic="iteration">
+        <summary>iteration</summary>
+        <p class="concept-definition">An event-loop iteration progresses through phases; ready work and runtime version affect the observed order.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Follow a file-read callback into the poll, check and timer work it schedules. Separate guaranteed relationships from observed top-level order.</p>
+      <p class="analogy">Follow the file-read callback as a scheduling boundary. Work queued there has different timing guarantees from work queued while the module first loads.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>Node runs JavaScript callbacks on its event-loop thread. libuv is the native library that coordinates I/O and loop phases. A phase is a category of callback work. Scheduling a callback makes it eligible later; it does not interrupt the current JavaScript call.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0216" data-bespoke-example="0216" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Separate the guaranteed pair from the top-level race</figcaption>
 <p>The file-read callback schedules both an immediate and a zero-delay timer.</p>
 <div class="foundation-grid"><div>Inside I/O callback<br>Schedule immediate<br>Schedule timer</div><div>Asserted relationship<br>I/O immediate before I/O timer</div><div>Top-level pair<br>No fixed relative order asserted</div></div>
-<details><summary>Does the example require the top-level timer to run first?</summary><p>No. Its assertion deliberately avoids that ordering claim.</p></details>
-<details><summary>Why keep the I/O scheduling location in the explanation?</summary><p>It is part of the condition supporting the immediate-before-timer relationship. Moving those calls changes the experiment.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Follow a file-read callback into the poll, check and timer work it schedules. Separate guaranteed relationships from observed top-level order.</p>
-      <p class="analogy">Follow the file-read callback as a scheduling boundary. Work queued there has different timing guarantees from work queued while the module first loads.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does the example require the top-level timer to run first?</summary><p>No. Its assertion deliberately avoids that ordering claim.</p></details>
+<details open><summary>Why keep the I/O scheduling location in the explanation?</summary><p>It is part of the condition supporting the immediate-before-timer relationship. Moving those calls changes the experiment.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an event-loop operation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="node-runtime" aria-label="Mechanism trace: JavaScript schedules work then Node delegates eligible work then Completion becomes ready then Main thread handles completion. Experiment: Add one blocking CPU loop and compare callback timing before and after.">
         <li class="trace-stage"><span>01 · CALLBACK</span><details class="trace-explanation" open><summary>JavaScript schedules work</summary><p>The main thread initiates I/O, timers, or CPU work.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · RUNTIME</span><details class="trace-explanation"><summary>Node delegates eligible work</summary><p>OS readiness, libuv, workers, or another process executes it.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · QUEUE</span><details class="trace-explanation"><summary>Completion becomes ready</summary><p>Loop phases and microtasks determine callback order.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · JS</span><details class="trace-explanation"><summary>Main thread handles completion</summary><p>Latency and event-loop delay become observable.</p></details></li>
       </ol>
@@ -78,33 +123,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Event loop phases">
-        <summary>Event loop phases</summary>
-        <p class="concept-definition">A libuv loop iteration processes categories of ready callbacks, including timers, polling, check work, and close callbacks. Exact ordering depends on scheduling context.</p>
-      </details><details class="concept-card" data-subtopic="timers">
-        <summary>timers</summary>
-        <p class="concept-definition">Node timers schedule callbacks after a minimum delay threshold. Event-loop work, operating-system scheduling, and clock behavior can make actual execution later.</p>
-      </details><details class="concept-card" data-subtopic="pending callbacks">
-        <summary>pending callbacks</summary>
-        <p class="concept-definition">The pending-callback phase runs selected callbacks deferred from earlier event-loop work.</p>
-      </details><details class="concept-card" data-subtopic="poll">
-        <summary>poll</summary>
-        <p class="concept-definition">The poll phase processes eligible I/O callbacks and may wait for new events when no earlier constraint requires immediate progress.</p>
-      </details><details class="concept-card" data-subtopic="check">
-        <summary>check</summary>
-        <p class="concept-definition">The check phase is where setImmediate callbacks run after polling in the same loop iteration.</p>
-      </details><details class="concept-card" data-subtopic="close callbacks">
-        <summary>close callbacks</summary>
-        <p class="concept-definition">Close callbacks report completion of supported handle shutdown paths; closing a resource and receiving its close notification are distinct.</p>
-      </details><details class="concept-card" data-subtopic="iteration">
-        <summary>iteration</summary>
-        <p class="concept-definition">An event-loop iteration progresses through phases; ready work and runtime version affect the observed order.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>Timers run after their delay threshold has elapsed and the loop can process them. The pending-callback phase handles selected deferred I/O callbacks, including some TCP error callbacks. Poll processes ready I/O callbacks and can wait for events. Check processes setImmediate callbacks. Close callbacks report shutdown for supported handles. Internal idle and prepare phases also exist.</p>
 <p>In Node 20 and later, libuv runs timers after polling during loop iterations. Version 1.45 retained an initial timer pass before entering the loop for compatibility. Record process.version with observations. A phase diagram is a model of repeated processing, not a promise that every phase has work on each pass.</p>
@@ -113,10 +132,11 @@
 <p>For a starvation exercise, schedule an immediate, then queue a nextTick callback that queues itself only 100 times. Predict that the immediate waits for the chain to finish. Keep the bound; an infinite chain can starve I/O. For long CPU work, break work into bounded chunks that yield, or use a worker when parallel execution justifies its coordination cost.</p>
 <p>To examine close behavior, use a local test server and a socket. Register the socket's close listener before destroying it, then record the notification. Close every test handle afterward. This is a separate experiment; the file-read trace does not verify socket shutdown ordering.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Instrument timers, I/O, setImmediate, and socket close callbacks and predict their ordering from the scheduling context.</p>
     <p class="lab-scope">Save the starter as an .mjs file in an existing Node environment. It reads its own file, checks read errors, and waits for all four scheduled callbacks before comparing their order. It does not exercise every libuv phase.</p>
 
@@ -161,8 +181,10 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Sampling mistaken for completion</h3><p>A timer that prints after 25 ms can miss slow I/O. The starter waits for explicit completions instead.</p></article><article><h3>One trace treated as a guarantee</h3><p>Assert the order inside the I/O callback. Keep top-level order as an observation. Inspect event-loop delay separately from dependency latency.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Separate the guaranteed pair from the top-level race</p>
@@ -246,10 +268,16 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
       </details>
     </article>
     <p><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Review the lesson source: Node: event loop, timers and nextTick</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -263,23 +291,23 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" target="_blank" rel="noreferrer">Node: event loop, timers and nextTick ↗</a></div>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <a href="../reference/nodejs-deep-dive-map.html" target="_blank">Node.js coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

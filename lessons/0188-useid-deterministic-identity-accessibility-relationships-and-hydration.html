@@ -46,6 +46,47 @@
     <h1>useId, deterministic identity, accessibility relationships, and hydration</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="4">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="useId">
+        <summary>useId</summary>
+        <p class="concept-definition">useId creates IDs that remain consistent between server rendering and client hydration. Use them to connect accessibility attributes, not as database IDs or list keys.</p>
+      </details><details open class="concept-card" data-subtopic="deterministic identity">
+        <summary>deterministic identity</summary>
+        <p class="concept-definition">Deterministic identity keeps generated relationships consistent across renders and server/client output; useId is not a list-key generator.</p>
+      </details><details open class="concept-card" data-subtopic="accessibility relationships">
+        <summary>accessibility relationships</summary>
+        <p class="concept-definition">Accessibility means the rendered DOM has correct semantics, focus behavior, keyboard interaction, names, relationships, and announcements for different users and tools.</p>
+      </details><details open class="concept-card" data-subtopic="hydration">
+        <summary>hydration</summary>
+        <p class="concept-definition">Hydration attaches React behavior to HTML that a server already produced. The first client tree must match the server output closely enough for React to reuse it safely.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>useId supplies an identity for relationships within the interface, such as connecting an input to its label and error. It is not a database ID or list key. Server rendering and hydration need matching trees and coordinated root prefixes. If an input already has a description, preserve that relationship when adding an error ID instead of silently replacing it.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>React converts component data into a user interface. React updates the interface when relevant data changes.</p>
@@ -55,18 +96,13 @@
   <figure class="card mechanism-map" data-lesson-map="0188" data-bespoke-example="0188" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Connect one field to its label and error</figcaption>
 <p>Call the generated identifier F for this illustration. With an error present, the error identifier is F-error.</p>
 <div class="foundation-grid"><div>Label<br>htmlFor: F</div><div>Input<br>id: F<br>aria-describedby: F-error</div><div>Error paragraph<br>id: F-error<br>Contains the error text</div></div>
-<details><summary>What happens to the error reference when error is absent?</summary><p>errorId becomes undefined and the error paragraph is not rendered. The input no longer references that error paragraph.</p></details>
-<details><summary>Should this generated ID replace a record's stable list key?</summary><p>No. useId supports relationships within the UI. Use data identity for list keys.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>useId supplies an identity for relationships within the interface, such as connecting an input to its label and error. It is not a database ID or list key. Server rendering and hydration need matching trees and coordinated root prefixes. If an input already has a description, preserve that relationship when adding an error ID instead of silently replacing it.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>What happens to the error reference when error is absent?</summary><p>errorId becomes undefined and the error paragraph is not rendered. The input no longer references that error paragraph.</p></details>
+<details open><summary>Should this generated ID replace a record's stable list key?</summary><p>No. useId supports relationships within the UI. Use data identity for list keys.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a server-to-client render</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="react-server-client" aria-label="Mechanism trace: A route or action reaches the server then React produces server output then Serializable data crosses then The browser resumes interaction. Experiment: Move one value across the server/client boundary and predict whether serialization succeeds.">
         <li class="trace-stage"><span>01 · REQUEST</span><details class="trace-explanation" open><summary>A route or action reaches the server</summary><p>Authenticate and load server-owned data.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SERVER</span><details class="trace-explanation"><summary>React produces server output</summary><p>Render HTML or a serialized component/action result.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · BOUNDARY</span><details class="trace-explanation"><summary>Serializable data crosses</summary><p>Code and non-serializable values stay on their side.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CLIENT</span><details class="trace-explanation"><summary>The browser resumes interaction</summary><p>Hydration or a client update makes behavior observable.</p></details></li>
       </ol>
@@ -78,31 +114,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="4">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="useId">
-        <summary>useId</summary>
-        <p class="concept-definition">useId creates IDs that remain consistent between server rendering and client hydration. Use them to connect accessibility attributes, not as database IDs or list keys.</p>
-      </details><details class="concept-card" data-subtopic="deterministic identity">
-        <summary>deterministic identity</summary>
-        <p class="concept-definition">Deterministic identity keeps generated relationships consistent across renders and server/client output; useId is not a list-key generator.</p>
-      </details><details class="concept-card" data-subtopic="accessibility relationships">
-        <summary>accessibility relationships</summary>
-        <p class="concept-definition">Accessibility means the rendered DOM has correct semantics, focus behavior, keyboard interaction, names, relationships, and announcements for different users and tools.</p>
-      </details><details class="concept-card" data-subtopic="hydration">
-        <summary>hydration</summary>
-        <p class="concept-definition">Hydration attaches React behavior to HTML that a server already produced. The first client tree must match the server output closely enough for React to reuse it safely.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Build reusable form fields with stable label, description, and error relationships across server rendering.</p>
     <p class="lab-scope">Explain the component or exercise specification, then predict the result of changing one input. Component snippets need the named collaborators, React imports and a compatible project. They are not standalone files. Verify browser behavior, framework integration, accessibility and deployment separately.</p>
 
@@ -129,8 +149,10 @@
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Connect one field to its label and error</p>
@@ -190,10 +212,16 @@
       </details>
     </article>
     <p><a href="https://react.dev/reference/react/hooks" target="_blank" rel="noreferrer">Review the lesson source: React Hooks reference</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -208,22 +236,22 @@
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://react.dev/reference/react/hooks" target="_blank" rel="noreferrer">React Hooks reference ↗</a></div>
     <a href="../reference/react-deep-dive-map.html" target="_blank">React coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

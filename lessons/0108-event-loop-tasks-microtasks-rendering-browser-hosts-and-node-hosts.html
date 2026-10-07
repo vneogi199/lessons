@@ -46,6 +46,53 @@
     <h1>Event loop, tasks, microtasks, rendering, browser hosts, and Node hosts</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Event loop">
+        <summary>Event loop</summary>
+        <p class="concept-definition">An event loop is host machinery that selects tasks and performs checkpoints where Promise Jobs can run. ECMAScript defines Jobs; browsers and Node define their loop details.</p>
+      </details><details open class="concept-card" data-subtopic="tasks">
+        <summary>tasks</summary>
+        <p class="concept-definition">A host task runs scheduled work such as a timer callback or event handler. Host event-loop rules determine task selection and when microtask checkpoints occur.</p>
+      </details><details open class="concept-card" data-subtopic="microtasks">
+        <summary>microtasks</summary>
+        <p class="concept-definition">Microtask is common host terminology for queued Promise reactions and queueMicrotask callbacks. A checkpoint normally drains them before selecting another task.</p>
+      </details><details open class="concept-card" data-subtopic="rendering">
+        <summary>rendering</summary>
+        <p class="concept-definition">Browser rendering updates style, layout, and pixels at rendering opportunities. Long JavaScript tasks or continuously queued microtasks can delay those opportunities.</p>
+      </details><details open class="concept-card" data-subtopic="browser hosts">
+        <summary>browser hosts</summary>
+        <p class="concept-definition">A browser supplies APIs such as the DOM, events, networking, and rendering around the JavaScript engine. Those behaviors are not all specified by ECMAScript.</p>
+      </details><details open class="concept-card" data-subtopic="Node hosts">
+        <summary>Node hosts</summary>
+        <p class="concept-definition">Node supplies server-oriented APIs and its event-loop integration around the JavaScript engine. Browser scheduling diagrams do not describe every Node phase or nextTick behavior.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>JavaScript jobs and host scheduling rules together determine when deferred work runs. Promise reactions, microtasks and timers do not form one universal order across all hosts. Follow the point where each operation is queued in the example, then apply that host&#039;s rules. Repeatedly scheduling microtasks can delay other work. A timer delay is a threshold, not a promise of an exact execution time.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>JavaScript is a programming language. A JavaScript engine reads the program and performs its operations.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0108" data-bespoke-example="0108" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Queue order explains this particular trace</figcaption>
 <p>In the supplied fixture, operation reaches await before the explicit microtask and promise reaction are queued.</p>
 <div class="foundation-grid"><div>Synchronous records<br>async:start<br>script:end</div><div>Queued continuations<br>async:resume<br>queued:microtask<br>promise:reaction</div><div>Later timer record<br>timer:task</div><div>Scope<br>This queue setup<br>Not every browser or Node scheduling situation</div></div>
-<details><summary>Can repeatedly queued microtasks delay later tasks?</summary><p>Yes. A checkpoint can continue draining newly queued microtasks. Use bounded experiments rather than an infinite starvation loop.</p></details>
-<details><summary>Does the timer record prove a browser paint occurred first?</summary><p>No. The fixture records callback order, not rendering evidence.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>JavaScript jobs and host scheduling rules together determine when deferred work runs. Promise reactions, microtasks and timers do not form one universal order across all hosts. Follow the point where each operation is queued in the example, then apply that host&#039;s rules. Repeatedly scheduling microtasks can delay other work. A timer delay is a threshold, not a promise of an exact execution time.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Can repeatedly queued microtasks delay later tasks?</summary><p>Yes. A checkpoint can continue draining newly queued microtasks. Use bounded experiments rather than an infinite starvation loop.</p></details>
+<details open><summary>Does the timer record prove a browser paint occurred first?</summary><p>No. The fixture records callback order, not rendering evidence.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a JavaScript evaluation</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="javascript-jobs" aria-label="Mechanism trace: Synchronous code runs then Async work registers continuation then Event loop chooses ready work then Continuation observes state. Experiment: Mix a timer, resolved promise, and synchronous log; predict exact output order.">
         <li class="trace-stage"><span>01 · STACK</span><details class="trace-explanation" open><summary>Synchronous code runs</summary><p>Calls execute until the stack becomes empty.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · SCHEDULE</span><details class="trace-explanation"><summary>Async work registers continuation</summary><p>Promise reactions and tasks enter different queues.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CHECKPOINT</span><details class="trace-explanation"><summary>Event loop chooses ready work</summary><p>Microtasks drain before the next task and render opportunity.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · CALLBACK</span><details class="trace-explanation"><summary>Continuation observes state</summary><p>Order, errors, and UI timing expose the scheduling model.</p></details></li>
       </ol>
@@ -78,37 +120,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Event loop">
-        <summary>Event loop</summary>
-        <p class="concept-definition">An event loop is host machinery that selects tasks and performs checkpoints where Promise Jobs can run. ECMAScript defines Jobs; browsers and Node define their loop details.</p>
-      </details><details class="concept-card" data-subtopic="tasks">
-        <summary>tasks</summary>
-        <p class="concept-definition">A host task runs scheduled work such as a timer callback or event handler. Host event-loop rules determine task selection and when microtask checkpoints occur.</p>
-      </details><details class="concept-card" data-subtopic="microtasks">
-        <summary>microtasks</summary>
-        <p class="concept-definition">Microtask is common host terminology for queued Promise reactions and queueMicrotask callbacks. A checkpoint normally drains them before selecting another task.</p>
-      </details><details class="concept-card" data-subtopic="rendering">
-        <summary>rendering</summary>
-        <p class="concept-definition">Browser rendering updates style, layout, and pixels at rendering opportunities. Long JavaScript tasks or continuously queued microtasks can delay those opportunities.</p>
-      </details><details class="concept-card" data-subtopic="browser hosts">
-        <summary>browser hosts</summary>
-        <p class="concept-definition">A browser supplies APIs such as the DOM, events, networking, and rendering around the JavaScript engine. Those behaviors are not all specified by ECMAScript.</p>
-      </details><details class="concept-card" data-subtopic="Node hosts">
-        <summary>Node hosts</summary>
-        <p class="concept-definition">Node supplies server-oriented APIs and its event-loop integration around the JavaScript engine. Browser scheduling diagrams do not describe every Node phase or nextTick behavior.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Predict and record ordering among script code, queueMicrotask, promises, timers, MessageChannel, and Node scheduling APIs.</p>
     <p class="lab-scope">Core: predict the supplied fixture and explain its failure boundary. Labelled module files must be split; browser fetch requires the stated endpoint. Network, bundler, cross-host and production recovery variants are extensions. Local checks do not establish those integrations.</p>
 <p>Use the same trace to separate Promise Jobs from host timers. Compare browser and Node observations without claiming timer timing establishes rendering order or a portable total order across all task sources.</p>
@@ -145,8 +165,10 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Queue order explains this particular trace</p>
@@ -218,10 +240,16 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
       </details>
     </article>
     <p><a href="https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects" target="_blank" rel="noreferrer">Review the lesson source: ECMAScript Promise specification</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -235,23 +263,23 @@ console.table(trace.map((event, order) =&gt; ({ order, event })));
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects" target="_blank" rel="noreferrer">ECMAScript Promise specification ↗</a></div>
-    
-    
-    
-    
+
+
+
+
     <a href="../reference/javascript-deep-dive-map.html" target="_blank">JavaScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

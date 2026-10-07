@@ -46,6 +46,53 @@
     <h1>Generics, type parameters, constraints, defaults, relationships, and reusable contracts</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Generics">
+        <summary>Generics</summary>
+        <p class="concept-definition">Generics use type parameters to preserve relationships among inputs, outputs, containers, and callbacks across many concrete types.</p>
+      </details><details open class="concept-card" data-subtopic="type parameters">
+        <summary>type parameters</summary>
+        <p class="concept-definition">Named type variables connect input, output, and member types in a reusable contract. They are not runtime parameters.</p>
+      </details><details open class="concept-card" data-subtopic="constraints">
+        <summary>constraints</summary>
+        <p class="concept-definition">A generic constraint states the minimum capability a type argument must have. It should not erase additional specific information the caller provides.</p>
+      </details><details open class="concept-card" data-subtopic="defaults">
+        <summary>defaults</summary>
+        <p class="concept-definition">A generic default supplies a type argument when inference and the call do not supply one. It must satisfy its constraint.</p>
+      </details><details open class="concept-card" data-subtopic="relationships">
+        <summary>relationships</summary>
+        <p class="concept-definition">A type relationship connects positions: a selected key K determines the result T[K], rather than returning an unrelated broad type.</p>
+      </details><details open class="concept-card" data-subtopic="reusable contracts">
+        <summary>reusable contracts</summary>
+        <p class="concept-definition">Reusable contracts preserve meaningful relationships across callers without assuming more capabilities than the implementation needs.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>A type parameter connects caller inputs to result types. Trace inference, required fields and a default type through concrete calls.</p>
+      <p class="analogy">For indexById, T is the complete item type. The constraint requires an id field. It still preserves fields such as name and private in the returned Map.</p>
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A type parameter is a name for a type supplied or inferred at a call site. In identity&lt;T&gt;(value: T): T, the same T connects the argument type to the result type. TypeScript checks this relationship before execution; JavaScript does not receive T at runtime.</p>
@@ -55,18 +102,13 @@
   <figure class="card mechanism-map" data-lesson-map="0140" data-bespoke-example="0140" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Index two records with the same ID</figcaption>
 <p>The input contains p1 named First, followed by p1 named Last. indexById puts each record into a Map.</p>
 <div class="foundation-grid"><div>First insertion<br>p1 → First</div><div>Second insertion<br>p1 → Last<br>Existing key replaced</div><div>Lookup p1<br>Returns the Last record<br>Full item type retained</div></div>
-<details><summary>Does the generic constraint require IDs to be unique?</summary><p>No. It requires a string ID on each item. This implementation keeps the last record for a repeated ID. Enforce uniqueness separately if duplicates are invalid.</p></details>
-<details><summary>Does a valid key type guarantee a lookup finds a record?</summary><p>No. Map.get can return undefined. The generic relationship preserves the record's fields; it does not prove that a particular entry exists.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>A type parameter connects caller inputs to result types. Trace inference, required fields and a default type through concrete calls.</p>
-      <p class="analogy">For indexById, T is the complete item type. The constraint requires an id field. It still preserves fields such as name and private in the returned Map.</p>
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does the generic constraint require IDs to be unique?</summary><p>No. It requires a string ID on each item. This implementation keeps the last record for a repeated ID. Enforce uniqueness separately if duplicates are invalid.</p></details>
+<details open><summary>Does a valid key type guarantee a lookup finds a record?</summary><p>No. Map.get can return undefined. The generic relationship preserves the record's fields; it does not prove that a particular entry exists.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a type-checking decision</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="generic-relationship" aria-label="Mechanism trace: T connects input and output then Items supply the type argument then The id capability is checked then Lookup preserves fields and absence. Experiment: Reject a missing id and a wrong selected key. Compare an omitted Box type argument with Box&lt;number&gt;.">
         <li class="trace-stage"><span>01 · DECLARE</span><details class="trace-explanation" open><summary>T connects input and output</summary><p>indexById accepts items of type T and returns Map values of type T.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · INFER</span><details class="trace-explanation"><summary>Items supply the type argument</summary><p>The caller&#039;s id, name and private fields determine the item type.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONSTRAIN</span><details class="trace-explanation"><summary>The id capability is checked</summary><p>T must have a string id; other fields remain part of T.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · USE</span><details class="trace-explanation"><summary>Lookup preserves fields and absence</summary><p>Map.get returns the full item type or undefined.</p></details></li>
       </ol>
@@ -78,30 +120,7 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Generics">
-        <summary>Generics</summary>
-        <p class="concept-definition">Generics use type parameters to preserve relationships among inputs, outputs, containers, and callbacks across many concrete types.</p>
-      </details><details class="concept-card" data-subtopic="type parameters">
-        <summary>type parameters</summary>
-        <p class="concept-definition">Named type variables connect input, output, and member types in a reusable contract. They are not runtime parameters.</p>
-      </details><details class="concept-card" data-subtopic="constraints">
-        <summary>constraints</summary>
-        <p class="concept-definition">A generic constraint states the minimum capability a type argument must have. It should not erase additional specific information the caller provides.</p>
-      </details><details class="concept-card" data-subtopic="defaults">
-        <summary>defaults</summary>
-        <p class="concept-definition">A generic default supplies a type argument when inference and the call do not supply one. It must satisfy its constraint.</p>
-      </details><details class="concept-card" data-subtopic="relationships">
-        <summary>relationships</summary>
-        <p class="concept-definition">A type relationship connects positions: a selected key K determines the result T[K], rather than returning an unrelated broad type.</p>
-      </details><details class="concept-card" data-subtopic="reusable contracts">
-        <summary>reusable contracts</summary>
-        <p class="concept-definition">Reusable contracts preserve meaningful relationships across callers without assuming more capabilities than the implementation needs.</p>
-      </details>
-    </div>
-  </section>
 
 <section class="card mechanism-walkthrough"><p>Read indexById from the call inward. The items argument supplies T. The constraint checks that T has a string id. The result is Map&lt;string, T&gt;, so an item read from it keeps its extra fields. Map.get can return undefined when the key is absent. A type parameter does not establish that a lookup will succeed.</p>
 <p>keyof T means the property names of T. T[K] means the type of the property selected by K. The store example accepts both key and items in one call. That gives inference the item type when it checks the key. A curried version must establish T before the first call, or design the returned function to infer the later items.</p>
@@ -109,10 +128,11 @@
 <p>For choose, T is the nonempty tuple and T[number] is the union of its element types. With north and south, the declared result is "north" | "south", although this implementation returns the first element. That contract permits a later implementation to choose another member. If callers require the first element's exact type, use a contract that returns T[0].</p>
 <p>Inference means that the checker chooses type arguments from the call and its context. Variance describes how relationships between element types affect relationships between containers or callbacks. Mapped and conditional types are separate type transformations; this example does not require them.</p></section>
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Design repository and selection APIs that preserve caller types without leaking any.</p>
     <p class="lab-scope">Use an existing TypeScript 5+ compiler with strict checking and an ES2015-or-later library. Inspect inferred types and expected errors before considering runtime results. The const type parameter requires TypeScript 5.0 or later.</p>
 
@@ -179,8 +199,10 @@ if (false) {
 
 <section class="card common-mistakes"><h2>Common mistakes</h2><div class="mistake-grid"><article><h3>Constraint loses information</h3><p>Returning Identified instead of T discards the caller&#039;s extra fields from the static result type. Replacing T with any removes useful checking.</p></article><article><h3>Types hide data policy</h3><p>Duplicate IDs overwrite earlier Map entries. Choose reject, first-write or last-write behavior explicitly. Validate external data at runtime before trusting its declared type.</p></article></div></section>
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Index two records with the same ID</p>
@@ -263,10 +285,16 @@ if (false) {
       </details>
     </article>
     <p><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noreferrer">Review the lesson source: TypeScript handbook: generics</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -280,23 +308,23 @@ if (false) {
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://www.typescriptlang.org/docs/handbook/2/generics.html" target="_blank" rel="noreferrer">TypeScript handbook: generics ↗</a></div>
-    
-    
-    
-    
-    
+
+
+
+
+
     <a href="../reference/typescript-deep-dive-map.html" target="_blank">TypeScript coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

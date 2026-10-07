@@ -46,23 +46,65 @@
     <h1>Overload control, bounded queues, backpressure, admission, load shedding, and degradation</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="6">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="Overload control">
+        <summary>Overload control</summary>
+        <p class="concept-definition">Overload control bounds admission, queues, and concurrency so excess demand fails predictably instead of collapsing capacity.</p>
+      </details><details open class="concept-card" data-subtopic="bounded queues">
+        <summary>bounded queues</summary>
+        <p class="concept-definition">Bounded queues cap waiting work by items, bytes or another explicit resource budget. When full, producers must wait, reject, shed or use an explicitly safe alternative; a queue bound does not itself bound active work or total upstream memory.</p>
+      </details><details open class="concept-card" data-subtopic="backpressure">
+        <summary>backpressure</summary>
+        <p class="concept-definition">Backpressure makes a fast producer slow, wait, shed, or reject when a consumer cannot safely keep up.</p>
+      </details><details open class="concept-card" data-subtopic="admission">
+        <summary>admission</summary>
+        <p class="concept-definition">Admission control decides whether new work may consume limited capacity using concurrency, queue, priority, quota, or resource budgets.</p>
+      </details><details open class="concept-card" data-subtopic="load shedding">
+        <summary>load shedding</summary>
+        <p class="concept-definition">Load shedding rejects selected work early when serving it would push the system beyond safe capacity and harm more requests.</p>
+      </details><details open class="concept-card" data-subtopic="degradation">
+        <summary>degradation</summary>
+        <p class="concept-definition">Degradation deliberately reduces features or freshness to preserve essential service under pressure.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>When arrivals exceed service capacity, unfinished work accumulates. Bound admission and queues before memory or latency becomes unbounded. The example limits active operations in one local object; it is neither a request-rate limit nor a fleet-wide bound. A hung operation keeps its slot. Define what callers receive when work is rejected and how upstream queues remain bounded too.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>An API defines communication rules. A distributed system coordinates work across processes and computers.</p>
     <p><a href="../reference/senior-interview-practice.html#api-distributed-systems">Senior practice for this track ↗</a> · The reading estimate excludes the lab and interview rehearsal.</p>
   </section>
 
-  <figure class="card mechanism-map" data-lesson-map="0430" data-bespoke-example="0430" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reject the second operation while the only slot is occupied</figcaption><p>Admission limit is 1. Operation A remains pending.</p><div class="foundation-grid"><div>A enters<br>Active count 1</div><div>B arrives<br>At limit<br>503<br>B's work never starts</div><div>A settles<br>Finally restores slot</div></div><details><summary>Does this gate queue B until A finishes?</summary><p>No. It sheds excess work without a waiting queue.</p></details><details><summary>Should a caller timeout release A's slot while A still runs?</summary><p>No. Release on actual settlement, or the active-work bound becomes inaccurate.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>When arrivals exceed service capacity, unfinished work accumulates. Bound admission and queues before memory or latency becomes unbounded. The example limits active operations in one local object; it is neither a request-rate limit nor a fleet-wide bound. A hung operation keeps its slot. Define what callers receive when work is rejected and how upstream queues remain bounded too.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+  <figure class="card mechanism-map" data-lesson-map="0430" data-bespoke-example="0430" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Reject the second operation while the only slot is occupied</figcaption><p>Admission limit is 1. Operation A remains pending.</p><div class="foundation-grid"><div>A enters<br>Active count 1</div><div>B arrives<br>At limit<br>503<br>B's work never starts</div><div>A settles<br>Finally restores slot</div></div><details open><summary>Does this gate queue B until A finishes?</summary><p>No. It sheds excess work without a waiting queue.</p></details><details open><summary>Should a caller timeout release A's slot while A still runs?</summary><p>No. Release on actual settlement, or the active-work bound becomes inaccurate.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a distributed request or message</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="resilience-budget" aria-label="Mechanism trace: Request enters with finite value then Work consumes time and capacity then System cancels, retries, isolates, or sheds then Outcome closes every resource. Experiment: Slow one dependency past its budget while increasing arrival rate beyond service capacity.">
         <li class="trace-stage"><span>01 · BUDGET</span><details class="trace-explanation" open><summary>Request enters with finite value</summary><p>Deadline, attempt, concurrency, queue, priority, and retry budgets state limits.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · DEPENDENCY</span><details class="trace-explanation"><summary>Work consumes time and capacity</summary><p>Latency distribution, fan-out, saturation, and partial failure shape progress.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · CONTROL</span><details class="trace-explanation"><summary>System cancels, retries, isolates, or sheds</summary><p>Backoff, jitter, admission, bulkhead, breaker, and degradation bound amplification.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · EVIDENCE</span><details class="trace-explanation"><summary>Outcome closes every resource</summary><p>Attempts, queue time, tail latency, rejected work, cancellation, utilization, and leaks reveal control.</p></details></li>
       </ol>
@@ -74,37 +116,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="6">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="Overload control">
-        <summary>Overload control</summary>
-        <p class="concept-definition">Overload control bounds admission, queues, and concurrency so excess demand fails predictably instead of collapsing capacity.</p>
-      </details><details class="concept-card" data-subtopic="bounded queues">
-        <summary>bounded queues</summary>
-        <p class="concept-definition">Bounded queues cap waiting work by items, bytes or another explicit resource budget. When full, producers must wait, reject, shed or use an explicitly safe alternative; a queue bound does not itself bound active work or total upstream memory.</p>
-      </details><details class="concept-card" data-subtopic="backpressure">
-        <summary>backpressure</summary>
-        <p class="concept-definition">Backpressure makes a fast producer slow, wait, shed, or reject when a consumer cannot safely keep up.</p>
-      </details><details class="concept-card" data-subtopic="admission">
-        <summary>admission</summary>
-        <p class="concept-definition">Admission control decides whether new work may consume limited capacity using concurrency, queue, priority, quota, or resource budgets.</p>
-      </details><details class="concept-card" data-subtopic="load shedding">
-        <summary>load shedding</summary>
-        <p class="concept-definition">Load shedding rejects selected work early when serving it would push the system beyond safe capacity and harm more requests.</p>
-      </details><details class="concept-card" data-subtopic="degradation">
-        <summary>degradation</summary>
-        <p class="concept-definition">Degradation deliberately reduces features or freshness to preserve essential service under pressure.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Load a service past saturation and compare unbounded queues with concurrency limits, admission control, shedding, and graceful degradation.</p>
     <p class="lab-scope">Predict the local example, including a failure and the limit of its guarantee. Supply missing adapters before measuring a bounded workload and recovery behavior. Local assertions alone cannot verify a live distributed protocol or production capacity.</p>
 
@@ -156,8 +176,10 @@ assert.throws(() =&gt; new Admission(NaN), RangeError);
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Reject the second operation while the only slot is occupied</p><p>Admission limit is 1. Operation A remains pending.</p><div class="foundation-grid"><div>A enters<br>Active count 1</div><div>B arrives<br>At limit<br>503<br>B's work never starts</div><div>A settles<br>Finally restores slot</div></div></div>
@@ -225,10 +247,16 @@ assert.throws(() =&gt; new Admission(NaN), RangeError);
       </details>
     </article>
     <p><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Review the lesson source: Google Site Reliability Engineering</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -242,23 +270,23 @@ assert.throws(() =&gt; new Admission(NaN), RangeError);
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://sre.google/sre-book/table-of-contents/" target="_blank" rel="noreferrer">Google Site Reliability Engineering ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <a href="../reference/api-distributed-systems-deep-dive-map.html" target="_blank">API &amp; distributed systems coverage map ↗</a>
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

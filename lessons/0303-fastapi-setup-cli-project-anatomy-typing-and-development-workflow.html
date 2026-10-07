@@ -46,6 +46,50 @@
     <h1>FastAPI setup, CLI, project anatomy, typing, and development workflow</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="5">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="FastAPI setup">
+        <summary>FastAPI setup</summary>
+        <p class="concept-definition">FastAPI setup creates a Python environment, installs the server and framework, and defines a command that starts the application.</p>
+      </details><details open class="concept-card" data-subtopic="CLI">
+        <summary>CLI</summary>
+        <p class="concept-definition">The FastAPI CLI starts a development or production server for an application. Record the command, import path, installed versions, and configuration so startup is reproducible.</p>
+      </details><details open class="concept-card" data-subtopic="project anatomy">
+        <summary>project anatomy</summary>
+        <p class="concept-definition">Project anatomy is the arrangement of application entry points, routers, schemas, services, data access, configuration, tests, and deployment files.</p>
+      </details><details open class="concept-card" data-subtopic="typing">
+        <summary>typing</summary>
+        <p class="concept-definition">Typing uses Python annotations to describe expected values. FastAPI also uses annotations to build runtime request and response contracts.</p>
+      </details><details open class="concept-card" data-subtopic="development workflow">
+        <summary>development workflow</summary>
+        <p class="concept-definition">A development workflow is the repeatable process for editing code, starting the server, running checks, and reviewing generated API documentation.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>The server imports an application, registers its routes and handles requests through the ASGI stack. FastAPI builds typed contracts, Starlette supplies web behavior and Pydantic validates values. The CLI starts that server process. Record compatible versions and the import path when reproducing startup. A working health handler establishes that it responds, not that every dependency is ready. Development reload is also different from production replication.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>FastAPI receives an HTTP request, validates data, runs application code, and creates an HTTP response.</p>
@@ -55,18 +99,13 @@
   <figure class="card mechanism-map" data-lesson-map="0303" data-bespoke-example="0303" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Follow the health request to its returned value</figcaption>
 <p>The application registers one GET operation at /health.</p>
 <div class="foundation-grid"><div>Request<br>GET /health</div><div>Handler<br>Return status: ok</div><div>API response<br>JSON object with status ok</div><div>Contract view<br>Inspect /openapi.json</div></div>
-<details><summary>Does this response prove the database is healthy?</summary><p>No. The handler checks no dependencies. It only returns its fixed response.</p></details>
-<details><summary>Does naming the application version 1.0.0 create a versioned URL?</summary><p>No. That is application metadata. Routes remain those explicitly registered.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>The server imports an application, registers its routes and handles requests through the ASGI stack. FastAPI builds typed contracts, Starlette supplies web behavior and Pydantic validates values. The CLI starts that server process. Record compatible versions and the import path when reproducing startup. A working health handler establishes that it responds, not that every dependency is ready. Development reload is also different from production replication.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does this response prove the database is healthy?</summary><p>No. The handler checks no dependencies. It only returns its fixed response.</p></details>
+<details open><summary>Does naming the application version 1.0.0 create a versioned URL?</summary><p>No. That is application metadata. Routes remain those explicitly registered.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace an HTTP request</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="fastapi-request" aria-label="Mechanism trace: HTTP bytes reach Uvicorn then Events enter the application then Dependencies and business logic run then ASGI send emits wire events. Experiment: Trace one valid request and one failure while recording every ASGI event.">
         <li class="trace-stage"><span>01 · SOCKET</span><details class="trace-explanation" open><summary>HTTP bytes reach Uvicorn</summary><p>The server parses protocol data and creates an ASGI scope.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · ASGI</span><details class="trace-explanation"><summary>Events enter the application</summary><p>Middleware wraps receive, routing, and endpoint handling.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · ENDPOINT</span><details class="trace-explanation"><summary>Dependencies and business logic run</summary><p>Typed inputs become a return value or exception.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>04 · RESPONSE</span><details class="trace-explanation"><summary>ASGI send emits wire events</summary><p>Status, headers, and body become observable to the client.</p></details></li>
       </ol>
@@ -78,35 +117,16 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="5">
 
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="FastAPI setup">
-        <summary>FastAPI setup</summary>
-        <p class="concept-definition">FastAPI setup creates a Python environment, installs the server and framework, and defines a command that starts the application.</p>
-      </details><details class="concept-card" data-subtopic="CLI">
-        <summary>CLI</summary>
-        <p class="concept-definition">The FastAPI CLI starts a development or production server for an application. Record the command, import path, installed versions, and configuration so startup is reproducible.</p>
-      </details><details class="concept-card" data-subtopic="project anatomy">
-        <summary>project anatomy</summary>
-        <p class="concept-definition">Project anatomy is the arrangement of application entry points, routers, schemas, services, data access, configuration, tests, and deployment files.</p>
-      </details><details class="concept-card" data-subtopic="typing">
-        <summary>typing</summary>
-        <p class="concept-definition">Typing uses Python annotations to describe expected values. FastAPI also uses annotations to build runtime request and response contracts.</p>
-      </details><details class="concept-card" data-subtopic="development workflow">
-        <summary>development workflow</summary>
-        <p class="concept-definition">A development workflow is the repeatable process for editing code, starting the server, running checks, and reviewing generated API documentation.</p>
-      </details>
-    </div>
-  </section>
   <section class="card lab"><h2>Apply this lesson</h2><p>Work through a focused senior-level extension: predict the result, attempt the exercise, then compare the worked feedback. Framework recipes require an existing isolated environment; no installation is needed for the offline exercises.</p><ul><li><a href="../reference/api-cloud-delivery-labs.html#python-api-llm">Routes, models, errors, secrets and background tasks</a></li></ul></section>
 
 
 
-  
 
-  <section class="card lab">
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Create a strict typed project, run development and production commands, inspect the route table, and document the import path and process model.</p>
     <p class="lab-scope">Trace the example and predict one success and one failure before reading the answer. Most snippets need the named application types, services or imports. Syntax checks do not establish framework behavior. To complete the integration, supply those adapters and verify the relevant framework, database, browser or deployment boundary in its required environment.</p>
 
@@ -134,8 +154,10 @@ async def health() -&gt; dict[str, str]:
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Follow the health request to its returned value</p>
@@ -207,10 +229,16 @@ async def health() -&gt; dict[str, str]:
       </details>
     </article>
     <p><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">Review the lesson source: FastAPI Tutorial</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -224,23 +252,23 @@ async def health() -&gt; dict[str, str]:
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noreferrer">FastAPI Tutorial ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     <a href="../reference/fastapi-deep-dive-map.html" target="_blank">FastAPI coverage map ↗</a>
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>

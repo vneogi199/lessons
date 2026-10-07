@@ -46,6 +46,56 @@
     <h1>URLs, DNS, TCP, TLS, HTTP, proxies, and CDNs</h1>
   </header>
 
+  <nav class="card study-guide" aria-label="Lesson study steps">
+    <h2>Start here</h2>
+    <p>Work through one lesson at a time. Keep a note open for your predictions and questions.</p>
+    <ol>
+      <li><a href="#study-read">Learn the concept.</a> Read the definitions and explanation first. You do not need to answer questions yet.</li>
+      <li><a href="#study-worked">Follow the worked example.</a> Read the steps and their explained results. The answers are visible so you can learn how the example works.</li>
+      <li><a href="#study-guided">Try with help.</a> Use the trace to practise the steps. Keep the worked example open and use the hints when needed.</li>
+      <li><a href="#study-practice">Try it yourself.</a> Attempt the practice task. Change one input or assumption and explain what changes.</li>
+      <li><a href="#study-recall">Explain it without notes.</a> Answer one interview question aloud, then check the answer. Complete the <a href="#lesson-mcqs">MCQs</a> before opening their answers.</li>
+      <li><a href="#study-finish">Review and move on.</a> Correct one mistake and record anything you cannot explain yet.</li>
+    </ol>
+    <p>Short on time? Learn the concept and follow the worked example today. Resume with the guided trace next time. Save linked labs and deeper track cases for a separate session; the reading estimate excludes them.</p>
+  </nav>
+  <div id="study-read"></div>
+<section class="concept-section" data-subtopic-count="7">
+
+    <div class="concept-grid">
+      <details open class="concept-card" data-subtopic="URLs">
+        <summary>URLs</summary>
+        <p class="concept-definition">A URL identifies a resource and includes parts such as the scheme, host, port, path, query, and fragment.</p>
+      </details><details open class="concept-card" data-subtopic="DNS">
+        <summary>DNS</summary>
+        <p class="concept-definition">DNS converts a host name into network records such as IP addresses and caches answers for a limited time.</p>
+      </details><details open class="concept-card" data-subtopic="TCP">
+        <summary>TCP</summary>
+        <p class="concept-definition">TCP provides an ordered and reliable byte stream between two network endpoints.</p>
+      </details><details open class="concept-card" data-subtopic="TLS">
+        <summary>TLS</summary>
+        <p class="concept-definition">TLS authenticates a server and encrypts data sent between network peers.</p>
+      </details><details open class="concept-card" data-subtopic="HTTP">
+        <summary>HTTP</summary>
+        <p class="concept-definition">HTTP is a request-response protocol that defines methods, headers, status codes, and message bodies.</p>
+      </details><details open class="concept-card" data-subtopic="proxies">
+        <summary>proxies</summary>
+        <p class="concept-definition">A proxy receives a network request and forwards it to another server while applying routing or policy.</p>
+      </details><details open class="concept-card" data-subtopic="CDNs">
+        <summary>CDNs</summary>
+        <p class="concept-definition">A content delivery network serves cached content from locations near users and protects or accelerates origin servers.</p>
+      </details>
+    </div>
+  </section>
+<section class="card">
+
+      <p>Separate identifying a resource from transporting a request. DNS supplies records; cached results and existing connections can skip new lookup/handshake work. HTTP/1.1 and HTTP/2 commonly use TCP, while HTTP/3 uses QUIC over UDP. TLS protects a connection to its authenticated peer; a terminating proxy can be that peer rather than the origin. CDN cache keys, freshness and authorization determine whether a shared response is safe. A URL fragment is handled by the client rather than sent as the HTTP request target.</p>
+
+    </section>
+<section id="study-worked" aria-label="Worked example"><p>Follow this example with the answers visible. Read why each result occurs before trying a task yourself.</p>
+
+
+
   <section class="card beginner-foundation" data-writing-standard="ASD-STE100-core-principles">
 
     <p>A browser receives network data and converts that data into an interactive and secure page.</p>
@@ -55,18 +105,13 @@
   <figure class="card mechanism-map" data-lesson-map="0051" data-bespoke-example="0051" aria-labelledby="mechanism-map-caption"><figcaption id="mechanism-map-caption">Headers can arrive before the body finishes</figcaption>
 <p>The browser fixture records three moments around one fetch. No numerical durations are assumed.</p>
 <div class="foundation-grid"><div>Start → headers available<br>fetch resolves to a Response<br>First measured interval ends</div><div>Headers → body consumed<br>arrayBuffer finishes<br>Second measured interval ends</div></div>
-<details><summary>Does the first interval directly measure DNS time?</summary><p>No. It combines work before the response headers become available. Use available resource timing fields to investigate phases, accounting for connection reuse and access restrictions.</p></details>
-<details><summary>Does cache: no-store guarantee a new TCP and TLS connection?</summary><p>No. The transport can be reused. A warm connection and a cached response are different sources of saved work.</p></details></figure><div class="grid">
-    <section class="card">
-
-      <p>Separate identifying a resource from transporting a request. DNS supplies records; cached results and existing connections can skip new lookup/handshake work. HTTP/1.1 and HTTP/2 commonly use TCP, while HTTP/3 uses QUIC over UDP. TLS protects a connection to its authenticated peer; a terminating proxy can be that peer rather than the origin. CDN cache keys, freshness and authorization determine whether a shared response is safe. A URL fragment is handled by the client rather than sent as the HTTP request target.</p>
-
-    </section>
-
-    <aside class="card blackboard">
+<details open><summary>Does the first interval directly measure DNS time?</summary><p>No. It combines work before the response headers become available. Use available resource timing fields to investigate phases, accounting for connection reuse and access restrictions.</p></details>
+<details open><summary>Does cache: no-store guarantee a new TCP and TLS connection?</summary><p>No. The transport can be reused. A warm connection and a cached response are different sources of saved work.</p></details></figure></section>
+<div class="grid">
+<aside class="card blackboard" id="study-guided" style="grid-column:1 / -1">
 
       <h2>Trace a browser request or event</h2>
-      <p>Read the first step. Predict what each next step does, then open it to compare.</p>
+      <p>Now use what you learned. Read the first step, then try to explain the next one. Open each step for help or feedback. Refer to the worked example whenever you need it. After the trace, continue to Practice.</p>
       <ol class="trace-flow" data-flow="browser-0051" aria-label="Mechanism trace: Resolve and connect then Receive headers then Consume the body. Experiment: Change the stated fixture condition and compare the observable result.">
         <li class="trace-stage"><span>01 · TRACE</span><details class="trace-explanation" open><summary>Resolve and connect</summary><p>DNS, transport and TLS may be reused or partially hidden in timing data.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>02 · TRACE</span><details class="trace-explanation"><summary>Receive headers</summary><p>fetch resolves to a response before complete body consumption.</p></details><i aria-hidden="true">↓</i></li><li class="trace-stage"><span>03 · TRACE</span><details class="trace-explanation"><summary>Consume the body</summary><p>Await body reading and compare request phases using observable timing evidence.</p></details></li>
       </ol>
@@ -78,40 +123,15 @@
     </aside>
   </div>
 
-  <section class="concept-section" data-subtopic-count="7">
-
-    <div class="concept-grid">
-      <details class="concept-card" data-subtopic="URLs">
-        <summary>URLs</summary>
-        <p class="concept-definition">A URL identifies a resource and includes parts such as the scheme, host, port, path, query, and fragment.</p>
-      </details><details class="concept-card" data-subtopic="DNS">
-        <summary>DNS</summary>
-        <p class="concept-definition">DNS converts a host name into network records such as IP addresses and caches answers for a limited time.</p>
-      </details><details class="concept-card" data-subtopic="TCP">
-        <summary>TCP</summary>
-        <p class="concept-definition">TCP provides an ordered and reliable byte stream between two network endpoints.</p>
-      </details><details class="concept-card" data-subtopic="TLS">
-        <summary>TLS</summary>
-        <p class="concept-definition">TLS authenticates a server and encrypts data sent between network peers.</p>
-      </details><details class="concept-card" data-subtopic="HTTP">
-        <summary>HTTP</summary>
-        <p class="concept-definition">HTTP is a request-response protocol that defines methods, headers, status codes, and message bodies.</p>
-      </details><details class="concept-card" data-subtopic="proxies">
-        <summary>proxies</summary>
-        <p class="concept-definition">A proxy receives a network request and forwards it to another server while applying routing or policy.</p>
-      </details><details class="concept-card" data-subtopic="CDNs">
-        <summary>CDNs</summary>
-        <p class="concept-definition">A content delivery network serves cached content from locations near users and protects or accelerates origin servers.</p>
-      </details>
-    </div>
-  </section>
 
 
 
-  
 
-  <section class="card lab">
+
+
+  <section class="card lab" id="study-practice">
     <h2>Practice</h2>
+    <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
     <p>Inspect network waterfalls, headers, certificates, cache behavior, and connection reuse.</p>
     <p class="lab-scope">Browser-only exercise: use a disposable fixture you own, record a prediction, change the specified condition and inspect the result in developer tools. The core example covers one mechanism; the broader lab is an extension. No browser, screen-reader, network-timing or security integration result is claimed by local text/Node checks. Nothing needs installing to read and rehearse the model.</p>
 
@@ -141,8 +161,10 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
 
 
 
-  <section class="card interview">
+  <section class="card interview" id="study-recall">
     <h2>Interview practice</h2>
+    <p data-study-instruction="recall">Hide your notes. Choose one question and answer aloud in about 90 seconds. Then open its answer checkpoints. Add what you missed and try again in your own words. Use the remaining questions for another session. Next, answer the <a href="#lesson-mcqs">MCQs</a>, then <a href="#study-finish">review your progress</a>.</p>
+
     <div class="lesson-interview-bank" data-interview-count="4">
     <p>Answer aloud before opening the checkpoints. These questions reuse this lesson's worked case and mechanism. Explain the reason, not just the yes/no result. They supplement the MCQs and track design case.</p>
     <div class="interview-case"><p class="interview-case-title">Headers can arrive before the body finishes</p>
@@ -214,10 +236,16 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
       </details>
     </article>
     <p><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">Review the lesson source: Fetch Standard: fetching and responses</a>. If a distinction remains unclear, ask for an explanation. Try missed questions again tomorrow and explain your reasoning before opening the answer.</p>
-    
+
   </section>
 
-  <section class="card mastery">
+  <section class="card mastery" id="study-finish">
+    <div data-study-instruction="finish">
+    <h2>Before you move on</h2>
+    <p>Can you explain the example, predict the effect of one change, and describe one failure or limitation? If not, return to the <a href="#study-read">explanation</a> or <a href="#study-practice">practice task</a>. Ask your teacher about the exact step that is unclear; include your prediction and what confused you.</p>
+    <p>Write one sentence about what you learned and one question to revisit. Tomorrow, explain the example again without notes. The check below records progress only; it does not prove mastery. When you are ready, use the next-lesson arrow in the reader.</p>
+  </div>
+
 
     <p>This check records progress only. It does not assess topic knowledge or senior interview readiness. Use the written rehearsal and track case to test your understanding.</p>
     <h2>Which study approach should you use for this lesson?</h2>
@@ -231,23 +259,23 @@ console.table(performance.getEntriesByType(&quot;resource&quot;).slice(-5));
 
   <footer class="source">
     <div><span class="section-label">Primary source</span><br/><a href="https://fetch.spec.whatwg.org/" target="_blank" rel="noreferrer">Fetch Standard: fetching and responses ↗</a></div>
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <div class="actions"><button class="button secondary" id="copy-handoff" type="button">continue_with_codex()</button><button class="button secondary" type="button" onclick="window.print()">print_lesson()</button></div>
     <small class="followup">Ask Codex about any unclear step. Revisit the exercise in 48 hours and again in one week; predict and explain without notes, then check the evidence.</small>
   </footer>
