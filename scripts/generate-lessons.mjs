@@ -10,6 +10,7 @@ import { POLARS_CONTENT } from "./polars-content.mjs";
 import { PRODUCTION_DEPTH, productionDepthMarkup } from "./production-depth-links.mjs";
 import { interviewQuestions } from "./lesson-interviews.mjs";
 import { addStudyGuide } from "./lesson-study-guide.mjs";
+import { decoratorDepth } from "./python-decorator-depth.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18174,6 +18175,7 @@ ${!profile.analogy || (lesson.trackId === "python" && !EXPLANATION_REWRITES[less
 ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card mechanism-walkthrough">${reviewed.mechanism}</section>` : ""}
 
   ${dsaApproachMarkup(lesson)}
+  ${lesson.number === "0280" ? decoratorDepth : ""}
 
   <section class="card lab">
     <h2>Practice</h2>
