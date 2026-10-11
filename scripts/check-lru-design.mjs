@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+import { lruDesignDepth } from './lru-design-depth.mjs';
+const manifest = JSON.parse(await readFile(new URL('../lessons/manifest.json', import.meta.url), 'utf8'));
+const lesson = manifest.lessons.find(item => item.number === '0079');
+assert.ok((await readFile(new URL('../' + lesson.path, import.meta.url), 'utf8')).includes(lruDesignDepth));
+const source = lruDesignDepth.match(/<pre data-lru-design-example><code>([\s\S]*?)<\/code>/)[1].replaceAll('&lt;', '<').replaceAll('&gt;', '>');
+const result = spawnSync(process.env.LESSON_PYTHON || 'python3', ['-c', source], { encoding: 'utf8' });
+assert.equal(result.status, 0, result.stderr || String(result.error));
+console.log('LRU design example passed: eviction, recency, updates, misses, None, and input validation. Concurrency/load not exercised.');
