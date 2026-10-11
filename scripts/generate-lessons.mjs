@@ -11,6 +11,8 @@ import { PRODUCTION_DEPTH, productionDepthMarkup } from "./production-depth-link
 import { interviewQuestions } from "./lesson-interviews.mjs";
 import { addStudyGuide } from "./lesson-study-guide.mjs";
 import { decoratorDepth } from "./python-decorator-depth.mjs";
+import { abcDepth } from "./python-abc-depth.mjs";
+import { generatorDepth } from "./python-generator-depth.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18176,6 +18178,8 @@ ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card me
 
   ${dsaApproachMarkup(lesson)}
   ${lesson.number === "0280" ? decoratorDepth : ""}
+  ${lesson.number === "0273" ? abcDepth : ""}
+  ${lesson.number === "0278" ? generatorDepth : ""}
 
   <section class="card lab">
     <h2>Practice</h2>
