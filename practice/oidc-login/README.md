@@ -1,5 +1,9 @@
 # Login is a code exchange, then a local session
 
+For refresh-token and cross-app logout teaching, continue with the
+[lifecycle lesson](../../reference/token-session-lifecycle.html) and its offline
+state exercise. These do not add provider refresh or logout endpoints to this adapter.
+
 `login.py` supplies a single-issuer OIDC authorization-code flow. The browser receives a short-lived opaque login cookie. The server retains state, nonce and a PKCE verifier in SQLite. On callback it consumes that state once, exchanges the code and validates the ID token with PyJWT. Only then does it create an opaque local session.
 
 Use an already approved environment with FastAPI, HTTPX, PyJWT and cryptography. No dependencies were installed and no tests or issuer calls ran. `test_login.py` supplies a signed fake issuer through HTTPX MockTransport. Its RSA key is generated only when that test runs. It checks PKCE, wrong state/browser, callback replay, issuer, audience, expiry, nonce, authorized party and logout CSRF.

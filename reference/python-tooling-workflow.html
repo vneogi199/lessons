@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>uv, Ruff and pytest in one project</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="../index.html">Learning home</a><a href="python-deep-dive-map.html">Python lessons</a><a href="../practice/python-tooling/README.md">Practice files</a></nav>
+<h1>uv, Ruff and pytest in one project</h1>
+<p>Start with a small function that cleans an incoming quantity. First read its contract, then follow the tests, then try changing one rule. This is the same workflow you can use for an RFQ parser or a FastAPI service.</p>
+<p>Think of a workshop: uv supplies a consistent set of tools, Ruff checks the work against coding rules, and pytest checks whether the result behaves as promised. None replaces your review of the business requirement.</p>
+<h2 id="uv">Keep the environment reproducible with uv</h2>
+<p><code>pyproject.toml</code> declares project metadata, dependency constraints and tool settings. <code>uv.lock</code> records resolved dependencies. <code>.venv</code> is the local environment that contains installed packages. Commit the project file and the generated lockfile for an application; do not commit the environment, caches or secrets.</p>
+<p>Locking resolves dependencies. Syncing installs the selected locked packages into the project environment. <code>uv run</code> normally checks the lock and syncs before running a command. Thus “run tests” can install packages unless you explicitly prevent it. <code>--locked</code> rejects a stale lock; <code>--frozen</code> uses the lock without checking freshness. Neither means “do not install.” <code>--no-sync</code> skips environment synchronization. Read <a href="https://docs.astral.sh/uv/concepts/projects/sync/">uv's locking and syncing guide</a>.</p>
+<p>In an approved setup session, a developer can use <code>uv init</code>, <code>uv add --dev pytest ruff</code>, <code>uv lock</code> and <code>uv sync --locked</code>. These are explanations, not commands to run under the current no-install constraint. Review changes to both metadata and lockfile. A lockfile does not prove packages are safe, nor pin the operating system or every native build input.</p>
+<p>For a prepared environment, check <code>uv lock --check --offline</code>, then use <code>uv run --no-sync --offline --no-python-downloads python -m pytest</code>. An offline command may still use cached artifacts; do not use offline mode alone as an installation prohibition. Our exercise deliberately supplies no invented lockfile. Until an authorized resolution generates it, the project is a teaching recipe, not a reproducible locked build.</p>
+<details><summary>Interview: CI passes but a developer's machine fails. Where do you look?</summary><p>Compare Python and uv versions, selected dependency groups, lock revision, interpreter path, OS/native libraries and environment variables. Check whether the developer ran a different pytest executable or skipped synchronization. Avoid deleting the lockfile as the first fix.</p></details>
+<h2 id="ruff">Separate linting from formatting</h2>
+<p>A linter detects selected code patterns, such as an unused import or undefined name. A formatter normalizes layout. <code>ruff check .</code> and <code>ruff format --check .</code> serve different purposes. Passing either does not prove correct business logic or complete type safety.</p>
+<pre><code>[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.format]
+quote-style = "double"</code></pre>
+<p>This small ruleset includes common errors, Pyflakes checks and import sorting. Keep the target Python version aligned with supported runtimes. Add stricter rules after reviewing their impact. Avoid suppressing an entire file just to silence one warning; if a suppression is justified, record its reason near the code. See <a href="https://docs.astral.sh/ruff/configuration/">Ruff configuration</a>.</p>
+<p>Locally, <code>ruff check --fix .</code> changes code, and <code>ruff format .</code> changes formatting. Review the diff and run tests afterwards. Do not enable unsafe fixes automatically. In CI, use check-only commands so the job reports a failure rather than quietly altering the candidate. Ruff is not a full static type checker or a security audit.</p>
+<details><summary>Predict: Ruff passes a function that returns quantity minus one. Does the function work?</summary><p>Not necessarily. The expression can be valid, well-formatted Python and still violate the contract. A behavioral test must compare the expected quantity with the actual result.</p></details>
+<h2 id="pytest">Write a test that can catch the mistake</h2>
+<p>The supplied <code>parse_quantity</code> accepts a positive integer or an integer string with surrounding whitespace. It rejects booleans, zero, negatives, decimals, missing values and other types. It returns an integer and does not modify external state. Start with <code>" 12 " → 12</code>, then test the boundaries.</p>
+<pre><code>@pytest.mark.parametrize("raw, expected", [(" 12 ", 12), (3, 3)])
+def test_quantity(raw, expected):
+    assert parse_quantity(raw) == expected
+
+@pytest.mark.parametrize("raw", [None, True, "", "1.5", 0, -1])
+def test_invalid_quantity(raw):
+    with pytest.raises(ValueError):
+        parse_quantity(raw)</code></pre>
+<p>Parametrization runs the same contract against several inputs. A fixture supplies setup with a defined lifetime. Use function scope for independent mutable state; broader scope can save time but can leak changes between tests. A <code>yield</code> fixture supports teardown after the test. <code>tmp_path</code> gives a test-specific temporary path, and <code>monkeypatch</code> restores patched values after the test. Read <a href="https://docs.pytest.org/en/stable/how-to/fixtures.html">pytest fixtures</a>.</p>
+<p>The exercise includes a file fixture and an environment override. For API tests, replace the external provider or data dependency, not the validation rule under test. Mock the symbol where the application looks it up. A mock returning success cannot prove a real transaction committed. Add an integration test for that boundary in an approved environment.</p>
+<p>Use <code>python -m pytest -q</code> for the suite, <code>-k quantity</code> to select matching names, and <code>-x</code> to stop on the first failure. Markers organize tests; register custom markers to catch typos. Avoid sleeps in tests: inject a clock or wait for an observable event with a deadline. Async tests need an explicitly configured async runner/plugin; do not assume pytest awaits every coroutine.</p>
+<p>Coverage reports show executed lines or branches, not requirement correctness. Coverage collection normally needs an additional tool such as coverage.py or pytest-cov. This exercise does not install one. A test that executes the invalid-input branch without asserting rejection provides weak protection even if reported coverage is high.</p>
+<h2 id="pipeline">Use one local and CI sequence</h2>
+<pre><code># Recipe for a PREPARED, reviewed environment; not executed here.
+uv lock --check --offline
+uv run --no-sync --offline --no-python-downloads ruff check .
+uv run --no-sync --offline --no-python-downloads ruff format --check .
+uv run --no-sync --offline --no-python-downloads python -m pytest -q</code></pre>
+<p>Run these from the example project directory. A real CI setup first provisions a reviewed interpreter and uv version, restores or creates the locked environment, and then runs checks. That installation step needs separate approval here. Cache keys should include lockfile, Python and platform information. A cache is an optimization, not the authoritative dependency declaration. Keep deployment credentials away from untrusted pull requests.</p>
+<ol><li>Read <a href="../practice/python-tooling/quantity.py">the function</a> and predict six inputs.</li><li>Read <a href="../practice/python-tooling/test_quantity.py">the pytest cases</a>. Explain which bug each catches.</li><li>Use the standard-library smoke check now; run the real pytest/Ruff commands only in an already prepared environment.</li><li>Temporarily change the function to return zero for invalid input in a disposable copy. The rejection tests must fail.</li><li>Restore it, review the diff and rehearse why lint, formatting and behavioral tests are separate gates.</li></ol>
+<details><summary>MCQ: Which gate checks the declared business behavior? A) Ruff formatting. B) pytest assertions.</summary><p>B. Formatting checks layout. Assertions check the behaviors you actually encoded; they do not cover requirements you forgot to test.</p></details>
+<p>Tomorrow, explain lock versus sync and fixture versus mock without notes. Ask your teacher to review one test that passed despite a bug. No packages were installed for this material; pytest and Ruff execution remain unverified in the current environment.</p>
+</main></body></html>
