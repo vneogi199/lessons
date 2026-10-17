@@ -16,6 +16,7 @@ import { generatorDepth } from "./python-generator-depth.mjs";
 import { lruDesignDepth } from "./lru-design-depth.mjs";
 import { stockDepth } from "./stock-interview-depth.mjs";
 import { greedyStockExplanation } from "./greedy-stock-explanation.mjs";
+import { neuralFoundations, transformerFfn } from "./neural-network-foundations.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18186,6 +18187,8 @@ ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card me
   ${lesson.number === "0079" ? lruDesignDepth : ""}
   ${["0030", "0040", "0041"].includes(lesson.number) ? greedyStockExplanation : ""}
   ${lesson.number === "0041" ? stockDepth : ""}
+  ${lesson.number === "0578" ? neuralFoundations : ""}
+  ${lesson.number === "0582" ? transformerFfn : ""}
 
   <section class="card lab">
     <h2>Practice</h2>
