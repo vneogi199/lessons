@@ -132,6 +132,30 @@ FFN output: n × d_model</code></pre>
 
 
 
+  <section class="card mechanism-walkthrough" id="transformer-ffn-parameters">
+<h2>Where the feed-forward network fits</h2>
+<p>Start with <a href="0578-optimization-gradients-loss-functions-regularization-and-generalization.html#neural-network-basics">lesson 0578's neuron-to-network walkthrough</a> if weights and biases are unfamiliar. A token vector is an ordered list of features. An attention layer lets one position combine information from other permitted positions. The position-wise FFN then transforms each position's feature vector using the same learned weights across positions within that layer.</p>
+<pre>Token vectors → attention mixes permitted positions
+             → FFN transforms features at each position
+             → next block
+
+One FFN: model width 2 → hidden width 3 → model width 2
+Three token positions: 3×2 → 3×3 → 3×2</pre>
+<p>This is the FFN portion only; a full block also has residual connections and normalization. Attention has already made the input vectors context-dependent. “Position-wise” does not mean the whole transformer ignores context.</p>
+<p>For a basic two-layer FFN, FFN(x) = W2 activation(W1 x + b1) + b2. At model width d and hidden width f, the two weight matrices contain d×f + f×d = 2df parameters. Biases add f + d when present. With d = 2 and f = 3, that is 12 weights + 5 biases = 17 parameters. Using it on three tokens still needs 17 parameters, not 51.</p>
+<pre data-neural-example="transformer-count"><code>model_width, hidden_width = 2, 3
+weights = 2 * model_width * hidden_width
+biases = hidden_width + model_width
+assert weights + biases == 17
+assert 2 * 4 * 8 + 8 + 4 == 76</code></pre>
+<p>Do not apply this count to every architecture. Gated FFNs may use three weight matrices, and biases may be omitted. Different transformer layers usually have separate parameters unless explicitly tied. Residual additions introduce no parameters by themselves; normalization may contain learned values.</p>
+<p>The matrices that project inputs into queries, keys, and values are learned parameters. The attention scores, softmax attention weights, and resulting token activations are computed for the current input. Despite the word weights, attention weights are not a separately stored learned matrix for every possible input. Embedding tables also contain parameters; a full model count includes more than its FFNs.</p>
+<details><summary>Practice: model width 4, FFN hidden width 8, both biases present. Count parameters.</summary><p>There are 4×8 + 8×4 = 64 weights and 8 + 4 = 12 biases, for 76 total. Sequence length does not multiply this count, though it affects work and activation memory.</p></details>
+<details><summary>Interview: Does the KV cache increase model parameters?</summary><p>No. It stores input-dependent key and value tensors for reuse during decoding. Longer context can increase cache memory without changing the model's parameter count.</p></details>
+<details><summary>Interview: Why expand the hidden width and project back?</summary><p>The hidden transformation gives the FFN more intermediate features and nonlinear capacity. Projecting back restores the model width for the residual addition. A wider hidden layer also increases parameters and computation; it is a design choice, not free improvement.</p></details>
+<p>Source: <a href="https://arxiv.org/html/1706.03762v7">Attention Is All You Need, position-wise feed-forward networks</a>. The two-layer form is one architecture; modern gated variants need their own count.</p>
+</section>
+
   <section class="card lab" id="study-practice">
     <h2>Practice</h2>
     <p data-study-instruction="practice">Now try the task before reading more answers. Write the expected result first. Run code only in a suitable isolated environment after checking the setup and safety notes. If you cannot run it, trace it on paper and mark it as untested. For a design or discussion task, write your own example. When you finish, continue to <a href="#study-recall">Interview practice</a>.</p>
