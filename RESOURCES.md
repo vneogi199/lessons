@@ -339,3 +339,12 @@ Further topic-specific primary sources are cited beside each recipe in the four 
 - [PostgreSQL window functions](https://www.postgresql.org/docs/current/tutorial-window.html): partitioning, ordering, ranking and frames.
 - [Pandas merge](https://pandas.pydata.org/docs/reference/api/pandas.merge.html): cardinality validation and null-key behavior.
 - [CME basis-point value](https://www.cmegroup.com/education/courses/introduction-to-sofr/understanding-the-importance-of-basis-point-value): distinguish rate moves from sensitivity measures.
+
+## Six-week agent path sources — 2026-10-17
+
+- [Qdrant points](https://qdrant.tech/documentation/manage-data/points/): vector/payload operations; application-level publication and revision fencing are separate responsibilities.
+- [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence): checkpoints and stored workflow state.
+- [FastAPI background tasks](https://fastapi.tiangolo.com/tutorial/background-tasks/): in-process work and the need for separate worker systems for larger jobs.
+- [OpenTelemetry context propagation](https://opentelemetry.io/docs/concepts/context-propagation/): cross-service tracing context, distinct from authorization.
+- [ECS deployment circuit breaker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html): deployment failure detection and rollback boundaries.
+- [Agent evaluation guide](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents): observable outcomes, trajectories and grader calibration.

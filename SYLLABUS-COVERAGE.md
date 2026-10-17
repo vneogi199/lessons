@@ -1,5 +1,10 @@
 # Requested syllabus coverage — 2026-09-21
 
+Latest scoped audit: [six-week production agent syllabus](AGENT-SYLLABUS-COVERAGE.md)
+(2026-10-17). All 30 theory/build items have detailed guidance and acceptance
+checks. Includes a new offline incremental publication exercise. Deployment and
+live SDK verification remain distinct from authored coverage.
+
 Existing lessons plus 29 extension sections cover the latest syllabus and Python/API follow-up. These are teaching materials and capstone briefs, not deployed applications.
 
 | Requested topics | Material |

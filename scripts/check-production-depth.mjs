@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { PRODUCTION_DEPTH, productionDepthMarkup } from "./production-depth-links.mjs";
+import { AGENT_PATH } from "./agent-path-links.mjs";
 const read = name => readFileSync(new URL(`../${name}`, import.meta.url), "utf8");
 const manifest = JSON.parse(read("lessons/manifest.json"));
 for (const [number, [title, page]] of Object.entries(PRODUCTION_DEPTH)) {
   const lesson = manifest.lessons.find(item => item.number === number);
   assert.ok(lesson, number);
-  assert.equal(lesson.searchTerms, title);
+  assert.equal(lesson.searchTerms, [title, AGENT_PATH[number]?.[1]].filter(Boolean).join(" "));
   assert.ok(read(lesson.path).includes(productionDepthMarkup(number)));
   const content = read(`reference/${page}`);
   assert.match(content, /<details>/);

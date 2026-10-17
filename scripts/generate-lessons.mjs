@@ -17,6 +17,7 @@ import { lruDesignDepth } from "./lru-design-depth.mjs";
 import { stockDepth } from "./stock-interview-depth.mjs";
 import { greedyStockExplanation } from "./greedy-stock-explanation.mjs";
 import { neuralFoundations, transformerFfn } from "./neural-network-foundations.mjs";
+import { AGENT_PATH, agentPathMarkup } from "./agent-path-links.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18189,6 +18190,7 @@ ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card me
   ${lesson.number === "0041" ? stockDepth : ""}
   ${lesson.number === "0578" ? neuralFoundations : ""}
   ${lesson.number === "0582" ? transformerFfn : ""}
+  ${agentPathMarkup(lesson.number)}
 
   <section class="card lab">
     <h2>Practice</h2>
@@ -18527,7 +18529,7 @@ async function generate() {
         id,
         number,
         title: topic.title,
-        searchTerms: PRODUCTION_DEPTH[number]?.[0] || "",
+        searchTerms: [PRODUCTION_DEPTH[number]?.[0], AGENT_PATH[number]?.[1]].filter(Boolean).join(" "),
         trackId: track.id,
         trackTitle: track.title,
         tier: track.tier,
