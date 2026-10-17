@@ -1,5 +1,9 @@
 # Requested syllabus coverage — 2026-09-21
 
+Recent discussion follow-up: [uv/Ruff/pytest and token/session lifecycle](TOOLING-AUTH-COVERAGE.md)
+adds the previously missing tooling workflow, refresh-family practice and
+multi-application logout guidance. Proxy/Reflect remain in lesson 0102.
+
 Latest scoped audit: [six-week production agent syllabus](AGENT-SYLLABUS-COVERAGE.md)
 (2026-10-17). All 30 theory/build items have detailed guidance and acceptance
 checks. Includes a new offline incremental publication exercise. Deployment and

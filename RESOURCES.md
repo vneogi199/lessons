@@ -342,6 +342,13 @@ Further topic-specific primary sources are cited beside each recipe in the four 
 
 ## Six-week agent path sources — 2026-10-17
 
+Recent tooling and identity follow-up:
+- [uv locking/syncing](https://docs.astral.sh/uv/concepts/projects/sync/), [Ruff configuration](https://docs.astral.sh/ruff/configuration/), and [pytest fixtures](https://docs.pytest.org/en/stable/how-to/fixtures.html): linked from the small project workflow.
+- [OAuth refresh protection](https://www.rfc-editor.org/rfc/rfc9700.html#section-4.14): rotation and replay protection requirements.
+- [OIDC RP-initiated logout](https://openid.net/specs/openid-connect-rpinitiated-1_0.html) and [back-channel logout](https://openid.net/specs/openid-connect-backchannel-1_0.html): distinct local and federated logout boundaries.
+- [SAML Profiles](https://docs.oasis-open.org/security/saml/v2.0/saml-profiles-2.0-os.pdf), section 4.4: Single Logout protocol profile.
+- OWASP [session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html), and [XSS prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html): browser/session defenses and limits.
+
 - [Qdrant points](https://qdrant.tech/documentation/manage-data/points/): vector/payload operations; application-level publication and revision fencing are separate responsibilities.
 - [LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence): checkpoints and stored workflow state.
 - [FastAPI background tasks](https://fastapi.tiangolo.com/tutorial/background-tasks/): in-process work and the need for separate worker systems for larger jobs.

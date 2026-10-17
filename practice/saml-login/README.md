@@ -1,5 +1,9 @@
 # SAML login with request correlation
 
+The [lifecycle lesson](../../reference/token-session-lifecycle.html#saml) adds SAML
+Single Logout design, partial-failure handling and integration acceptance checks.
+It does not implement or certify SLO in this login adapter.
+
 The adapter delegates XML signatures and SAML validation to `python3-saml` and
 xmlsec. It supplies SP-initiated login, a browser-bound request record, signed
 response processing, replay storage and a new opaque session. It does not write
