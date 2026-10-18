@@ -1,5 +1,13 @@
 # Requested syllabus coverage — 2026-09-21
 
+Messaging follow-up (2026-10-18): [RabbitMQ versus Kafka](reference/rabbitmq-kafka.html)
+covers exchanges/bindings/queues, routing, confirms versus acknowledgements,
+durability/quorum, ordering, retries/dead letters, Streams/replay, broker selection
+and outbox boundaries. Linked from 0438, 0460, 0461 and 0472, with search terms,
+interview questions and six standard-library exercises. Live brokers, clients,
+replication failure and load tests remain unrun; this closes written coverage,
+not deployment verification.
+
 Recent discussion follow-up: [uv/Ruff/pytest and token/session lifecycle](TOOLING-AUTH-COVERAGE.md)
 adds the previously missing tooling workflow, refresh-family practice and
 multi-application logout guidance. Proxy/Reflect remain in lesson 0102.

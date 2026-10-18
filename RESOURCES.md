@@ -1,5 +1,11 @@
 # Full Stack AI Engineer Resources
 
+## Messaging comparison sources — 2026-10-18
+
+- RabbitMQ [exchanges](https://www.rabbitmq.com/docs/exchanges), [confirms and acknowledgements](https://www.rabbitmq.com/docs/confirms), and [reliability](https://www.rabbitmq.com/docs/reliability): routing and delivery boundaries.
+- RabbitMQ [quorum queues](https://www.rabbitmq.com/docs/quorum-queues), [dead-letter exchanges](https://www.rabbitmq.com/docs/dlx), and [Streams](https://www.rabbitmq.com/docs/streams): replication, failed-message routing and retained replay.
+- [Kafka design](https://kafka.apache.org/41/design/design/): partitioned logs, consumer progress and transaction scope. This versioned source is not a recommendation to install a particular release.
+
 ## Knowledge
 
 - [Harvard: evaluating and negotiating offers](https://careerservices.fas.harvard.edu/resources/hes-evaluating-and-negotiating-job-offers-2/) and [Stanford: negotiating](https://www.gsb.stanford.edu/alumni/career-resources/job-search/negotiating): preparation and offer comparison for the negotiation rehearsal. These are general career guidance, not current local salary benchmarks or legal advice.
