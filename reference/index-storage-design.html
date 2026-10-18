@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clustered indexes, B+ trees and LSM trees</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="../index.html">Learning home</a><a href="../practice/index-storage/README.md">Offline exercise</a></nav>
+<h1>Where an index leads, and when storage does the work</h1>
+<p>Read the shelf example first. Then trace one lookup and one update. Keep two questions separate: where are the rows stored, and how does the engine organize updates? These questions connect clustered indexes to B+ trees and LSM trees without treating them as interchangeable terms.</p>
+<h2 id="clustered">Clustered versus non-clustered indexes</h2>
+<p>Imagine books stored by catalogue number. Looking up a number takes you directly to the shelf position containing the book. A separate author catalogue contains the author's name and the book's catalogue number; you may need a second lookup to fetch the book. This is a useful analogy for clustered data and a secondary index.</p>
+<pre>Clustered rowstore index:
+search key → internal pages → leaf containing the row
+
+Non-clustered index over a clustered table:
+secondary key → index leaf containing row locator → clustered lookup → row
+
+Covering secondary index:
+secondary key → leaf contains the requested columns → base lookup may be avoided</pre>
+<p>In SQL Server rowstore, the clustered index's leaf level contains table rows. A non-clustered index is separate and uses a row locator: a clustered key for a clustered table, or a row identifier for a heap. There is at most one clustered rowstore index per table, but several non-clustered indexes can support different queries. The primary-key constraint and the choice of clustering key are distinct decisions. See <a href="https://learn.microsoft.com/en-us/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described?view=sql-server-ver17">SQL Server index types</a>.</p>
+<p>Logical key order does not mean every page occupies adjacent physical disk space. Nor does an index promise SQL result order: use <code>ORDER BY</code>. A range can benefit from nearby rows while page splits, fragmentation, cache state and concurrent access still affect the actual work.</p>
+<h2 id="engines">Name the database before applying the rule</h2>
+<table><thead><tr><th>Engine</th><th>Row organization and lookup consequence</th></tr></thead><tbody>
+<tr><td>SQL Server rowstore</td><td>Can use a heap or clustered table. A non-clustered index may require a base-row lookup when it does not cover the query.</td></tr>
+<tr><td>MySQL InnoDB</td><td>Uses a clustered index, normally the primary key. Without one, it chooses a suitable unique non-null index or creates an internal key. Secondary entries contain the primary-key columns needed to locate the clustered record.</td></tr>
+<tr><td>PostgreSQL heap tables</td><td>Ordinary indexes are separate from heap tuples. A primary key does not create an automatically maintained clustered row layout. CLUSTER physically rewrites a table using an existing index, but later writes do not maintain that ordering.</td></tr>
+</tbody></table>
+<p>Read <a href="https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html">InnoDB clustered and secondary indexes</a> and <a href="https://www.postgresql.org/docs/current/sql-cluster.html">PostgreSQL CLUSTER</a>. PostgreSQL CLUSTER takes an ACCESS EXCLUSIVE lock and needs additional disk space. Treat it as a planned maintenance operation, not a harmless query optimization to run on a live table.</p>
+<p>For InnoDB, a wide primary key also occupies space in secondary indexes. A narrow, stable key can reduce that overhead. Random insert keys can spread writes and cause splits; increasing keys can concentrate writes on a hot edge. Do not turn either observation into a universal UUID-versus-integer rule. Measure contention, locality and workload requirements.</p>
+<h2 id="lookup">Trace a query before adding an index</h2>
+<p>Suppose trades have <code>trade_id</code>, <code>account_id</code>, <code>created_at</code> and <code>amount</code>. The screen requests the latest twenty trades for one account. An index beginning with account and then ordered time can narrow the search and support the ordering. Add a unique tie-breaker so equal timestamps produce a stable order.</p>
+<pre><code>-- PostgreSQL design example; run only in a disposable database with this schema.
+CREATE INDEX trades_account_time
+ON trades (account_id, created_at DESC, trade_id DESC)
+INCLUDE (amount);
+
+SELECT trade_id, created_at, amount
+FROM trades
+WHERE account_id = 42
+ORDER BY created_at DESC, trade_id DESC
+LIMIT 20;</code></pre>
+<p>Included columns provide payload, not another ordered search key. In PostgreSQL, an index-only scan may still visit heap pages to check visibility. The visibility map can make those checks unnecessary for eligible pages. Wider indexes cost storage, cache space and write work. See <a href="https://www.postgresql.org/docs/current/indexes-index-only-scans.html">covering and index-only scans</a>.</p>
+<p>Compare this with a query selecting half the table. An index lookup followed by many base-row reads can be worse than a sequential scan. Selectivity, physical correlation, projected columns and row estimates all matter. Continue with lessons <a href="../lessons/0364-composite-covering-partial-expression-unique-indexes-and-index-design-tr.html">0364</a> and <a href="../lessons/0365-planner-statistics-cardinality-estimation-selectivity-histograms-mcvs-co.html">0365</a>.</p>
+<h2 id="bplus">How a B+ tree finds a range</h2>
+<p>A B+ tree is a balanced search tree designed around pages with many keys. Internal pages hold separator keys and child references. Leaf pages hold the indexed entries. Those entries may contain rows or row locators, depending on the index. Linked leaf pages support ordered range traversal. Database documentation often uses “B-tree” for implementations in this family; do not assume every implementation uses the same page layout.</p>
+<pre>Root separator: 30
+       ├─ keys below 30: [10, 20]
+       └─ keys from 30:  [30, 40] → [50, 60]
+
+Range 25..50: descend to the starting leaf, then scan leaves → 30, 40, 50</pre>
+<p>High fan-out keeps trees shallow. An insertion locates its leaf and changes a page; a full page may split and update its parent. Updates involve logging, dirty pages and later persistence, not necessarily one synchronous random disk write per row. Fill factor can leave room for future writes but increases space use. Inspect the engine's implementation, such as <a href="https://www.postgresql.org/docs/current/btree.html">PostgreSQL B-tree internals</a>, before making cost claims.</p>
+<h2 id="lsm">How an LSM tree postpones part of the work</h2>
+<p>A log-structured merge tree buffers updates in memory, then flushes sorted runs to storage. In a common durable setup, writes also enter a write-ahead log; acknowledgement durability depends on the configured persistence policy. Flushed sorted tables are often called SSTables. Background compaction merges runs and removes versions that are safe to discard. See <a href="https://github.com/facebook/rocksdb/wiki/RocksDB-Overview">the RocksDB overview</a>.</p>
+<pre>write k=10 → WAL + memory table
+flush      → sorted run A: {k:10}
+write k=20 → memory table → sorted run B: {k:20}
+read k     → choose the newest visible version: 20
+compact    → merge runs; retain versions still needed by readers</pre>
+<p>Reads may inspect multiple runs. Indexes, caches and Bloom filters reduce unnecessary work. A Bloom filter can rule out a key from a run; a positive result still needs checking. Range reads merge ordered results and resolve versions. A delete writes a tombstone, a marker that hides an older value. Dropping it before the older value is safely removed can make deleted data reappear.</p>
+<p>A snapshot may still need an older version. Safe compaction must consider visibility and which files contain older records. Our exercise assumes no snapshots and a complete set of runs when removing tombstones. It does not implement real engine compaction or crash recovery.</p>
+<h2 id="tradeoffs">Compare amplification and sustained behavior</h2>
+<table><thead><tr><th>Question</th><th>B+ tree family</th><th>LSM family</th></tr></thead><tbody>
+<tr><td>Update path</td><td>Find and modify pages; splits and logging add work.</td><td>Buffer and flush sorted runs; compaction does later rewriting.</td></tr>
+<tr><td>Point/range read</td><td>Descend the tree, then read entries and possibly base rows.</td><td>Consult relevant runs and merge visible versions; filters and caching help.</td></tr>
+<tr><td>Write amplification</td><td>Page/log writes can exceed the changed application bytes.</td><td>Flushes and compaction can rewrite data repeatedly.</td></tr>
+<tr><td>Space amplification</td><td>Free page space, redundant indexes and retained versions consume capacity.</td><td>Overlapping versions and temporary compaction output consume capacity.</td></tr>
+<tr><td>Operational risk</td><td>Splits, hot pages, poor locality and maintenance cost.</td><td>Compaction backlog, write stalls and read/tail-latency pressure.</td></tr>
+</tbody></table>
+<p>Define what you measure. If 100 MB of logical updates causes 600 MB of storage writes, write amplification is 6× for that accounting boundary. State whether WAL, replication and temporary files are included. Read amplification can mean bytes or I/O operations; use the same definition when comparing engines. Space amplification compares physical footprint with live logical data, with compression and replicas clearly accounted for.</p>
+<p>Leveled compaction generally limits overlap and space at the cost of more rewriting. Tiered compaction can reduce rewriting while retaining more overlapping runs and increasing read/space costs. These are tendencies, not fixed ratios. Read <a href="https://github.com/facebook/rocksdb/wiki/Compaction">RocksDB's compaction trade-offs</a>. Measure steady-state writes while compaction is active; a short burst benchmark can hide work that the engine has postponed.</p>
+<p>A trade blotter with selective reads and ordered account history may fit an existing B-tree database well. A high-ingest key-value workload may justify an LSM engine, provided its read behavior, compaction capacity and recovery model fit. Avoid “B+ trees are for reads, LSM is always faster for writes.” Compare realistic key distributions, record sizes, updates, deletes, cache budgets and p95/p99 latency.</p>
+<h2 id="practice">Predict, run, then explain</h2>
+<ol><li>Use the <a href="../practice/index-storage/README.md">offline exercise</a>. Predict the range 25..50 from the shown keys.</li><li>Read a key present in two runs. Then add a tombstone and predict the result.</li><li>Drop only the newest run's tombstone incorrectly. Observe why the old value returns.</li><li>Merge all runs with the exercise's no-snapshot assumption. Confirm the deleted key stays absent.</li><li>In a separately approved database lab, compare actual plans, base-row/heap fetches and buffer activity for covered and uncovered queries. Record engine/version, data distribution and warm/cold cache conditions.</li></ol>
+<details><summary>Interview: is a primary key always a clustered index?</summary><p>No. Explain the engine. PostgreSQL primary keys normally use separate unique indexes. SQL Server can separate the primary-key and clustering choices. InnoDB normally clusters by its primary key. Never infer the row layout from the words “primary key” alone.</p></details>
+<details><summary>Interview: why did adding a covering index slow writes?</summary><p>Each relevant write now maintains another, wider structure. More payload can reduce reads but consume cache, storage and logging work. Measure the whole workload rather than judging only one SELECT.</p></details>
+<details><summary>Interview: inserts were fast for five minutes, then stalled. What would you inspect in an LSM engine?</summary><p>Check pending compaction, flush backlog, level/run counts, disk bandwidth, free space and configured stall limits. Compare sustained throughput and read tails with the initial burst. Do not simply disable safety limits or compaction.</p></details>
+<details><summary>MCQ: a tombstone hides an older run's value. A) Drop it during any merge. B) Keep it until safe removal.</summary><p>B. Removing the marker while an older value remains visible can resurrect the key. Snapshots and engine-specific visibility rules can delay safe removal further.</p></details>
+<p>Tomorrow, draw a secondary lookup and an LSM update from memory. Ask your teacher to change the database or workload and explain which part of your answer changes. No database was installed or modified for this lesson.</p>
+</main></body></html>

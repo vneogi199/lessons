@@ -1,5 +1,11 @@
 # Full Stack AI Engineer Resources
 
+## Index storage sources — 2026-10-18
+
+- [SQL Server clustered/nonclustered indexes](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described?view=sql-server-ver17) and [InnoDB indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html): row organization and secondary locators.
+- PostgreSQL [CLUSTER](https://www.postgresql.org/docs/current/sql-cluster.html), [B-tree internals](https://www.postgresql.org/docs/current/btree.html) and [index-only scans](https://www.postgresql.org/docs/current/indexes-index-only-scans.html): heap layout and visibility limits.
+- RocksDB [overview](https://github.com/facebook/rocksdb/wiki/RocksDB-Overview) and [compaction](https://github.com/facebook/rocksdb/wiki/Compaction): LSM write paths and read/write/space trade-offs.
+
 ## Messaging comparison sources — 2026-10-18
 
 - RabbitMQ [exchanges](https://www.rabbitmq.com/docs/exchanges), [confirms and acknowledgements](https://www.rabbitmq.com/docs/confirms), and [reliability](https://www.rabbitmq.com/docs/reliability): routing and delivery boundaries.

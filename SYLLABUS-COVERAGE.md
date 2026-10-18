@@ -1,5 +1,11 @@
 # Requested syllabus coverage — 2026-09-21
 
+Index storage follow-up (2026-10-18): [clustered indexes and B+ versus LSM trees](reference/index-storage-design.html)
+fills the two identified gaps, linked from 0362 and 0364. Includes engine-specific
+row organization, secondary lookups, amplification, compaction/tombstones,
+workload trade-offs and six offline tests. Database execution and performance
+claims remain unverified; no database or packages were installed.
+
 Messaging follow-up (2026-10-18): [RabbitMQ versus Kafka](reference/rabbitmq-kafka.html)
 covers exchanges/bindings/queues, routing, confirms versus acknowledgements,
 durability/quorum, ordering, retries/dead letters, Streams/replay, broker selection
