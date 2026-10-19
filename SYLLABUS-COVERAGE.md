@@ -1,5 +1,11 @@
 # Requested syllabus coverage — 2026-09-21
 
+Durable workflow follow-up (2026-10-19): [outbox and saga implementation](reference/durable-outbox-saga.html)
+adds a file-backed producer, fake broker, relay, idempotent consumer, saga state,
+service receipts, compensation and persisted attempt limits. Twelve local tests
+and a demo exercise committed-state recovery across connection reopen. Not a
+networked broker, multi-worker runtime or hardware/crash-durability certification.
+
 Index storage follow-up (2026-10-18): [clustered indexes and B+ versus LSM trees](reference/index-storage-design.html)
 fills the two identified gaps, linked from 0362 and 0364. Includes engine-specific
 row organization, secondary lookups, amplification, compaction/tombstones,

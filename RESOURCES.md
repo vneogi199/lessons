@@ -1,5 +1,10 @@
 # Full Stack AI Engineer Resources
 
+## Durable workflow sources — 2026-10-19
+
+- AWS [transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html) and [saga orchestration](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-orchestration.html): dual-write and compensation boundaries.
+- Python [SQLite transaction context manager](https://docs.python.org/3/library/sqlite3.html#how-to-use-the-connection-context-manager): local commit/rollback behavior and explicit connection closure.
+
 ## Index storage sources — 2026-10-18
 
 - [SQL Server clustered/nonclustered indexes](https://learn.microsoft.com/en-us/sql/relational-databases/indexes/clustered-and-nonclustered-indexes-described?view=sql-server-ver17) and [InnoDB indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html): row organization and secondary locators.

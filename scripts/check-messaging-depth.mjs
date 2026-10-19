@@ -22,4 +22,19 @@ assert.ok((await read("scripts/generate-lessons.mjs")).includes('${MESSAGING_LES
 const run = spawnSync(process.env.LESSON_PYTHON || "python3", ["-B", "practice/messaging-delivery/exercise.py", "-v"], {cwd: root, encoding: "utf8"});
 assert.equal(run.status, 0, run.stderr || String(run.error));
 console.log(run.stderr.trim());
-console.log("Four messaging links/revisions and eight teaching sections checked; no live broker test ran.");
+for (const args of [
+  ["-B", "-m", "unittest", "discover", "-s", "practice/durable-workflows", "-p", "test_*.py", "-v"],
+  ["-B", "practice/durable-workflows/demo.py"],
+]) {
+  const result = spawnSync(process.env.LESSON_PYTHON || "python3", args, {cwd: root, encoding: "utf8"});
+  assert.equal(result.status, 0, result.stderr || String(result.error));
+  if (args.includes("practice/durable-workflows/demo.py")) {
+    assert.ok(result.stdout.includes("Broker deliveries: 2"));
+    assert.ok(result.stdout.includes("Business effects: 1"));
+    assert.ok(result.stdout.includes("After restart and release: compensated"));
+  }
+  console.log((result.stdout + result.stderr).trim());
+}
+const recovery = await read("reference/durable-outbox-saga.html");
+for (const id of ["outbox", "saga", "practice", "limits"]) assert.ok(recovery.includes(`id="${id}"`));
+console.log("Five messaging links/revisions, delivery exercises and durable recovery demo/tests checked; no live broker test ran.");
