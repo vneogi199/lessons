@@ -372,3 +372,9 @@ Recent tooling and identity follow-up:
 - [OpenTelemetry context propagation](https://opentelemetry.io/docs/concepts/context-propagation/): cross-service tracing context, distinct from authorization.
 - [ECS deployment circuit breaker](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-circuit-breaker.html): deployment failure detection and rollback boundaries.
 - [Agent evaluation guide](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents): observable outcomes, trajectories and grader calibration.
+
+## Agile delivery — primary knowledge sources
+
+- [Agile principles](https://agilemanifesto.org/principles.html): feedback, collaboration and sustainable delivery. Used in the Agile delivery extension to lesson 0507.
+- [Scrum Guide](https://scrumguides.org/scrum-guide.html): accountabilities, events, refinement and Definition of Done. Distinguishes framework requirements from the illustrative RFQ workflow.
+- [Kanban Guide, May 2025](https://kanbanguides.org/the-kanban-guide/2025.5/): workflow policies, work-in-progress controls and flow measures. Used for the review-queue example.

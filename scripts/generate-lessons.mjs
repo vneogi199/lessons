@@ -21,6 +21,7 @@ import { AGENT_PATH, agentPathMarkup } from "./agent-path-links.mjs";
 import { TOOLING_AUTH, toolingAuthMarkup } from "./tooling-auth-links.mjs";
 import { MESSAGING_LESSONS, messagingSearch, messagingDepth } from "./messaging-depth.mjs";
 import { INDEX_STORAGE_LESSONS, indexStorageSearch, indexStorageDepth } from "./index-storage-depth.mjs";
+import { agileDeliverySearch, agileDeliveryDepth } from "./agile-delivery-depth.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18197,6 +18198,7 @@ ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card me
   ${toolingAuthMarkup(lesson.number)}
   ${MESSAGING_LESSONS.includes(lesson.number) ? messagingDepth : ""}
   ${INDEX_STORAGE_LESSONS.includes(lesson.number) ? indexStorageDepth : ""}
+  ${lesson.number === "0507" ? agileDeliveryDepth : ""}
 
   <section class="card lab">
     <h2>Practice</h2>
@@ -18535,7 +18537,7 @@ async function generate() {
         id,
         number,
         title: topic.title,
-        searchTerms: [PRODUCTION_DEPTH[number]?.[0], AGENT_PATH[number]?.[1], TOOLING_AUTH[number]?.[0], MESSAGING_LESSONS.includes(number) ? messagingSearch : "", INDEX_STORAGE_LESSONS.includes(number) ? indexStorageSearch : ""].filter(Boolean).join(" "),
+        searchTerms: [PRODUCTION_DEPTH[number]?.[0], AGENT_PATH[number]?.[1], TOOLING_AUTH[number]?.[0], MESSAGING_LESSONS.includes(number) ? messagingSearch : "", INDEX_STORAGE_LESSONS.includes(number) ? indexStorageSearch : "", number === "0507" ? agileDeliverySearch : ""].filter(Boolean).join(" "),
         trackId: track.id,
         trackTitle: track.title,
         tier: track.tier,
