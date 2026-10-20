@@ -1,5 +1,13 @@
 # Full Stack AI Engineer Resources
 
+## FDE discovery and ERP knowledge — 2026-10-20
+
+- [The Mom Test](https://www.momtestbook.com/): author source for discovery interviews grounded in actual behavior.
+- [OMG BPMN 2.0.2](https://www.omg.org/spec/BPMN/2.0.2): notation and participant/control-flow boundaries.
+- [Prosci ADKAR](https://www.prosci.com/methodology/adkar): individual adoption barriers; used with a synthetic dispatcher example.
+- [SAP equipment API](https://api.sap.com/api/API_EQUIPMENT/overview): check the selected edition's schema and current access conditions before integration.
+- [SAP process versus data integration](https://help.sap.com/docs/sap-btp-guidance-framework/integration-architecture-guide/when-to-use-sap-integration-suite-vs-sap-datasphere): Cloud Integration and Datasphere boundaries.
+
 ## Durable workflow sources — 2026-10-19
 
 - AWS [transactional outbox](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/transactional-outbox.html) and [saga orchestration](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/saga-orchestration.html): dual-write and compensation boundaries.

@@ -1,5 +1,17 @@
 # Requested syllabus coverage — 2026-09-21
 
+FDE roadmap follow-up (2026-10-20): lessons 0068, 0411, 0618, 0620 and 0638
+now link to [discovery through adoption](reference/fde-discovery-to-adoption.html)
+and [ERP/SAP integration](reference/erp-sap-integration.html).
+The [field-service pack](practice/client-delivery/FIELD-SERVICE-PACK.md)
+adds a worked BRD/TDD, 12 requirements, 10 endpoint contracts, 15 UAT scenarios,
+failure/reconciliation design, change control, hypercare, training and KPI
+arithmetic. Includes BPMN, discovery methods and ADKAR exercises.
+SAP specialist content is an orientation and catalogue exercise, not validated
+tenant-specific BAPI implementations. Exact roadmap applications, provider calls,
+live SAP integration, user research, UAT, load tests and deployment remain
+unexecuted learner assignments. No blanket claim of full roadmap completion.
+
 Durable workflow follow-up (2026-10-19): [outbox and saga implementation](reference/durable-outbox-saga.html)
 adds a file-backed producer, fake broker, relay, idempotent consumer, saga state,
 service receipts, compensation and persisted attempt limits. Twelve local tests
