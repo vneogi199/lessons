@@ -1,5 +1,12 @@
 # Full Stack AI Engineer Resources
 
+## Database failover knowledge — 2026-10-20
+
+- [MySQL GTIDs](https://dev.mysql.com/doc/refman/8.4/en/replication-gtids-concepts.html) and [replica status](https://dev.mysql.com/doc/refman/8.4/en/show-replica-status.html): identity, history and received/applied progress.
+- [MySQL semisynchronous replication](https://dev.mysql.com/doc/refman/8.4/en/replication-semisync.html): acknowledgement stage and timeout fallback.
+- [Redis Sentinel](https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/): quorum, failover and asynchronous-data limits.
+- [Original Orchestrator repository](https://github.com/openark/orchestrator): topology/recovery capabilities and archive notice; not a current installation recommendation.
+
 ## Support chatbot sources — 2026-10-20
 
 - [AWS retry guidance](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/): deadlines, overload and retry amplification.

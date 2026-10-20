@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Replication positions and safe failover</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="../index.html">Learning home</a> · <a href="../practice/database-failover/DRILL.md">Failover drill</a></nav>
+<h1>Which replica can safely become the writer?</h1>
+<p>Read the numbered-receipt example first. Then compare the managers and complete the drill on paper. The drill also defines evidence for a future authorized database test. No database or failover manager has been installed or exercised here.</p>
+<h2 id="positions">A received transaction is not necessarily applied</h2>
+<p>Imagine copying a numbered receipt book. One worker receives pages; another enters their contents into the accounts. Having page 20 in the inbox does not mean receipt 20 is visible in the accounts.</p>
+<pre>Source commits → binary log → replica receiver → relay log → applier → readable data
+                               received position            executed position</pre>
+<p>A MySQL binary-log coordinate includes a file and a byte position. Compare coordinates only in the appropriate source-log history. A larger position in another file or another server's log is not proof of newer data. A replica's local relay-log coordinates are a different location again.</p>
+<p>A GTID identifies a transaction independently of its location in a binary log. A basic MySQL GTID uses a source UUID and sequence number; newer formats can also include a tag. Executed GTIDs form a set, which can have gaps and multiple sources. Auto-positioning uses transaction history to find missing work; it does not make replication synchronous. See <a href="https://dev.mysql.com/doc/refman/8.4/en/replication-gtids-concepts.html">MySQL's GTID definitions</a>.</p>
+<pre>Abbreviated source A (teaching notation, not a real UUID):
+Source executed:    A:1-100
+Replica R received: A:1-100
+Replica R executed: A:1-95
+
+R still needs to apply 96-100 before those transactions are visible.</pre>
+<p>Use <code>SHOW REPLICA STATUS</code> to inspect receiver/applier health, source coordinates, retrieved/executed GTID sets and errors. An apply error can stop progress while receiving continues. <code>Seconds_Behind_Source</code> alone is not a proof of freshness. Observe the stages, current workload and a known transaction marker. See the <a href="https://dev.mysql.com/doc/refman/8.4/en/show-replica-status.html">status-field documentation</a>.</p>
+<p>Promotion requires compatible histories and an understood data-loss bound. If R1 has A:1-100 and R2 has A:1-99 plus B:1, counting transactions gives a misleading tie. Investigate B:1 as a possible errant transaction. Do not erase GTID evidence or skip errors merely to make replication appear healthy. Purged logs may require reseeding a replica.</p>
+<details><summary>Try: R has received all 100 transactions. Can you immediately promise that reads include transaction 100?</summary><p>No. It has executed only through 95. Verify apply completion and the application's actual data. A received position, executed position and durable recovery guarantee answer different questions.</p></details>
+<h2 id="ack">What does the commit acknowledgement mean?</h2>
+<p>Asynchronous replication allows the source to acknowledge before a replica has the transaction. Failover can lose acknowledged writes. Synchronous configurations wait for a specified remote stage; name that stage rather than saying “all replicas are current.”</p>
+<p>MySQL semisynchronous replication waits for the configured replica acknowledgement of received, logged work; it does not wait for replica query execution. It can fall back to asynchronous behavior after timeout. Monitor actual mode and durability settings. A replica acknowledgement does not authorize promoting an arbitrary stale replica. See <a href="https://dev.mysql.com/doc/refman/8.4/en/replication-semisync.html">MySQL semisynchronous replication</a>.</p>
+<h2 id="managers">Redis Sentinel versus MySQL Orchestrator</h2>
+<table><thead><tr><th>Question</th><th>Redis Sentinel</th><th>MySQL Orchestrator</th></tr></thead><tbody>
+<tr><td>Managed data system</td><td>Non-cluster Redis primary/replica deployments</td><td>MySQL replication topology</td></tr>
+<tr><td>Recovery work</td><td>Monitors, promotes a replica and reconfigures replicas</td><td>Discovers topology and can perform configured recovery/reparenting</td></tr>
+<tr><td>Progress evidence</td><td>Redis replication IDs and offsets</td><td>MySQL file/position, GTID or supported topology metadata</td></tr>
+<tr><td>Application routing</td><td>Sentinel-aware clients discover the primary</td><td>Integrate proxy/service discovery and recovery hooks</td></tr>
+<tr><td>What neither proves</td><td colspan="2">No acknowledged loss, an isolated old writer being fenced, or application recovery</td></tr>
+</tbody></table>
+<p>Sentinel's configured quorum determines agreement that a primary is down. Authorizing failover also requires a majority of Sentinels. These are different checks. Redis replication remains asynchronous; Sentinel is not a consensus-replicated data store. Write-admission settings based on connected replicas can reduce exposure but do not provide general split-brain safety. See <a href="https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/">the Sentinel documentation</a>.</p>
+<p>Orchestrator understands MySQL topology and recovery options. Its control-plane availability does not turn MySQL writes into consensus commits. Validate manager leadership, recovery hooks, permissions and routing together. The original <a href="https://github.com/openark/orchestrator">openark repository</a> was archived in February 2025 and points to the Percona fork. Select and validate a maintained distribution for the exact database version; this comparison is not an installation recommendation.</p>
+<h2 id="fencing">Promotion does not stop the old writer</h2>
+<p>A network partition can hide a healthy database from the manager while some clients can still reach it. Before reopening writes on a replacement, the recovery design must establish that the old writer cannot accept conflicting writes.</p>
+<p>Fencing can involve verified host shutdown, storage access revocation or a write path that enforces a newer ownership epoch. The target resource must reject stale epochs. Issuing tokens without checking them provides no protection. DNS changes and proxy updates alone leave direct clients and old connections as possible paths.</p>
+<p>A read-only setting is useful defense, but check privileged bypasses, existing sessions and whether the isolated node can receive the setting. If fencing cannot be established, stop and escalate according to the safety policy rather than promoting blindly. Rejoin the former primary only after comparing histories and rebuilding or reconciling as required.</p>
+<details><summary>Interview: a controller has a majority. Why can data still split?</summary><p>The controller can agree on a decision while an isolated database continues serving old clients. Control-plane agreement and enforcement at the write target are separate mechanisms.</p></details>
+<h2 id="recovery">Measure RPO and RTO from application evidence</h2>
+<p>RPO is the tolerated recovery-point gap, commonly expressed as time. RTO is the tolerated time to restore the defined service. These are targets. A drill measures actual loss and recovery time.</p>
+<p>Example: failure begins at 12:00:00; the recovered contiguous history includes all acknowledged writes through 11:59:57; valid application reads and writes resume at 12:00:40 and remain healthy for the agreed observation window. The observed recovery-point gap is three seconds and service recovery took forty seconds. Also report missing transaction IDs and count. If history has holes, do not summarize it using only the newest surviving timestamp.</p>
+<p>Distinguish client-acknowledged, rejected and unknown writes. A timeout can conceal a committed transaction. Reconcile it using a business key. Replication does not replace backups: a replicated deletion or corruption may require point-in-time recovery.</p>
+<p>Complete the <a href="../practice/database-failover/DRILL.md">repeatable drill</a>. Tomorrow, explain why low lag, completed promotion and zero data loss are three different claims. Ask your teaching assistant to challenge your evidence.</p>
+</main></body></html>

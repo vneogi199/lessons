@@ -1,0 +1,3 @@
+export const FAILOVER_LESSONS = ["0373", "0390", "0448", "0503"];
+export const failoverSearch = "MySQL binlog positions GTID replication lag Redis Sentinel Orchestrator database failover drill fencing RPO RTO";
+export const failoverDepth = `<section class="card" data-failover-depth><h2>Choose and verify a failover candidate</h2><p>Compare received and executed transaction histories, Redis Sentinel and MySQL Orchestrator in the <a href="../reference/database-failover-practice.html" target="_blank" rel="noreferrer">worked failover lesson</a>. Then plan a fault drill that measures fencing, acknowledged-data loss and application recovery. The drill is not a live database test.</p></section>`;

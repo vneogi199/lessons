@@ -1,5 +1,12 @@
 # Requested syllabus coverage — 2026-09-21
 
+Database failover follow-up (2026-10-20): lessons 0373, 0390, 0448 and 0503
+link to [MySQL positions and manager comparison](reference/database-failover-practice.html)
+and the [failover drill](practice/database-failover/DRILL.md).
+Covers file/position versus GTID sets, retrieved/executed progress, semisynchronous
+limits, Sentinel versus Orchestrator, fencing, eight fault scenarios and
+application-level RPO/RTO evidence. Drill execution and browser QA remain unrun.
+
 Support-chatbot follow-up (2026-10-20): lessons 0431, 0460 and 0617 link to
 [the support-chatbot case](reference/support-chatbot-design.html).
 Adds event-driven conversations, ML fraud decision architecture, refund
