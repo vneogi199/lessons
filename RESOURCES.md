@@ -1,5 +1,12 @@
 # Full Stack AI Engineer Resources
 
+## Support chatbot sources — 2026-10-20
+
+- [AWS retry guidance](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/): deadlines, overload and retry amplification.
+- [Stripe idempotency](https://docs.stripe.com/api/idempotent_requests): provider-specific retry semantics; does not replace a durable business ledger.
+- [Google ML engineering guidance](https://developers.google.com/machine-learning/guides/rules-of-ml): baselines, feature consistency and production feedback.
+- [SSE mechanics](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events): stream event IDs and reconnect behavior; durable replay remains application work.
+
 ## FDE discovery and ERP knowledge — 2026-10-20
 
 - [The Mom Test](https://www.momtestbook.com/): author source for discovery interviews grounded in actual behavior.

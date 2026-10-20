@@ -1,5 +1,13 @@
 # Requested syllabus coverage — 2026-09-21
 
+Support-chatbot follow-up (2026-10-20): lessons 0431, 0460 and 0617 link to
+[the support-chatbot case](reference/support-chatbot-design.html).
+Adds event-driven conversations, ML fraud decision architecture, refund
+idempotency/reconciliation, session replay, scaling and human takeover.
+Includes failure acceptance cases and interview feedback. This is an illustrative
+design, not verified Swiggy internals, an executed payment integration or a
+trained fraud model. Existing circuit-breaker and retry lessons remain intact.
+
 FDE roadmap follow-up (2026-10-20): lessons 0068, 0411, 0618, 0620 and 0638
 now link to [discovery through adoption](reference/fde-discovery-to-adoption.html)
 and [ERP/SAP integration](reference/erp-sap-integration.html).

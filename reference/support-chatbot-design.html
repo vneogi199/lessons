@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Support chatbot: events, fraud and session recovery</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="../index.html">Learning home</a> · <a href="durable-outbox-saga.html">Durable workflow lab</a></nav>
+<h1>An order-support chatbot that survives retries</h1>
+<p>This is an illustrative design, not a description of Swiggy's internal system. First trace one complaint. Then study fraud decisions and reconnects. Finally answer the failure exercises without opening the feedback. No payment provider, broker or trained model runs on this page.</p>
+<h2 id="flow">Follow one complaint</h2>
+<p>Think of a help desk with numbered tickets. The receptionist records your request before passing it to a worker. If you ask again, the number lets the desk find the original request. The chatbot needs the same separation between accepting a message and completing its action.</p>
+<pre>Customer → authenticated chat API → conversation DB + outbox
+                                      ↓ relay
+                                event broker
+                                      ↓
+                              workflow worker
+                         ↙            ↓             ↘
+                 Order API      Tracking API     Refund decision
+                                                     ↓
+                                               Payment API
+                                      ↓
+                         durable result → client stream
+                                      ↓ when needed
+                              human support queue</pre>
+<p>Start with a deterministic workflow: identify the order, check ownership, fetch status, offer eligible options and resolve or escalate. An LLM may classify text or explain a result. It cannot invent eligibility or call an unrestricted refund tool.</p>
+<ol><li>The client sends a stable message ID and conversation ID. The server verifies that the user owns the conversation and may access the order.</li><li>One database transaction records the message and an outbox event. Acknowledgement means accepted durably, not resolved.</li><li>A relay publishes the event. Consumers expect redelivery. Deduplicate using an event ID and commit the processed-event receipt with the state transition.</li><li>The worker reads backend APIs and records a decision. Keep network calls outside a long database transaction. Revalidate state before committing a consequential action.</li><li>Write the result and notification event durably. The client can fetch it even if a live notification is lost.</li></ol>
+<p>Use an envelope with event ID, tenant, conversation ID, message ID, schema version, expected state version and trace ID. Keep large sensitive payloads out of broker headers. Encrypt protected records and apply retention and deletion policies.</p>
+<p>Partitioning by conversation can preserve broker order within a partition. It does not order concurrent publishers, retries on separate topics or external service responses. Assign an authoritative sequence when recording messages and reject stale state updates. Use the <a href="durable-outbox-saga.html">outbox lab</a> to practise duplicate delivery and committed-state recovery.</p>
+<details><summary>Try: a tracking response arrives after a human has taken over. What happens?</summary><p>Store it as evidence if useful, but reject any stale bot transition. Compare the conversation version and ownership generation. A delayed result must not switch the conversation back to bot mode.</p></details>
+<h2 id="fraud">Separate fraud scoring from refund authority</h2>
+<p>The refund decision service first checks authenticated ownership, payment state, refundable balance and policy eligibility. Then it obtains relevant evidence and a versioned fraud score. The payment service enforces the final money invariant, including concurrent requests from other channels.</p>
+<pre>Request → eligibility rules → feature snapshot → risk model
+                 ↓                  ↓                ↓
+           explain rejection   missing/stale → review queue
+                                                    ↓
+                              policy decision: approve / review / reject
+                                                    ↓
+                              durable refund operation → payment provider</pre>
+<p>Candidate features include prior verified refund outcomes, order value, delivery evidence and recent request counts. Define each feature's event-time window, freshness and missing-value behavior. Use only data authorized for the purpose. A missing feature is not zero risk. Keep the model version, feature snapshot reference, policy version and reason codes with the decision.</p>
+<p>For training, distinguish confirmed abuse, legitimate claims and unresolved cases. Labels may arrive late. Human review is selectively applied, so reviewed cases alone can bias evaluation. Split by time, prevent future outcomes from leaking into features and test for duplicate-customer leakage where relevant. Start with a simple baseline and monitor training/serving differences; see <a href="https://developers.google.com/machine-learning/guides/rules-of-ml">Google's ML engineering guidance</a>.</p>
+<p>Evaluate precision, recall, calibration, false declines and loss at the chosen policy thresholds. Accuracy alone hides rare fraud. Compare review demand with reviewer capacity. Shadow a candidate model, inspect slices and set rollback criteria before increasing its authority. Score drift can be detected before delayed outcome labels arrive, but drift alone does not prove degraded accuracy.</p>
+<p>Illustrative policy: an eligible request with fresh evidence and sufficiently low calibrated risk can proceed; uncertain cases enter review. Thresholds require business validation. Never treat a language model's “95% confident” text as calibrated fraud probability. Offer an appeal path and avoid exposing internal abuse-detection rules in customer messages.</p>
+<p>Assign a stable refund operation ID across retries. Store its payload hash and reject conflicting reuse. The payment service must prevent total refunds exceeding the permitted balance; a conversation-level lock cannot protect requests from another channel. Provider idempotency retention may be shorter than your business history. Preserve your ledger and reconcile unknown outcomes. See <a href="https://docs.stripe.com/api/idempotent_requests">one provider's idempotency contract</a>; other providers differ.</p>
+<details><summary>Try: the provider times out after issuing the refund. Should the bot report failure and retry with a new ID?</summary><p>No. Record an unknown outcome, keep the original operation ID and reconcile with the provider. Tell the user processing is unconfirmed. A new ID risks a second refund.</p></details>
+<h2 id="sessions">Reconnect without losing the conversation</h2>
+<p>An authentication session identifies the caller. A conversation stores support work. A network connection is only a temporary delivery channel. Closing the browser must not delete an in-progress refund or transfer ownership.</p>
+<p>Store conversation ID, tenant/user, order reference, workflow version, owner mode, owner generation and last durable sequence. Keep messages, decisions and external operations as separate records. Cache hot reads if useful, but do not make a short-lived cache the sole refund ledger.</p>
+<p>For two browser tabs, use client message IDs for duplicate sends and optimistic concurrency for conflicting actions. A state update succeeds only against its expected version. Return the latest state on conflict. Validate ownership on every read, write and reconnect; knowing a conversation ID is not permission.</p>
+<p>Use POST for messages and SSE for server updates when one-way streaming is sufficient; WebSockets suit bidirectional live traffic. In either case, persist events before delivery. Resume from an authorized cursor, deduplicate rendered events and fetch a snapshot when the cursor predates retention. SSE provides event IDs and reconnection behavior, but your server must implement the durable replay. See <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events">SSE mechanics</a>.</p>
+<p>Conversation expiration, login expiration and audit retention have different purposes. Require authentication renewal after logout or expiry. Keep unresolved operations under the applicable retention policy. Do not replay private messages after the user loses access.</p>
+<details><summary>Try: a gateway crashes immediately after accepting a message.</summary><p>If acceptance followed the database commit, another worker can process the outbox. The client retries with the same message ID or fetches history. If the commit never happened, retry can create the message once. An in-memory acknowledgement cannot provide this guarantee.</p></details>
+<h2 id="scale">Scale connections and work separately</h2>
+<p>Connection gateways handle many mostly idle sockets. Workers handle backend calls and decisions. Scale them by their own limits: active connections and send-buffer pressure for gateways; queue age, processing time and dependency capacity for workers. Sticky routing can help efficiency but must not be required for correctness.</p>
+<p>Illustrative sizing: 20,000 active chats sending one message every 20 seconds produce 1,000 messages/second on average. If processing takes 0.2 seconds, steady-state work in flight averages about 200. Bursts, retries, slow dependencies and connection memory need additional headroom. This arithmetic is not a benchmark.</p>
+<p>Limit message size, per-user admission, worker concurrency and outbound buffers. Disconnect a slow stream with a recoverable cursor rather than retaining unlimited messages in memory. Separate tracking and refund resource pools so a tracking outage cannot occupy every connection. Drain consumers and connections during deployment.</p>
+<p>Give each request a total deadline. Retry transient failures only when safe, with capped exponential backoff, jitter and a shared retry budget. Avoid independent retries at every layer. A tracking circuit breaker can fail fast and probe recovery; it does not replace a refund idempotency check. See <a href="https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/">AWS's retry guidance</a>.</p>
+<h2 id="handoff">Make human takeover explicit</h2>
+<p>Use states such as bot_active, waiting_for_human, human_active and closed. Claim a case atomically. Increment the ownership generation on transfer, and require it for later bot actions. A bot command already sent to a provider needs reconciliation; takeover cannot recall it.</p>
+<p>Queue by urgency with fairness and aging. Reserve capacity for high-impact cases without starving ordinary ones. Show realistic status rather than promising immediate support. Preserve the transcript, evidence, attempted actions and unresolved operation IDs for the reviewer.</p>
+<p>If arrivals are 120 cases/hour and the team resolves 100/hour, the queue grows by 20/hour. More chatbot replicas do not fix that bottleneck. Reduce avoidable escalations safely, adjust staffing or offer asynchronous follow-up. Never auto-approve refunds solely to shorten the queue.</p>
+<h2 id="practice">Failure drill and interview rehearsal</h2>
+<p>Draw the sequence for a duplicate complaint, a lost refund response and a reconnect after takeover. Label the durable record at each boundary. Then compare your design with these acceptance cases.</p>
+<table><thead><tr><th>Inject</th><th>Required outcome</th></tr></thead><tbody>
+<tr><td>Duplicate message/event</td><td>One logical message and one state transition</td></tr>
+<tr><td>Two refund requests on different channels</td><td>Payment-side balance invariant holds</td></tr>
+<tr><td>Bot reply after takeover</td><td>No stale bot action or ownership change</td></tr>
+<tr><td>Tracking outage</td><td>Labelled unavailable/stale tracking; unrelated work continues</td></tr>
+<tr><td>Missing risk features</td><td>Explicit policy fallback; no assumed low risk</td></tr>
+<tr><td>Expired replay cursor</td><td>Authorized snapshot and safe resume</td></tr>
+<tr><td>Human queue overload</td><td>Visible wait, bounded admission and escalation policy</td></tr>
+</tbody></table>
+<p>Monitor accepted-to-response p50/p95/p99, queue age, reconnect recovery, duplicate suppression, unresolved refund age, reviewer wait, false declines and cost per resolved case. Redact traces; restrict access to fraud evidence. These cases are a design checklist, not executed integration tests.</p>
+<details><summary>Interview: why not keep the whole chat in Redis and make every worker stateless?</summary><p>Workers can avoid local durable state, but the system still needs durable message, ownership and operation records. A cache can accelerate reads. Its expiry or eviction must not erase proof of a refund or approval.</p></details>
+<details><summary>Interview: when is an event-driven design unnecessary?</summary><p>A low-volume read-only FAQ may need only synchronous requests. Add queues when durability, long-running actions or load isolation justify their operational cost. Events introduce duplicates, lag and recovery work.</p></details>
+<p>Tomorrow, explain why broker ordering, provider idempotency and human ownership solve different problems. Ask your teaching assistant to challenge one failure boundary.</p>
+</main></body></html>

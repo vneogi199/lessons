@@ -1,0 +1,3 @@
+export const CHATBOT_LESSONS = ["0431", "0460", "0617"];
+export const chatbotSearch = "event-driven support chatbot scaling conversation session management ML fraud detection refunds human handoff";
+export const chatbotDepth = `<section class="card" data-chatbot-depth><h2>Design an order-support chatbot</h2><p>Follow the <a href="../reference/support-chatbot-design.html" target="_blank" rel="noreferrer">worked chatbot case</a> from durable messages through fraud decisions, refund recovery, reconnects and human takeover. Includes scaling calculations, failure drills and interview answers. This is an illustrative architecture, not a claim about a company's implementation.</p></section>`;
