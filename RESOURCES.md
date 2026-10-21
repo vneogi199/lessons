@@ -1,5 +1,13 @@
 # Full Stack AI Engineer Resources
 
+## Support Copilot project — 2026-10-21
+
+- [Elastic hybrid search](https://www.elastic.co/docs/solutions/search/hybrid-search): lexical/vector fusion and ranking concepts.
+- [Elastic near-real-time search](https://www.elastic.co/docs/manage-data/data-store/near-real-time-search): refresh visibility versus commits.
+- [Dense vectors](https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/dense-vector) and [script scores](https://www.elastic.co/docs/reference/query-languages/query-dsl/query-dsl-script-score-query): exact vector adapter contracts; live verification remains required.
+- [Google dataset splits](https://developers.google.com/machine-learning/crash-course/overfitting/dividing-datasets): validation, holdout and repeated-use leakage.
+- [Ollama chat](https://docs.ollama.com/api/chat): structured-output selection and usage fields for the optional existing-model adapter.
+
 ## Database failover knowledge — 2026-10-20
 
 - [MySQL GTIDs](https://dev.mysql.com/doc/refman/8.4/en/replication-gtids-concepts.html) and [replica status](https://dev.mysql.com/doc/refman/8.4/en/show-replica-status.html): identity, history and received/applied progress.

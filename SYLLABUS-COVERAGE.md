@@ -1,5 +1,15 @@
 # Requested syllabus coverage — 2026-09-21
 
+Support Copilot (2026-10-21): [runnable CLI project](projects/support-copilot/README.md)
+and [eight-session guide](reference/support-copilot-project.html), linked from
+0396, 0596, 0602 and 0612. Connects ACL-filtered chunk retrieval, local hybrid
+ranking, reranking, citations, persistent human approval and idempotent local
+tickets. Includes split/overfitting exercises, metrics, sanitized spans, optional
+Elasticsearch and existing-local-model adapters, and a Docker recipe.
+Offline execution and mocked adapter contracts are distinct from live integration.
+No semantic model training, public API, cloud deployment or production security
+certification is claimed; see the project's explicit production gate.
+
 Database failover follow-up (2026-10-20): lessons 0373, 0390, 0448 and 0503
 link to [MySQL positions and manager comparison](reference/database-failover-practice.html)
 and the [failover drill](practice/database-failover/DRILL.md).
