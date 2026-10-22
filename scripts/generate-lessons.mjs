@@ -26,6 +26,7 @@ import { FDE_DELIVERY, fdeDeliveryDepth } from "./fde-delivery-depth.mjs";
 import { CHATBOT_LESSONS, chatbotSearch, chatbotDepth } from "./chatbot-depth.mjs";
 import { FAILOVER_LESSONS, failoverSearch, failoverDepth } from "./failover-depth.mjs";
 import { COPILOT_LESSONS, copilotSearch, copilotDepth } from "./support-copilot-depth.mjs";
+import { PG_HYBRID_LESSONS, pgHybridSearch, pgHybridDepth } from "./postgres-hybrid-depth.mjs";
 
 import { EXPLANATION_REWRITES, PYTHON_EXPLANATIONS, LESSON_EXPLANATIONS } from "./explanation-rewrites.mjs";
 import { SIMPLE_EXAMPLES } from "./simple-examples.mjs";
@@ -18207,6 +18208,7 @@ ${EXPLANATION_REWRITES[lesson.number] ? "" : reviewed ? `<section class="card me
   ${CHATBOT_LESSONS.includes(lesson.number) ? chatbotDepth : ""}
   ${FAILOVER_LESSONS.includes(lesson.number) ? failoverDepth : ""}
   ${COPILOT_LESSONS.includes(lesson.number) ? copilotDepth : ""}
+  ${PG_HYBRID_LESSONS.includes(lesson.number) ? pgHybridDepth : ""}
 
   <section class="card lab">
     <h2>Practice</h2>
@@ -18545,7 +18547,7 @@ async function generate() {
         id,
         number,
         title: topic.title,
-        searchTerms: [PRODUCTION_DEPTH[number]?.[0], AGENT_PATH[number]?.[1], TOOLING_AUTH[number]?.[0], MESSAGING_LESSONS.includes(number) ? messagingSearch : "", INDEX_STORAGE_LESSONS.includes(number) ? indexStorageSearch : "", number === "0507" ? agileDeliverySearch : "", FDE_DELIVERY[number]?.[0], CHATBOT_LESSONS.includes(number) ? chatbotSearch : "", FAILOVER_LESSONS.includes(number) ? failoverSearch : "", COPILOT_LESSONS.includes(number) ? copilotSearch : ""].filter(Boolean).join(" "),
+        searchTerms: [PRODUCTION_DEPTH[number]?.[0], AGENT_PATH[number]?.[1], TOOLING_AUTH[number]?.[0], MESSAGING_LESSONS.includes(number) ? messagingSearch : "", INDEX_STORAGE_LESSONS.includes(number) ? indexStorageSearch : "", number === "0507" ? agileDeliverySearch : "", FDE_DELIVERY[number]?.[0], CHATBOT_LESSONS.includes(number) ? chatbotSearch : "", FAILOVER_LESSONS.includes(number) ? failoverSearch : "", COPILOT_LESSONS.includes(number) ? copilotSearch : "", PG_HYBRID_LESSONS.includes(number) ? pgHybridSearch : ""].filter(Boolean).join(" "),
         trackId: track.id,
         trackTitle: track.title,
         tier: track.tier,

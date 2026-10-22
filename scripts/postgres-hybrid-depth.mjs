@@ -1,0 +1,3 @@
+export const PG_HYBRID_LESSONS = ["0379", "0596", "0602"];
+export const pgHybridSearch = "PostgreSQL hybrid search BM25 pg_search ParadeDB pgvector cosine RRF permission filtering retrieval evaluation";
+export const pgHybridDepth = `<section class="card" data-postgres-hybrid-depth><h2>Combine PostgreSQL BM25 and vector retrieval</h2><p>Read the <a href="../reference/postgres-hybrid-search.html" target="_blank" rel="noreferrer">worked PostgreSQL hybrid-search lesson</a>. Compare native text ranking with BM25, trace the SQL, calculate RRF, then test permissions, freshness and recall. The SQL is an integration recipe, not a verified deployment.</p></section>`;

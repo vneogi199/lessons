@@ -1,5 +1,7 @@
 # Requested syllabus coverage — 2026-09-21
 
+PostgreSQL hybrid retrieval (2026-10-22): lessons 0379, 0596 and 0602 link to [detailed BM25 + pgvector practice](reference/postgres-hybrid-search.html). Includes current extension SQL, rank fusion, authorized candidates, exact/ANN tradeoffs, version updates, evaluation and interview rehearsal. Seven offline arithmetic fixtures are supplied. SQL execution, extension compatibility, RLS and live performance remain unverified; no services or packages were installed.
+
 Support Copilot (2026-10-21): [runnable CLI project](projects/support-copilot/README.md)
 and [eight-session guide](reference/support-copilot-project.html), linked from
 0396, 0596, 0602 and 0612. Connects ACL-filtered chunk retrieval, local hybrid

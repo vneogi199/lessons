@@ -1,5 +1,12 @@
 # Full Stack AI Engineer Resources
 
+## PostgreSQL hybrid retrieval — 2026-10-22
+
+- [Worked lesson](reference/postgres-hybrid-search.html): BM25 versus native ranking, vectors, RRF, permissions and evaluation.
+- [PostgreSQL text search](https://www.postgresql.org/docs/current/textsearch-controls.html): native ranking semantics.
+- [ParadeDB indexes](https://www.paradedb.com/docs/reference/indexing/create-index) and [BM25 scores](https://www.paradedb.com/docs/reference/full-text/score): version-sensitive syntax.
+- [pgvector](https://github.com/pgvector/pgvector): exact/approximate search and filtering.
+
 ## Support Copilot project — 2026-10-21
 
 - [Elastic hybrid search](https://www.elastic.co/docs/solutions/search/hybrid-search): lexical/vector fusion and ranking concepts.
