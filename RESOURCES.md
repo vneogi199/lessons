@@ -1,5 +1,11 @@
 # Full Stack AI Engineer Resources
 
+## MySQL, WebRTC and Datadog — 2026-10-22
+
+- [MySQL practice](reference/mysql-innodb-practice.html): clustered/secondary lookup, plans, locking and operational worksheet. Sources: [InnoDB indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html), [isolation](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html), [EXPLAIN](https://dev.mysql.com/doc/refman/8.4/en/explain.html), [implicit commits](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html).
+- [WebRTC practice](reference/webrtc-practice.html): signaling, NAT traversal, media and failure drills. Sources: [connectivity](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Connectivity), [perfect negotiation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation), [data channel sample](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample).
+- [Datadog practice](reference/datadog-practice.html): Python logging/APM, dashboards, monitors, privacy and costs. Sources: [SDK settings](https://docs.datadoghq.com/tracing/trace_collection/library_config/python/) and [log correlation](https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/python/). Verify versions before using integration commands.
+
 ## AI specializations — 2026-10-22
 
 - [Audio/video lesson](reference/audio-video-engineering.html), [fine-tuning lab](reference/fine-tuning-lab.html) and [managed-platform decisions](reference/managed-ai-platforms.html): explanations, exercises and verification boundaries.

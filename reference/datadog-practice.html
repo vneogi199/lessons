@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Datadog logs, APM and operational practice</title><link rel="stylesheet" href="production-ai.css"></head><body><main>
+<nav><a href="../index.html">Learning home</a> · <a href="../practice/backend-depth/README.md">Offline logging practice</a></nav>
+<h1>Follow one slow request from alert to cause</h1>
+<p>First distinguish logs, metrics and traces. Then inspect the safe logging fixture. Finally design a dashboard and alert. Sending telemetry to Datadog requires approved credentials, destination and budget; nothing is installed or sent here.</p>
+<h2>Three views of one request</h2>
+<p>A log is an event record, such as “lookup timed out.” A metric summarizes measurements over time. A trace follows one request through spans of work. Think of a receipt, a daily sales chart and the route a delivery took. Each answers a different question.</p>
+<p>An API request takes 900 ms. Its trace shows 700 ms waiting for a database connection and 20 ms executing SQL. Adding a SQL index is not the first response: investigate pool saturation and transaction duration. The trace identifies where to look; correlated logs can explain the failure.</p>
+<h2>Choose one collection path</h2>
+<pre>FastAPI → structured stdout logs → configured log collector → Datadog Logs
+        → ddtrace spans → Datadog Agent → APM
+        → bounded metrics → approved metric collection path</pre>
+<p>The Datadog Python SDK can instrument supported frameworks. Start it early enough to instrument imports and choose versions supported by your runtime. Read <a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/python/">Python tracing setup</a> and the <a href="https://docs.datadoghq.com/tracing/trace_collection/library_config/python/">configuration reference</a>.</p>
+<p>Set stable service, environment and release version values. Configure a private Agent connection and the approved Datadog site. Keep API keys in the deployment's secret system, not source files. Do not expose trace intake ports publicly. A container's localhost is not automatically the host or another container.</p>
+<pre># Example only: requires an already-installed, approved SDK/Agent and app.
+DD_SERVICE=rfq-api DD_ENV=staging DD_VERSION=release-example \
+DD_LOGS_INJECTION=true ddtrace-run uvicorn app:app</pre>
+<p>Log injection adds correlation attributes; it does not itself configure collection of stdout. Include dd.trace_id, dd.span_id, dd.service, dd.env and dd.version in the JSON formatter as strings. Check the exact library version and <a href="https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/python/">correlation guidance</a>. Missing or zero trace IDs outside an active trace should not be fabricated into a real correlation.</p>
+<p>If using OpenTelemetry, choose a supported collector/exporter path and verify propagation. Do not auto-instrument the same framework twice with competing SDKs. For jobs, propagate permitted context and define whether retries are child attempts or linked work. Never treat an incoming trace header as authentication.</p>
+<h2>Protect data before it leaves the process</h2>
+<p>Use allowlisted event names and structured fields. Prefer route templates such as /rfqs/{id}, not raw URLs with IDs or query strings. Exclude authorization headers, cookies, bodies, prompts, customer names and connection strings. A regular expression is a backup control, not proof that every secret was removed.</p>
+<p>The supplied formatter emits only an event code, level, service metadata and valid injected trace/span IDs. Unknown messages become a fixed event. Exception text is deliberately omitted because it can contain private input. This illustrates minimization; it does not sanitize every other logger or exporter in an application. Test the complete pipeline with synthetic canary values before using real data.</p>
+<p>Datadog supports log processing rules, including mask_sequences; verify where a rule runs. A cloud-side filter cannot undo sensitive data already sent across the network. Apply source-side controls and test collector processing. See <a href="https://docs.datadoghq.com/agent/fleet_automation/supported_datadog_yaml_fields/">Agent configuration fields</a>.</p>
+<h2>Build a dashboard with a purpose</h2>
+<table><thead><tr><th>Panel</th><th>Breakdown</th><th>Question</th></tr></thead><tbody>
+<tr><td>Requests and errors</td><td>Service, environment, route template, status class</td><td>Which operation is failing?</td></tr>
+<tr><td>p50/p95/p99 duration</td><td>Route and release</td><td>Did the tail change after deployment?</td></tr>
+<tr><td>Pool wait and query time</td><td>Dependency and operation</td><td>Is capacity or SQL work the bottleneck?</td></tr>
+<tr><td>Queue age and worker failures</td><td>Queue and workload class</td><td>Is delayed work building up?</td></tr>
+<tr><td>LLM tokens and known cost</td><td>Approved model alias and task</td><td>Which path consumes the budget?</td></tr>
+</tbody></table>
+<p>Use distributions or the platform's appropriate latency aggregation, not averages of host p95 values. Document units and whether failures are included. Separate end-to-end time from nested spans. Trace sampling changes which examples are retained; sampled traces alone may be an unsuitable denominator for request/error rates.</p>
+<h2>Alerts that lead to action</h2>
+<p>Define a synthetic staging exercise: one hundred requests, ten controlled failures and one delayed dependency. Predict error rate 10/100 = 10%. Create a monitor scoped to the test service and environment. Choose an evaluation window, minimum traffic, recovery threshold and no-data policy. A monitor query depends on the actual metric names and types, so inspect those before copying syntax.</p>
+<p>Route the exercise to a test destination. Verify alert, acknowledgement and recovery, and link a runbook with the first diagnostic queries and rollback authority. “No data” can mean collector failure, not a healthy service. Avoid paging on a single rare slow request or suppressing an outage with an excessive minimum-volume threshold.</p>
+<p>Use SLO burn rates for sustained user-impact detection where appropriate. Attach deployment versions to investigations. Continuous profiling can reveal CPU or allocation hotspots, but measure its overhead and data capture settings before enabling it. A flame graph is evidence of sampled stacks, not a complete causal history.</p>
+<h2>Control observability costs</h2>
+<p>Budget log bytes, retention/indexing, custom metric series, traces and optional profiling separately. Pricing and plans change; inspect the account's actual contract. Avoid user_id, request_id and raw URL as metric tags. They can create many series. Request IDs belong in appropriately controlled event records, not every metric dimension.</p>
+<p>Filter noisy safe events at the source, shorten unnecessary retention, and sample deliberately. Keep audit obligations separate from debug sampling. Preserve rare errors through a tested policy without assuming sampling retains every important incident. Compare usage before and after a change and confirm diagnostic value remains.</p>
+<h2>Guided exercise</h2>
+<ol><li>Run the offline logging tests and inspect their expected fields.</li><li>In an approved staging service, instrument one route and one dependency. Send synthetic success, failure and timeout requests.</li><li>Find the service, open a trace, and navigate to its correlated log. Confirm release tags match and canary secrets are absent.</li><li>Build the panels above using discovered metric names. Trigger the test monitor, then restore the service and verify recovery.</li><li>Record SDK/Agent versions, propagation path, sampling policy, data destination, cost estimate and untested boundaries. Remove test monitors through the approved change process.</li></ol>
+<details><summary>Logs have trace IDs but no linked trace. What next?</summary><p>Check active context, ID formatting, service/environment tags, collection/parsing, retention and sampling. Do not conclude that injection alone shipped a trace.</p></details>
+<details><summary>Why not tag every metric with request_id?</summary><p>It creates high cardinality and often cost without useful aggregation. Use bounded dimensions and investigate individual requests through traces and logs.</p></details>
+<details><summary>MCQ: source-side redaction happens “before export” or “after export”?</summary><p>Before export. Later filtering cannot retract information already transmitted.</p></details>
+<p>Tomorrow, explain how you would distinguish a slow query from pool starvation. Ask your teacher to review the alert and redaction evidence.</p>
+</main></body></html>
