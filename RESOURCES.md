@@ -1,5 +1,14 @@
 # Full Stack AI Engineer Resources
 
+## AI specializations — 2026-10-22
+
+- [Audio/video lesson](reference/audio-video-engineering.html), [fine-tuning lab](reference/fine-tuning-lab.html) and [managed-platform decisions](reference/managed-ai-platforms.html): explanations, exercises and verification boundaries.
+- [Transcribe input](https://docs.aws.amazon.com/transcribe/latest/dg/how-input.html) and [diarization](https://docs.aws.amazon.com/transcribe/latest/dg/diarization.html): encoding, channels, speaker labels and timestamps.
+- [Transformers video-text](https://huggingface.co/docs/transformers/en/tasks/video_text_to_text): model-specific frame processing.
+- [PEFT LoRA concepts](https://huggingface.co/docs/peft/main/en/conceptual_guides/lora) and [API](https://huggingface.co/docs/peft/main/en/package_reference/lora): low-rank adapters and target-module configuration; select docs matching the installed release.
+- [Bedrock data protection](https://docs.aws.amazon.com/bedrock/latest/userguide/data-protection.html): shared responsibilities and data paths.
+- [Dedicated endpoint autoscaling](https://huggingface.co/docs/inference-endpoints/en/guides/autoscaling): warm capacity versus cold-start tradeoffs.
+
 ## PostgreSQL hybrid retrieval — 2026-10-22
 
 - [Worked lesson](reference/postgres-hybrid-search.html): BM25 versus native ranking, vectors, RRF, permissions and evaluation.
