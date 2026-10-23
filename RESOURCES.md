@@ -1,5 +1,14 @@
 # Full Stack AI Engineer Resources
 
+## Senior preparation priorities — 2026-10-23
+
+- [One-project guided path](reference/senior-priority-build-path.html) and [evidence workbook](practice/senior-priority/EVIDENCE.md): six technical priorities, architecture impact and customer delivery.
+- [Terraform sensitive data](https://developer.hashicorp.com/terraform/language/manage-sensitive-data): state/plan protection; [AWS reliability testing](https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/test-reliability.html): recovery evidence.
+- [PostgreSQL isolation](https://www.postgresql.org/docs/current/transaction-iso.html): concurrency and transaction retry reasoning.
+- [Python asyncio tasks](https://docs.python.org/3/library/asyncio-task.html): cancellation, task groups and waiting; match the deployed Python version.
+- [Kubernetes probes](https://kubernetes.io/docs/concepts/workloads/pods/probes/): readiness/liveness/startup distinctions.
+- [GraphQL.js batching](https://www.graphql-js.org/docs/n1-dataloader/): request-scoped loaders and result ordering.
+
 ## MySQL, WebRTC and Datadog — 2026-10-22
 
 - [MySQL practice](reference/mysql-innodb-practice.html): clustered/secondary lookup, plans, locking and operational worksheet. Sources: [InnoDB indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html), [isolation](https://dev.mysql.com/doc/refman/8.4/en/innodb-transaction-isolation-levels.html), [EXPLAIN](https://dev.mysql.com/doc/refman/8.4/en/explain.html), [implicit commits](https://dev.mysql.com/doc/refman/8.4/en/implicit-commit.html).
